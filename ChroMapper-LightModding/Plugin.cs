@@ -88,7 +88,7 @@ namespace ChroMapper_LightModding
                 .WithOptions<CommentTypesEnum>();
 
             dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(HandleCreateNote, "Create");
+            dialog.AddFooterButton(HandleCreateComment, "Create");
 
             dialog.Open();
         }
@@ -111,7 +111,7 @@ namespace ChroMapper_LightModding
                 .WithOptions<CommentTypesEnum>();
 
             dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(HandleCreateNote, "Create");
+            dialog.AddFooterButton(HandleCreateComment, "Create");
 
             dialog.Open();
         }
@@ -127,7 +127,7 @@ namespace ChroMapper_LightModding
 
         #region Comment Creation
 
-        private void HandleCreateNote()
+        private void HandleCreateComment()
         {
 
         }
