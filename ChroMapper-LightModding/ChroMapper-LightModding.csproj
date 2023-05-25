@@ -34,13 +34,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FileBrowser">
-      <HintPath>..\..\..\..\Downloads\chromapper\ChroMapper_Data\Managed\FileBrowser.dll</HintPath>
+      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\FileBrowser.dll</HintPath>
     </Reference>
     <Reference Include="Main">
-      <HintPath>..\..\..\..\Downloads\chromapper\ChroMapper_Data\Managed\Main.dll</HintPath>
+      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\Main.dll</HintPath>
     </Reference>
-    <Reference Include="Plugins">
-      <HintPath>..\..\..\..\Downloads\chromapper\ChroMapper_Data\Managed\Plugins.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,13 +52,16 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="Unity.InputSystem">
-      <HintPath>..\..\..\..\Downloads\chromapper\ChroMapper_Data\Managed\Unity.InputSystem.dll</HintPath>
+      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\Unity.InputSystem.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\Downloads\chromapper\ChroMapper_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\Downloads\chromapper\ChroMapper_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -68,6 +72,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\Icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="dll\Newtonsoft.Json.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

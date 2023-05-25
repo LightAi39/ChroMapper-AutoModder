@@ -8,17 +8,17 @@ namespace ChroMapper_LightModding.Models
 {
     public enum CommentTypesEnum
     {
-        note,
-        suggestion,
-        warning,
-        issue
+        Note,
+        Suggestion,
+        Warning,
+        Issue
     }
 
     public class Comment
     {
-        public float Beat { get; set; }
-        public float PosX { get; set; }
-        public float PosY { get; set; }
+        public float StartBeat { get; set; }
+
+        public List<SelectedNote> Notes { get; set; }
 
         public CommentTypesEnum Type { get; set; }
 
