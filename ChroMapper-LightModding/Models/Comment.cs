@@ -16,14 +16,15 @@ namespace ChroMapper_LightModding.Models
 
     public class Comment
     {
+        public string Id { get; set; } = null!;
         public float StartBeat { get; set; }
 
         public List<SelectedNote> Notes { get; set; }
 
         public CommentTypesEnum Type { get; set; }
 
-        public string[] Message { get; set; } = null!;
-        public string[] Response { get; set; } = null!;
+        public string Message { get; set; } = null!;
+        public string Response { get; set; } = "";
 
         public bool MarkAsRead { get; set; } = false;
     }

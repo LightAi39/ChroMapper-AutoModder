@@ -11,5 +11,15 @@ namespace ChroMapper_LightModding.Models
         public float Beat { get; set; }
         public float PosX { get; set; }
         public float PosY { get; set; }
+
+        public override string ToString()
+        {
+            return Beat.ToString();
+        }
+
+        public string ToStringFull()
+        {
+            return $"{Beat} ({PosX},{PosY})";
+        }
     }
 }

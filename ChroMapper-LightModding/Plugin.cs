@@ -11,6 +11,8 @@ using UnityEngine.SceneManagement;
 using System.IO;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using static UnityEngine.InputSystem.InputRemoting;
+
 
 namespace ChroMapper_LightModding
 {
@@ -116,55 +118,6 @@ namespace ChroMapper_LightModding
 
         #region UI
 
-        private void ShowCreateUI(float beat, int posX, int posY)
-        {
-            CommentTypesEnum type = CommentTypesEnum.Issue;
-
-            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment to note");
-            dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Beat {beat} - row {posY} - lane {posX}");
-
-            dialog.AddComponent<TextBoxComponent>()
-                .WithLabel("Comment")
-                .OnChanged((string s) => { text = s; });
-
-            dialog.AddComponent<DropdownComponent>()
-                .WithLabel("Type")
-                .WithOptions<CommentTypesEnum>()
-                .OnChanged((int i) => { type = (CommentTypesEnum)i; });
-
-            dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(HandleCreateComment, "Create");
-
-            dialog.Open();
-        }
-
-        // soontm supported
-        private void ShowCreateUIMultiple(float beat1, int posX1, int posY1, float beat2, int posX2, int posY2)
-        {
-            CommentTypesEnum type = CommentTypesEnum.Issue;
-
-            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment to multiple notes");
-            dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"First note at Beat {beat1} - row {posY1} - lane {posX1}");
-            dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Last note at Beat {beat2} - row {posY2} - lane {posX2}");
-
-            dialog.AddComponent<TextBoxComponent>()
-                .WithLabel("Comment")
-                .OnChanged((string s) => { text = s; });
-
-            dialog.AddComponent<DropdownComponent>()
-                .WithLabel("Type")
-                .WithOptions<CommentTypesEnum>()
-                .OnChanged((int i) => { type = (CommentTypesEnum)i; });
-
-            dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(HandleCreateComment, "Create");
-
-            dialog.Open();
-        }
-
         private void ShowMainUI()
         {
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Main UI");
@@ -268,13 +221,102 @@ namespace ChroMapper_LightModding
             dialog.Open();
         }
 
+
+        private void ShowCreateCommentUI(List<SelectedNote> selectedNotes)
+        {
+            CommentTypesEnum type = CommentTypesEnum.Issue;
+            string message = "Comment";
+
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment");
+            dialog.AddComponent<TextComponent>()
+                .WithInitialValue($"Notes: " + string.Join(",", selectedNotes.ConvertAll(p => p.ToString())));
+
+            dialog.AddComponent<TextBoxComponent>()
+                .WithLabel("Comment")
+                .WithInitialValue(message)
+                .OnChanged((string s) => { message = s; });
+
+            dialog.AddComponent<DropdownComponent>()
+                .WithLabel("Type")
+                .WithOptions<CommentTypesEnum>()
+                .OnChanged((int i) => { type = (CommentTypesEnum)i; });
+
+            dialog.AddFooterButton(null, "Cancel");
+            dialog.AddFooterButton(() => { HandleCreateComment(type, message, selectedNotes, true); }, "Create");
+
+            dialog.Open();
+        }
+
+        private void ShowReviewCommentUI(string id)
+        {
+            Comment comment = currentReview.Comments.Where(x => x.Id == id).First();
+            string message = comment.Response;
+            bool read = comment.MarkAsRead;
+
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("View comment");
+            dialog.AddComponent<TextComponent>()
+                .WithInitialValue($"Notes: " + string.Join(",", comment.Notes.ConvertAll(p => p.ToString())));
+
+            dialog.AddComponent<TextComponent>()
+                .WithInitialValue($"Type: {comment.Type}");
+
+            dialog.AddComponent<TextComponent>()
+                .WithInitialValue($"Comment: {comment.Message}");
+
+            dialog.AddComponent<TextBoxComponent>()
+                .WithLabel("Response:")
+                .WithInitialValue(message)
+                .OnChanged((string s) => { message = s; });
+
+            dialog.AddComponent<ToggleComponent>()
+                .WithLabel("Mark as read")
+                .WithInitialValue(read)
+                .OnChanged((bool o) => { read = o; });
+
+            dialog.AddFooterButton(null, "Cancel");
+            dialog.AddFooterButton(() =>
+            {
+                comment.Response = message;
+                comment.MarkAsRead = read;
+                HandleUpdateComment(comment);
+            }, "Update");
+
+            dialog.Open();
+
+        }
+
         #endregion UI
 
         #region Comment Handling
 
-        private void HandleCreateComment()
+        private void HandleUpdateComment(Comment comment)
+        {
+            currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == comment.Id));
+            currentReview.Comments.Add(comment);
+            currentReview.Comments = (List<Comment>)currentReview.Comments.OrderBy(f => f.StartBeat);
+            ShowReviewCommentUI(comment.Id);
+        }
+
+        private void HandleCreateComment(CommentTypesEnum type, string message, List<SelectedNote> selectedNotes, bool redirect = false)
         {
 
+            string id = Guid.NewGuid().ToString();
+            Comment comment = new()
+            {
+                Id = id,
+                StartBeat = selectedNotes.OrderBy(f => f.Beat).First().Beat,
+                Notes = selectedNotes,
+                Type = type,
+                Message = message
+            };
+            
+            currentReview.Comments.Add(comment);
+            currentReview.Comments = (List<Comment>)currentReview.Comments.OrderBy(f => f.StartBeat);
+
+            if (redirect)
+            {
+                ShowReviewCommentUI(id);
+            }
         }
 
         #endregion Comment Handling

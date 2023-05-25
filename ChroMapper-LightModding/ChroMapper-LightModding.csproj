@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="Models\Comment.cs" />
     <Compile Include="Models\DifficultyReview.cs" />
+    <Compile Include="Models\SelectedNote.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
