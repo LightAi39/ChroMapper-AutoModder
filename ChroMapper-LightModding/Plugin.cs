@@ -15,6 +15,7 @@ using static UnityEngine.InputSystem.InputRemoting;
 using Beatmap.Enums;
 using Beatmap.V3;
 using Beatmap.Base;
+using UnityEngine.InputSystem;
 
 namespace ChroMapper_LightModding
 {
@@ -34,6 +35,8 @@ namespace ChroMapper_LightModding
         private DifficultyReview currentReview = null;
         private string currentlyLoadedFilePath = null;
 
+        InputAction addCommentAction;
+
 
         string text;
 
@@ -44,6 +47,12 @@ namespace ChroMapper_LightModding
 
             // register a button in the side tab menu
             ExtensionButton button = ExtensionButtons.AddButton(LoadSprite("ChroMapper_LightModding.Assets.Icon.png"), "LightModding", ShowMainUI);
+
+            addCommentAction = new InputAction("Add Comment", type: InputActionType.Button);
+            addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
+                .With("modifier", "<Keyboard>/ctrl")
+                .With("button", "<Keyboard>/alt");
+            addCommentAction.performed += _ => { AddCommentKeyEvent(); };
 
         }
 
@@ -62,6 +71,7 @@ namespace ChroMapper_LightModding
             if (scene.buildIndex == 3) // the editor scene
             {
                 inEditorScene = true;
+                addCommentAction.Enable();
                 _noteGridContainer = UnityEngine.Object.FindObjectOfType<NoteGridContainer>();
                 _obstacleGridContainer = UnityEngine.Object.FindObjectOfType<ObstacleGridContainer>();
                 _beatSaberSongContainer = UnityEngine.Object.FindObjectOfType<BeatSaberSongContainer>();
@@ -93,7 +103,6 @@ namespace ChroMapper_LightModding
                     currentReview = correctReviewFilePair.Item1;
                     currentlyLoadedFilePath = correctReviewFilePair.Item2;
                     Debug.Log("Loaded existing review file.");
-
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -113,11 +122,13 @@ namespace ChroMapper_LightModding
                 inEditorScene = false;
                 currentReview = null;
                 currentlyLoadedFilePath = null;
+                addCommentAction.Disable();
             }
         }
 
-        public void KeyEvent() // TODO: change this to be a real key event
+        public void AddCommentKeyEvent()
         {
+            if (currentReview == null) { Debug.Log("Comment Creation not executed, no file loaded.");  return; }
             var selection = SelectionController.SelectedObjects;
             List<SelectedObject> selectedObjects = new List<SelectedObject>();
 
@@ -222,8 +233,6 @@ namespace ChroMapper_LightModding
             }
 
             dialog.Open();
-
-            KeyEvent(); // testing
         }
 
         private void ShowCreateFileUI()
@@ -428,7 +437,6 @@ namespace ChroMapper_LightModding
             string newFilePath = $"{song.Directory}/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second}.lreview";
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
             currentlyLoadedFilePath = newFilePath;
-
         }
 
         private void SaveFile(bool overwrite)
