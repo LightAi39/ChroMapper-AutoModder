@@ -15,7 +15,7 @@ namespace ChroMapper_LightModding.Export
         {
             string text = @"";
 
-            text += $"## {review.Title} \n *Song: {review.MapName} - Difficulty: {review.Difficulty}* \n{review.ReviewType} Review by {review.Author} \n*{review.FinalizationDate.ToShortDateString()} {review.FinalizationDate.ToShortTimeString()}*\n \n";
+            text += $"## {review.Title} \n*Song: {review.MapName} - Difficulty: {review.Difficulty}* \n{review.ReviewType} Review by {review.Author} \n*{review.FinalizationDate.ToShortDateString()} {review.FinalizationDate.ToShortTimeString()}*\n \n";
 
             foreach (var comment in review.Comments)
             {
@@ -23,7 +23,7 @@ namespace ChroMapper_LightModding.Export
 
                 if (comment.Response != "")
                 {
-                    text += $"\n**Response:** {comment.Response}";
+                    text += $"\n- Response: {comment.Response}";
                 }
 
                 if (comment.MarkAsRead)
