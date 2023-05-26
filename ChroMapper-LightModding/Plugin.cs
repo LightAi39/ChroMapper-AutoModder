@@ -442,6 +442,7 @@ namespace ChroMapper_LightModding
             {
                 comment.Message = message;
                 comment.Type = type;
+                comment.MarkAsRead = false;
                 HandleUpdateComment(comment);
             }, "Save edit");
 
