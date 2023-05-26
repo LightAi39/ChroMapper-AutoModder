@@ -1,15 +1,17 @@
-# LightModding
+# LightModding (better name pending)
 
 A Plugin for ChroMapper to assist in modding and in general giving feedback to a mapper.
 
 ## Currently working on:
 * main creation features - done
-* main modding features
-* main review features - done?
+* main modding features - done
+* main review features - done except you cant access them after closing out yet
 * saving to json - done
 * note highlighting
 * autosaving a backup when unloading the editor - done
 * automatically loading review files when found - done
+* file versioning - done
+* editing comments - done
 * prompting the user about the available review file
 
 ## Planned features:
