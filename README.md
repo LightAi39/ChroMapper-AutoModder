@@ -2,23 +2,28 @@
 
 A Plugin for ChroMapper to assist in modding and in general giving feedback to a mapper.
 
-## Currently working on:
+## Currently done:
 * main creation features - done
 * main modding features - done
 * main review features - done except you cant access them after closing out yet
 * saving to json - done
-* note highlighting
 * autosaving a backup when unloading the editor - done
 * automatically loading review files when found - done
 * file versioning - done
 * editing comments - done
+* deleting comments - done
+* Multiple notes per entry - done
+
+## Currently working on:
+* Exporting a review file to (discord compatible) markdown
+* note highlighting
+* Exporting a review file to (discord compatible) markdown
+* keybind for opening the reviews to make reviewing them accessible after creation/editing
 * prompting the user about the available review file
 
 ## Planned features:
-* Exporting a review file to (discord compatible) markdown
 * Autosaving in intervals
-* Save warning when quitting without saving
-* Multiple notes per entry
+* Save warning when quitting without saving instead of always creating a backup file
 
 ## Wishful thinking:
 * markers in the scrollbar (like bookmarks)
