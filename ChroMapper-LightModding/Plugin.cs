@@ -80,7 +80,12 @@ namespace ChroMapper_LightModding
                 // check in the map folder for any existing review files for this difficulty, then load it if it is not a backup
                 try
                 {
-                    List<string> files = Directory.GetFiles(_beatSaberSongContainer.Song.Directory, "*.lreview").ToList();
+                    if (!Directory.Exists($"{_beatSaberSongContainer.Song.Directory}/reviews"))
+                    {
+                        Debug.Log("No review files folder found in this map file");
+                        return;
+                    }
+                    List<string> files = Directory.GetFiles($"{_beatSaberSongContainer.Song.Directory}/reviews", "*.lreview").ToList();
                     List<(DifficultyReview, string)> reviews = new();
 
                     if (files.Count == 0)
@@ -499,7 +504,12 @@ namespace ChroMapper_LightModding
 
             currentReview = review;
 
-            string newFilePath = $"{song.Directory}/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second}.lreview";
+            if (!Directory.Exists($"{_beatSaberSongContainer.Song.Directory}/reviews"))
+            {
+                Directory.CreateDirectory($"{_beatSaberSongContainer.Song.Directory}/reviews");
+            }
+
+            string newFilePath = $"{song.Directory}/reviews/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second}.lreview";
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
             currentlyLoadedFilePath = newFilePath;
         }
@@ -508,7 +518,7 @@ namespace ChroMapper_LightModding
         {
             var review = currentReview;
             review.FinalizationDate = DateTime.UtcNow;
-            string newFilePath = $"{_beatSaberSongContainer.Song.Directory}/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second}.lreview";
+            string newFilePath = $"{_beatSaberSongContainer.Song.Directory}/reviews/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second}.lreview";
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
 
             if (overwrite)
@@ -543,7 +553,7 @@ namespace ChroMapper_LightModding
 
             var review = currentReview;
             review.FinalizationDate = DateTime.UtcNow;
-            File.WriteAllText($"{_beatSaberSongContainer.Song.Directory}/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second} AUTOMATIC_BACKUP.lreview", JsonConvert.SerializeObject(review, Formatting.Indented));
+            File.WriteAllText($"{_beatSaberSongContainer.Song.Directory}/reviews/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second} AUTOMATIC_BACKUP.lreview", JsonConvert.SerializeObject(review, Formatting.Indented));
         }
 
         private void RemoveFile(string path)
