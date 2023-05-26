@@ -4,6 +4,7 @@ A Plugin for ChroMapper to assist in modding and in general giving feedback to a
 
 ## Currently done:
 * main creation features - done
+* Multiple notes per entry - done
 * main modding features - done
 * main review features - done except you cant access them after closing out yet
 * saving to json - done
@@ -12,7 +13,7 @@ A Plugin for ChroMapper to assist in modding and in general giving feedback to a
 * file versioning - done
 * editing comments - done
 * deleting comments - done
-* Multiple notes per entry - done
+
 
 ## Currently working on:
 * Exporting a review file to (discord compatible) markdown
