@@ -5,7 +5,7 @@ A Plugin for ChroMapper to assist in modding and in general giving feedback to a
 ## How to Install:
 Download the `LightModding(version).zip` zip. Drop the `Plugins` folder inside the zip into Chromappers `Plugins` folder.
 
-## How to use as a modder
+## How to use as a modder/reviewer
 
 First step is to create a review file for the map, which prepares you for adding notes. You can do so by pressing `tab` or the shortcut to open up the window on the right and selecting the icon with the text `LightModding` to open the main UI.
 
