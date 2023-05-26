@@ -2,6 +2,9 @@
 
 A Plugin for ChroMapper to assist in modding and in general giving feedback to a mapper.
 
+## Known issues:
+* Any text inputs that are 2 menus deep will not properly disable keybinds, making it nearly impossible to type. The workaround is to copy paste your text in instead. There seems to be a bug that is probably caused by me doing something wrong when i create a new dialog box when one is active.
+
 ## Currently done:
 * main file creation features
 * Multiple notes per entry
@@ -12,10 +15,11 @@ A Plugin for ChroMapper to assist in modding and in general giving feedback to a
 * automatically loading review files when found
 * file versioning
 * editing & deleting comments
+* Exporting a review file to clipboard in (discord compatible) markdown
 
 ## Currently working on:
-* Exporting a review file to (discord compatible) markdown
 * note highlighting
+* fixing the weird text input bug
 * keybind for opening the reviews to make reviewing them accessible after creation/editing
 
 ## Planned features:
