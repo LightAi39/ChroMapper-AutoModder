@@ -24,6 +24,8 @@ namespace ChroMapper_LightModding.Models
         public ReviewTypeEnum ReviewType { get; set; }
         public DateTime FinalizationDate { get; set; } = DateTime.UtcNow;
 
+        public string Version { get; set; } = null!;
+
         public List<Comment> Comments { get; set; } = null!;
 
     }

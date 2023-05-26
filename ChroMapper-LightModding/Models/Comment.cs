@@ -19,7 +19,7 @@ namespace ChroMapper_LightModding.Models
         public string Id { get; set; } = null!;
         public float StartBeat { get; set; }
 
-        public List<SelectedObject> Objetcs { get; set; }
+        public List<SelectedObject> Objects { get; set; }
 
         public CommentTypesEnum Type { get; set; }
 

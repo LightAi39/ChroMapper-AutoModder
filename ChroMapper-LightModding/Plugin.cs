@@ -17,6 +17,7 @@ using Beatmap.V3;
 using Beatmap.Base;
 using UnityEngine.InputSystem;
 using System.Xml.Linq;
+using System.ComponentModel;
 
 namespace ChroMapper_LightModding
 {
@@ -25,6 +26,8 @@ namespace ChroMapper_LightModding
     public class Plugin
     {
         static public int backupLimit = 3;
+
+        static public string fileVersion = "0.0.1";
 
         static public BeatSaberSongContainer _beatSaberSongContainer = null!;
         private NoteGridContainer _noteGridContainer = null!;
@@ -92,6 +95,14 @@ namespace ChroMapper_LightModding
                         {
                             reviews.Add((JsonConvert.DeserializeObject<DifficultyReview>(File.ReadAllText(file)), file));
                         }
+                    }
+
+                    reviews = reviews.Where(f => f.Item1.Version == fileVersion).ToList();
+
+                    if (reviews.Count == 0)
+                    {
+                        Debug.Log("No review files found in this map file with the correct file version");
+                        return;
                     }
 
                     reviews = reviews.OrderByDescending(f => f.Item1.FinalizationDate).ToList();
@@ -188,7 +199,15 @@ namespace ChroMapper_LightModding
                 {
                     Debug.Log(JsonConvert.SerializeObject(selectedObjects, Formatting.Indented));
 
-                    ShowCreateCommentUI(selectedObjects);
+                    if (currentReview.Comments.Any(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)))
+                    {
+                        Debug.Log("Comment with that selection already exists, going to edit mode");
+                        ShowEditCommentUI(currentReview.Comments.Where(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)).First(), true);
+                    } else
+                    {
+                        Debug.Log("Opening Comment Creation UI");
+                        ShowCreateCommentUI(selectedObjects);
+                    }
 
                 } else
                 {
@@ -347,7 +366,7 @@ namespace ChroMapper_LightModding
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("View comment");
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Objects: " + string.Join(",", comment.Objetcs.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Objects: " + string.Join(",", comment.Objects.ConvertAll(p => p.ToString())));
 
             dialog.AddComponent<TextComponent>()
                 .WithInitialValue($"Type: {comment.Type}");
@@ -383,14 +402,20 @@ namespace ChroMapper_LightModding
 
         }
 
-        private void ShowEditCommentUI(Comment comment)
+        private void ShowEditCommentUI(Comment comment, bool showAlreadyExistedMessage = false)
         {
             CommentTypesEnum type = CommentTypesEnum.Issue;
             string message = comment.Message;
 
-            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment");
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Edit comment");
+            if (showAlreadyExistedMessage)
+            {
+                dialog.AddComponent<TextComponent>()
+                .WithInitialValue("A comment with that selection already existed!");
+            }
+            
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Objects: " + string.Join(", ", comment.Objetcs.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())));
 
             dialog.AddComponent<TextBoxComponent>()
                 .WithLabel("Comment")
@@ -434,7 +459,7 @@ namespace ChroMapper_LightModding
             {
                 Id = id,
                 StartBeat = selectedNotes.OrderBy(f => f.Beat).First().Beat,
-                Objetcs = selectedNotes,
+                Objects = selectedNotes,
                 Type = type,
                 Message = message
             };
@@ -465,6 +490,7 @@ namespace ChroMapper_LightModding
                 Difficulty = difficultyData.Difficulty,
                 DifficultyRank = difficultyData.DifficultyRank,
                 ReviewType = type,
+                Version = fileVersion,
                 Comments = new()
             };
 
