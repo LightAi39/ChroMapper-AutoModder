@@ -19,6 +19,8 @@ using UnityEngine.InputSystem;
 using System.Xml.Linq;
 using System.ComponentModel;
 using ChroMapper_LightModding.Export;
+using System.Windows.Media;
+using Color = UnityEngine.Color;
 
 namespace ChroMapper_LightModding
 {
@@ -27,12 +29,17 @@ namespace ChroMapper_LightModding
     public class Plugin
     {
         static public int backupLimit = 3;
+        public bool showOutlines = true;
 
         static public string fileVersion = "0.0.1";
 
         static public BeatSaberSongContainer _beatSaberSongContainer = null!;
         private NoteGridContainer _noteGridContainer = null!;
         private ObstacleGridContainer _obstacleGridContainer = null!;
+        private EventGridContainer _eventGridContainer = null!;
+        private BPMChangeGridContainer _bpmChangeGridContainer = null!;
+        private BeatmapObjectContainerCollection _beatmapObjectContainerCollection = null!;
+        
 
         private Scene currentScene;
         private bool inEditorScene;
@@ -78,7 +85,10 @@ namespace ChroMapper_LightModding
                 addCommentAction.Enable();
                 _noteGridContainer = UnityEngine.Object.FindObjectOfType<NoteGridContainer>();
                 _obstacleGridContainer = UnityEngine.Object.FindObjectOfType<ObstacleGridContainer>();
+                _eventGridContainer = UnityEngine.Object.FindObjectOfType<EventGridContainer>();
+                _bpmChangeGridContainer = UnityEngine.Object.FindObjectOfType<BPMChangeGridContainer>();
                 _beatSaberSongContainer = UnityEngine.Object.FindObjectOfType<BeatSaberSongContainer>();
+                _beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
 
                 // check in the map folder for any existing review files for this difficulty, then load it if it is not a backup
                 try
@@ -119,6 +129,10 @@ namespace ChroMapper_LightModding
 
                     currentReview = correctReviewFilePair.Item1;
                     currentlyLoadedFilePath = correctReviewFilePair.Item2;
+                    _beatmapObjectContainerCollection.ContainerSpawnedEvent += SetOutlineIfInReview;
+                    _obstacleGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+                    _eventGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+                    _bpmChangeGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
                     Debug.Log("Loaded existing review file.");
                 }
                 catch (InvalidOperationException ex)
@@ -258,6 +272,11 @@ namespace ChroMapper_LightModding
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel("Copy comments to clipboard")
                     .OnClick(() => { exporter.ExportToDiscordMD(currentReview); });
+
+                dialog.AddComponent<ToggleComponent>()
+                    .WithLabel("Show outlines")
+                    .WithInitialValue(showOutlines)
+                    .OnChanged((bool o) => { showOutlines = o; });
 
 
                 dialog.AddFooterButton(ShowDeleteFileUI, "Remove review file");
@@ -483,6 +502,13 @@ namespace ChroMapper_LightModding
             currentReview.Comments.Add(comment);
             currentReview.Comments = currentReview.Comments.OrderBy(f => f.StartBeat).ToList();
             ShowReviewCommentUI(comment.Id);
+            if (comment.MarkAsRead)
+            {
+                SetOutlineColor(comment.Objects, Color.gray);
+            } else
+            {
+                SetOutlineColor(comment.Objects, ChooseOutlineColor(comment.Type));
+            }
         }
 
         private void HandleCreateComment(CommentTypesEnum type, string message, List<SelectedObject> selectedNotes, bool redirect = false)
@@ -501,6 +527,8 @@ namespace ChroMapper_LightModding
             currentReview.Comments.Add(comment);
             currentReview.Comments = currentReview.Comments.OrderBy(f => f.StartBeat).ToList();
 
+            SetOutlineColor(selectedNotes, ChooseOutlineColor(type));
+
             if (redirect)
             {
                 ShowReviewCommentUI(id);
@@ -513,6 +541,207 @@ namespace ChroMapper_LightModding
         }
 
         #endregion Comment Handling
+
+        #region Outlines
+
+        private void SetOutlineIfInReview(BaseObject baseObject)
+        {
+            if (!showOutlines)
+            {
+                return;
+            }
+
+            SelectedObject spawnedObject = null;
+
+            if (baseObject is BaseNote note)
+            {
+                spawnedObject = new()
+                {
+                    Beat = note.SongBpmTime,
+                    PosX = note.PosX,
+                    PosY = note.PosY,
+                    ObjectType = note.ObjectType,
+                    Color = note.Color
+                };
+            }
+
+            if (baseObject is BaseObstacle wall)
+            {
+                spawnedObject = new()
+                {
+                    Beat = wall.SongBpmTime,
+                    PosX = wall.PosX,
+                    PosY = wall.PosY,
+                    ObjectType = wall.ObjectType,
+                    Color = 0
+                };
+            }
+
+            if (baseObject is BaseSlider slider)
+            {
+                spawnedObject = new()
+                {
+                    Beat = slider.SongBpmTime,
+                    PosX = slider.PosX,
+                    PosY = slider.PosY,
+                    ObjectType = slider.ObjectType,
+                    Color = slider.Color
+                };
+            }
+
+            if (baseObject is BaseBpmEvent bpm)
+            {
+                spawnedObject = new()
+                {
+                    Beat = bpm.SongBpmTime,
+                    PosX = 0,
+                    PosY = 0,
+                    ObjectType = bpm.ObjectType,
+                    Color = 0
+                };
+            }
+
+            try
+            {
+                if (currentReview.Comments.Any(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject))))
+                {
+                    Comment comment = currentReview.Comments.Where(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject))).FirstOrDefault();
+
+                    if (comment.MarkAsRead)
+                    {
+                        SetOutlineColor(comment.Objects, Color.gray);
+                    }
+                    else
+                    {
+                        SetOutlineColor(comment.Objects, ChooseOutlineColor(comment.Type));
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            
+        }
+
+        private Color ChooseOutlineColor(CommentTypesEnum type)
+        {
+            switch (type)
+            {
+                case CommentTypesEnum.Note:
+                    return Color.cyan;
+                case CommentTypesEnum.Suggestion:
+                    return Color.green;
+                case CommentTypesEnum.Warning:
+                    return Color.yellow;
+                case CommentTypesEnum.Issue:
+                    return Color.red;
+                default:
+                    return Color.clear;
+            }
+        }
+
+        private void SetOutlineColor(SelectedObject mapObject, Color color)
+        {
+            try
+            {
+                var collection = BeatmapObjectContainerCollection.GetCollectionForType(mapObject.ObjectType);
+
+                if (mapObject.ObjectType == ObjectType.Note)
+                {
+                    var container = collection.LoadedContainers.Where((item) =>
+                    {
+                        if (item.Key is BaseNote note)
+                        {
+                            if (note.SongBpmTime == mapObject.Beat && note.PosX == mapObject.PosX && note.PosY == mapObject.PosY && note.Color == mapObject.Color)
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }).First().Value;
+                    container.SetOutlineColor(color);
+                }
+                else if (mapObject.ObjectType == ObjectType.Obstacle)
+                {
+                    var container = collection.LoadedContainers.Where((item) =>
+                    {
+                        if (item.Key is BaseGrid gridItem)
+                        {
+                            if (gridItem.SongBpmTime == mapObject.Beat && gridItem.PosX == mapObject.PosX && gridItem.PosY == mapObject.PosY)
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }).First().Value;
+                    container.SetOutlineColor(color);
+                }
+                else if (mapObject.ObjectType == ObjectType.Arc || mapObject.ObjectType == ObjectType.Chain)
+                {
+                    var container = collection.LoadedContainers.Where((item) =>
+                    {
+                        if (item.Key is BaseSlider slider)
+                        {
+                            if (slider.SongBpmTime == mapObject.Beat && slider.PosX == mapObject.PosX && slider.PosY == mapObject.PosY && slider.Color == mapObject.Color)
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }).First().Value;
+                    container.SetOutlineColor(color);
+                }
+                else if (mapObject.ObjectType == ObjectType.BpmChange)
+                {
+                    var container = collection.LoadedContainers.Where((item) =>
+                    {
+                        if (item.Key is BaseBpmEvent bpmEvent)
+                        {
+                            if (bpmEvent.SongBpmTime == mapObject.Beat)
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }).First().Value;
+                    container.SetOutlineColor(color);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (ex.Message != "Sequence contains no elements")
+                {
+                    throw;
+                }
+                // dont need to do anything, objects just not inside the loaded range.
+            }
+            
+        }
+
+        private void SetOutlineColor(List<SelectedObject> mapObjects, Color color)
+        {
+            foreach (var mapObject in mapObjects)
+            {
+                SetOutlineColor(mapObject, color);
+            }
+        }
+
+        private void ClearOutlineColor(SelectedObject mapObject)
+        {
+            SetOutlineColor(mapObject, Color.clear);
+        }
+
+        private void ClearOutlineColor(List<SelectedObject> mapObjects)
+        {
+            foreach (var mapObject in mapObjects)
+            {
+                ClearOutlineColor(mapObject);
+            }
+        }
+
+        #endregion Outlines
 
         #region File Handling
 
@@ -546,6 +775,11 @@ namespace ChroMapper_LightModding
             string newFilePath = $"{song.Directory}/reviews/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second}.lreview";
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
             currentlyLoadedFilePath = newFilePath;
+            _beatmapObjectContainerCollection.ObjectSpawnedEvent += SetOutlineIfInReview;
+            _beatmapObjectContainerCollection.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _obstacleGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _eventGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _bpmChangeGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
         }
 
         private void SaveFile(bool overwrite)
