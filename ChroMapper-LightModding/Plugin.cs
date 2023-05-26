@@ -51,6 +51,7 @@ namespace ChroMapper_LightModding
         private Exporter exporter = new();
 
         InputAction addCommentAction;
+        InputAction openCommentAction;
 
         [Init]
         private void Init()
@@ -61,10 +62,17 @@ namespace ChroMapper_LightModding
             ExtensionButton button = ExtensionButtons.AddButton(LoadSprite("ChroMapper_LightModding.Assets.Icon.png"), "LightModding", ShowMainUI);
 
             addCommentAction = new InputAction("Add Comment", type: InputActionType.Button);
-            addCommentAction.AddCompositeBinding("ButtonWithOneModifier") // i cant think of a good keybind
+            addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/ctrl")
-                .With("button", "<Keyboard>/alt");
+                .With("button", "<Keyboard>/g");
             addCommentAction.performed += _ => { AddCommentKeyEvent(); };
+            addCommentAction.Enable();
+
+            openCommentAction = new InputAction("Open Comment", type: InputActionType.Button);
+            openCommentAction.AddCompositeBinding("ButtonWithOneModifier")
+                .With("modifier", "<Keyboard>/alt")
+                .With("button", "<Keyboard>/g");
+            openCommentAction.performed += _ => { OpenCommentKeyEvent(); };
 
         }
 
@@ -84,6 +92,7 @@ namespace ChroMapper_LightModding
             {
                 inEditorScene = true;
                 addCommentAction.Enable();
+                openCommentAction.Enable();
                 _noteGridContainer = UnityEngine.Object.FindObjectOfType<NoteGridContainer>();
                 _obstacleGridContainer = UnityEngine.Object.FindObjectOfType<ObstacleGridContainer>();
                 _eventGridContainer = UnityEngine.Object.FindObjectOfType<EventGridContainer>();
@@ -158,6 +167,7 @@ namespace ChroMapper_LightModding
                 currentReview = null;
                 currentlyLoadedFilePath = null;
                 addCommentAction.Disable();
+                openCommentAction.Disable();
                 selectionCache = null;
             }
         }
@@ -166,61 +176,11 @@ namespace ChroMapper_LightModding
         {
             if (currentReview == null) { Debug.Log("Comment Creation not executed, no file loaded.");  return; }
             var selection = SelectionController.SelectedObjects;
-            List<SelectedObject> selectedObjects = new List<SelectedObject>();
+            
 
             if (SelectionController.HasSelectedObjects())
             {
-                foreach (var mapObj in selection)
-                {
-                    if (mapObj is BaseNote note)
-                    {
-                        selectedObjects.Add(new()
-                        {
-                            Beat = note.SongBpmTime,
-                            PosX = note.PosX,
-                            PosY = note.PosY,
-                            ObjectType = note.ObjectType,
-                            Color = note.Color
-                        });
-                    }
-
-                    if (mapObj is BaseObstacle wall)
-                    {
-                        selectedObjects.Add(new()
-                        {
-                            Beat = wall.SongBpmTime,
-                            PosX = wall.PosX,
-                            PosY = wall.PosY,
-                            ObjectType = wall.ObjectType,
-                            Color = 0
-                        });
-                    }
-
-                    if (mapObj is BaseSlider slider)
-                    {
-                        selectedObjects.Add(new()
-                        {
-                            Beat = slider.SongBpmTime,
-                            PosX = slider.PosX,
-                            PosY = slider.PosY,
-                            ObjectType = slider.ObjectType,
-                            Color = slider.Color
-                        });
-                    }
-
-                    if (mapObj is BaseBpmEvent bpm)
-                    {
-                        selectedObjects.Add(new()
-                        {
-                            Beat = bpm.SongBpmTime,
-                            PosX = 0,
-                            PosY = 0,
-                            ObjectType = bpm.ObjectType,
-                            Color = 0
-                        });
-                    }
-                }
-                selectedObjects = selectedObjects.OrderBy(f => f.Beat).ToList();
+                List<SelectedObject> selectedObjects = GetSelectedObjectListFromSelection(selection);
 
                 if (selectedObjects.Count > 0)
                 {
@@ -245,8 +205,67 @@ namespace ChroMapper_LightModding
                 Debug.Log("Comment Creation not executed, selection is empty.");
             }
 
+            SelectionController.DeselectAll();
+        }
 
-            // TODO: add color indication somehow
+        public void OpenCommentKeyEvent()
+        {
+            if (currentReview == null) { Debug.Log("Comment Loading not executed, no file loaded."); return; }
+            var selection = SelectionController.SelectedObjects;
+
+
+            if (SelectionController.HasSelectedObjects())
+            {
+                List<SelectedObject> selectedObjects = GetSelectedObjectListFromSelection(selection);
+
+                if (selectedObjects.Count > 1)
+                {
+                    if (currentReview.Comments.Any(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)))
+                    {
+                        if (currentReview.Comments.Where(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)).Count() == 1)
+                        {
+                            Debug.Log("Opening Review UI");
+                            ShowReviewCommentUI(currentReview.Comments.Where(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)).First().Id);
+                        } else
+                        {
+                            Debug.Log("Opening Review choice UI");
+                            ShowReviewChooseUI(currentReview.Comments.Where(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)).ToList());
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("No Comments found");
+                    }
+
+                } else if (selectedObjects.Count == 1)
+                {
+                    if (currentReview.Comments.Any(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(selectedObjects[0]))))
+                    {
+                        if (currentReview.Comments.Where(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(selectedObjects[0]))).Count() == 1)
+                        {
+                            Debug.Log("Opening Review UI");
+                            ShowReviewCommentUI(currentReview.Comments.Where(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(selectedObjects[0]))).First().Id);
+                        }
+                        else
+                        {
+                            Debug.Log("Opening Review choice UI");
+                            ShowReviewChooseUI(currentReview.Comments.Where(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(selectedObjects[0]))).ToList());
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("No Comments found");
+                    }
+                }
+                else
+                {
+                    Debug.Log("Comment Loading cancelled, no supported objects selected.");
+                }
+            }
+            else
+            {
+                Debug.Log("Comment Loading not executed, selection is empty.");
+            }
 
             SelectionController.DeselectAll();
         }
@@ -403,7 +422,7 @@ namespace ChroMapper_LightModding
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("View comment");
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Objects: " + string.Join(",", comment.Objects.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())));
 
             dialog.AddComponent<TextComponent>()
                 .WithInitialValue($"Type: {comment.Type}");
@@ -435,8 +454,26 @@ namespace ChroMapper_LightModding
                 HandleUpdateComment(comment);
             }, "Update reply");
 
+            SetOutlineColor(comment.Objects, ChooseOutlineColor(comment.Type)); // we do this to make sure the color of the current comment is shown when a note is in multiple comments
+
             dialog.Open();
 
+        }
+
+        private void ShowReviewChooseUI(List<Comment> comments)
+        {
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Choose a Comment");
+
+            foreach (var comment in comments)
+            {
+                dialog.AddComponent<ButtonComponent>()
+                    .WithLabel($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type}")
+                    .OnClick(() => { ShowReviewCommentUI(comment.Id); });
+            }
+
+            dialog.AddFooterButton(null, "Close");
+
+            dialog.Open();
         }
 
         private void ShowEditCommentUI(Comment comment, bool showAlreadyExistedMessage = false)
@@ -494,6 +531,9 @@ namespace ChroMapper_LightModding
                 HandleDeleteComment(comment.Id);
                 dialog.Close();
             }, "Delete");
+
+            SetOutlineColor(comment.Objects, ChooseOutlineColor(comment.Type)); // we do this to make sure the color of the current comment is shown when a note is in multiple comments
+
             dialog.Open();
         }
 
@@ -857,6 +897,65 @@ namespace ChroMapper_LightModding
         #endregion File Handling
 
         #region Other
+
+        public List<SelectedObject> GetSelectedObjectListFromSelection(HashSet<BaseObject> selection)
+        {
+            List<SelectedObject> selectedObjects = new List<SelectedObject>();
+
+            foreach (var mapObj in selection)
+            {
+                if (mapObj is BaseNote note)
+                {
+                    selectedObjects.Add(new()
+                    {
+                        Beat = note.SongBpmTime,
+                        PosX = note.PosX,
+                        PosY = note.PosY,
+                        ObjectType = note.ObjectType,
+                        Color = note.Color
+                    });
+                }
+
+                if (mapObj is BaseObstacle wall)
+                {
+                    selectedObjects.Add(new()
+                    {
+                        Beat = wall.SongBpmTime,
+                        PosX = wall.PosX,
+                        PosY = wall.PosY,
+                        ObjectType = wall.ObjectType,
+                        Color = 0
+                    });
+                }
+
+                if (mapObj is BaseSlider slider)
+                {
+                    selectedObjects.Add(new()
+                    {
+                        Beat = slider.SongBpmTime,
+                        PosX = slider.PosX,
+                        PosY = slider.PosY,
+                        ObjectType = slider.ObjectType,
+                        Color = slider.Color
+                    });
+                }
+
+                if (mapObj is BaseBpmEvent bpm)
+                {
+                    selectedObjects.Add(new()
+                    {
+                        Beat = bpm.SongBpmTime,
+                        PosX = 0,
+                        PosY = 0,
+                        ObjectType = bpm.ObjectType,
+                        Color = 0
+                    });
+                }
+            }
+            selectedObjects = selectedObjects.OrderBy(f => f.Beat).ToList();
+
+            return selectedObjects;
+        }
 
         public static Sprite LoadSprite(string asset) // taken from Moizac's Extended LightIDs code because i didn't want to figure it out myself
         {
