@@ -28,7 +28,9 @@ Now you can open the map. You can check if the file loaded by pressing `tab` or 
 Check if the menu that pops up says `Existing review file loaded!` and the path is what you expected. Now close out of that menu.
 
 Try selecting a single highlighted note and pressing `alt + g` (not changeable). You should see a menu pop up. If you see a menu asking you to choose a comment, then there are multiple comments which include that note and you have to choose one.
-If you see a menu called `View comment` there was only one comment for the note. You should now be on the `View Comment` screen regardless. Here you can type in a response to the comment and you can mark it as read. Press `update reply` if you want to save any changes you made.
+If you see a menu called `View comment` there was only one comment for the note.
+
+You should now be on the `View Comment` screen either way. Here you can type in a response to the comment and you can mark it as read. Press `update reply` if you want to save any changes you made.
 Note that some comment data will be hard to access inside the plugin when the map data gets changed, as it can only know the note positions when the comment was created. Soon i will add a menu that shows every comment in the file which partly remedies this problem.
 
 As someone receiving the file, you should ignore the `edit comment` button as this will show you a menu to change the comment itself. Press `close` to exit the menu.
