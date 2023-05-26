@@ -16,6 +16,7 @@ using Beatmap.Enums;
 using Beatmap.V3;
 using Beatmap.Base;
 using UnityEngine.InputSystem;
+using System.Xml.Linq;
 
 namespace ChroMapper_LightModding
 {
@@ -329,6 +330,7 @@ namespace ChroMapper_LightModding
             dialog.AddComponent<DropdownComponent>()
                 .WithLabel("Type")
                 .WithOptions<CommentTypesEnum>()
+                .WithInitialValue(Convert.ToInt32(type))
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
 
             dialog.AddFooterButton(null, "Cancel");
@@ -368,11 +370,48 @@ namespace ChroMapper_LightModding
             {
                 comment.Response = message;
                 comment.MarkAsRead = read;
+                ShowEditCommentUI(comment);
+            }, "Edit comment");
+            dialog.AddFooterButton(() =>
+            {
+                comment.Response = message;
+                comment.MarkAsRead = read;
                 HandleUpdateComment(comment);
-            }, "Update");
+            }, "Update reply");
 
             dialog.Open();
 
+        }
+
+        private void ShowEditCommentUI(Comment comment)
+        {
+            CommentTypesEnum type = CommentTypesEnum.Issue;
+            string message = comment.Message;
+
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment");
+            dialog.AddComponent<TextComponent>()
+                .WithInitialValue($"Objects: " + string.Join(", ", comment.Objetcs.ConvertAll(p => p.ToString())));
+
+            dialog.AddComponent<TextBoxComponent>()
+                .WithLabel("Comment")
+                .WithInitialValue(message)
+                .OnChanged((string s) => { message = s; });
+
+            dialog.AddComponent<DropdownComponent>()
+                .WithLabel("Type")
+                .WithOptions<CommentTypesEnum>()
+                .WithInitialValue(Convert.ToInt32(comment.Type))
+                .OnChanged((int i) => { type = (CommentTypesEnum)i; });
+
+            dialog.AddFooterButton(null, "Cancel");
+            dialog.AddFooterButton(() =>
+            {
+                comment.Message = message;
+                comment.Type = type;
+                HandleUpdateComment(comment);
+            }, "Save edit");
+
+            dialog.Open();
         }
 
         #endregion UI
@@ -383,7 +422,7 @@ namespace ChroMapper_LightModding
         {
             currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == comment.Id));
             currentReview.Comments.Add(comment);
-            currentReview.Comments = (List<Comment>)currentReview.Comments.OrderBy(f => f.StartBeat);
+            currentReview.Comments = currentReview.Comments.OrderBy(f => f.StartBeat).ToList();
             ShowReviewCommentUI(comment.Id);
         }
 
