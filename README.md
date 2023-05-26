@@ -16,7 +16,7 @@ Afterwards this opens up the view comment dialog, here you can type a response (
 
 When you have put down all the comments you wanted, you can head back to the main UI where you also created the file and you can save it, remove it or copy the comment data to your clipboard. This last option will give you a formatted review that you can paste straight into discord.
 
-To edit a comment, you can select the exact same notes again and press the comment `ctrl + alt` keybind again. Currently this is very hard because there are no outlines yet, but will be much easier when that is done.
+To edit a comment, you can select the exact same notes again and press the comment `ctrl + alt` keybind again. You can tell there is a comment on a note when it has an outline.
 
 If you want to access the review files yourself, they are saved and searched for in a map called `revies` inside the map folder. The file with the latest `FinalizationDate` will always be loaded. Backups are saved ending with `AUTOMATIC_BACKUP.lreview` and will never be automatically loaded. To restore a backup, simply remove `AUTOMATIC_BACKUP` from the file name and make sure you do not have any newer files in the folder.
 The plugin will only read files with the .lreview extension and checks for a file structure version. The format is just json.
@@ -33,9 +33,10 @@ The plugin will only read files with the .lreview extension and checks for a fil
 * automatically loading review files when found
 * editing & deleting comments
 * Exporting a review file to clipboard in (discord compatible) markdown
+* note highlighting
+* highlight toggle in main ui
 
 ## Currently working on:
-* note highlighting
 * fixing the weird text input bug
 * keybind for opening the reviews to make reviewing them accessible after creation/editing
 * editing the file information like title and author
@@ -43,7 +44,6 @@ The plugin will only read files with the .lreview extension and checks for a fil
 ## Planned features:
 * Autosaving in intervals
 * Save warning when quitting without saving instead of always creating a backup file
-* prompting the user about the available review file instead of automatically loading it
 * loading review files from a file selector dialog instead of automatically from the map folder
 * walking through all the comments step by step
 * a menu that lists all comments
