@@ -37,9 +37,6 @@ namespace ChroMapper_LightModding
 
         InputAction addCommentAction;
 
-
-        string text;
-
         [Init]
         private void Init()
         {
@@ -49,7 +46,7 @@ namespace ChroMapper_LightModding
             ExtensionButton button = ExtensionButtons.AddButton(LoadSprite("ChroMapper_LightModding.Assets.Icon.png"), "LightModding", ShowMainUI);
 
             addCommentAction = new InputAction("Add Comment", type: InputActionType.Button);
-            addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
+            addCommentAction.AddCompositeBinding("ButtonWithOneModifier") // i cant think of a good keybind
                 .With("modifier", "<Keyboard>/ctrl")
                 .With("button", "<Keyboard>/alt");
             addCommentAction.performed += _ => { AddCommentKeyEvent(); };
@@ -189,6 +186,9 @@ namespace ChroMapper_LightModding
                 if (selectedObjects.Count > 0)
                 {
                     Debug.Log(JsonConvert.SerializeObject(selectedObjects, Formatting.Indented));
+
+                    ShowCreateCommentUI(selectedObjects);
+
                 } else
                 {
                     Debug.Log("Comment Creation cancelled, no supported objects selected.");
@@ -319,7 +319,7 @@ namespace ChroMapper_LightModding
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment");
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Objects: " + string.Join(",", selectedObjects.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Objects: " + string.Join(", ", selectedObjects.ConvertAll(p => p.ToString())));
 
             dialog.AddComponent<TextBoxComponent>()
                 .WithLabel("Comment")
@@ -401,7 +401,7 @@ namespace ChroMapper_LightModding
             };
             
             currentReview.Comments.Add(comment);
-            currentReview.Comments = (List<Comment>)currentReview.Comments.OrderBy(f => f.StartBeat);
+            currentReview.Comments = currentReview.Comments.OrderBy(f => f.StartBeat).ToList();
 
             if (redirect)
             {
