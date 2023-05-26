@@ -39,7 +39,8 @@ namespace ChroMapper_LightModding
         private EventGridContainer _eventGridContainer = null!;
         private BPMChangeGridContainer _bpmChangeGridContainer = null!;
         private BeatmapObjectContainerCollection _beatmapObjectContainerCollection = null!;
-        
+
+        private HashSet<BaseObject> selectionCache;
 
         private Scene currentScene;
         private bool inEditorScene;
@@ -133,6 +134,9 @@ namespace ChroMapper_LightModding
                     _obstacleGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
                     _eventGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
                     _bpmChangeGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+                    SelectionController.ObjectWasSelectedEvent += UpdateSelectionCache;
+                    SelectionController.SelectionChangedEvent += ManageSelectionCacheAndOutlines;
+                    selectionCache = new();
                     Debug.Log("Loaded existing review file.");
                 }
                 catch (InvalidOperationException ex)
@@ -154,6 +158,7 @@ namespace ChroMapper_LightModding
                 currentReview = null;
                 currentlyLoadedFilePath = null;
                 addCommentAction.Disable();
+                selectionCache = null;
             }
         }
 
@@ -544,6 +549,23 @@ namespace ChroMapper_LightModding
 
         #region Outlines
 
+        private void UpdateSelectionCache(BaseObject baseObject)
+        {
+            selectionCache.Add(baseObject);
+        }
+
+        private void ManageSelectionCacheAndOutlines()
+        {
+            foreach (var item in selectionCache.ToList())
+            {
+                if(!SelectionController.SelectedObjects.Contains(item))
+                {
+                    selectionCache.Remove(item);
+                    SetOutlineIfInReview(item);
+                }
+            }
+        }
+
         private void SetOutlineIfInReview(BaseObject baseObject)
         {
             if (!showOutlines)
@@ -606,14 +628,15 @@ namespace ChroMapper_LightModding
                 if (currentReview.Comments.Any(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject))))
                 {
                     Comment comment = currentReview.Comments.Where(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject))).FirstOrDefault();
+                    SelectedObject selectedObject = comment.Objects.Where(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject)).FirstOrDefault();
 
                     if (comment.MarkAsRead)
                     {
-                        SetOutlineColor(comment.Objects, Color.gray);
+                        SetOutlineColor(selectedObject, Color.gray);
                     }
                     else
                     {
-                        SetOutlineColor(comment.Objects, ChooseOutlineColor(comment.Type));
+                        SetOutlineColor(selectedObject, ChooseOutlineColor(comment.Type));
                     }
                 }
             }
