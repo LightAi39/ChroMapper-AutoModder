@@ -12,7 +12,9 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using static UnityEngine.InputSystem.InputRemoting;
-
+using Beatmap.Enums;
+using Beatmap.V3;
+using Beatmap.Base;
 
 namespace ChroMapper_LightModding
 {
@@ -114,6 +116,83 @@ namespace ChroMapper_LightModding
             }
         }
 
+        public void KeyEvent() // TODO: change this to be a real key event
+        {
+            var selection = SelectionController.SelectedObjects;
+            List<SelectedObject> selectedObjects = new List<SelectedObject>();
+
+            if (SelectionController.HasSelectedObjects())
+            {
+                foreach (var mapObj in selection)
+                {
+                    if (mapObj is BaseNote note)
+                    {
+                        selectedObjects.Add(new()
+                        {
+                            Beat = note.SongBpmTime,
+                            PosX = note.PosX,
+                            PosY = note.PosY,
+                            ObjectType = note.ObjectType,
+                            Color = note.Color
+                        });
+                    }
+
+                    if (mapObj is BaseObstacle wall)
+                    {
+                        selectedObjects.Add(new()
+                        {
+                            Beat = wall.SongBpmTime,
+                            PosX = wall.PosX,
+                            PosY = wall.PosY,
+                            ObjectType = wall.ObjectType,
+                            Color = 0
+                        });
+                    }
+
+                    if (mapObj is BaseSlider slider)
+                    {
+                        selectedObjects.Add(new()
+                        {
+                            Beat = slider.SongBpmTime,
+                            PosX = slider.PosX,
+                            PosY = slider.PosY,
+                            ObjectType = slider.ObjectType,
+                            Color = slider.Color
+                        });
+                    }
+
+                    if (mapObj is BaseBpmEvent bpm)
+                    {
+                        selectedObjects.Add(new()
+                        {
+                            Beat = bpm.SongBpmTime,
+                            PosX = 0,
+                            PosY = 0,
+                            ObjectType = bpm.ObjectType,
+                            Color = 0
+                        });
+                    }
+                }
+                selectedObjects = selectedObjects.OrderBy(f => f.Beat).ToList();
+
+                if (selectedObjects.Count > 0)
+                {
+                    Debug.Log(JsonConvert.SerializeObject(selectedObjects, Formatting.Indented));
+                } else
+                {
+                    Debug.Log("Comment Creation cancelled, no supported objects selected.");
+                }
+            } else
+            {
+                Debug.Log("Comment Creation not executed, selection is empty.");
+            }
+
+
+            // TODO: add color indication somehow
+
+            SelectionController.DeselectAll();
+        }
+
         #endregion Event Handlers
 
         #region UI
@@ -143,6 +222,8 @@ namespace ChroMapper_LightModding
             }
 
             dialog.Open();
+
+            KeyEvent(); // testing
         }
 
         private void ShowCreateFileUI()
@@ -222,14 +303,14 @@ namespace ChroMapper_LightModding
         }
 
 
-        private void ShowCreateCommentUI(List<SelectedNote> selectedNotes)
+        private void ShowCreateCommentUI(List<SelectedObject> selectedObjects)
         {
             CommentTypesEnum type = CommentTypesEnum.Issue;
             string message = "Comment";
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment");
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Notes: " + string.Join(",", selectedNotes.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Objects: " + string.Join(",", selectedObjects.ConvertAll(p => p.ToString())));
 
             dialog.AddComponent<TextBoxComponent>()
                 .WithLabel("Comment")
@@ -242,7 +323,7 @@ namespace ChroMapper_LightModding
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
 
             dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(() => { HandleCreateComment(type, message, selectedNotes, true); }, "Create");
+            dialog.AddFooterButton(() => { HandleCreateComment(type, message, selectedObjects, true); }, "Create");
 
             dialog.Open();
         }
@@ -255,7 +336,7 @@ namespace ChroMapper_LightModding
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("View comment");
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Notes: " + string.Join(",", comment.Notes.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Objects: " + string.Join(",", comment.Objetcs.ConvertAll(p => p.ToString())));
 
             dialog.AddComponent<TextComponent>()
                 .WithInitialValue($"Type: {comment.Type}");
@@ -297,7 +378,7 @@ namespace ChroMapper_LightModding
             ShowReviewCommentUI(comment.Id);
         }
 
-        private void HandleCreateComment(CommentTypesEnum type, string message, List<SelectedNote> selectedNotes, bool redirect = false)
+        private void HandleCreateComment(CommentTypesEnum type, string message, List<SelectedObject> selectedNotes, bool redirect = false)
         {
 
             string id = Guid.NewGuid().ToString();
@@ -305,7 +386,7 @@ namespace ChroMapper_LightModding
             {
                 Id = id,
                 StartBeat = selectedNotes.OrderBy(f => f.Beat).First().Beat,
-                Notes = selectedNotes,
+                Objetcs = selectedNotes,
                 Type = type,
                 Message = message
             };
