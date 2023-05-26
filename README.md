@@ -1,6 +1,6 @@
 # LightModding (better name pending)
 
-A Plugin for ChroMapper to assist in modding and in general giving feedback to a mapper.
+A Plugin for ChroMapper to assist in modding and in general giving feedback to a mapper. Still very barebones
 
 ## How to use
 
