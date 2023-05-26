@@ -43,6 +43,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>dll\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,11 +61,16 @@
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Export\Exporter.cs" />
     <Compile Include="Models\Comment.cs" />
     <Compile Include="Models\DifficultyReview.cs" />
     <Compile Include="Models\SelectedObject.cs" />

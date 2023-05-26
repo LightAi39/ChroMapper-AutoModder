@@ -18,6 +18,7 @@ using Beatmap.Base;
 using UnityEngine.InputSystem;
 using System.Xml.Linq;
 using System.ComponentModel;
+using ChroMapper_LightModding.Export;
 
 namespace ChroMapper_LightModding
 {
@@ -38,6 +39,8 @@ namespace ChroMapper_LightModding
 
         private DifficultyReview currentReview = null;
         private string currentlyLoadedFilePath = null;
+
+        private Exporter exporter = new();
 
         InputAction addCommentAction;
 
@@ -252,6 +255,11 @@ namespace ChroMapper_LightModding
                 dialog.AddComponent<TextComponent>()
                     .WithInitialValue(currentlyLoadedFilePath);
 
+                dialog.AddComponent<ButtonComponent>()
+                    .WithLabel("Copy comments to clipboard")
+                    .OnClick(() => { exporter.ExportToDiscordMD(currentReview); });
+
+
                 dialog.AddFooterButton(ShowDeleteFileUI, "Remove review file");
 
                 dialog.AddFooterButton(ShowSaveFileUI, "Save review file");
@@ -389,7 +397,7 @@ namespace ChroMapper_LightModding
                 .WithInitialValue(read)
                 .OnChanged((bool o) => { read = o; });
 
-            dialog.AddFooterButton(null, "Cancel");
+            dialog.AddFooterButton(null, "Close");
             dialog.AddFooterButton(() =>
             {
                 comment.Response = message;
