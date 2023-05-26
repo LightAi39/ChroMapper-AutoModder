@@ -433,7 +433,11 @@ namespace ChroMapper_LightModding
                 .WithInitialValue(Convert.ToInt32(comment.Type))
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
 
-            dialog.AddFooterButton(null, "Cancel");
+            dialog.AddFooterButton(() => { ShowReviewCommentUI(comment.Id); }, "Cancel");
+            dialog.AddFooterButton(() =>
+            {
+                ShowDeleteCommentUI(comment);
+            }, "Delete comment");
             dialog.AddFooterButton(() =>
             {
                 comment.Message = message;
@@ -441,6 +445,22 @@ namespace ChroMapper_LightModding
                 HandleUpdateComment(comment);
             }, "Save edit");
 
+            dialog.Open();
+        }
+
+        private void ShowDeleteCommentUI(Comment comment)
+        {
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Delete review file");
+            dialog.AddComponent<TextComponent>()
+                    .WithInitialValue($"Are you sure you want to delete the comment?");
+            dialog.AddComponent<TextComponent>()
+                    .WithInitialValue($"This cannot be undone.");
+            dialog.AddFooterButton(() => { ShowEditCommentUI(comment); }, "Cancel");
+            dialog.AddFooterButton(() =>
+            {
+                HandleDeleteComment(comment.Id);
+                dialog.Close();
+            }, "Delete");
             dialog.Open();
         }
 
@@ -476,6 +496,11 @@ namespace ChroMapper_LightModding
             {
                 ShowReviewCommentUI(id);
             }
+        }
+
+        private void HandleDeleteComment(string commentId)
+        {
+            currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == commentId));
         }
 
         #endregion Comment Handling
