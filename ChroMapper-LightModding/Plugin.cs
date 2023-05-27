@@ -37,6 +37,8 @@ namespace ChroMapper_LightModding
         private NoteGridContainer _noteGridContainer = null!;
         private ObstacleGridContainer _obstacleGridContainer = null!;
         private EventGridContainer _eventGridContainer = null!;
+        private ArcGridContainer _arcGridContainer = null!;
+        private ChainGridContainer _chainGridContainer = null!;
         private BPMChangeGridContainer _bpmChangeGridContainer = null!;
         private BeatmapObjectContainerCollection _beatmapObjectContainerCollection = null!;
 
@@ -99,6 +101,8 @@ namespace ChroMapper_LightModding
                 _bpmChangeGridContainer = UnityEngine.Object.FindObjectOfType<BPMChangeGridContainer>();
                 _beatSaberSongContainer = UnityEngine.Object.FindObjectOfType<BeatSaberSongContainer>();
                 _beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
+                _arcGridContainer = UnityEngine.Object.FindObjectOfType<ArcGridContainer>();
+                _chainGridContainer = UnityEngine.Object.FindObjectOfType<ChainGridContainer>();
 
                 // check in the map folder for any existing review files for this difficulty, then load it if it is not a backup
                 try
@@ -143,6 +147,8 @@ namespace ChroMapper_LightModding
                     _obstacleGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
                     _eventGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
                     _bpmChangeGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+                    _arcGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+                    _chainGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
                     SelectionController.ObjectWasSelectedEvent += UpdateSelectionCache;
                     SelectionController.SelectionChangedEvent += ManageSelectionCacheAndOutlines;
                     selectionCache = new();
@@ -972,6 +978,11 @@ namespace ChroMapper_LightModding
             _obstacleGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
             _eventGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
             _bpmChangeGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _arcGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _chainGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            SelectionController.ObjectWasSelectedEvent += UpdateSelectionCache;
+            SelectionController.SelectionChangedEvent += ManageSelectionCacheAndOutlines;
+            selectionCache = new();
         }
 
         private void SaveFile(bool overwrite)
