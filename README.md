@@ -64,7 +64,6 @@ The plugin will only read files with the .lreview extension and checks for a fil
 
 ## Currently working on:
 * fixing the weird text input bug
-* walking through all the comments step by step
 
 ## Planned features:
 * Autosaving in intervals
@@ -74,3 +73,4 @@ The plugin will only read files with the .lreview extension and checks for a fil
 ## Wishful thinking:
 * markers in the scrollbar (like bookmarks)
 * Better UI
+* walking through all the comments step by step
