@@ -21,6 +21,7 @@ using System.ComponentModel;
 using ChroMapper_LightModding.Export;
 using System.Windows.Media;
 using Color = UnityEngine.Color;
+using System.Collections;
 
 namespace ChroMapper_LightModding
 {
@@ -81,7 +82,10 @@ namespace ChroMapper_LightModding
         [Exit]
         private void Exit()
         {
-
+            if (currentReview != null)
+            {
+                BackupFile();
+            }
         }
 
         #region Event Handlers
@@ -637,7 +641,7 @@ namespace ChroMapper_LightModding
                 .WithInitialValue(Convert.ToInt32(comment.Type))
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
 
-            dialog.AddFooterButton(() => { ShowReviewCommentUI(comment.Id); }, "Cancel");
+            dialog.AddFooterButton(null, "Cancel");
             dialog.AddFooterButton(() =>
             {
                 ShowDeleteCommentUI(comment);
@@ -717,6 +721,7 @@ namespace ChroMapper_LightModding
 
         private void HandleDeleteComment(string commentId)
         {
+            ClearOutlineColor(currentReview.Comments.First(x => x.Id == commentId).Objects);
             currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == commentId));
         }
 
