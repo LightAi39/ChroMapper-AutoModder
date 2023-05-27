@@ -301,6 +301,14 @@ namespace ChroMapper_LightModding
                     .WithLabel("Show all Comments")
                     .OnClick(ShowAllCommentsMainUI);
 
+                dialog.AddComponent<ButtonComponent>()
+                    .WithLabel("Edit file information")
+                    .OnClick(() =>
+                    {
+                        dialog.Close();
+                        EditFileInformationUI();
+                    });
+
                 dialog.AddComponent<ToggleComponent>()
                     .WithLabel("Show outlines")
                     .WithInitialValue(showOutlines)
@@ -311,6 +319,40 @@ namespace ChroMapper_LightModding
 
                 dialog.AddFooterButton(ShowSaveFileUI, "Save review file");
             }
+
+            dialog.Open();
+        }
+
+        private void EditFileInformationUI()
+        {
+            string title = currentReview.Title;
+            string author = currentReview.Author;
+            ReviewTypeEnum type = currentReview.ReviewType;
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Edit file information");
+
+            dialog.AddComponent<TextBoxComponent>()
+                .WithLabel("Title:")
+                .WithInitialValue(title)
+                .OnChanged((string s) => { title = s; });
+
+            dialog.AddComponent<TextBoxComponent>()
+                .WithLabel("Author:")
+                .WithInitialValue(author)
+                .OnChanged((string s) => { author = s; });
+
+            dialog.AddComponent<DropdownComponent>()
+                .WithLabel("Type")
+                .WithOptions<ReviewTypeEnum>()
+                .WithInitialValue(Convert.ToInt32(type))
+                .OnChanged((int i) => { type = (ReviewTypeEnum)i; });
+
+            dialog.AddFooterButton(null, "Close");
+            dialog.AddFooterButton(() =>
+            {
+                currentReview.Title = title;
+                currentReview.Author = author;
+                currentReview.ReviewType = type;
+            }, "Save Changes");
 
             dialog.Open();
         }
