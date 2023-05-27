@@ -297,6 +297,10 @@ namespace ChroMapper_LightModding
                     .WithLabel("Copy comments to clipboard")
                     .OnClick(() => { exporter.ExportToDiscordMD(currentReview); });
 
+                dialog.AddComponent<ButtonComponent>()
+                    .WithLabel("Show all Comments")
+                    .OnClick(ShowAllCommentsMainUI);
+
                 dialog.AddComponent<ToggleComponent>()
                     .WithLabel("Show outlines")
                     .WithInitialValue(showOutlines)
@@ -306,6 +310,90 @@ namespace ChroMapper_LightModding
                 dialog.AddFooterButton(ShowDeleteFileUI, "Remove review file");
 
                 dialog.AddFooterButton(ShowSaveFileUI, "Save review file");
+            }
+
+            dialog.Open();
+        }
+
+        private void ShowAllCommentsMainUI()
+        {
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("All Comments");
+            List<Comment> comments = currentReview.Comments.Take(5).ToList();
+
+            foreach (var comment in comments)
+            {
+                string read = "";
+                if (comment.MarkAsRead)
+                {
+                    read = " - Marked As Read";
+                }
+                dialog.AddComponent<ButtonComponent>()
+                    .WithLabel($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type}{read}")
+                    .OnClick(() => { ShowReviewCommentUI(comment.Id); });
+            }
+
+            dialog.AddFooterButton(ShowAllCommentsMainUI, "<-");
+            dialog.AddFooterButton(null, "Close");
+            if (currentReview.Comments.Count > 5)
+            {
+                dialog.AddFooterButton(() =>
+                {
+                    ShowAllCommentsMoreUI(5);
+                }, "->");
+            } else
+            {
+                dialog.AddFooterButton(ShowAllCommentsMainUI, "->");
+            }
+            
+
+            dialog.Open();
+        }
+
+        private void ShowAllCommentsMoreUI(int startIndex)
+        {
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("All Comments");
+            int count = 5;
+            bool lastTab = false;
+            if (currentReview.Comments.Count < startIndex+count)
+            {
+                count = currentReview.Comments.Count - startIndex;
+                lastTab = true;
+            }
+            List<Comment> comments = currentReview.Comments.GetRange(startIndex, count).ToList();
+
+            foreach (var comment in comments)
+            {
+                string read = "";
+                if (comment.MarkAsRead)
+                {
+                    read = " - Marked As Read";
+                }
+                dialog.AddComponent<ButtonComponent>()
+                    .WithLabel($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type}{read}")
+                    .OnClick(() => { ShowReviewCommentUI(comment.Id); });
+            }
+
+            if (startIndex == 5)
+            {
+                dialog.AddFooterButton(ShowAllCommentsMainUI, "<-");
+            } else
+            {
+                dialog.AddFooterButton(() =>
+                {
+                    ShowAllCommentsMoreUI(startIndex-5);
+                }, "<-");
+            }
+            
+            dialog.AddFooterButton(null, "Close");
+            if (lastTab)
+            {
+                dialog.AddFooterButton(() => ShowAllCommentsMoreUI(startIndex), "->");
+            } else
+            {
+                dialog.AddFooterButton(() =>
+                {
+                    ShowAllCommentsMoreUI(startIndex + 5);
+                }, "->");
             }
 
             dialog.Open();
@@ -390,7 +478,7 @@ namespace ChroMapper_LightModding
 
         private void ShowCreateCommentUI(List<SelectedObject> selectedObjects)
         {
-            CommentTypesEnum type = CommentTypesEnum.Issue;
+            CommentTypesEnum type = CommentTypesEnum.Note;
             string message = "Comment";
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment");
@@ -405,7 +493,6 @@ namespace ChroMapper_LightModding
             dialog.AddComponent<DropdownComponent>()
                 .WithLabel("Type")
                 .WithOptions<CommentTypesEnum>()
-                .WithInitialValue(Convert.ToInt32(type))
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
 
             dialog.AddFooterButton(null, "Cancel");
@@ -478,7 +565,7 @@ namespace ChroMapper_LightModding
 
         private void ShowEditCommentUI(Comment comment, bool showAlreadyExistedMessage = false)
         {
-            CommentTypesEnum type = CommentTypesEnum.Issue;
+            CommentTypesEnum type = comment.Type;
             string message = comment.Message;
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Edit comment");
@@ -693,7 +780,7 @@ namespace ChroMapper_LightModding
             switch (type)
             {
                 case CommentTypesEnum.Note:
-                    return Color.cyan;
+                    return Color.blue;
                 case CommentTypesEnum.Suggestion:
                     return Color.green;
                 case CommentTypesEnum.Warning:
@@ -863,7 +950,7 @@ namespace ChroMapper_LightModding
         private void BackupFile()
         {
             // preparation for the backup limit
-            List<string> files = Directory.GetFiles(_beatSaberSongContainer.Song.Directory, "*AUTOMATIC_BACKUP.lreview").ToList();
+            List<string> files = Directory.GetFiles(_beatSaberSongContainer.Song.Directory + "/reviews", "*AUTOMATIC_BACKUP.lreview").ToList();
 
             List<(DifficultyReview, string)> reviews = new();
 
