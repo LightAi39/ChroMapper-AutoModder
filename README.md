@@ -21,6 +21,8 @@ When you have put down all the comments you wanted, you can head back to the mai
 
 To edit a comment, you can select the exact same notes again and press the comment `ctrl + g` keybind again. You can tell there is a comment on a note when it has an outline.
 
+You can edit file information in the main ui by pressing `edit file information`, you can add an overall comment to the review here too.
+
 ## How to use as a mapper recieving a review file
 
 Until dialog selection is implemented, you have to create a folder called `reviews` in your map folder. You can easily get here by pressing `open explorer` on the song info screen. Place the `.lreview` file inside the folder you created.
