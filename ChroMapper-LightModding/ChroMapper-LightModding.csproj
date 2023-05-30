@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Export\Exporter.cs" />
+    <Compile Include="Helpers\OutlineHelper.cs" />
     <Compile Include="Models\Comment.cs" />
     <Compile Include="Models\DifficultyReview.cs" />
     <Compile Include="Models\SelectedObject.cs" />
@@ -87,8 +88,6 @@
   <ItemGroup>
     <Content Include="dll\Newtonsoft.Json.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Helpers\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

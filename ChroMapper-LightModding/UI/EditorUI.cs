@@ -1,4 +1,5 @@
 ﻿using ChroMapper_LightModding.Export;
+using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
 using System;
 using System.Collections.Generic;
@@ -12,10 +13,12 @@ namespace ChroMapper_LightModding.UI
     {
         private Plugin plugin;
         private Exporter exporter = new();
+        private OutlineHelper outlineHelper;
 
-        public EditorUI(Plugin plugin)
+        public EditorUI(Plugin plugin, OutlineHelper outlineHelper)
         {
             this.plugin = plugin;
+            this.outlineHelper = outlineHelper;
         }
 
 
@@ -343,7 +346,7 @@ namespace ChroMapper_LightModding.UI
                 plugin.HandleUpdateComment(comment);
             }, "Update reply");
 
-            plugin.SetOutlineColor(comment.Objects, plugin.ChooseOutlineColor(comment.Type)); // we do this to make sure the color of the current comment is shown when a note is in multiple comments
+            outlineHelper.SetOutlineColor(comment.Objects, outlineHelper.ChooseOutlineColor(comment.Type)); // we do this to make sure the color of the current comment is shown when a note is in multiple comments
 
             dialog.Open();
 
@@ -421,7 +424,7 @@ namespace ChroMapper_LightModding.UI
                 dialog.Close();
             }, "Delete");
 
-            plugin.SetOutlineColor(comment.Objects, plugin.ChooseOutlineColor(comment.Type)); // we do this to make sure the color of the current comment is shown when a note is in multiple comments
+            outlineHelper.SetOutlineColor(comment.Objects, outlineHelper.ChooseOutlineColor(comment.Type)); // we do this to make sure the color of the current comment is shown when a note is in multiple comments
 
             dialog.Open();
         }
