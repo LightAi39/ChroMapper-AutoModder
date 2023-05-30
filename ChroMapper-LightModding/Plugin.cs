@@ -149,15 +149,7 @@ namespace ChroMapper_LightModding
 
                     currentReview = correctReviewFilePair.Item1;
                     currentlyLoadedFilePath = correctReviewFilePair.Item2;
-                    _beatmapObjectContainerCollection.ContainerSpawnedEvent += SetOutlineIfInReview;
-                    _obstacleGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-                    _eventGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-                    _bpmChangeGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-                    _arcGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-                    _chainGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-                    SelectionController.ObjectWasSelectedEvent += UpdateSelectionCache;
-                    SelectionController.SelectionChangedEvent += ManageSelectionCacheAndOutlines;
-                    subscribedToEvents = true;
+                    SubscribeToEvents();
                     selectionCache = new();
                     Debug.Log("Loaded existing review file.");
                 }
@@ -185,15 +177,7 @@ namespace ChroMapper_LightModding
                 selectionCache = null;
                 if (subscribedToEvents)
                 {
-                    _beatmapObjectContainerCollection.ContainerSpawnedEvent -= SetOutlineIfInReview;
-                    _obstacleGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
-                    _eventGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
-                    _bpmChangeGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
-                    _arcGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
-                    _chainGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
-                    SelectionController.ObjectWasSelectedEvent -= UpdateSelectionCache;
-                    SelectionController.SelectionChangedEvent -= ManageSelectionCacheAndOutlines;
-                    subscribedToEvents = false;
+                    UnsubscribeFromEvents();
                 }
             }
         }
@@ -1006,16 +990,7 @@ namespace ChroMapper_LightModding
             string newFilePath = $"{song.Directory}/reviews/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second}.lreview";
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
             currentlyLoadedFilePath = newFilePath;
-            _beatmapObjectContainerCollection.ObjectSpawnedEvent += SetOutlineIfInReview;
-            _beatmapObjectContainerCollection.ContainerSpawnedEvent += SetOutlineIfInReview;
-            _obstacleGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-            _eventGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-            _bpmChangeGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-            _arcGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-            _chainGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
-            SelectionController.ObjectWasSelectedEvent += UpdateSelectionCache;
-            SelectionController.SelectionChangedEvent += ManageSelectionCacheAndOutlines;
-            subscribedToEvents = true;
+            SubscribeToEvents();
             selectionCache = new();
         }
 
@@ -1071,6 +1046,32 @@ namespace ChroMapper_LightModding
         #endregion File Handling
 
         #region Other
+
+        private void SubscribeToEvents()
+        {
+            _beatmapObjectContainerCollection.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _obstacleGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _eventGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _bpmChangeGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _arcGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            _chainGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
+            SelectionController.ObjectWasSelectedEvent += UpdateSelectionCache;
+            SelectionController.SelectionChangedEvent += ManageSelectionCacheAndOutlines;
+            subscribedToEvents = true;
+        }
+
+        private void UnsubscribeFromEvents()
+        {
+            _beatmapObjectContainerCollection.ContainerSpawnedEvent -= SetOutlineIfInReview;
+            _obstacleGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+            _eventGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+            _bpmChangeGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+            _arcGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+            _chainGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+            SelectionController.ObjectWasSelectedEvent -= UpdateSelectionCache;
+            SelectionController.SelectionChangedEvent -= ManageSelectionCacheAndOutlines;
+            subscribedToEvents = false;
+        }
 
         public List<SelectedObject> GetSelectedObjectListFromSelection(HashSet<BaseObject> selection)
         {
