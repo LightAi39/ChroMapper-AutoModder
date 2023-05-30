@@ -19,7 +19,7 @@ namespace ChroMapper_LightModding.Export
 
             foreach (var comment in review.Comments)
             {
-                text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()))} | {comment.Type}**\n{comment.Message}";
+                text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type}**\n{comment.Message}";
 
                 if (comment.Response != "")
                 {
@@ -32,6 +32,11 @@ namespace ChroMapper_LightModding.Export
                 }
 
                 text += "\n \n";
+            }
+
+            if (review.OverallComment != "")
+            {
+                text += $"**Overall feedback:**\n{review.OverallComment}";
             }
 
             CopyToClipboard(text);

@@ -18,6 +18,7 @@ namespace ChroMapper_LightModding.Models
     {
         public string Title { get; set; } = null!;
         public string Author { get; set; } = null!;
+        public string OverallComment { get; set; } = null!;
         public string MapName { get; set; } = null!;
         public string Difficulty { get; set; } = null!;
         public int DifficultyRank { get; set; }

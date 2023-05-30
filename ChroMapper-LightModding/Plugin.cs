@@ -32,7 +32,7 @@ namespace ChroMapper_LightModding
         static public int backupLimit = 3;
         public bool showOutlines = true;
 
-        static public string fileVersion = "0.0.1";
+        static public string fileVersion = "0.1.0";
 
         static public BeatSaberSongContainer _beatSaberSongContainer = null!;
         private NoteGridContainer _noteGridContainer = null!;
@@ -337,6 +337,7 @@ namespace ChroMapper_LightModding
         {
             string title = currentReview.Title;
             string author = currentReview.Author;
+            string overallComment = currentReview.OverallComment;
             ReviewTypeEnum type = currentReview.ReviewType;
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Edit file information");
 
@@ -356,12 +357,18 @@ namespace ChroMapper_LightModding
                 .WithInitialValue(Convert.ToInt32(type))
                 .OnChanged((int i) => { type = (ReviewTypeEnum)i; });
 
+            dialog.AddComponent<TextBoxComponent>()
+                .WithLabel("Overall comment:")
+                .WithInitialValue(overallComment)
+                .OnChanged((string s) => { overallComment = s; });
+
             dialog.AddFooterButton(null, "Close");
             dialog.AddFooterButton(() =>
             {
                 currentReview.Title = title;
                 currentReview.Author = author;
                 currentReview.ReviewType = type;
+                currentReview.OverallComment = overallComment;
             }, "Save Changes");
 
             dialog.Open();
@@ -957,6 +964,7 @@ namespace ChroMapper_LightModding
             {
                 Title = title,
                 Author = author,
+                OverallComment = "",
                 MapName = song.Directory.Split(Path.DirectorySeparatorChar).Last(),
                 Difficulty = difficultyData.Difficulty,
                 DifficultyRank = difficultyData.DifficultyRank,
