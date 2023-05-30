@@ -3,13 +3,7 @@ using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using static UnityEngine.InputSystem.InputRemoting;
-using Debug = UnityEngine.Debug;
 
 namespace ChroMapper_LightModding.UI
 {

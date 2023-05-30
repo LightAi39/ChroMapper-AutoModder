@@ -1,13 +1,10 @@
 ﻿using Beatmap.Base;
 using Beatmap.Enums;
-using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ChroMapper_LightModding.Helpers

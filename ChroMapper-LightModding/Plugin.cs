@@ -1,27 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using ChroMapper_LightModding.Models;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
 using Newtonsoft.Json;
-using System.Text.RegularExpressions;
-using static UnityEngine.InputSystem.InputRemoting;
-using Beatmap.Enums;
-using Beatmap.V3;
 using Beatmap.Base;
 using UnityEngine.InputSystem;
-using System.Xml.Linq;
-using System.ComponentModel;
-using ChroMapper_LightModding.Export;
-using System.Windows.Media;
 using Color = UnityEngine.Color;
-using System.Collections;
 using ChroMapper_LightModding.UI;
 using ChroMapper_LightModding.Helpers;
 
