@@ -64,6 +64,7 @@ The plugin will only read files with the .lreview extension and checks for a fil
 * keybind for opening the reviews to make reviewing them accessible after creation/editing
 * a menu that lists all comments
 * editing the file information like title and author
+* adding an overall comment to the review
 
 ## Currently working on:
 * fixing the weird text input bug
