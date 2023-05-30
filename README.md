@@ -65,6 +65,7 @@ The plugin will only read files with the .lreview extension and checks for a fil
 * a menu that lists all comments
 * editing the file information like title and author
 * adding an overall comment to the review
+* exporting a review file to clipboard in a compact way (beatleader comments)
 
 ## Currently working on:
 * fixing the weird text input bug
