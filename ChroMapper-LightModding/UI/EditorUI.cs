@@ -3,9 +3,13 @@ using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
+using static UnityEngine.InputSystem.InputRemoting;
+using Debug = UnityEngine.Debug;
 
 namespace ChroMapper_LightModding.UI
 {
@@ -56,11 +60,7 @@ namespace ChroMapper_LightModding.UI
 
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel("Edit file information")
-                    .OnClick(() =>
-                    {
-                        dialog.Close();
-                        EditFileInformationUI();
-                    });
+                    .OnClick(EditFileInformationUI);
 
                 dialog.AddComponent<ToggleComponent>()
                     .WithLabel("Show outlines")
@@ -132,6 +132,12 @@ namespace ChroMapper_LightModding.UI
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type}{read}")
                     .OnClick(() => { ShowReviewCommentUI(comment.Id); });
+            }
+
+            if (plugin.currentReview.Comments.Count == 0)
+            {
+                dialog.AddComponent<TextComponent>()
+                    .WithInitialValue($"No comments found!");
             }
 
             dialog.AddFooterButton(ShowAllCommentsMainUI, "<-");
@@ -301,7 +307,7 @@ namespace ChroMapper_LightModding.UI
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
 
             dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(() => { plugin.HandleCreateComment(type, message, selectedObjects, true); }, "Create");
+            dialog.AddFooterButton(() => { ShowReviewCommentUI(plugin.HandleCreateComment(type, message, selectedObjects)); }, "Create");
 
             dialog.Open();
         }
@@ -349,7 +355,6 @@ namespace ChroMapper_LightModding.UI
             outlineHelper.SetOutlineColor(comment.Objects, outlineHelper.ChooseOutlineColor(comment.Type)); // we do this to make sure the color of the current comment is shown when a note is in multiple comments
 
             dialog.Open();
-
         }
 
         public void ShowReviewChooseUI(List<Comment> comments)

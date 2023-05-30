@@ -306,7 +306,7 @@ namespace ChroMapper_LightModding
             }
         }
 
-        public void HandleCreateComment(CommentTypesEnum type, string message, List<SelectedObject> selectedNotes, bool redirect = false)
+        public string HandleCreateComment(CommentTypesEnum type, string message, List<SelectedObject> selectedNotes)
         {
 
             string id = Guid.NewGuid().ToString();
@@ -323,11 +323,7 @@ namespace ChroMapper_LightModding
             currentReview.Comments = currentReview.Comments.OrderBy(f => f.StartBeat).ToList();
 
             outlineHelper.SetOutlineColor(selectedNotes, outlineHelper.ChooseOutlineColor(type));
-
-            if (redirect)
-            {
-                editorUI.ShowReviewCommentUI(id);
-            }
+            return id;
         }
 
         public void HandleDeleteComment(string commentId)
