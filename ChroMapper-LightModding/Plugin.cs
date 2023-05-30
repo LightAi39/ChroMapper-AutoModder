@@ -422,6 +422,7 @@ namespace ChroMapper_LightModding
             File.Delete(path);
             currentReview = null;
             currentlyLoadedFilePath = null;
+            UnsubscribeFromEvents();
         }
 
         #endregion File Handling
