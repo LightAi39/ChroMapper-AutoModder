@@ -965,7 +965,7 @@ namespace ChroMapper_LightModding
                 Title = title,
                 Author = author,
                 OverallComment = "",
-                MapName = song.Directory.Split(Path.DirectorySeparatorChar).Last(),
+                MapName = song.SongName,
                 Difficulty = difficultyData.Difficulty,
                 DifficultyRank = difficultyData.DifficultyRank,
                 ReviewType = type,
