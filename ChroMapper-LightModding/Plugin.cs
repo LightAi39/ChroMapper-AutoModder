@@ -48,6 +48,8 @@ namespace ChroMapper_LightModding
         private Scene currentScene;
         private bool inEditorScene;
 
+        private bool subscribedToEvents = false;
+
         private DifficultyReview currentReview = null;
         private string currentlyLoadedFilePath = null;
 
@@ -155,6 +157,7 @@ namespace ChroMapper_LightModding
                     _chainGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
                     SelectionController.ObjectWasSelectedEvent += UpdateSelectionCache;
                     SelectionController.SelectionChangedEvent += ManageSelectionCacheAndOutlines;
+                    subscribedToEvents = true;
                     selectionCache = new();
                     Debug.Log("Loaded existing review file.");
                 }
@@ -173,12 +176,25 @@ namespace ChroMapper_LightModding
                 {
                     BackupFile();
                 }
+                
                 inEditorScene = false;
                 currentReview = null;
                 currentlyLoadedFilePath = null;
                 addCommentAction.Disable();
                 openCommentAction.Disable();
                 selectionCache = null;
+                if (subscribedToEvents)
+                {
+                    _beatmapObjectContainerCollection.ContainerSpawnedEvent -= SetOutlineIfInReview;
+                    _obstacleGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+                    _eventGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+                    _bpmChangeGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+                    _arcGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+                    _chainGridContainer.ContainerSpawnedEvent -= SetOutlineIfInReview;
+                    SelectionController.ObjectWasSelectedEvent -= UpdateSelectionCache;
+                    SelectionController.SelectionChangedEvent -= ManageSelectionCacheAndOutlines;
+                    subscribedToEvents = false;
+                }
             }
         }
 
@@ -304,8 +320,12 @@ namespace ChroMapper_LightModding
                     .WithInitialValue(currentlyLoadedFilePath);
 
                 dialog.AddComponent<ButtonComponent>()
-                    .WithLabel("Copy comments to clipboard")
+                    .WithLabel("Copy comments to clipboard (Large/Discord)")
                     .OnClick(() => { exporter.ExportToDiscordMD(currentReview); });
+
+                dialog.AddComponent<ButtonComponent>()
+                    .WithLabel("Copy comments to clipboard (Small/BeatLeader)")
+                    .OnClick(() => { exporter.ExportToBeatLeaderComment(currentReview); });
 
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel("Show all Comments")
@@ -995,6 +1015,7 @@ namespace ChroMapper_LightModding
             _chainGridContainer.ContainerSpawnedEvent += SetOutlineIfInReview;
             SelectionController.ObjectWasSelectedEvent += UpdateSelectionCache;
             SelectionController.SelectionChangedEvent += ManageSelectionCacheAndOutlines;
+            subscribedToEvents = true;
             selectionCache = new();
         }
 

@@ -42,6 +42,25 @@ namespace ChroMapper_LightModding.Export
             CopyToClipboard(text);
         }
 
+        public void ExportToBeatLeaderComment(DifficultyReview review)
+        {
+            string text = @"";
+
+            foreach (var comment in review.Comments)
+            {
+                text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type}**\n{comment.Message}";
+
+                text += "\n \n";
+            }
+
+            if (review.OverallComment != "")
+            {
+                text += $"**Overall feedback:**\n{review.OverallComment}";
+            }
+
+            CopyToClipboard(text);
+        }
+
 
         public static void CopyToClipboard(string text)
         {
