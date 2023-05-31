@@ -3,7 +3,7 @@
 A Plugin for ChroMapper to assist in modding and in general giving feedback to a mapper.
 
 ## How to Install:
-Download the `LightModding(version).zip` zip. Drop the `Plugins` folder inside the zip into Chromappers `Plugins` folder.
+Download the `LightModding(version).zip` zip. Drop the files inside the zip into Chromappers `Plugins` folder.
 
 > :warning: This plugin only supports CM versions after V3 support was added! Currently you need the dev branch version for this.
 
