@@ -52,22 +52,19 @@ The plugin will only read files with the .lreview extension and checks for a fil
 * drop down menus don't show their initial value when set. This is only visual and does not affect the data.
 
 ## Currently done:
-* main file creation features
-* main commenting features
-* main review features
-* saving to json
-* autosaving a backup when unloading the editor
-* automatically loading review files when found
-* editing & deleting comments
+* Main file creation features
+* Main commenting features
+* Main review features
+* Autosaving a backup when unloading the editor
+* Automatically loading review files when found
+* Editing & deleting comments/file information
 * Exporting a review file to clipboard in (discord compatible) markdown
-* note highlighting
-* highlight toggle in main ui
+* Exporting a review file to clipboard in a compact way (beatleader comments)
+* Note highlighting
+* Highlight toggle in main ui
 * UI for choosing between multiple comments on a note
-* keybind for opening the reviews to make reviewing them accessible after creation/editing
-* a menu that lists all comments
-* editing the file information like title and author
-* adding an overall comment to the review
-* exporting a review file to clipboard in a compact way (beatleader comments)
+* A menu that lists all comments
+* Adding an overall/global comment to the review
 
 ## Currently working on:
 * fixing the weird text input bug
