@@ -10,6 +10,7 @@ namespace ChroMapper_LightModding.Models
     {
         Note,
         Suggestion,
+        Unsure,
         Warning,
         Issue
     }
