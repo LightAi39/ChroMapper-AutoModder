@@ -6,11 +6,11 @@ namespace ChroMapper_LightModding.Export
 {
     internal class Exporter
     {
-        public void ExportToDiscordMD(DifficultyReview review)
+        public void ExportToDiscordMDByBeats(DifficultyReview review)
         {
             string text = @"";
 
-            text += $"## {review.Title} \n*Song: {review.MapName} - Difficulty: {review.Difficulty}* \n{review.ReviewType} Review by {review.Author} \n*{review.FinalizationDate.ToShortDateString()} {review.FinalizationDate.ToShortTimeString()} UTC*\n \n";
+            text += $"## {review.Title} \n*Song: {review.MapName} - Difficulty: {review.Difficulty} - {review.ReviewType} by {review.Author}*\n \n";
 
             foreach (var comment in review.Comments)
             {
@@ -33,6 +33,49 @@ namespace ChroMapper_LightModding.Export
             {
                 text += $"**Overall feedback:**\n{review.OverallComment}";
             }
+
+            CopyToClipboard(text);
+        }
+
+        public void ExportToDiscordMDByImportance(DifficultyReview _review)
+        {
+            DifficultyReview review = _review;
+            CommentTypesEnum? lastType = null;
+            string text = @"";
+
+            text += $"## {review.Title} \n*Song: {review.MapName} - Difficulty: {review.Difficulty} - {review.ReviewType} by {review.Author}*\n \n";
+
+            review.Comments = review.Comments.OrderByDescending(x => x.Type).ToList();
+
+            foreach (var comment in review.Comments)
+            {
+                if (lastType != comment.Type)
+                {
+                    text += $"### {comment.Type}:\n";
+                    lastType = comment.Type;
+                }
+
+                text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())}**\n{comment.Message}";
+
+                if (comment.Response != "")
+                {
+                    text += $"\n- Response: {comment.Response}";
+                }
+
+                if (comment.MarkAsRead)
+                {
+                    text += "\n*Comment was marked as read*";
+                }
+
+                text += "\n \n";
+            }
+
+            if (review.OverallComment != "")
+            {
+                text += $"**Overall feedback:**\n{review.OverallComment}";
+            }
+
+            review.Comments = review.Comments.OrderBy(x => x.StartBeat).ToList();
 
             CopyToClipboard(text);
         }
