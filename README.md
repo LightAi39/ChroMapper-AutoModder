@@ -50,6 +50,7 @@ The plugin will only read files with the .lreview extension and checks for a fil
 ## Known issues:
 * Any text inputs that are 2 menus deep will not properly disable keybinds, making it nearly impossible to type. The workaround is to copy paste your text in instead. There seems to be a bug that is probably caused by me doing something wrong when i create a new dialog box when one is active.
 * drop down menus don't show their initial value when set. This is only visual and does not affect the data.
+* bpm changes are not taken into account for some reason
 
 ## Currently done:
 * Main file creation features
