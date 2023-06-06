@@ -86,14 +86,14 @@ namespace ChroMapper_LightModding.Export
 
             foreach (var comment in review.Comments)
             {
-                text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type}**\n{comment.Message}";
+                text += $"{string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type} - {comment.Message}";
 
-                text += "\n \n";
+                text += "\n";
             }
 
             if (review.OverallComment != "")
             {
-                text += $"**Overall feedback:**\n{review.OverallComment}";
+                text += $"Overall feedback: {review.OverallComment}";
             }
 
             CopyToClipboard(text);
