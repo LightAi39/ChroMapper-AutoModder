@@ -49,7 +49,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 spawnedObject = new()
                 {
-                    Beat = note.SongBpmTime,
+                    Beat = note.JsonTime,
                     PosX = note.PosX,
                     PosY = note.PosY,
                     ObjectType = note.ObjectType,
@@ -61,7 +61,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 spawnedObject = new()
                 {
-                    Beat = wall.SongBpmTime,
+                    Beat = wall.JsonTime,
                     PosX = wall.PosX,
                     PosY = wall.PosY,
                     ObjectType = wall.ObjectType,
@@ -73,7 +73,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 spawnedObject = new()
                 {
-                    Beat = slider.SongBpmTime,
+                    Beat = slider.JsonTime,
                     PosX = slider.PosX,
                     PosY = slider.PosY,
                     ObjectType = slider.ObjectType,
@@ -85,7 +85,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 spawnedObject = new()
                 {
-                    Beat = bpm.SongBpmTime,
+                    Beat = bpm.JsonTime,
                     PosX = 0,
                     PosY = 0,
                     ObjectType = bpm.ObjectType,
@@ -149,7 +149,7 @@ namespace ChroMapper_LightModding.Helpers
                     {
                         if (item.Key is BaseNote note)
                         {
-                            if (note.SongBpmTime == mapObject.Beat && note.PosX == mapObject.PosX && note.PosY == mapObject.PosY && note.Color == mapObject.Color)
+                            if (note.JsonTime == mapObject.Beat && note.PosX == mapObject.PosX && note.PosY == mapObject.PosY && note.Color == mapObject.Color)
                             {
                                 return true;
                             }
@@ -164,7 +164,7 @@ namespace ChroMapper_LightModding.Helpers
                     {
                         if (item.Key is BaseGrid gridItem)
                         {
-                            if (gridItem.SongBpmTime == mapObject.Beat && gridItem.PosX == mapObject.PosX && gridItem.PosY == mapObject.PosY)
+                            if (gridItem.JsonTime == mapObject.Beat && gridItem.PosX == mapObject.PosX && gridItem.PosY == mapObject.PosY)
                             {
                                 return true;
                             }
@@ -179,7 +179,7 @@ namespace ChroMapper_LightModding.Helpers
                     {
                         if (item.Key is BaseSlider slider)
                         {
-                            if (slider.SongBpmTime == mapObject.Beat && slider.PosX == mapObject.PosX && slider.PosY == mapObject.PosY && slider.Color == mapObject.Color)
+                            if (slider.JsonTime == mapObject.Beat && slider.PosX == mapObject.PosX && slider.PosY == mapObject.PosY && slider.Color == mapObject.Color)
                             {
                                 return true;
                             }
@@ -194,7 +194,7 @@ namespace ChroMapper_LightModding.Helpers
                     {
                         if (item.Key is BaseBpmEvent bpmEvent)
                         {
-                            if (bpmEvent.SongBpmTime == mapObject.Beat)
+                            if (bpmEvent.JsonTime == mapObject.Beat)
                             {
                                 return true;
                             }

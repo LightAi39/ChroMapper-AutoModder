@@ -449,7 +449,7 @@ namespace ChroMapper_LightModding
                 {
                     selectedObjects.Add(new()
                     {
-                        Beat = note.SongBpmTime,
+                        Beat = note.JsonTime,
                         PosX = note.PosX,
                         PosY = note.PosY,
                         ObjectType = note.ObjectType,
@@ -461,7 +461,7 @@ namespace ChroMapper_LightModding
                 {
                     selectedObjects.Add(new()
                     {
-                        Beat = wall.SongBpmTime,
+                        Beat = wall.JsonTime,
                         PosX = wall.PosX,
                         PosY = wall.PosY,
                         ObjectType = wall.ObjectType,
@@ -473,7 +473,7 @@ namespace ChroMapper_LightModding
                 {
                     selectedObjects.Add(new()
                     {
-                        Beat = slider.SongBpmTime,
+                        Beat = slider.JsonTime,
                         PosX = slider.PosX,
                         PosY = slider.PosY,
                         ObjectType = slider.ObjectType,
@@ -485,7 +485,7 @@ namespace ChroMapper_LightModding
                 {
                     selectedObjects.Add(new()
                     {
-                        Beat = bpm.SongBpmTime,
+                        Beat = bpm.JsonTime,
                         PosX = 0,
                         PosY = 0,
                         ObjectType = bpm.ObjectType,
