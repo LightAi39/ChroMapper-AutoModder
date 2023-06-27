@@ -12,6 +12,7 @@ using UnityEngine.InputSystem;
 using Color = UnityEngine.Color;
 using ChroMapper_LightModding.UI;
 using ChroMapper_LightModding.Helpers;
+using static UnityEngine.InputSystem.InputRemoting;
 
 namespace ChroMapper_LightModding
 {
@@ -52,6 +53,9 @@ namespace ChroMapper_LightModding
 
         InputAction addCommentAction;
         InputAction openCommentAction;
+        InputAction quickMarkUnsureAction;
+        InputAction quickMarkIssueAction;
+
 
         [Init]
         private void Init()
@@ -77,6 +81,14 @@ namespace ChroMapper_LightModding
                 .With("button", "<Keyboard>/g");
             openCommentAction.performed += _ => { OpenCommentKeyEvent(); };
 
+            quickMarkUnsureAction = new InputAction("Quick mark unsure", type: InputActionType.Button);
+            quickMarkUnsureAction.AddBinding("<Keyboard>/9");
+            quickMarkUnsureAction.performed += _ => { QuickMarkUnsureEvent(); };
+
+            quickMarkIssueAction = new InputAction("Quick mark issue", type: InputActionType.Button);
+            quickMarkIssueAction.AddBinding("<Keyboard>/0");
+            quickMarkIssueAction.performed += _ => { QuickMarkIssueEvent(); };
+
         }
 
         [Exit]
@@ -97,6 +109,8 @@ namespace ChroMapper_LightModding
             {
                 addCommentAction.Enable();
                 openCommentAction.Enable();
+                quickMarkUnsureAction.Enable();
+                quickMarkIssueAction.Enable();
                 _noteGridContainer = UnityEngine.Object.FindObjectOfType<NoteGridContainer>();
                 _obstacleGridContainer = UnityEngine.Object.FindObjectOfType<ObstacleGridContainer>();
                 _eventGridContainer = UnityEngine.Object.FindObjectOfType<EventGridContainer>();
@@ -169,6 +183,8 @@ namespace ChroMapper_LightModding
                 currentlyLoadedFilePath = null;
                 addCommentAction.Disable();
                 openCommentAction.Disable();
+                quickMarkUnsureAction.Disable();
+                quickMarkIssueAction.Disable();
                 outlineHelper.selectionCache = null;
                 if (subscribedToEvents)
                 {
@@ -270,6 +286,84 @@ namespace ChroMapper_LightModding
             else
             {
                 Debug.Log("Comment Loading not executed, selection is empty.");
+            }
+
+            SelectionController.DeselectAll();
+        }
+
+        public void QuickMarkUnsureEvent()
+        {
+            if (currentReview == null) { Debug.Log("Comment Creation not executed, no file loaded."); return; }
+            var selection = SelectionController.SelectedObjects;
+
+
+            if (SelectionController.HasSelectedObjects())
+            {
+                List<SelectedObject> selectedObjects = GetSelectedObjectListFromSelection(selection);
+
+                if (selectedObjects.Count > 0)
+                {
+                    Debug.Log(JsonConvert.SerializeObject(selectedObjects, Formatting.Indented));
+
+                    if (currentReview.Comments.Any(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)))
+                    {
+                        Debug.Log("Comment with that selection already exists, going to edit mode");
+                        editorUI.ShowEditCommentUI(currentReview.Comments.Where(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)).First(), true);
+                    }
+                    else
+                    {
+                        Debug.Log("Quick Creating comment of type Unsure");
+                        HandleCreateComment(CommentTypesEnum.Unsure, "", selectedObjects);
+                    }
+
+                }
+                else
+                {
+                    Debug.Log("Comment Creation cancelled, no supported objects selected.");
+                }
+            }
+            else
+            {
+                Debug.Log("Comment Creation not executed, selection is empty.");
+            }
+
+            SelectionController.DeselectAll();
+        }
+
+        public void QuickMarkIssueEvent()
+        {
+            if (currentReview == null) { Debug.Log("Comment Creation not executed, no file loaded."); return; }
+            var selection = SelectionController.SelectedObjects;
+
+
+            if (SelectionController.HasSelectedObjects())
+            {
+                List<SelectedObject> selectedObjects = GetSelectedObjectListFromSelection(selection);
+
+                if (selectedObjects.Count > 0)
+                {
+                    Debug.Log(JsonConvert.SerializeObject(selectedObjects, Formatting.Indented));
+
+                    if (currentReview.Comments.Any(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)))
+                    {
+                        Debug.Log("Comment with that selection already exists, going to edit mode");
+                        editorUI.ShowEditCommentUI(currentReview.Comments.Where(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects)).First(), true);
+                    }
+                    else
+                    {
+                        Debug.Log("Quick Creating comment of type Issue");
+                        HandleCreateComment(CommentTypesEnum.Issue, "", selectedObjects);
+                    }
+
+                }
+                else
+                {
+                    Debug.Log("Comment Creation cancelled, no supported objects selected.");
+                }
+            }
+            else
+            {
+                Debug.Log("Comment Creation not executed, selection is empty.");
             }
 
             SelectionController.DeselectAll();
