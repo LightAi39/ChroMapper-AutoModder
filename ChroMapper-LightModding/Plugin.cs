@@ -23,7 +23,7 @@ namespace ChroMapper_LightModding
         static public int backupLimit = 3;
         public bool showOutlines = true;
 
-        static public string fileVersion = "0.1.1";
+        static public string fileVersion = "0.1.2";
 
         private BeatSaberSongContainer _beatSaberSongContainer = null!;
         private NoteGridContainer _noteGridContainer = null!;

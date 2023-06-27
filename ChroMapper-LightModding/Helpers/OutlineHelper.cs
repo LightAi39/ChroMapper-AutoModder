@@ -122,13 +122,9 @@ namespace ChroMapper_LightModding.Helpers
         {
             switch (type)
             {
-                case CommentTypesEnum.Note:
-                    return Color.blue;
                 case CommentTypesEnum.Suggestion:
                     return Color.green;
                 case CommentTypesEnum.Unsure:
-                    return Color.yellow;
-                case CommentTypesEnum.Warning:
                     return Color.yellow;
                 case CommentTypesEnum.Issue:
                     return Color.red;

@@ -8,10 +8,8 @@ namespace ChroMapper_LightModding.Models
 {
     public enum CommentTypesEnum
     {
-        Note,
         Suggestion,
         Unsure,
-        Warning,
         Issue
     }
 

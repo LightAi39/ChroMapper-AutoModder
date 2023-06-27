@@ -37,8 +37,6 @@ namespace ChroMapper_LightModding.UI
             {
                 dialog.AddComponent<TextComponent>()
                     .WithInitialValue($"Existing review file loaded!");
-                dialog.AddComponent<TextComponent>()
-                    .WithInitialValue(plugin.currentlyLoadedFilePath);
 
                 dialog.AddComponent<ButtonComponent>()
                 .WithLabel("Copy comments to clipboard (Large, By Beat order)")
@@ -287,7 +285,7 @@ namespace ChroMapper_LightModding.UI
 
         public void ShowCreateCommentUI(List<SelectedObject> selectedObjects)
         {
-            CommentTypesEnum type = CommentTypesEnum.Note;
+            CommentTypesEnum type = CommentTypesEnum.Suggestion;
             string message = "Comment";
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment");
