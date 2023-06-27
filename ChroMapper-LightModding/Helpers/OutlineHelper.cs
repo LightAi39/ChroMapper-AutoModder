@@ -231,5 +231,15 @@ namespace ChroMapper_LightModding.Helpers
                 ClearOutlineColor(mapObject);
             }
         }
+
+        internal void RefreshOutlines()
+        {
+            plugin.NoteGridContainer.RefreshPool(true);
+            plugin.ObstacleGridContainer.RefreshPool(true);
+            plugin.EventGridContainer.RefreshPool(true);
+            plugin.ArcGridContainer.RefreshPool(true);
+            plugin.ChainGridContainer.RefreshPool(true);
+            plugin.BPMChangeGridContainer.RefreshPool(true);
+        }
     }
 }

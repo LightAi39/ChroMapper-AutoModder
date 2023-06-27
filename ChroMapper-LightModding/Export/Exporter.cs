@@ -88,6 +88,16 @@ namespace ChroMapper_LightModding.Export
             {
                 text += $"{string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type} - {comment.Message}";
 
+                if (comment.Response != "")
+                {
+                    text += $" -- Response: {comment.Response}";
+                }
+
+                if (comment.MarkAsRead)
+                {
+                    text += " *read*";
+                }
+
                 text += "\n";
             }
 

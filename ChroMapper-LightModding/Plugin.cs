@@ -72,6 +72,9 @@ namespace ChroMapper_LightModding
             addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/ctrl")
                 .With("button", "<Keyboard>/g");
+            addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
+                .With("modifier", "<Keyboard>/ctrl")
+                .With("button", "<Keyboard>/space");
             addCommentAction.performed += _ => { AddCommentKeyEvent(); };
             addCommentAction.Enable();
 

@@ -61,7 +61,13 @@ namespace ChroMapper_LightModding.UI
                 dialog.AddComponent<ToggleComponent>()
                     .WithLabel("Show outlines")
                     .WithInitialValue(plugin.showOutlines)
-                    .OnChanged((bool o) => { plugin.showOutlines = o; });
+                    .OnChanged((bool o) => {
+                        if (o != plugin.showOutlines)
+                        {
+                            plugin.showOutlines = o;
+                            outlineHelper.RefreshOutlines();
+                        }
+                    });
 
 
                 dialog.AddFooterButton(ShowDeleteFileUI, "Remove review file");
@@ -378,7 +384,7 @@ namespace ChroMapper_LightModding.UI
             if (showAlreadyExistedMessage)
             {
                 dialog.AddComponent<TextComponent>()
-                .WithInitialValue("A comment with that selection already existed!");
+                .WithInitialValue("A comment with that selection already exists!");
             }
 
             dialog.AddComponent<TextComponent>()
