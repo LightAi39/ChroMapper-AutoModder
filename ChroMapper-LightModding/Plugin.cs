@@ -44,6 +44,7 @@ namespace ChroMapper_LightModding
         public BeatmapObjectContainerCollection BeatmapObjectContainerCollection { get => _beatmapObjectContainerCollection; }
 
         private bool subscribedToEvents = false;
+        private bool hasLoadedIntoEditor = false;
 
         public DifficultyReview currentReview = null;
         public string currentlyLoadedFilePath = null;
@@ -107,9 +108,9 @@ namespace ChroMapper_LightModding
 
         private void SceneLoaded(Scene scene, LoadSceneMode mode)
         {
-
-            if (scene.buildIndex == 3) // the editor scene
+            if (scene.buildIndex == 3 || scene.buildIndex == 4 && hasLoadedIntoEditor) // the editor scene OR settings scene during editor scene
             {
+                hasLoadedIntoEditor = true;
                 addCommentAction.Enable();
                 openCommentAction.Enable();
                 quickMarkUnsureAction.Enable();
@@ -182,6 +183,7 @@ namespace ChroMapper_LightModding
                     BackupFile();
                 }
                 
+                hasLoadedIntoEditor = false;
                 currentReview = null;
                 currentlyLoadedFilePath = null;
                 addCommentAction.Disable();
