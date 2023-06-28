@@ -12,22 +12,26 @@ namespace ChroMapper_LightModding.Models
         QualityMod,
         RankabilityMod,
         Other
-    }
+    } // will be moved to mapsetReview
 
     public class DifficultyReview
     {
-        public string Title { get; set; } = null!;
-        public string Author { get; set; } = null!;
-        public string OverallComment { get; set; } = null!;
-        public string MapName { get; set; } = null!;
+        public string Title { get; set; } = null!; // will be deleted
+        public string Author { get; set; } = null!; // will be deleted
+        public string MapName { get; set; } = null!; // will be deleted
+
         public string Difficulty { get; set; } = null!;
         public int DifficultyRank { get; set; }
-        public ReviewTypeEnum ReviewType { get; set; }
-        public DateTime FinalizationDate { get; set; } = DateTime.UtcNow;
+        public ReviewTypeEnum ReviewType { get; set; } // will be deleted
+        public DateTime LastEdited { get; set; } = DateTime.UtcNow;
 
-        public string Version { get; set; } = null!;
+        public string Version { get; set; } = null!; // will be deleted
 
-        public List<Comment> Comments { get; set; } = null!;
+        public List<Comment> Comments { get; set; } = new List<Comment>();
+
+        //public DiffCrit Critera { get; set; } uncomment when we merge
+
+        public string OverallComment { get; set; } = null!;
 
     }
 }

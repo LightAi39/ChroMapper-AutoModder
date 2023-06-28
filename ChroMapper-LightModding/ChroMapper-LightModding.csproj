@@ -79,6 +79,7 @@
     <Compile Include="Helpers\OutlineHelper.cs" />
     <Compile Include="Models\Comment.cs" />
     <Compile Include="Models\DifficultyReview.cs" />
+    <Compile Include="Models\MapsetReview.cs" />
     <Compile Include="Models\SelectedObject.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

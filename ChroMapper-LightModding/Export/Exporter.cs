@@ -21,7 +21,7 @@ namespace ChroMapper_LightModding.Export
                     text += $"\n- Response: {comment.Response}";
                 }
 
-                if (comment.MarkAsRead)
+                if (comment.MarkAsSuppressed)
                 {
                     text += "\n*Comment was marked as read*";
                 }
@@ -62,7 +62,7 @@ namespace ChroMapper_LightModding.Export
                     text += $"\n- Response: {comment.Response}";
                 }
 
-                if (comment.MarkAsRead)
+                if (comment.MarkAsSuppressed)
                 {
                     text += "\n*Comment was marked as read*";
                 }
@@ -93,7 +93,7 @@ namespace ChroMapper_LightModding.Export
                     text += $" -- Response: {comment.Response}";
                 }
 
-                if (comment.MarkAsRead)
+                if (comment.MarkAsSuppressed)
                 {
                     text += " *read*";
                 }

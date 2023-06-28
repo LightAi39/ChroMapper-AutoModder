@@ -25,6 +25,6 @@ namespace ChroMapper_LightModding.Models
         public string Message { get; set; } = null!;
         public string Response { get; set; } = "";
 
-        public bool MarkAsRead { get; set; } = false;
+        public bool MarkAsSuppressed { get; set; } = false; // was MarkAsRead, will now mean MarkAsSuppressed
     }
 }

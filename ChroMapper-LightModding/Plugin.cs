@@ -46,8 +46,8 @@ namespace ChroMapper_LightModding
         private bool subscribedToEvents = false;
         private bool hasLoadedIntoEditor = false;
 
-        public DifficultyReview currentReview = null;
-        public DifficultyReview currentMapsetReview = null; // temporary so i dont get errors in other places
+        public DifficultyReview currentReview { get => MapsetDifficultyReviewLoader(); set => MapsetDifficultyReviewUpdater(value); }
+        public MapsetReview currentMapsetReview = null;
         public string currentlyLoadedFilePath = null;
 
         private EditorUI editorUI;
@@ -65,9 +65,9 @@ namespace ChroMapper_LightModding
         private void Init()
         {
             outlineHelper = new(this);
-            editorUI = new(this, outlineHelper);
-            songInfoUI = new(this);
-            fileHelper = new(this, outlineHelper);
+            fileHelper = new(this);
+            editorUI = new(this, outlineHelper, fileHelper);
+            songInfoUI = new(this, fileHelper);
 
             SceneManager.sceneLoaded += SceneLoaded;
 
@@ -104,9 +104,9 @@ namespace ChroMapper_LightModding
         [Exit]
         private void Exit()
         {
-            if (currentReview != null)
+            if (currentMapsetReview != null)
             {
-                BackupFile();
+                fileHelper.MapsetReviewBackupSaver();
             }
         }
 
@@ -114,7 +114,7 @@ namespace ChroMapper_LightModding
 
         private void SceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (scene.buildIndex == 3 || scene.buildIndex == 4 && hasLoadedIntoEditor) // the editor scene OR settings scene during editor scene
+            if (scene.buildIndex == 3 || (scene.buildIndex == 4 && hasLoadedIntoEditor)) // the editor scene OR settings scene during editor scene
             {
                 LoadedIntoSongEditor();
             }
@@ -124,24 +124,15 @@ namespace ChroMapper_LightModding
             }
             else
             {
-                if (currentReview != null)
+                if (currentMapsetReview != null)
                 {
-                    BackupFile();
+                    fileHelper.MapsetReviewBackupSaver();
                 }
 
                 songInfoUI.Disable();
-                hasLoadedIntoEditor = false;
-                currentReview = null;
                 currentlyLoadedFilePath = null;
-                addCommentAction.Disable();
-                openCommentAction.Disable();
-                quickMarkUnsureAction.Disable();
-                quickMarkIssueAction.Disable();
-                outlineHelper.selectionCache = null;
-                if (subscribedToEvents)
-                {
-                    UnsubscribeFromEvents();
-                }
+                currentMapsetReview = null;
+                ResetAfterLeavingEditor();
             }
         }
 
@@ -163,14 +154,21 @@ namespace ChroMapper_LightModding
             _arcGridContainer = UnityEngine.Object.FindObjectOfType<ArcGridContainer>();
             _chainGridContainer = UnityEngine.Object.FindObjectOfType<ChainGridContainer>();
 
-            // check in the map folder for any existing review files for this difficulty, then load it if it is not a backup
-            fileHelper.OldFileLoader();
+            if (currentReview != null)
+            {
+                SubscribeToEditorEvents();
+                outlineHelper.selectionCache = new();
+            }
         }
 
         public void LoadedIntoSongInfo()
         {
+            _beatSaberSongContainer = UnityEngine.Object.FindObjectOfType<BeatSaberSongContainer>();
+            
             GameObject songInfoPanel = GameObject.Find("SongInfoPanel");
             songInfoUI.Enable(songInfoPanel.transform.Find("Header"), songInfoPanel.transform.Find("Save"));
+
+            ResetAfterLeavingEditor();
         }
 
         public void AddCommentKeyEvent()
@@ -359,7 +357,7 @@ namespace ChroMapper_LightModding
             currentReview.Comments.Add(comment);
             currentReview.Comments = currentReview.Comments.OrderBy(f => f.StartBeat).ToList();
             editorUI.ShowReviewCommentUI(comment.Id);
-            if (comment.MarkAsRead)
+            if (comment.MarkAsSuppressed)
             {
                 outlineHelper.SetOutlineColor(comment.Objects, Color.gray);
             } else
@@ -396,98 +394,72 @@ namespace ChroMapper_LightModding
 
         #endregion Comment Handling
 
-        #region File Handling
-
-        public void HandleCreateFile(string title, string author, ReviewTypeEnum type)
+        #region Helper functions that belong here i swear
+        /// <summary>
+        /// Function to dynamically use the legacy DifficultyReview variable
+        /// </summary>
+        public DifficultyReview MapsetDifficultyReviewLoader()
         {
-            var song = _beatSaberSongContainer.Song;
+            if (currentMapsetReview == null)
+            {
+                return null;
+            }
+
             var difficultyData = _beatSaberSongContainer.DifficultyData;
-
-            DifficultyReview review = new()
+            try
             {
-                Title = title,
-                Author = author,
-                OverallComment = "",
-                MapName = song.SongName,
-                Difficulty = difficultyData.Difficulty,
-                DifficultyRank = difficultyData.DifficultyRank,
-                ReviewType = type,
-                Version = fileVersion,
-                Comments = new()
-            };
-
-            Debug.Log($"Exporting a new review file:");
-            Debug.Log(JsonConvert.SerializeObject(review, Formatting.Indented));
-
-            currentReview = review;
-
-            if (!Directory.Exists($"{_beatSaberSongContainer.Song.Directory}/reviews"))
+                return currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyRank == difficultyData.DifficultyRank).First();
+            }
+            catch (InvalidOperationException)
             {
-                Directory.CreateDirectory($"{_beatSaberSongContainer.Song.Directory}/reviews");
+                currentMapsetReview.DifficultyReviews.Add(new DifficultyReview
+                {
+                    Difficulty = difficultyData.Difficulty,
+                    DifficultyRank = difficultyData.DifficultyRank,
+                });
+                currentMapsetReview.DifficultyReviews = currentMapsetReview.DifficultyReviews.OrderByDescending(x => x.DifficultyRank).ToList();
+
+                return currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyRank == difficultyData.DifficultyRank).First();
             }
 
-            string newFilePath = $"{song.Directory}/reviews/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second}.lreview";
-            File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
-            currentlyLoadedFilePath = newFilePath;
-            SubscribeToEvents();
-            outlineHelper.selectionCache = new();
         }
 
-        public void SaveFile(bool overwrite)
+        /// <summary>
+        /// Function to dynamically use the legacy DifficultyReview variable
+        /// </summary>
+        public void MapsetDifficultyReviewUpdater(DifficultyReview difficultyReview)
         {
-            var review = currentReview;
-            review.FinalizationDate = DateTime.UtcNow;
-            string newFilePath = $"{_beatSaberSongContainer.Song.Directory}/reviews/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second}.lreview";
-            File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
-
-            if (overwrite)
+            if (difficultyReview == null)
             {
-                File.Delete(currentlyLoadedFilePath);
+                return;
             }
 
-            currentlyLoadedFilePath = newFilePath;
-        }
+            var difficultyData = _beatSaberSongContainer.DifficultyData;
+            DifficultyReview reviewToUpdate = currentMapsetReview.DifficultyReviews.FirstOrDefault(x => x.DifficultyRank == difficultyData.DifficultyRank);
 
-        public void BackupFile()
-        {
-            // preparation for the backup limit
-            List<string> files = Directory.GetFiles(_beatSaberSongContainer.Song.Directory + "/reviews", "*AUTOMATIC_BACKUP.lreview").ToList();
-
-            List<(DifficultyReview, string)> reviews = new();
-
-            foreach (string file in files)
+            if (reviewToUpdate != null)
             {
-                reviews.Add((JsonConvert.DeserializeObject<DifficultyReview>(File.ReadAllText(file)), file));
+                reviewToUpdate = difficultyReview;
             }
-
-            reviews = reviews.OrderBy(f => f.Item1.FinalizationDate).ToList();
-
-            var correctReviewFilePairs = reviews.Where(x => x.Item1.DifficultyRank == _beatSaberSongContainer.DifficultyData.DifficultyRank).ToList();
-
-            // enforcing the backup limit
-            if (correctReviewFilePairs.Count >= backupLimit)
-            {
-                File.Delete(correctReviewFilePairs[0].Item2);
-            }
-
-            var review = currentReview;
-            review.FinalizationDate = DateTime.UtcNow;
-            File.WriteAllText($"{_beatSaberSongContainer.Song.Directory}/reviews/{review.MapName} [{review.Difficulty} {review.DifficultyRank}] {review.ReviewType} {review.Author} {review.FinalizationDate.Day}-{review.FinalizationDate.Month}-{review.FinalizationDate.Year} {review.FinalizationDate.Hour}.{review.FinalizationDate.Minute}.{review.FinalizationDate.Second} AUTOMATIC_BACKUP.lreview", JsonConvert.SerializeObject(review, Formatting.Indented));
         }
-
-        public void RemoveFile(string path)
-        {
-            File.Delete(path);
-            currentReview = null;
-            currentlyLoadedFilePath = null;
-            UnsubscribeFromEvents();
-        }
-
-        #endregion File Handling
+        #endregion
 
         #region Other
+        private void ResetAfterLeavingEditor()
+        {
+            hasLoadedIntoEditor = false;
+            addCommentAction.Disable();
+            openCommentAction.Disable();
+            quickMarkUnsureAction.Disable();
+            quickMarkIssueAction.Disable();
+            outlineHelper.selectionCache = null;
+            if (subscribedToEvents)
+            {
+                UnsubscribeFromEditorEvents();
+            }
+        }
 
-        public void SubscribeToEvents()
+        public void SubscribeToEditorEvents()
         {
             _beatmapObjectContainerCollection.ContainerSpawnedEvent += outlineHelper.SetOutlineIfInReview;
             _obstacleGridContainer.ContainerSpawnedEvent += outlineHelper.SetOutlineIfInReview;
@@ -500,7 +472,7 @@ namespace ChroMapper_LightModding
             subscribedToEvents = true;
         }
 
-        public void UnsubscribeFromEvents()
+        public void UnsubscribeFromEditorEvents()
         {
             _beatmapObjectContainerCollection.ContainerSpawnedEvent -= outlineHelper.SetOutlineIfInReview;
             _obstacleGridContainer.ContainerSpawnedEvent -= outlineHelper.SetOutlineIfInReview;

@@ -100,7 +100,7 @@ namespace ChroMapper_LightModding.Helpers
                     Comment comment = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject))).FirstOrDefault();
                     SelectedObject selectedObject = comment.Objects.Where(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject)).FirstOrDefault();
 
-                    if (comment.MarkAsRead)
+                    if (comment.MarkAsSuppressed)
                     {
                         SetOutlineColor(selectedObject, Color.gray);
                     }

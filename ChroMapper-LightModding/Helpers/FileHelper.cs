@@ -13,67 +13,152 @@ namespace ChroMapper_LightModding.Helpers
     internal class FileHelper
     {
         private Plugin plugin;
-        private OutlineHelper outlineHelper;
+        private static string fileExtension = ".lreview";
+        private static string backupText = "BACKUP";
 
-        public FileHelper(Plugin plugin, OutlineHelper outlineHelper)
+        public FileHelper(Plugin plugin)
         {
             this.plugin = plugin;
-            this.outlineHelper = outlineHelper;
         }
 
-        public void OldFileLoader()
+        /// <summary>
+        /// Try to automatically load a present mapset review file.
+        /// </summary>
+        /// <returns>true if a file was loaded, false if a file was not loaded</returns>
+        public bool MapsetReviewLoader()
         {
-            // check in the map folder for any existing review files for this difficulty, then load it if it is not a backup
-            try
+            if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews"))
             {
-                if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews"))
-                {
-                    Debug.Log("No review files folder found in this map file");
-                    return;
-                }
-                List<string> files = Directory.GetFiles($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews", "*.lreview").ToList();
-                List<(DifficultyReview, string)> reviews = new();
-
-                if (files.Count == 0)
-                {
-                    Debug.Log("No review files found in this map file");
-                    return;
-                }
-
-                foreach (string file in files)
-                {
-                    if (!file.Contains("AUTOMATIC_BACKUP.lreview"))
-                    {
-                        reviews.Add((JsonConvert.DeserializeObject<DifficultyReview>(File.ReadAllText(file)), file));
-                    }
-                }
-
-                reviews = reviews.Where(f => f.Item1.Version == Plugin.fileVersion).ToList();
-
-                if (reviews.Count == 0)
-                {
-                    Debug.Log("No review files found in this map file with the correct file version");
-                    return;
-                }
-
-                reviews = reviews.OrderByDescending(f => f.Item1.FinalizationDate).ToList();
-
-                var correctReviewFilePair = reviews.First(x => x.Item1.DifficultyRank == plugin.BeatSaberSongContainer.DifficultyData.DifficultyRank);
-
-                plugin.currentReview = correctReviewFilePair.Item1;
-                plugin.currentlyLoadedFilePath = correctReviewFilePair.Item2;
-                plugin.SubscribeToEvents();
-                outlineHelper.selectionCache = new();
-                Debug.Log("Loaded existing review file.");
+                return false;
             }
-            catch (InvalidOperationException ex)
+
+            List<string> files = Directory.GetFiles($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews", "*" + fileExtension).ToList();
+            if (files.Count == 0) return false;
+
+            List<(MapsetReview, string)> reviews = new();
+
+            foreach (string filepath in files)
             {
-                if (ex.Message == "Sequence contains no matching element")
+                if (!filepath.Contains(backupText + fileExtension))
                 {
-                    Debug.Log("No review files found in this map file for the current difficulty");
+                    reviews.Add((JsonConvert.DeserializeObject<MapsetReview>(File.ReadAllText(filepath)), filepath));
                 }
-
             }
+
+            reviews = reviews.Where(f => f.Item1.FileVersion == Plugin.fileVersion).ToList();
+            if (reviews.Count == 0) return false;
+
+            reviews = reviews.OrderByDescending(f => f.Item1.LastEdited).ToList();
+
+            // Sanity check if the review is more likely than not for the currently selected map.
+            // If any of these are true then we can assume this is probably a valid map-review pair without invalidating when any change is made.
+            var correctReviewFilePair = reviews.First(x =>
+            {
+                return x.Item1.SongName == plugin.BeatSaberSongContainer.Song.SongName || x.Item1.SongAuthor == plugin.BeatSaberSongContainer.Song.SongAuthorName || x.Item1.Creator == plugin.BeatSaberSongContainer.Song.LevelAuthorName || x.Item1.SongLength == plugin.BeatSaberSongContainer.LoadedSongLength;
+            });
+
+            if (correctReviewFilePair.Item1 == null) return false;
+
+            plugin.currentMapsetReview = correctReviewFilePair.Item1;
+            plugin.currentlyLoadedFilePath = correctReviewFilePair.Item2;
+            Debug.Log("Loaded mapset review.");
+            return true;
         }
+
+        /// <summary>
+        /// Save the review file as it is stored in memory
+        /// </summary>
+        /// <param name="overrideExisting">Wether to override the existing file (delete it) or keep it.</param>
+        public void MapsetReviewSaver(bool overrideExisting = true)
+        {
+            var song = plugin.BeatSaberSongContainer.Song;
+            var review = plugin.currentMapsetReview;
+
+            // updating song details
+            review.SongName = song.SongName;
+            review.SubName = song.SongSubName;
+            review.SongAuthor = song.SongAuthorName;
+            review.Creator = song.LevelAuthorName;
+            review.SongLength = plugin.BeatSaberSongContainer.LoadedSongLength;
+            review.LastEdited = DateTime.UtcNow;
+
+            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}" + fileExtension;
+            File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
+
+            if (overrideExisting)
+            {
+                File.Delete(plugin.currentlyLoadedFilePath);
+            }
+
+            plugin.currentlyLoadedFilePath = newFilePath;
+        }
+
+        /// <summary>
+        /// Create a new MapsetReview and save it.
+        /// </summary>
+        public void MapsetReviewCreator()
+        {
+            var song = plugin.BeatSaberSongContainer.Song;
+            var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
+
+
+            List<DifficultyReview> difficultyReviews = new List<DifficultyReview>();
+            foreach (var diff in song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == "Standard").FirstOrDefault().DifficultyBeatmaps)
+            {
+                difficultyReviews.Add(new()
+                {
+                    Difficulty = diff.Difficulty,
+                    DifficultyRank = diff.DifficultyRank
+                });
+            }
+            difficultyReviews = difficultyReviews.OrderByDescending(x => x.DifficultyRank).ToList();
+
+            MapsetReview review = new()
+            {
+                SongName = song.SongName,
+                SubName = song.SongSubName,
+                SongAuthor = song.SongAuthorName,
+                Creator = song.LevelAuthorName,
+                SongLength = plugin.BeatSaberSongContainer.LoadedSongLength,
+                ReviewType = ReviewTypeEnum.Feedback,
+                FileVersion = Plugin.fileVersion,
+                DifficultyReviews = difficultyReviews
+            };
+
+            plugin.currentMapsetReview = review;
+
+            if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews"))
+            {
+                Directory.CreateDirectory($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews");
+            }
+
+            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}" + fileExtension;
+            File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
+            plugin.currentlyLoadedFilePath = newFilePath;
+        }
+
+        /// <summary>
+        /// Save the review file as it is stored in memory as a backup
+        /// </summary>
+        public void MapsetReviewBackupSaver()
+        {
+            var review = plugin.currentMapsetReview;
+            review.LastEdited = DateTime.UtcNow;
+            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second} " + backupText + fileExtension;
+            File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
+
+            plugin.currentlyLoadedFilePath = newFilePath;
+        }
+
+        /// <summary>
+        /// Delete the currently loaded mapsetreview
+        /// </summary>
+        public void MapsetReviewRemover()
+        {
+            File.Delete(plugin.currentlyLoadedFilePath);
+            plugin.currentMapsetReview = null;
+            plugin.currentlyLoadedFilePath = null;
+        }
+
     }
 }

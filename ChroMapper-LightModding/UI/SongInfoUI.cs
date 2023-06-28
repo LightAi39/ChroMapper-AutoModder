@@ -1,4 +1,7 @@
-﻿using System;
+﻿using ChroMapper_LightModding.Helpers;
+using ChroMapper_LightModding.Models;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,15 +14,17 @@ namespace ChroMapper_LightModding.UI
     internal class SongInfoUI
     {
         private Plugin plugin;
+        private FileHelper fileHelper;
 
         private GameObject _menuButton;
         private GameObject _loadMenu;
         private GameObject _infoMenu;
         public bool enabled = false;
 
-        public SongInfoUI(Plugin plugin)
+        public SongInfoUI(Plugin plugin, FileHelper fileHelper)
         {
             this.plugin = plugin;
+            this.fileHelper = fileHelper;
         }
 
         public void Enable(Transform header, Transform save)
@@ -27,7 +32,7 @@ namespace ChroMapper_LightModding.UI
             if (enabled) { return; }
             enabled = true;
             AddLoadMenu(save);
-            //AddInfoMenu(settingsArea);
+            AddInfoMenu(save);
             AddMenuButton(header);
         }
 
@@ -58,7 +63,7 @@ namespace ChroMapper_LightModding.UI
                 }
                 else
                 {
-                    _infoMenu.SetActive(!_loadMenu.activeSelf);
+                    _infoMenu.SetActive(!_infoMenu.activeSelf);
                 }
             });
         }
@@ -81,19 +86,20 @@ namespace ChroMapper_LightModding.UI
 
             UIHelper.AddButton(_loadMenu.transform, "CreateAMFile", "Create new", new Vector2(-72, -31), () =>
             {
-                Debug.Log("create file clicked!");
+                fileHelper.MapsetReviewCreator();
+                _loadMenu.SetActive(false);
+                _infoMenu.SetActive(true);
             });
             UIHelper.AddButton(_loadMenu.transform, "AutoSelectAMFile", "Autoselect file", new Vector2(0, -31), () =>
             {
-                Debug.Log("auto select file clicked!");
-                if (false /*could complete it*/)
+                if (fileHelper.MapsetReviewLoader())
                 {
                     _loadMenu.SetActive(false);
                     _infoMenu.SetActive(true);
                 } else
                 {
-                    UIHelper.AddErrorLabel(_loadMenu.transform, "NotFound", "None found!", new Vector2(0, -45));
-                }  
+                    UIHelper.AddErrorLabel(_loadMenu.transform, "AutoSelectNotFound", "None found!", new Vector2(0, -45));
+                }
             }, 80);
             UIHelper.AddButton(_loadMenu.transform, "SelectAMFile", "Select file", new Vector2(72, -31), () =>
             {
@@ -107,7 +113,7 @@ namespace ChroMapper_LightModding.UI
             _infoMenu.transform.parent = parent;
             _infoMenu.SetActive(false);
 
-            UIHelper.AttachTransform(_infoMenu, 100, 100, 1, 1, 0, 0, 1, 1);
+            UIHelper.AttachTransform(_infoMenu, 400, 200, 1, 10.5f, 0, 0, 1, 1);
 
             Image image = _infoMenu.AddComponent<Image>();
             image.sprite = PersistentUI.Instance.Sprites.Background;

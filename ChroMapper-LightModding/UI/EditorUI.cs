@@ -12,31 +12,33 @@ namespace ChroMapper_LightModding.UI
         private Plugin plugin;
         private Exporter exporter = new();
         private OutlineHelper outlineHelper;
+        private FileHelper fileHelper;
 
-        public EditorUI(Plugin plugin, OutlineHelper outlineHelper)
+        public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper)
         {
             this.plugin = plugin;
             this.outlineHelper = outlineHelper;
+            this.fileHelper = fileHelper;
         }
 
 
         public void ShowMainUI()
         {
-            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Main UI");
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Automodder");
 
             dialog.AddFooterButton(null, "Close");
 
             if (plugin.currentReview == null)
             {
                 dialog.AddComponent<TextComponent>()
-                    .WithInitialValue($"No review file found!");
-
-                dialog.AddFooterButton(ShowCreateFileUI, "Create review file");
+                    .WithInitialValue($"No review file loaded!");
+                dialog.AddComponent<TextComponent>()
+                    .WithInitialValue($"Load a review file in song info to get started.");
             }
             else
             {
                 dialog.AddComponent<TextComponent>()
-                    .WithInitialValue($"Existing review file loaded!");
+                    .WithInitialValue($"Review file loaded!");
 
                 dialog.AddComponent<ButtonComponent>()
                 .WithLabel("Copy comments to clipboard (Large, By Beat order)")
@@ -68,9 +70,6 @@ namespace ChroMapper_LightModding.UI
                             outlineHelper.RefreshOutlines();
                         }
                     });
-
-
-                dialog.AddFooterButton(ShowDeleteFileUI, "Remove review file");
 
                 dialog.AddFooterButton(ShowSaveFileUI, "Save review file");
             }
@@ -127,7 +126,7 @@ namespace ChroMapper_LightModding.UI
             foreach (var comment in comments)
             {
                 string read = "";
-                if (comment.MarkAsRead)
+                if (comment.MarkAsSuppressed)
                 {
                     read = " - Marked As Read";
                 }
@@ -175,7 +174,7 @@ namespace ChroMapper_LightModding.UI
             foreach (var comment in comments)
             {
                 string read = "";
-                if (comment.MarkAsRead)
+                if (comment.MarkAsSuppressed)
                 {
                     read = " - Marked As Read";
                 }
@@ -212,49 +211,13 @@ namespace ChroMapper_LightModding.UI
             dialog.Open();
         }
 
-        public void ShowCreateFileUI()
-        {
-            var song = plugin.BeatSaberSongContainer.Song;
-            var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
-
-            string title = $"Mod of {song.SongName} {song.SongSubName} by {song.SongAuthorName} - {difficultyData.Difficulty} ({difficultyData.DifficultyRank}) mapped by {song.LevelAuthorName}";
-            string author = "Your name";
-            ReviewTypeEnum type = ReviewTypeEnum.Feedback;
-
-            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Create review file");
-
-            dialog.AddComponent<TextBoxComponent>()
-                .WithLabel("Title")
-                .WithInitialValue(title)
-                .OnChanged((string s) => { title = s; });
-
-            dialog.AddComponent<TextBoxComponent>()
-                .WithLabel("Author")
-                .WithInitialValue(author)
-                .OnChanged((string s) => { author = s; });
-
-            dialog.AddComponent<DropdownComponent>()
-                .WithLabel("Review Type")
-                .WithOptions<ReviewTypeEnum>()
-                .OnChanged((int i) => { type = (ReviewTypeEnum)i; });
-
-            dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(() =>
-            {
-                plugin.HandleCreateFile(title, author, type);
-            }, "Create");
-
-            dialog.Open();
-
-        }
-
         public void ShowSaveFileUI()
         {
             bool overwrite = true;
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Save review file");
             dialog.AddComponent<TextComponent>()
-                    .WithInitialValue($"Do you want to overwrite the current file or keep it?");
+                    .WithInitialValue($"Do you want to overwrite the current file?");
             dialog.AddComponent<TextComponent>()
                     .WithInitialValue($"Overwriting cannot be undone.");
 
@@ -266,28 +229,11 @@ namespace ChroMapper_LightModding.UI
             dialog.AddFooterButton(null, "Cancel");
             dialog.AddFooterButton(() =>
             {
-                plugin.SaveFile(overwrite);
+                fileHelper.MapsetReviewSaver(overwrite);
                 dialog.Close();
             }, "Save");
             dialog.Open();
         }
-
-        public void ShowDeleteFileUI()
-        {
-            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Delete review file");
-            dialog.AddComponent<TextComponent>()
-                    .WithInitialValue($"Are you sure you want to delete the currently loaded review file?");
-            dialog.AddComponent<TextComponent>()
-                    .WithInitialValue($"This cannot be undone.");
-            dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(() =>
-            {
-                plugin.RemoveFile(plugin.currentlyLoadedFilePath);
-                dialog.Close();
-            }, "Delete");
-            dialog.Open();
-        }
-
 
         public void ShowCreateCommentUI(List<SelectedObject> selectedObjects)
         {
@@ -318,7 +264,7 @@ namespace ChroMapper_LightModding.UI
         {
             Comment comment = plugin.currentReview.Comments.Where(x => x.Id == id).First();
             string message = comment.Response;
-            bool read = comment.MarkAsRead;
+            bool read = comment.MarkAsSuppressed;
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("View comment");
             dialog.AddComponent<TextComponent>()
@@ -344,13 +290,13 @@ namespace ChroMapper_LightModding.UI
             dialog.AddFooterButton(() =>
             {
                 comment.Response = message;
-                comment.MarkAsRead = read;
+                comment.MarkAsSuppressed = read;
                 ShowEditCommentUI(comment);
             }, "Edit comment");
             dialog.AddFooterButton(() =>
             {
                 comment.Response = message;
-                comment.MarkAsRead = read;
+                comment.MarkAsSuppressed = read;
                 plugin.HandleUpdateComment(comment);
             }, "Update reply");
 
@@ -410,7 +356,7 @@ namespace ChroMapper_LightModding.UI
             {
                 comment.Message = message;
                 comment.Type = type;
-                comment.MarkAsRead = false;
+                comment.MarkAsSuppressed = false;
                 plugin.HandleUpdateComment(comment);
             }, "Save edit");
 
