@@ -15,10 +15,10 @@ namespace ChroMapper_LightModding.UI
     {
         // i ended up copying Top_Cat's CM-JS UI helper, too useful to make my own tho
         // after askin TC if it's one of the only way, he let me use this
-        public static void AddButton(Transform parent, string title, string text, Vector2 pos, UnityAction onClick)
+        public static void AddButton(Transform parent, string title, string text, Vector2 pos, UnityAction onClick, float width = 60, float height = 25)
         {
             var button = Object.Instantiate(PersistentUI.Instance.ButtonPrefab, parent);
-            MoveTransform(button.transform, 60, 25, 0.5f, 1, pos.x, pos.y);
+            MoveTransform(button.transform, width, height, 0.5f, 1, pos.x, pos.y);
             
             button.name = title;
             button.Button.onClick.AddListener(onClick);
@@ -53,6 +53,23 @@ namespace ChroMapper_LightModding.UI
             textComponent.font = PersistentUI.Instance.ButtonPrefab.Text.font;
             textComponent.alignment = TextAlignmentOptions.Center;
             textComponent.fontSize = 14;
+            textComponent.text = text;
+        }
+
+        public static void AddErrorLabel(Transform parent, string title, string text, Vector2 pos, Vector2? size = null)
+        {
+            var entryLabel = new GameObject(title + " Label", typeof(TextMeshProUGUI));
+            var rectTransform = ((RectTransform)entryLabel.transform);
+            rectTransform.SetParent(parent);
+
+            MoveTransform(rectTransform, 110, 24, 0.5f, 1, pos.x, pos.y);
+            var textComponent = entryLabel.GetComponent<TextMeshProUGUI>();
+
+            textComponent.name = title;
+            textComponent.font = PersistentUI.Instance.ButtonPrefab.Text.font;
+            textComponent.alignment = TextAlignmentOptions.Center;
+            textComponent.fontSize = 10;
+            textComponent.color = Color.red;
             textComponent.text = text;
         }
 

@@ -53,6 +53,7 @@ namespace ChroMapper_LightModding
         private EditorUI editorUI;
         private SongInfoUI songInfoUI;
         private OutlineHelper outlineHelper;
+        private FileHelper fileHelper;
 
         InputAction addCommentAction;
         InputAction openCommentAction;
@@ -66,6 +67,7 @@ namespace ChroMapper_LightModding
             outlineHelper = new(this);
             editorUI = new(this, outlineHelper);
             songInfoUI = new(this);
+            fileHelper = new(this, outlineHelper);
 
             SceneManager.sceneLoaded += SceneLoaded;
 
@@ -162,62 +164,13 @@ namespace ChroMapper_LightModding
             _chainGridContainer = UnityEngine.Object.FindObjectOfType<ChainGridContainer>();
 
             // check in the map folder for any existing review files for this difficulty, then load it if it is not a backup
-            try
-            {
-                if (!Directory.Exists($"{_beatSaberSongContainer.Song.Directory}/reviews"))
-                {
-                    Debug.Log("No review files folder found in this map file");
-                    return;
-                }
-                List<string> files = Directory.GetFiles($"{_beatSaberSongContainer.Song.Directory}/reviews", "*.lreview").ToList();
-                List<(DifficultyReview, string)> reviews = new();
-
-                if (files.Count == 0)
-                {
-                    Debug.Log("No review files found in this map file");
-                    return;
-                }
-
-                foreach (string file in files)
-                {
-                    if (!file.Contains("AUTOMATIC_BACKUP.lreview"))
-                    {
-                        reviews.Add((JsonConvert.DeserializeObject<DifficultyReview>(File.ReadAllText(file)), file));
-                    }
-                }
-
-                reviews = reviews.Where(f => f.Item1.Version == fileVersion).ToList();
-
-                if (reviews.Count == 0)
-                {
-                    Debug.Log("No review files found in this map file with the correct file version");
-                    return;
-                }
-
-                reviews = reviews.OrderByDescending(f => f.Item1.FinalizationDate).ToList();
-
-                var correctReviewFilePair = reviews.First(x => x.Item1.DifficultyRank == _beatSaberSongContainer.DifficultyData.DifficultyRank);
-
-                currentReview = correctReviewFilePair.Item1;
-                currentlyLoadedFilePath = correctReviewFilePair.Item2;
-                SubscribeToEvents();
-                outlineHelper.selectionCache = new();
-                Debug.Log("Loaded existing review file.");
-            }
-            catch (InvalidOperationException ex)
-            {
-                if (ex.Message == "Sequence contains no matching element")
-                {
-                    Debug.Log("No review files found in this map file for the current difficulty");
-                }
-
-            }
+            fileHelper.OldFileLoader();
         }
 
         public void LoadedIntoSongInfo()
         {
-            GameObject parent = GameObject.Find("SongInfoPanel");
-            songInfoUI.Enable(parent.transform.Find("Header"));
+            GameObject songInfoPanel = GameObject.Find("SongInfoPanel");
+            songInfoUI.Enable(songInfoPanel.transform.Find("Header"), songInfoPanel.transform.Find("Save"));
         }
 
         public void AddCommentKeyEvent()
@@ -534,7 +487,7 @@ namespace ChroMapper_LightModding
 
         #region Other
 
-        private void SubscribeToEvents()
+        public void SubscribeToEvents()
         {
             _beatmapObjectContainerCollection.ContainerSpawnedEvent += outlineHelper.SetOutlineIfInReview;
             _obstacleGridContainer.ContainerSpawnedEvent += outlineHelper.SetOutlineIfInReview;
@@ -547,7 +500,7 @@ namespace ChroMapper_LightModding
             subscribedToEvents = true;
         }
 
-        private void UnsubscribeFromEvents()
+        public void UnsubscribeFromEvents()
         {
             _beatmapObjectContainerCollection.ContainerSpawnedEvent -= outlineHelper.SetOutlineIfInReview;
             _obstacleGridContainer.ContainerSpawnedEvent -= outlineHelper.SetOutlineIfInReview;
