@@ -47,9 +47,11 @@ namespace ChroMapper_LightModding
         private bool hasLoadedIntoEditor = false;
 
         public DifficultyReview currentReview = null;
+        public DifficultyReview currentMapsetReview = null; // temporary so i dont get errors in other places
         public string currentlyLoadedFilePath = null;
 
         private EditorUI editorUI;
+        private SongInfoUI songInfoUI;
         private OutlineHelper outlineHelper;
 
         InputAction addCommentAction;
@@ -63,12 +65,14 @@ namespace ChroMapper_LightModding
         {
             outlineHelper = new(this);
             editorUI = new(this, outlineHelper);
-            
+            songInfoUI = new(this);
+
             SceneManager.sceneLoaded += SceneLoaded;
 
             // register a button in the side tab menu
             ExtensionButton button = ExtensionButtons.AddButton(LoadSprite("ChroMapper_LightModding.Assets.Icon.png"), "LightModding", editorUI.ShowMainUI);
 
+            // registering keybinds
             addCommentAction = new InputAction("Add Comment", type: InputActionType.Button);
             addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/ctrl")
@@ -110,71 +114,11 @@ namespace ChroMapper_LightModding
         {
             if (scene.buildIndex == 3 || scene.buildIndex == 4 && hasLoadedIntoEditor) // the editor scene OR settings scene during editor scene
             {
-                hasLoadedIntoEditor = true;
-                addCommentAction.Enable();
-                openCommentAction.Enable();
-                quickMarkUnsureAction.Enable();
-                quickMarkIssueAction.Enable();
-                _noteGridContainer = UnityEngine.Object.FindObjectOfType<NoteGridContainer>();
-                _obstacleGridContainer = UnityEngine.Object.FindObjectOfType<ObstacleGridContainer>();
-                _eventGridContainer = UnityEngine.Object.FindObjectOfType<EventGridContainer>();
-                _bpmChangeGridContainer = UnityEngine.Object.FindObjectOfType<BPMChangeGridContainer>();
-                _beatSaberSongContainer = UnityEngine.Object.FindObjectOfType<BeatSaberSongContainer>();
-                _beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
-                _arcGridContainer = UnityEngine.Object.FindObjectOfType<ArcGridContainer>();
-                _chainGridContainer = UnityEngine.Object.FindObjectOfType<ChainGridContainer>();
-
-                // check in the map folder for any existing review files for this difficulty, then load it if it is not a backup
-                try
-                {
-                    if (!Directory.Exists($"{_beatSaberSongContainer.Song.Directory}/reviews"))
-                    {
-                        Debug.Log("No review files folder found in this map file");
-                        return;
-                    }
-                    List<string> files = Directory.GetFiles($"{_beatSaberSongContainer.Song.Directory}/reviews", "*.lreview").ToList();
-                    List<(DifficultyReview, string)> reviews = new();
-
-                    if (files.Count == 0)
-                    {
-                        Debug.Log("No review files found in this map file");
-                        return;
-                    }
-
-                    foreach (string file in files)
-                    {
-                        if (!file.Contains("AUTOMATIC_BACKUP.lreview"))
-                        {
-                            reviews.Add((JsonConvert.DeserializeObject<DifficultyReview>(File.ReadAllText(file)), file));
-                        }
-                    }
-
-                    reviews = reviews.Where(f => f.Item1.Version == fileVersion).ToList();
-
-                    if (reviews.Count == 0)
-                    {
-                        Debug.Log("No review files found in this map file with the correct file version");
-                        return;
-                    }
-
-                    reviews = reviews.OrderByDescending(f => f.Item1.FinalizationDate).ToList();
-
-                    var correctReviewFilePair = reviews.First(x => x.Item1.DifficultyRank == _beatSaberSongContainer.DifficultyData.DifficultyRank);
-
-                    currentReview = correctReviewFilePair.Item1;
-                    currentlyLoadedFilePath = correctReviewFilePair.Item2;
-                    SubscribeToEvents();
-                    outlineHelper.selectionCache = new();
-                    Debug.Log("Loaded existing review file.");
-                }
-                catch (InvalidOperationException ex)
-                {
-                    if (ex.Message == "Sequence contains no matching element")
-                    {
-                        Debug.Log("No review files found in this map file for the current difficulty");
-                    }
-                    
-                }
+                LoadedIntoSongEditor();
+            }
+            else if (scene.buildIndex == 2) // song info screen
+            {
+                LoadedIntoSongInfo();
             }
             else
             {
@@ -182,7 +126,8 @@ namespace ChroMapper_LightModding
                 {
                     BackupFile();
                 }
-                
+
+                songInfoUI.Disable();
                 hasLoadedIntoEditor = false;
                 currentReview = null;
                 currentlyLoadedFilePath = null;
@@ -196,6 +141,83 @@ namespace ChroMapper_LightModding
                     UnsubscribeFromEvents();
                 }
             }
+        }
+
+        public void LoadedIntoSongEditor()
+        {
+            songInfoUI.Disable();
+            hasLoadedIntoEditor = true;
+            addCommentAction.Enable();
+            openCommentAction.Enable();
+            quickMarkUnsureAction.Enable();
+            quickMarkIssueAction.Enable();
+
+            _noteGridContainer = UnityEngine.Object.FindObjectOfType<NoteGridContainer>();
+            _obstacleGridContainer = UnityEngine.Object.FindObjectOfType<ObstacleGridContainer>();
+            _eventGridContainer = UnityEngine.Object.FindObjectOfType<EventGridContainer>();
+            _bpmChangeGridContainer = UnityEngine.Object.FindObjectOfType<BPMChangeGridContainer>();
+            _beatSaberSongContainer = UnityEngine.Object.FindObjectOfType<BeatSaberSongContainer>();
+            _beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
+            _arcGridContainer = UnityEngine.Object.FindObjectOfType<ArcGridContainer>();
+            _chainGridContainer = UnityEngine.Object.FindObjectOfType<ChainGridContainer>();
+
+            // check in the map folder for any existing review files for this difficulty, then load it if it is not a backup
+            try
+            {
+                if (!Directory.Exists($"{_beatSaberSongContainer.Song.Directory}/reviews"))
+                {
+                    Debug.Log("No review files folder found in this map file");
+                    return;
+                }
+                List<string> files = Directory.GetFiles($"{_beatSaberSongContainer.Song.Directory}/reviews", "*.lreview").ToList();
+                List<(DifficultyReview, string)> reviews = new();
+
+                if (files.Count == 0)
+                {
+                    Debug.Log("No review files found in this map file");
+                    return;
+                }
+
+                foreach (string file in files)
+                {
+                    if (!file.Contains("AUTOMATIC_BACKUP.lreview"))
+                    {
+                        reviews.Add((JsonConvert.DeserializeObject<DifficultyReview>(File.ReadAllText(file)), file));
+                    }
+                }
+
+                reviews = reviews.Where(f => f.Item1.Version == fileVersion).ToList();
+
+                if (reviews.Count == 0)
+                {
+                    Debug.Log("No review files found in this map file with the correct file version");
+                    return;
+                }
+
+                reviews = reviews.OrderByDescending(f => f.Item1.FinalizationDate).ToList();
+
+                var correctReviewFilePair = reviews.First(x => x.Item1.DifficultyRank == _beatSaberSongContainer.DifficultyData.DifficultyRank);
+
+                currentReview = correctReviewFilePair.Item1;
+                currentlyLoadedFilePath = correctReviewFilePair.Item2;
+                SubscribeToEvents();
+                outlineHelper.selectionCache = new();
+                Debug.Log("Loaded existing review file.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (ex.Message == "Sequence contains no matching element")
+                {
+                    Debug.Log("No review files found in this map file for the current difficulty");
+                }
+
+            }
+        }
+
+        public void LoadedIntoSongInfo()
+        {
+            GameObject parent = GameObject.Find("SongInfoPanel");
+            songInfoUI.Enable(parent.transform.Find("Header"));
         }
 
         public void AddCommentKeyEvent()
