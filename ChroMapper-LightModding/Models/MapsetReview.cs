@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace ChroMapper_LightModding.Models
 {
-    /*public enum ReviewTypeEnum
+    public enum ReviewTypeEnum
     {
         Feedback,
         Quality,
         Rankability,
         Other
-    } uncomment when the other one is gone*/
+    }
 
     public class MapsetReview
     {

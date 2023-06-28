@@ -71,27 +71,8 @@ namespace ChroMapper_LightModding.UI
 
         public void EditFileInformationUI()
         {
-            string title = plugin.currentReview.Title;
-            string author = plugin.currentReview.Author;
             string overallComment = plugin.currentReview.OverallComment;
-            ReviewTypeEnum type = plugin.currentReview.ReviewType;
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Edit file information");
-
-            dialog.AddComponent<TextBoxComponent>()
-                .WithLabel("Title:")
-                .WithInitialValue(title)
-                .OnChanged((string s) => { title = s; });
-
-            dialog.AddComponent<TextBoxComponent>()
-                .WithLabel("Author:")
-                .WithInitialValue(author)
-                .OnChanged((string s) => { author = s; });
-
-            dialog.AddComponent<DropdownComponent>()
-                .WithLabel("Type")
-                .WithOptions<ReviewTypeEnum>()
-                .WithInitialValue(Convert.ToInt32(type))
-                .OnChanged((int i) => { type = (ReviewTypeEnum)i; });
 
             dialog.AddComponent<TextBoxComponent>()
                 .WithLabel("Overall comment:")
@@ -101,9 +82,6 @@ namespace ChroMapper_LightModding.UI
             dialog.AddFooterButton(null, "Close");
             dialog.AddFooterButton(() =>
             {
-                plugin.currentReview.Title = title;
-                plugin.currentReview.Author = author;
-                plugin.currentReview.ReviewType = type;
                 plugin.currentReview.OverallComment = overallComment;
             }, "Save Changes");
 
