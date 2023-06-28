@@ -6,76 +6,85 @@ namespace ChroMapper_LightModding.Export
 {
     internal class Exporter
     {
-        public void ExportToDiscordMDByBeats(DifficultyReview review)
+        public void ExportToDiscordMDByBeats(MapsetReview review)
         {
             string text = @"";
 
-            text += $"## {review.Title} \n*Song: {review.MapName} - Difficulty: {review.Difficulty} - {review.ReviewType} by {review.Author}*\n \n";
+            text += $"## {review.SongName} {review.SubName} by {review.SongAuthor} - {review.ReviewType}*\n \n";
 
-            foreach (var comment in review.Comments)
+            foreach (var diffReview in review.DifficultyReviews)
             {
-                text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type}**\n{comment.Message}";
+                text += $"**{diffReview.Difficulty}:**\n\n";
 
-                if (comment.Response != "")
+                foreach (var comment in diffReview.Comments)
                 {
-                    text += $"\n- Response: {comment.Response}";
+                    text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type}**\n{comment.Message}";
+
+                    if (comment.Response != "")
+                    {
+                        text += $"\n- Response: {comment.Response}";
+                    }
+
+                    if (comment.MarkAsSuppressed)
+                    {
+                        text += "\n*Comment was marked as read*";
+                    }
+
+                    text += "\n \n";
                 }
 
-                if (comment.MarkAsSuppressed)
+                if (diffReview.OverallComment != "")
                 {
-                    text += "\n*Comment was marked as read*";
+                    text += $"**Overall feedback:**\n{diffReview.OverallComment}";
                 }
-
-                text += "\n \n";
-            }
-
-            if (review.OverallComment != "")
-            {
-                text += $"**Overall feedback:**\n{review.OverallComment}";
             }
 
             CopyToClipboard(text);
         }
 
-        public void ExportToDiscordMDByImportance(DifficultyReview _review)
+        public void ExportToDiscordMDByImportance(MapsetReview _review)
         {
-            DifficultyReview review = _review;
-            CommentTypesEnum? lastType = null;
+            MapsetReview review = _review;
             string text = @"";
 
-            text += $"## {review.Title} \n*Song: {review.MapName} - Difficulty: {review.Difficulty} - {review.ReviewType} by {review.Author}*\n \n";
+            text += $"## {review.SongName} {review.SubName} by {review.SongAuthor} - {review.ReviewType}*\n \n";
 
-            review.Comments = review.Comments.OrderByDescending(x => x.Type).ToList();
-
-            foreach (var comment in review.Comments)
+            foreach (var diffReview in review.DifficultyReviews)
             {
-                if (lastType != comment.Type)
+                CommentTypesEnum? lastType = null;
+                diffReview.Comments = diffReview.Comments.OrderByDescending(x => x.Type).ToList();
+                text += $"**{diffReview.Difficulty}:**\n\n";
+
+                foreach (var comment in diffReview.Comments)
                 {
-                    text += $"### {comment.Type}:\n";
-                    lastType = comment.Type;
+                    if (lastType != comment.Type)
+                    {
+                        text += $"### {comment.Type}:\n";
+                        lastType = comment.Type;
+                    }
+
+                    text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type}**\n{comment.Message}";
+
+                    if (comment.Response != "")
+                    {
+                        text += $"\n- Response: {comment.Response}";
+                    }
+
+                    if (comment.MarkAsSuppressed)
+                    {
+                        text += "\n*Comment was marked as read*";
+                    }
+
+                    text += "\n \n";
                 }
 
-                text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())}**\n{comment.Message}";
-
-                if (comment.Response != "")
+                if (diffReview.OverallComment != "")
                 {
-                    text += $"\n- Response: {comment.Response}";
+                    text += $"**Overall feedback:**\n{diffReview.OverallComment}";
                 }
 
-                if (comment.MarkAsSuppressed)
-                {
-                    text += "\n*Comment was marked as read*";
-                }
-
-                text += "\n \n";
+                diffReview.Comments = diffReview.Comments.OrderBy(x => x.StartBeat).ToList();
             }
-
-            if (review.OverallComment != "")
-            {
-                text += $"**Overall feedback:**\n{review.OverallComment}";
-            }
-
-            review.Comments = review.Comments.OrderBy(x => x.StartBeat).ToList();
 
             CopyToClipboard(text);
         }

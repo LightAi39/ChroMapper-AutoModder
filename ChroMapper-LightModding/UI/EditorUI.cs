@@ -41,15 +41,7 @@ namespace ChroMapper_LightModding.UI
                     .WithInitialValue($"Review file loaded!");
 
                 dialog.AddComponent<ButtonComponent>()
-                .WithLabel("Copy comments to clipboard (Large, By Beat order)")
-                    .OnClick(() => { exporter.ExportToDiscordMDByBeats(plugin.currentReview); });
-
-                dialog.AddComponent<ButtonComponent>()
-                .WithLabel("Copy comments to clipboard (Large, By Importance order)")
-                    .OnClick(() => { exporter.ExportToDiscordMDByImportance(plugin.currentReview); });
-
-                dialog.AddComponent<ButtonComponent>()
-                .WithLabel("Copy comments to clipboard (Small)")
+                .WithLabel("Copy comments to clipboard")
                     .OnClick(() => { exporter.ExportToBeatLeaderComment(plugin.currentReview); });
 
                 dialog.AddComponent<ButtonComponent>()
