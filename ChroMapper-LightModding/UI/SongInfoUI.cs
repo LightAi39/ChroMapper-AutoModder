@@ -378,6 +378,7 @@ namespace ChroMapper_LightModding.UI
             #region Autocheck buttons
             List<DifficultyReview> reviews = plugin.currentMapsetReview.DifficultyReviews;
 
+            // hard coded mess until i figure out how to get which tab the user is on.
             if (plugin.currentMapsetReview != null)
             {
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard"))
@@ -390,7 +391,7 @@ namespace ChroMapper_LightModding.UI
                     CreateCriteriaStatusElement(severity, "AutoCheckEx+Status", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx+", "Auto Check", new Vector2(116, -75), () =>
                     {
-                        Debug.Log("spawning loloppe note");
+                        autocheckHelper.RunAutoCheckOnDiff("Standard", 9, "ExpertPlus");
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard"))
@@ -403,7 +404,7 @@ namespace ChroMapper_LightModding.UI
                     CreateCriteriaStatusElement(severity, "AutoCheckExStatus", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx", "Auto Check", new Vector2(116, -100.33f), () =>
                     {
-                        Debug.Log("spawning loloppe note");
+                        autocheckHelper.RunAutoCheckOnDiff("Standard", 7, "Expert");
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard"))
@@ -416,7 +417,7 @@ namespace ChroMapper_LightModding.UI
                     CreateCriteriaStatusElement(severity, "AutoCheckHStatus", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckH", "Auto Check", new Vector2(116, -125.66f), () =>
                     {
-                        Debug.Log("spawning loloppe note");
+                        autocheckHelper.RunAutoCheckOnDiff("Standard", 5, "Hard");
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard"))
@@ -426,10 +427,10 @@ namespace ChroMapper_LightModding.UI
                     {
                         severity = Severity.Fail;
                     }
-                    CreateCriteriaStatusElement(severity, "AutoCheckMStatus", new Vector2(84, -75), _diffMenu.transform);
-                    UIHelper.AddButton(_diffMenu.transform, "AutoCheckM", "Auto Check", new Vector2(116, -151f), () =>
+                    CreateCriteriaStatusElement(severity, "AutoCheckNStatus", new Vector2(84, -75), _diffMenu.transform);
+                    UIHelper.AddButton(_diffMenu.transform, "AutoCheckN", "Auto Check", new Vector2(116, -151f), () =>
                     {
-                        Debug.Log("spawning loloppe note");
+                        autocheckHelper.RunAutoCheckOnDiff("Standard", 3, "Normal");
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard"))
@@ -442,7 +443,7 @@ namespace ChroMapper_LightModding.UI
                     CreateCriteriaStatusElement(severity, "AutoCheckEStatus", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckE", "Auto Check", new Vector2(116, -176.33f), () =>
                     {
-                        Debug.Log("spawning loloppe note");
+                        autocheckHelper.RunAutoCheckOnDiff("Standard", 1, "Easy");
                     }, 50, 25);
                 }
             }

@@ -23,9 +23,31 @@ namespace ChroMapper_LightModding.Helpers
             plugin.currentMapsetReview.Criteria = CriteriaCheck.AutoInfoCheck();
         }
 
-        public void RunAutoCheckOnDiff()
+        public void RunAutoCheckOnDiff(string characteristic, int difficultyRank, string difficulty)
         {
-            
+            var song = plugin.BeatSaberSongContainer.Song;
+            BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
+
+            BaseDifficulty baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
+
+            if (baseDifficulty.Notes.Any())
+            {
+                List<BaseNote> notes = baseDifficulty.Notes.ToList();
+                notes = notes.OrderBy(o => o.JsonTime).ToList();
+
+                if (notes.Count > 0)
+                {
+                    List<BaseNote> bombs = baseDifficulty.Bombs.Cast<BaseNote>().Where(n => n.Type == 3).ToList();
+                    bombs = bombs.OrderBy(b => b.JsonTime).ToList();
+
+                    List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
+                    obstacles = obstacles.OrderBy(o => o.JsonTime).ToList();
+
+                    BeatmapScanner.BeatmapScanner.Analyzer(notes, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+
+                    plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = CriteriaCheck.AutoDiffCheck();
+                }
+            }
         }
     }
 }
