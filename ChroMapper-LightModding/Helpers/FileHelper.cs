@@ -71,6 +71,7 @@ namespace ChroMapper_LightModding.Helpers
         /// <param name="overrideExisting">Wether to override the existing file (delete it) or keep it.</param>
         public void MapsetReviewSaver(bool overrideExisting = true)
         {
+            if (plugin.currentlyLoadedFilePath == "external") overrideExisting = false;
             var song = plugin.BeatSaberSongContainer.Song;
             var review = plugin.currentMapsetReview;
 
@@ -182,9 +183,28 @@ namespace ChroMapper_LightModding.Helpers
         /// </summary>
         public void MapsetReviewRemover()
         {
+            if (plugin.currentlyLoadedFilePath == "external") return;
             File.Delete(plugin.currentlyLoadedFilePath);
             plugin.currentMapsetReview = null;
             plugin.currentlyLoadedFilePath = null;
+        }
+
+        /// <summary>
+        /// Function to get the file from file panel input
+        /// </summary>
+        public void OnSelectReviewFile(string[] obj)
+        {
+            if (obj == null || obj.Length == 0) return;
+
+            var fileLocation = obj[0];
+
+            if (!File.Exists(fileLocation)) return;
+
+            MapsetReview review = JsonConvert.DeserializeObject<MapsetReview>(File.ReadAllText(fileLocation));
+
+            plugin.currentMapsetReview = review;
+            plugin.currentlyLoadedFilePath = "external";
+            Debug.Log("Loaded mapset review.");
         }
 
     }

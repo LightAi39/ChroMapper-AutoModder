@@ -1,8 +1,10 @@
 ﻿using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
 using Newtonsoft.Json;
+using SFB;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -103,7 +105,15 @@ namespace ChroMapper_LightModding.UI
             }, 80);
             UIHelper.AddButton(_loadMenu.transform, "SelectAMFile", "Select file", new Vector2(72, -31), () =>
             {
-                Debug.Log("select file clicked!");
+                StandaloneFileBrowser.OpenFilePanelAsync("Open Review file", Directory.GetCurrentDirectory(), "lreview", false, fileHelper.OnSelectReviewFile);
+                if (plugin.currentMapsetReview != null)
+                {
+                    _loadMenu.SetActive(false);
+                    _infoMenu.SetActive(true);
+                } else
+                {
+                    UIHelper.AddErrorLabel(_loadMenu.transform, "AutoSelectNotFound", "File not loaded!", new Vector2(72, -45));
+                }
             });
         }
 
