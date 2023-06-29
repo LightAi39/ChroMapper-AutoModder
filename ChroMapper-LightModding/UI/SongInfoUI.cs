@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace ChroMapper_LightModding.UI
 {
@@ -132,6 +133,32 @@ namespace ChroMapper_LightModding.UI
             image.sprite = PersistentUI.Instance.Sprites.Background;
             image.type = Image.Type.Sliced;
             image.color = new Color(0.24f, 0.24f, 0.24f);
+
+            UIHelper.AddButton(_infoMenu.transform, "SaveAMFile", "Save File", new Vector2(-166, -18), () =>
+            {
+                fileHelper.MapsetReviewSaver();
+            });
+
+            UIHelper.AddButton(_infoMenu.transform, "DeleteAMFile", "Delete File", new Vector2(-104, -18), () =>
+            {
+                UIHelper.AddButton(_infoMenu.transform, "CancelDeleteAMFile", "Cancel", new Vector2(-104, -18), () =>
+                {
+                    GameObject gameObjectToDelete = GameObject.Find("CancelDeleteAMFile");
+                    Object.Destroy(gameObjectToDelete);
+                    gameObjectToDelete = GameObject.Find("ReallyDeleteAMFile");
+                    Object.Destroy(gameObjectToDelete);
+                });
+                UIHelper.AddButton(_infoMenu.transform, "ReallyDeleteAMFile", "Confirm Delete", new Vector2(-104, -45), () =>
+                {
+                    fileHelper.MapsetReviewRemover();
+                    GameObject gameObjectToDelete = GameObject.Find("CancelDeleteAMFile");
+                    Object.Destroy(gameObjectToDelete);
+                    gameObjectToDelete = GameObject.Find("ReallyDeleteAMFile");
+                    Object.Destroy(gameObjectToDelete);
+                    _infoMenu.SetActive(false);
+                });
+            });
+
 
             UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordSeverityOrder", "Export (Severity Ordered)", new Vector2(164, -18), () =>
             {
