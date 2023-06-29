@@ -13,11 +13,13 @@ namespace ChroMapper_LightModding.Helpers
     {
         private Plugin plugin;
         private CriteriaCheck criteriaCheck;
+        private FileHelper fileHelper;
 
-        public AutocheckHelper(Plugin plugin, CriteriaCheck criteriaCheck)
+        public AutocheckHelper(Plugin plugin, CriteriaCheck criteriaCheck, FileHelper fileHelper)
         {
             this.plugin = plugin;
             this.criteriaCheck = criteriaCheck;
+            this.fileHelper = fileHelper;
         }
 
         public void RunAutoCheckOnInfo()
@@ -27,6 +29,7 @@ namespace ChroMapper_LightModding.Helpers
 
         public void RunAutoCheckOnDiff(string characteristic, int difficultyRank, string difficulty)
         {
+            fileHelper.CheckDifficultyReviewsExist();
             var song = plugin.BeatSaberSongContainer.Song;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
 

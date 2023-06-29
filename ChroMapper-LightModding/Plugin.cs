@@ -72,9 +72,9 @@ namespace ChroMapper_LightModding
         {
             exporter = new();
             criteriaCheck = new(this);
-            autocheckHelper = new(this, criteriaCheck);
-            outlineHelper = new(this);
             fileHelper = new(this);
+            autocheckHelper = new(this, criteriaCheck, fileHelper);
+            outlineHelper = new(this);
             editorUI = new(this, outlineHelper, fileHelper, exporter);
             songInfoUI = new(this, fileHelper, exporter, autocheckHelper);
 
