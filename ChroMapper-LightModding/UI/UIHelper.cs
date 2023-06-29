@@ -40,23 +40,29 @@ namespace ChroMapper_LightModding.UI
             button.Image.transform.rotation = Quaternion.identity;
         }
 
-        public static void AddLabel(Transform parent, string title, string text, Vector2 pos, Vector2? size = null)
+        public static void AddLabel(Transform parent, string title, string text, Vector2 pos, Vector2? size = null, TextAlignmentOptions? alignment = null, Color? color = null, float fontSize = 14)
         {
             var entryLabel = new GameObject(title + " Label", typeof(TextMeshProUGUI));
             var rectTransform = ((RectTransform)entryLabel.transform);
             rectTransform.SetParent(parent);
 
-            MoveTransform(rectTransform, 110, 24, 0.5f, 1, pos.x, pos.y);
+            if (size != null) MoveTransform(rectTransform, size.Value.x, size.Value.y, 0.5f, 1, pos.x, pos.y);
+            else MoveTransform(rectTransform, 110, 24, 0.5f, 1, pos.x, pos.y);
             var textComponent = entryLabel.GetComponent<TextMeshProUGUI>();
 
             textComponent.name = title;
             textComponent.font = PersistentUI.Instance.ButtonPrefab.Text.font;
-            textComponent.alignment = TextAlignmentOptions.Center;
-            textComponent.fontSize = 14;
+            if (alignment != null) textComponent.alignment = (TextAlignmentOptions)alignment;
+            else textComponent.alignment = TextAlignmentOptions.Center;
+            textComponent.fontSize = fontSize;
             textComponent.text = text;
+            if (color != null)
+            {
+                textComponent.color = (Color)color;
+            }
         }
 
-        public static void AddErrorLabel(Transform parent, string title, string text, Vector2 pos, Vector2? size = null)
+        public static void AddErrorLabel(Transform parent, string title, string text, Vector2 pos)
         {
             var entryLabel = new GameObject(title + " Label", typeof(TextMeshProUGUI));
             var rectTransform = ((RectTransform)entryLabel.transform);

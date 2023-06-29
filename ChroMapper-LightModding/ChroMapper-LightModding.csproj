@@ -74,6 +74,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BeatmapScanner\Data\Criteria\InfoCrit.cs" />
     <Compile Include="Export\Exporter.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Helpers\OutlineHelper.cs" />

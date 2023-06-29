@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,7 @@ namespace ChroMapper_LightModding.Models
         public DateTime LastEdited { get; set; } = DateTime.UtcNow;
         #endregion
 
-        //public InfoCrit Criteria { get; set; } uncomment when we merge
+        public InfoCrit Criteria { get; set; } = new InfoCrit();
 
         public List<DifficultyReview> DifficultyReviews { get; set; }
     }

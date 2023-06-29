@@ -1,4 +1,5 @@
-﻿using ChroMapper_LightModding.Export;
+﻿using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
+using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
 using Newtonsoft.Json;
@@ -7,11 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Media;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Color = UnityEngine.Color;
 using Object = UnityEngine.Object;
+using Transform = UnityEngine.Transform;
 
 namespace ChroMapper_LightModding.UI
 {
@@ -199,10 +202,142 @@ namespace ChroMapper_LightModding.UI
             {
                 exporter.ExportToDiscordMDByImportance(plugin.currentMapsetReview);
             }, 64, 25, 10);
+
+            UIHelper.AddButton(_infoMenu.transform, "ViewSongInfoComments", "View Song Info Comments", new Vector2(164, -45), () =>
+            {
+                Debug.Log("spawning loloppe note");
+            }, 64, 25, 10);
             #endregion
 
-            
-            
+            #region Criteria
+            InfoCrit criteria = plugin.currentMapsetReview.Criteria;
+            float startPosY = -65, posY, offsetX = 10;
+            string name;
+
+            // this is extremely ugly. i tried minimizing the amount of manual changing i had to do but i ended up making this super messy because we still need the same values later when they are already changed.
+            #region please collapse this
+            posY = startPosY;
+            name = "Song Name";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.SongName, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.SongName = IncrementSeverity(criteria.SongName);
+                posY = startPosY;
+                offsetX = 10;
+                name = "Song Name";
+                CreateCriteriaStatusElement(criteria.SongName, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 1;
+            name = "Song Sub Name";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.SubName, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.SubName = IncrementSeverity(criteria.SubName);
+                posY = startPosY - 26 * 1;
+                offsetX = 10;
+                name = "Song Sub Name";
+                CreateCriteriaStatusElement(criteria.SubName, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 2;
+            name = "Song Author";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.SongAuthor, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.SongAuthor = IncrementSeverity(criteria.SongAuthor);
+                posY = startPosY - 26 * 2;
+                offsetX = 10;
+                name = "Song Author";
+                CreateCriteriaStatusElement(criteria.SongAuthor, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 3;
+            name = "Creator";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Creator, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Creator = IncrementSeverity(criteria.Creator);
+                posY = startPosY - 26 * 3;
+                offsetX = 10;
+                name = "Creator";
+                CreateCriteriaStatusElement(criteria.Creator, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 4;
+            name = "Offset";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Offset, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Offset = IncrementSeverity(criteria.Offset);
+                posY = startPosY - 26 * 4;
+                offsetX = 10;
+                name = "Offset";
+                CreateCriteriaStatusElement(criteria.Offset, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            // 1 column to the right now
+            offsetX = 200;
+            posY = startPosY - 26 * 1;
+            name = "BPM";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.BPM, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.BPM = IncrementSeverity(criteria.BPM);
+                posY = startPosY - 26 * 1;
+                offsetX = 200;
+                name = "BPM";
+                CreateCriteriaStatusElement(criteria.BPM, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 2;
+            name = "Difficulty Ordering";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.DifficultyOrdering, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.DifficultyOrdering = IncrementSeverity(criteria.DifficultyOrdering);
+                posY = startPosY - 26 * 2;
+                offsetX = 200;
+                name = "Difficulty Ordering";
+                CreateCriteriaStatusElement(criteria.DifficultyOrdering, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 3;
+            name = "Requirements";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Requirement, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Requirement = IncrementSeverity(criteria.Requirement);
+                posY = startPosY - 26 * 3;
+                offsetX = 200;
+                name = "Requirements";
+                CreateCriteriaStatusElement(criteria.Requirement, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 4;
+            name = "Preview Time";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Preview, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Preview = IncrementSeverity(criteria.Preview);
+                posY = startPosY - 26 * 4;
+                offsetX = 200;
+                name = "Preview Time";
+                CreateCriteriaStatusElement(criteria.Preview, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            #endregion
+            #endregion
+
         }
 
         public void AddDifficultyMenu(Transform parent)
@@ -259,6 +394,38 @@ namespace ChroMapper_LightModding.UI
             }
 
             #endregion
+        }
+
+        private void CreateCriteriaStatusElement(Severity severity, string name, Vector2 pos)
+        {
+            GameObject critStatusObj = GameObject.Find($"Crit_{name}_status");
+            if (critStatusObj != null) Object.Destroy(critStatusObj);
+
+            Color color;
+            switch (severity)
+            {
+                case Severity.Success:
+                    color = Color.green;
+                    break;
+                case Severity.Warning:
+                    color = Color.yellow;
+                    break;
+                case Severity.Fail:
+                    color = Color.red;
+                    break;
+                default:
+                    color = Color.gray;
+                    break;
+            }
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}_status", "●", pos, new Vector2(25, 24), null, color, 12);
+        }
+
+        private Severity IncrementSeverity(Severity severity)
+        {
+            Severity[] enumValues = (Severity[])Enum.GetValues(typeof(Severity));
+            int currentIndex = Array.IndexOf(enumValues, severity);
+            int nextIndex = (currentIndex + 1) % enumValues.Length;
+            return enumValues[nextIndex];
         }
 
     }
