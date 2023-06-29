@@ -12,15 +12,17 @@ namespace ChroMapper_LightModding.Helpers
     internal class AutocheckHelper
     {
         private Plugin plugin;
+        private CriteriaCheck criteriaCheck;
 
-        public AutocheckHelper(Plugin plugin)
+        public AutocheckHelper(Plugin plugin, CriteriaCheck criteriaCheck)
         {
             this.plugin = plugin;
+            this.criteriaCheck = criteriaCheck;
         }
 
         public void RunAutoCheckOnInfo()
         {
-            plugin.currentMapsetReview.Criteria = CriteriaCheck.AutoInfoCheck();
+            plugin.currentMapsetReview.Criteria = criteriaCheck.AutoInfoCheck();
         }
 
         public void RunAutoCheckOnDiff(string characteristic, int difficultyRank, string difficulty)
@@ -45,7 +47,7 @@ namespace ChroMapper_LightModding.Helpers
 
                     BeatmapScanner.BeatmapScanner.Analyzer(notes, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
 
-                    plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = CriteriaCheck.AutoDiffCheck();
+                    plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = criteriaCheck.AutoDiffCheck(characteristic, difficultyRank, difficulty);
                 }
             }
         }

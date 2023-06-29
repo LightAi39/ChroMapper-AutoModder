@@ -31,5 +31,7 @@ namespace ChroMapper_LightModding.Models
         public InfoCrit Criteria { get; set; } = new InfoCrit();
 
         public List<DifficultyReview> DifficultyReviews { get; set; }
+
+        public List<Comment> Comments { get; set; }
     }
 }

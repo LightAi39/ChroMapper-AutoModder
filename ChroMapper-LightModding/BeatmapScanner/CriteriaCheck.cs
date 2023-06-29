@@ -1,6 +1,12 @@
-﻿using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
+﻿using Beatmap.Base;
+using ChroMapper_LightModding.BeatmapScanner.Data;
+using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
+using ChroMapper_LightModding.Helpers;
+using ChroMapper_LightModding.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
 
@@ -8,7 +14,17 @@ namespace ChroMapper_LightModding.BeatmapScanner
 {
     internal class CriteriaCheck
     {
-        public static InfoCrit AutoInfoCheck()
+        private Plugin plugin;
+        private string characteristic;
+        private int difficultyRank;
+        private string difficulty;
+
+        public CriteriaCheck(Plugin plugin)
+        {
+            this.plugin = plugin;
+        }
+
+        public InfoCrit AutoInfoCheck()
         {
             InfoCrit infoCrit = new()
             {
@@ -26,8 +42,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return infoCrit;
         }
 
-        public static DiffCrit AutoDiffCheck()
+        public DiffCrit AutoDiffCheck(string characteristic, int difficultyRank, string difficulty)
         {
+            this.characteristic = characteristic;
+            this.difficultyRank = difficultyRank;
+            this.difficulty = difficulty;
+
             DiffCrit diffCrit = new()
             {
                 HotStart = HotStartCheck(),
@@ -466,6 +486,145 @@ namespace ChroMapper_LightModding.BeatmapScanner
             }
 
             return issue;
+        }
+
+        /// <summary>
+        /// Create a comment in the mapsetreview file
+        /// </summary>
+        /// <param name="message">the message</param>
+        /// <param name="type">the type</param>
+        public void CreateSongInfoComment(string message, CommentTypesEnum type)
+        {
+            string id = Guid.NewGuid().ToString();
+
+
+            Comment comment = new()
+            {
+                Id = id,
+                StartBeat = 0,
+                Objects = new List<SelectedObject>(),
+                Type = type,
+                Message = message
+            };
+
+            List<Comment> comments = plugin.currentMapsetReview.Comments;
+
+            comments.Add(comment);
+            comments = comments.OrderBy(f => f.Type).ToList();
+        }
+
+
+        /// <summary>
+        /// Create a comment in a difficultyreview for a note
+        /// </summary>
+        /// <param name="message">the mesasge</param>
+        /// <param name="type">the severity</param>
+        /// <param name="cube">the cube</param>
+        public void CreateDiffCommentNote(string message, CommentTypesEnum type, Cube cube)
+        {
+            string id = Guid.NewGuid().ToString();
+
+            SelectedObject note = new SelectedObject()
+            {
+                Beat = cube.Time,
+                PosX = cube.Line,
+                PosY = cube.Layer,
+                Color = cube.Type,
+                ObjectType = Beatmap.Enums.ObjectType.Note
+            };
+
+            Comment comment = new()
+            {
+                Id = id,
+                StartBeat = cube.Time,
+                Objects = new List<SelectedObject>() { note },
+                Type = type,
+                Message = message
+            };
+
+            List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+
+            comments.Add(comment);
+            comments = comments.OrderBy(f => f.StartBeat).ToList();
+        }
+
+        /// <summary>
+        /// Create a comment in a difficultyreview for a bomb
+        /// </summary>
+        /// <param name="message">the mesasge</param>
+        /// <param name="type">the severity</param>
+        /// <param name="bomb">the bomb</param>
+        public void CreateDiffCommentBomb(string message, CommentTypesEnum type, BaseNote bomb)
+        {
+            string id = Guid.NewGuid().ToString();
+
+            SelectedObject note = new SelectedObject()
+            {
+                Beat = bomb.JsonTime,
+                PosX = bomb.PosX,
+                PosY = bomb.PosY,
+                Color = 2,
+                ObjectType = bomb.ObjectType
+            };
+
+            Comment comment = new()
+            {
+                Id = id,
+                StartBeat = bomb.JsonTime,
+                Objects = new List<SelectedObject>() { note },
+                Type = type,
+                Message = message
+            };
+
+            List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+
+            comments.Add(comment);
+            comments = comments.OrderBy(f => f.StartBeat).ToList();
+        }
+
+        /// <summary>
+        /// Create a comment in a difficultyreview for a wall
+        /// </summary>
+        /// <param name="message">the mesasge</param>
+        /// <param name="type">the severity</param>
+        /// <param name="wall">the wall</param>
+        public void CreateDiffCommentObstacle(string message, CommentTypesEnum type, BaseObstacle wall)
+        {
+            string id = Guid.NewGuid().ToString();
+
+            SelectedObject note = new SelectedObject()
+            {
+                Beat = wall.JsonTime,
+                PosX = wall.PosX,
+                PosY = wall.PosY,
+                Color = 0,
+                ObjectType = wall.ObjectType
+            };
+
+            Comment comment = new()
+            {
+                Id = id,
+                StartBeat = wall.JsonTime,
+                Objects = new List<SelectedObject>() { note },
+                Type = type,
+                Message = message
+            };
+
+            List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+
+            comments.Add(comment);
+            comments = comments.OrderBy(f => f.StartBeat).ToList();
+        }
+
+        /// <summary>
+        /// Add another line to the OverallComment in the difficultyreview
+        /// </summary>
+        /// <param name="message">the message</param>
+        public void ExtendOverallComment(string message)
+        {
+            DifficultyReview review = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault();
+
+            review.OverallComment += $"\n{message}";
         }
     }
 }

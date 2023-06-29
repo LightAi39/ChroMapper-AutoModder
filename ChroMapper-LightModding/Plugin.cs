@@ -59,6 +59,7 @@ namespace ChroMapper_LightModding
         private FileHelper fileHelper;
         private Exporter exporter;
         private AutocheckHelper autocheckHelper;
+        private CriteriaCheck criteriaCheck;
 
         InputAction addCommentAction;
         InputAction openCommentAction;
@@ -70,7 +71,8 @@ namespace ChroMapper_LightModding
         private void Init()
         {
             exporter = new();
-            autocheckHelper = new(this);
+            criteriaCheck = new(this);
+            autocheckHelper = new(this, criteriaCheck);
             outlineHelper = new(this);
             fileHelper = new(this);
             editorUI = new(this, outlineHelper, fileHelper, exporter);
