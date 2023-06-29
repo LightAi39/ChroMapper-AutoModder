@@ -439,7 +439,7 @@ namespace ChroMapper_LightModding
             }
 
             var difficultyData = _beatSaberSongContainer.DifficultyData;
-            DifficultyReview reviewToUpdate = currentMapsetReview.DifficultyReviews.FirstOrDefault(x => x.DifficultyRank == difficultyData.DifficultyRank);
+            DifficultyReview reviewToUpdate = currentMapsetReview.DifficultyReviews.FirstOrDefault(x => x.DifficultyRank == difficultyData.DifficultyRank && x.DifficultyCharacteristic == difficultyData.ParentBeatmapSet.BeatmapCharacteristicName);
 
             if (reviewToUpdate != null)
             {
