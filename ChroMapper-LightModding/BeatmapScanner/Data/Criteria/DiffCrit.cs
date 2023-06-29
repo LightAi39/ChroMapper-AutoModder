@@ -25,18 +25,22 @@ namespace ChroMapper_LightModding.BeatmapScanner.Data.Criteria
         public Severity DifficultyName { get; set; } = Severity.Fail;
         public Severity NJS { get; set; } = Severity.Fail;
 
-        public bool HasFailedSeverity()
+        public Severity HighestSeverityCheck()
         {
             DiffCrit diffCrit = this;
             var properties = typeof(DiffCrit).GetProperties();
+            Severity highestSeverity = Severity.Success;
+
             foreach (var property in properties)
             {
-                if ((Severity)property.GetValue(diffCrit) != Severity.Success)
+                Severity propertySeverity = (Severity)property.GetValue(diffCrit);
+                if (propertySeverity > highestSeverity)
                 {
-                    return true;
+                    highestSeverity = propertySeverity;
                 }
             }
-            return false;
+
+            return highestSeverity;
         }
 
     }
