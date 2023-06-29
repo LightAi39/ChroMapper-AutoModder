@@ -10,15 +10,16 @@ namespace ChroMapper_LightModding.UI
     internal class EditorUI
     {
         private Plugin plugin;
-        private Exporter exporter = new();
+        private Exporter exporter;
         private OutlineHelper outlineHelper;
         private FileHelper fileHelper;
 
-        public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper)
+        public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter)
         {
             this.plugin = plugin;
             this.outlineHelper = outlineHelper;
             this.fileHelper = fileHelper;
+            this.exporter = exporter;
         }
 
 

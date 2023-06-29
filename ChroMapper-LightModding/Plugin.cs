@@ -13,6 +13,7 @@ using Color = UnityEngine.Color;
 using ChroMapper_LightModding.UI;
 using ChroMapper_LightModding.Helpers;
 using static UnityEngine.InputSystem.InputRemoting;
+using ChroMapper_LightModding.Export;
 
 namespace ChroMapper_LightModding
 {
@@ -54,6 +55,7 @@ namespace ChroMapper_LightModding
         private SongInfoUI songInfoUI;
         private OutlineHelper outlineHelper;
         private FileHelper fileHelper;
+        private Exporter exporter;
 
         InputAction addCommentAction;
         InputAction openCommentAction;
@@ -64,10 +66,11 @@ namespace ChroMapper_LightModding
         [Init]
         private void Init()
         {
+            exporter = new();
             outlineHelper = new(this);
             fileHelper = new(this);
-            editorUI = new(this, outlineHelper, fileHelper);
-            songInfoUI = new(this, fileHelper);
+            editorUI = new(this, outlineHelper, fileHelper, exporter);
+            songInfoUI = new(this, fileHelper, exporter);
 
             SceneManager.sceneLoaded += SceneLoaded;
 

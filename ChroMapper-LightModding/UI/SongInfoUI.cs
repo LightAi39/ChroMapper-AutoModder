@@ -1,4 +1,5 @@
-﻿using ChroMapper_LightModding.Helpers;
+﻿using ChroMapper_LightModding.Export;
+using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
 using Newtonsoft.Json;
 using SFB;
@@ -17,16 +18,18 @@ namespace ChroMapper_LightModding.UI
     {
         private Plugin plugin;
         private FileHelper fileHelper;
+        private Exporter exporter;
 
         private GameObject _menuButton;
         private GameObject _loadMenu;
         private GameObject _infoMenu;
         public bool enabled = false;
 
-        public SongInfoUI(Plugin plugin, FileHelper fileHelper)
+        public SongInfoUI(Plugin plugin, FileHelper fileHelper, Exporter exporter)
         {
             this.plugin = plugin;
             this.fileHelper = fileHelper;
+            this.exporter = exporter;
         }
 
         public void Enable(Transform header, Transform save)
@@ -130,7 +133,15 @@ namespace ChroMapper_LightModding.UI
             image.type = Image.Type.Sliced;
             image.color = new Color(0.24f, 0.24f, 0.24f);
 
-            
+            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordSeverityOrder", "Export (Severity Ordered)", new Vector2(164, -18), () =>
+            {
+                exporter.ExportToDiscordMDByImportance(plugin.currentMapsetReview);
+            }, 64, 25, 10);
+
+            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordBeatOrder", "Export (Beat Ordered)", new Vector2(100, -18), () =>
+            {
+                exporter.ExportToDiscordMDByBeats(plugin.currentMapsetReview);
+            }, 64, 25, 10);
         }
 
     }
