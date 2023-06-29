@@ -104,13 +104,17 @@ namespace ChroMapper_LightModding.Helpers
 
 
             List<DifficultyReview> difficultyReviews = new List<DifficultyReview>();
-            foreach (var diff in song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == "Standard").FirstOrDefault().DifficultyBeatmaps)
+            foreach (var diffSet in song.DifficultyBeatmapSets)
             {
-                difficultyReviews.Add(new()
+                foreach (var diff in diffSet.DifficultyBeatmaps)
                 {
-                    Difficulty = diff.Difficulty,
-                    DifficultyRank = diff.DifficultyRank
-                });
+                    difficultyReviews.Add(new()
+                    {
+                        DifficultyCharacteristic = diffSet.BeatmapCharacteristicName,
+                        Difficulty = diff.Difficulty,
+                        DifficultyRank = diff.DifficultyRank
+                    });
+                }
             }
             difficultyReviews = difficultyReviews.OrderByDescending(x => x.DifficultyRank).ToList();
 

@@ -8,6 +8,7 @@ namespace ChroMapper_LightModding.Models
 {
     public class DifficultyReview
     {
+        public string DifficultyCharacteristic { get; set; }
         public string Difficulty { get; set; } = null!;
         public int DifficultyRank { get; set; }
 

@@ -411,12 +411,13 @@ namespace ChroMapper_LightModding
             var difficultyData = _beatSaberSongContainer.DifficultyData;
             try
             {
-                return currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyRank == difficultyData.DifficultyRank).First();
+                return currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyRank == difficultyData.DifficultyRank && x.DifficultyCharacteristic == difficultyData.ParentBeatmapSet.BeatmapCharacteristicName).First();
             }
             catch (InvalidOperationException)
             {
                 currentMapsetReview.DifficultyReviews.Add(new DifficultyReview
                 {
+                    DifficultyCharacteristic = difficultyData.ParentBeatmapSet.BeatmapCharacteristicName,
                     Difficulty = difficultyData.Difficulty,
                     DifficultyRank = difficultyData.DifficultyRank,
                 });

@@ -160,7 +160,7 @@ namespace ChroMapper_LightModding.UI
             });
 
 
-            UIHelper.AddButton(_infoMenu.transform, "RunAutoCheck", "Run Auto Checker", new Vector2(36, -18), () =>
+            UIHelper.AddButton(_infoMenu.transform, "AutoCheckInfo", "Auto Check Song Info", new Vector2(36, -18), () =>
             {
                 Debug.Log("spawning loloppe note");
             }, 64, 25, 10);
