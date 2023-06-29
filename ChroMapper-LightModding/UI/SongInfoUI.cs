@@ -12,6 +12,7 @@ using System.Windows.Media;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
 using Color = UnityEngine.Color;
 using Object = UnityEngine.Object;
 using Transform = UnityEngine.Transform;
