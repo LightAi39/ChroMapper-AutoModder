@@ -1,4 +1,6 @@
-﻿using ChroMapper_LightModding.Export;
+﻿using Beatmap.Base;
+using Beatmap.Enums;
+using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
 using System;
@@ -425,13 +427,86 @@ namespace ChroMapper_LightModding.UI
 
             foreach (var comment in plugin.currentReview.Comments)
             {
-                float position = comment.StartBeat / totalBeats * 926 - 463;
-                UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -14), new Vector2(0,0), null, outlineHelper.ChooseOutlineColor(comment.Type));
+                float? cmbeat = FindOldBeatForSelectedNote(comment.Objects.FirstOrDefault());
+                if (cmbeat != null)
+                {
+                    float position = (float)(cmbeat / totalBeats * 926 - 463);
+                    UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -14), new Vector2(0, 0), null, outlineHelper.ChooseOutlineColor(comment.Type));
+                } 
             }
 
             
         }
 
         #endregion
+
+        public float? FindOldBeatForSelectedNote(SelectedObject mapObject)
+        {
+            var collection = BeatmapObjectContainerCollection.GetCollectionForType(mapObject.ObjectType);
+            BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
+            BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
+
+            if (mapObject.ObjectType == ObjectType.Note)
+            {
+                var container = baseDifficulty.Notes.Where((note) =>
+                {
+                    if (note.JsonTime == mapObject.Beat && note.PosX == mapObject.PosX && note.PosY == mapObject.PosY && note.Color == mapObject.Color)
+                    {
+                        return true;
+                    }
+                    return false;
+                }).FirstOrDefault();
+                if (container != null) return container.SongBpmTime;
+            }
+            else if (mapObject.ObjectType == ObjectType.Obstacle)
+            {
+                var container = baseDifficulty.Obstacles.Where((gridItem) =>
+                {
+                    if (gridItem.JsonTime == mapObject.Beat && gridItem.PosX == mapObject.PosX && gridItem.PosY == mapObject.PosY)
+                    {
+                        return true;
+                    }
+                    return false;
+                }).FirstOrDefault();
+                if (container != null) return container.SongBpmTime;
+            }
+            else if (mapObject.ObjectType == ObjectType.Arc || mapObject.ObjectType == ObjectType.Chain)
+            {
+                BaseSlider container = baseDifficulty.Arcs.Where((slider) =>
+                {
+                    if (slider.JsonTime == mapObject.Beat && slider.PosX == mapObject.PosX && slider.PosY == mapObject.PosY && slider.Color == mapObject.Color)
+                    {
+                        return true;
+                    }
+                    return false;
+                }).FirstOrDefault();
+                if (container == null)
+                {
+                    container = baseDifficulty.Chains.Where((slider) =>
+                    {
+                        if (slider.JsonTime == mapObject.Beat && slider.PosX == mapObject.PosX && slider.PosY == mapObject.PosY && slider.Color == mapObject.Color)
+                        {
+                            return true;
+                        }
+                        return false;
+                    }).FirstOrDefault();
+                }
+                if (container != null) return container.SongBpmTime;
+
+            }
+            else if (mapObject.ObjectType == ObjectType.BpmChange)
+            {
+                var container = baseDifficulty.BpmEvents.Where((bpmEvent) =>
+                {
+                    if (bpmEvent.JsonTime == mapObject.Beat)
+                    {
+                        return true;
+                    }
+                    return false;
+                }).FirstOrDefault();
+                if (container != null) return container.SongBpmTime;
+            }
+            return null;
+        }
     }
 }
