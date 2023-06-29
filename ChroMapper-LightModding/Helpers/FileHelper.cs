@@ -142,8 +142,42 @@ namespace ChroMapper_LightModding.Helpers
         /// </summary>
         public void MapsetReviewBackupSaver()
         {
+            // preparation for the backup limit
+            List<string> files = Directory.GetFiles(plugin.BeatSaberSongContainer.Song.Directory + "/reviews", "*" + fileExtension + fileExtension).ToList();
+
+            List<(MapsetReview, string)> reviews = new();
+
+            foreach (string file in files)
+            {
+                reviews.Add((JsonConvert.DeserializeObject<MapsetReview>(File.ReadAllText(file)), file));
+            }
+
+            reviews = reviews.OrderBy(f => f.Item1.LastEdited).ToList();
+
+            // Sanity check if the review is more likely than not for the currently selected map.
+            // If any of these are true then we can assume this is probably a valid map-review pair without invalidating when any change is made.
+            var correctReviewFilePairs = reviews.Where(x =>
+            {
+                return x.Item1.SongName == plugin.BeatSaberSongContainer.Song.SongName || x.Item1.SongAuthor == plugin.BeatSaberSongContainer.Song.SongAuthorName || x.Item1.Creator == plugin.BeatSaberSongContainer.Song.LevelAuthorName || x.Item1.SongLength == plugin.BeatSaberSongContainer.LoadedSongLength;
+            }).ToList();
+
+            // enforcing the backup limit
+            if (correctReviewFilePairs.Count >= Plugin.backupLimit)
+            {
+                File.Delete(correctReviewFilePairs[0].Item2);
+            }
+
+            var song = plugin.BeatSaberSongContainer.Song;
             var review = plugin.currentMapsetReview;
+
+            // updating song details
+            review.SongName = song.SongName;
+            review.SubName = song.SongSubName;
+            review.SongAuthor = song.SongAuthorName;
+            review.Creator = song.LevelAuthorName;
+            review.SongLength = plugin.BeatSaberSongContainer.LoadedSongLength;
             review.LastEdited = DateTime.UtcNow;
+
             string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second} " + backupText + fileExtension;
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
 

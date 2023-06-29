@@ -458,7 +458,7 @@ namespace ChroMapper_LightModding
                 UnsubscribeFromEditorEvents();
             }
         }
-
+        
         public void SubscribeToEditorEvents()
         {
             _beatmapObjectContainerCollection.ContainerSpawnedEvent += outlineHelper.SetOutlineIfInReview;
