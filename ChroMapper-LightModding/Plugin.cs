@@ -401,6 +401,15 @@ namespace ChroMapper_LightModding
             outlineHelper.ClearOutlineColor(currentReview.Comments.First(x => x.Id == commentId).Objects);
             currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == commentId));
         }
+        
+
+        public void HandleUpdateSongInfoComment(Comment comment)
+        {
+            currentMapsetReview.Comments.Remove(currentMapsetReview.Comments.First(x => x.Id == comment.Id));
+            currentMapsetReview.Comments.Add(comment);
+            currentMapsetReview.Comments = currentMapsetReview.Comments.OrderBy(f => f.StartBeat).ToList();
+            songInfoUI.ShowReviewCommentUI(comment.Id);
+        }
 
         #endregion Comment Handling
 

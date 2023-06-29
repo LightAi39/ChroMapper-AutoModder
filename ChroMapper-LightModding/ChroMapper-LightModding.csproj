@@ -112,4 +112,11 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /y /d  "G:\DEV\repos\ChroMapper-LightModding\ChroMapper-LightModding\bin\Debug\ChroMapper-LightModding.dll" "D:\Chromapper folder\chromapper\Plugins"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

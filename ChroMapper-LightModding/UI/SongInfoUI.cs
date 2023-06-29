@@ -227,7 +227,7 @@ namespace ChroMapper_LightModding.UI
 
             UIHelper.AddButton(_infoMenu.transform, "ViewSongInfoComments", "View Song Info Comments", new Vector2(164, -45), () =>
             {
-                Debug.Log("spawning loloppe note");
+                ShowAllSongInfoCommentsMainUI();
             }, 64, 25, 10);
             #endregion
 
@@ -393,7 +393,7 @@ namespace ChroMapper_LightModding.UI
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard"))
                 {
                     Severity severity = reviews.Where(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
-                    CreateCriteriaStatusElement(severity, "AutoCheckExStatus", new Vector2(84, -75), _diffMenu.transform);
+                    CreateCriteriaStatusElement(severity, "AutoCheckExStatus", new Vector2(84, -100.33f), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx", "Auto Check", new Vector2(116, -100.33f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 7, "Expert");
@@ -402,7 +402,7 @@ namespace ChroMapper_LightModding.UI
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard"))
                 {
                     Severity severity = reviews.Where(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
-                    CreateCriteriaStatusElement(severity, "AutoCheckHStatus", new Vector2(84, -75), _diffMenu.transform);
+                    CreateCriteriaStatusElement(severity, "AutoCheckHStatus", new Vector2(84, -125.66f), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckH", "Auto Check", new Vector2(116, -125.66f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 5, "Hard");
@@ -411,7 +411,7 @@ namespace ChroMapper_LightModding.UI
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard"))
                 {
                     Severity severity = reviews.Where(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
-                    CreateCriteriaStatusElement(severity, "AutoCheckNStatus", new Vector2(84, -75), _diffMenu.transform);
+                    CreateCriteriaStatusElement(severity, "AutoCheckNStatus", new Vector2(84, -151f), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckN", "Auto Check", new Vector2(116, -151f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 3, "Normal");
@@ -420,7 +420,7 @@ namespace ChroMapper_LightModding.UI
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard"))
                 {
                     Severity severity = reviews.Where(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
-                    CreateCriteriaStatusElement(severity, "AutoCheckEStatus", new Vector2(84, -75), _diffMenu.transform);
+                    CreateCriteriaStatusElement(severity, "AutoCheckEStatus", new Vector2(84, -176.33f), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckE", "Auto Check", new Vector2(116, -176.33f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 1, "Easy");
@@ -429,6 +429,134 @@ namespace ChroMapper_LightModding.UI
             }
 
             #endregion
+        }
+
+        public void ShowAllSongInfoCommentsMainUI()
+        {
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("All Comments");
+            List<Comment> comments = plugin.currentMapsetReview.Comments.Take(5).ToList();
+
+            foreach (var comment in comments)
+            {
+                string read = "";
+                if (comment.MarkAsSuppressed)
+                {
+                    read = " - Marked As Suppressed";
+                }
+                dialog.AddComponent<ButtonComponent>()
+                    .WithLabel($"{comment.Type}: {comment.Message}{read}")
+                    .OnClick(() => { ShowReviewCommentUI(comment.Id); });
+            }
+
+            if (plugin.currentMapsetReview.Comments.Count == 0)
+            {
+                dialog.AddComponent<TextComponent>()
+                    .WithInitialValue($"No comments found!");
+            }
+
+            dialog.AddFooterButton(ShowAllSongInfoCommentsMainUI, "<-");
+            dialog.AddFooterButton(null, "Close");
+            if (plugin.currentMapsetReview.Comments.Count > 5)
+            {
+                dialog.AddFooterButton(() =>
+                {
+                    ShowAllSongInfoCommentsMoreUI(5);
+                }, "->");
+            }
+            else
+            {
+                dialog.AddFooterButton(ShowAllSongInfoCommentsMainUI, "->");
+            }
+
+
+            dialog.Open();
+        }
+
+        public void ShowAllSongInfoCommentsMoreUI(int startIndex)
+        {
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("All Comments");
+            int count = 5;
+            bool lastTab = false;
+            if (plugin.currentMapsetReview.Comments.Count < startIndex + count)
+            {
+                count = plugin.currentMapsetReview.Comments.Count - startIndex;
+                lastTab = true;
+            }
+            List<Comment> comments = plugin.currentMapsetReview.Comments.GetRange(startIndex, count).ToList();
+
+            foreach (var comment in comments)
+            {
+                string read = "";
+                if (comment.MarkAsSuppressed)
+                {
+                    read = " - Marked As Suppressed";
+                }
+                dialog.AddComponent<ButtonComponent>()
+                    .WithLabel($"{comment.Type}: {comment.Message}{read}")
+                    .OnClick(() => { ShowReviewCommentUI(comment.Id); });
+            }
+
+            if (startIndex == 5)
+            {
+                dialog.AddFooterButton(ShowAllSongInfoCommentsMainUI, "<-");
+            }
+            else
+            {
+                dialog.AddFooterButton(() =>
+                {
+                    ShowAllSongInfoCommentsMoreUI(startIndex - 5);
+                }, "<-");
+            }
+
+            dialog.AddFooterButton(null, "Close");
+            if (lastTab)
+            {
+                dialog.AddFooterButton(() => ShowAllSongInfoCommentsMoreUI(startIndex), "->");
+            }
+            else
+            {
+                dialog.AddFooterButton(() =>
+                {
+                    ShowAllSongInfoCommentsMoreUI(startIndex + 5);
+                }, "->");
+            }
+
+            dialog.Open();
+        }
+
+        public void ShowReviewCommentUI(string id)
+        {
+            Comment comment = plugin.currentMapsetReview.Comments.Where(x => x.Id == id).First();
+            string message = comment.Response;
+            bool read = comment.MarkAsSuppressed;
+
+            DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("View comment");
+
+            dialog.AddComponent<TextComponent>()
+                .WithInitialValue($"Type: {comment.Type}");
+
+            dialog.AddComponent<TextComponent>()
+                .WithInitialValue($"Comment: {comment.Message}");
+
+            dialog.AddComponent<TextBoxComponent>()
+                .WithLabel("Response:")
+                .WithInitialValue(message)
+                .OnChanged((string s) => { message = s; });
+
+            dialog.AddComponent<ToggleComponent>()
+                .WithLabel("Mark as suppressed")
+                .WithInitialValue(read)
+                .OnChanged((bool o) => { read = o; });
+
+            dialog.AddFooterButton(null, "Close");
+            dialog.AddFooterButton(() =>
+            {
+                comment.Response = message;
+                comment.MarkAsSuppressed = read;
+                plugin.HandleUpdateSongInfoComment(comment);
+            }, "Update reply");
+
+            dialog.Open();
         }
 
         private void CreateCriteriaStatusElement(Severity severity, string name, Vector2 pos, Transform parent = null)

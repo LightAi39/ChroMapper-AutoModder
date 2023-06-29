@@ -10,7 +10,26 @@ namespace ChroMapper_LightModding.Export
         {
             string text = @"";
 
-            text += $"## {review.SongName} {review.SubName} by {review.SongAuthor} - {review.ReviewType}*\n \n";
+            text += $"## {review.SongName} {review.SubName} by {review.SongAuthor} - {review.ReviewType}\n \n";
+
+            text += $"**Song Info Comments:**\n\n";
+
+            foreach (var comment in review.Comments)
+            {
+                text += $"**{comment.Type} - {comment.Message}**";
+
+                if (comment.Response != "")
+                {
+                    text += $"\n- Response: {comment.Response}";
+                }
+
+                if (comment.MarkAsSuppressed)
+                {
+                    text += " - *Comment was marked as suppressed*";
+                }
+
+                text += "\n \n";
+            }
 
             foreach (var diffReview in review.DifficultyReviews)
             {
@@ -47,7 +66,26 @@ namespace ChroMapper_LightModding.Export
             MapsetReview review = _review;
             string text = @"";
 
-            text += $"## {review.SongName} {review.SubName} by {review.SongAuthor} - {review.ReviewType}*\n \n";
+            text += $"## {review.SongName} {review.SubName} by {review.SongAuthor} - {review.ReviewType}\n \n";
+
+            text += $"**Song Info Comments:**\n\n";
+
+            foreach (var comment in review.Comments)
+            {
+                text += $"**{comment.Type} - {comment.Message}**";
+
+                if (comment.Response != "")
+                {
+                    text += $"\n- Response: {comment.Response}";
+                }
+
+                if (comment.MarkAsSuppressed)
+                {
+                    text += " - *Comment was marked as suppressed*";
+                }
+
+                text += "\n \n";
+            }
 
             foreach (var diffReview in review.DifficultyReviews)
             {

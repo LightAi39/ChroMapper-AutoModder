@@ -32,6 +32,6 @@ namespace ChroMapper_LightModding.Models
 
         public List<DifficultyReview> DifficultyReviews { get; set; }
 
-        public List<Comment> Comments { get; set; }
+        public List<Comment> Comments { get; set; } = new List<Comment>();
     }
 }
