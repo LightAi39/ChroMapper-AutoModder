@@ -24,6 +24,11 @@ namespace ChroMapper_LightModding.UI
         private GameObject _menuButton;
         private GameObject _loadMenu;
         private GameObject _infoMenu;
+        private GameObject _diffMenu;
+
+        private Transform _header;
+        private Transform _infoSave;
+        private Transform _diffSave;
         public bool enabled = false;
 
         public SongInfoUI(Plugin plugin, FileHelper fileHelper, Exporter exporter)
@@ -33,13 +38,15 @@ namespace ChroMapper_LightModding.UI
             this.exporter = exporter;
         }
 
-        public void Enable(Transform header, Transform save)
+        public void Enable(Transform header, Transform infoSave, Transform diffSave)
         {
             if (enabled) { return; }
             enabled = true;
-            AddLoadMenu(save);
-            AddInfoMenu(save);
-            AddMenuButton(header);
+            _header = header;
+            _infoSave = infoSave;
+            _diffSave = diffSave;
+            AddLoadMenu(_infoSave);
+            AddMenuButton(_header);
         }
 
         public void Disable()
@@ -69,7 +76,7 @@ namespace ChroMapper_LightModding.UI
                 }
                 else
                 {
-                    _infoMenu.SetActive(!_infoMenu.activeSelf);
+                    ToggleInfoMenu();
                 }
             });
         }
@@ -94,14 +101,14 @@ namespace ChroMapper_LightModding.UI
             {
                 fileHelper.MapsetReviewCreator();
                 _loadMenu.SetActive(false);
-                _infoMenu.SetActive(true);
+                ToggleInfoMenu(false);
             });
             UIHelper.AddButton(_loadMenu.transform, "AutoSelectAMFile", "Autoselect file", new Vector2(0, -31), () =>
             {
                 if (fileHelper.MapsetReviewLoader())
                 {
                     _loadMenu.SetActive(false);
-                    _infoMenu.SetActive(true);
+                    ToggleInfoMenu(false);
                 } else
                 {
                     UIHelper.AddErrorLabel(_loadMenu.transform, "AutoSelectNotFound", "None found!", new Vector2(0, -45));
@@ -113,7 +120,7 @@ namespace ChroMapper_LightModding.UI
                 if (plugin.currentMapsetReview != null)
                 {
                     _loadMenu.SetActive(false);
-                    _infoMenu.SetActive(true);
+                    ToggleInfoMenu(false);
                 } else
                 {
                     UIHelper.AddErrorLabel(_loadMenu.transform, "AutoSelectNotFound", "File not loaded!", new Vector2(72, -45));
@@ -121,8 +128,26 @@ namespace ChroMapper_LightModding.UI
             });
         }
 
+        public void ToggleInfoMenu(bool destroyIfExists = true)
+        {
+            GameObject infoMenu = GameObject.Find("Automodder Info Menu");
+            GameObject diffMenu = GameObject.Find("Automodder Difficulty Menu Overlay");
+            if (infoMenu != null)
+            {
+                if (destroyIfExists) Object.Destroy(infoMenu);
+                if (destroyIfExists) Object.Destroy(diffMenu);
+            } else
+            {
+                AddInfoMenu(_infoSave);
+                AddDifficultyMenu(_diffSave);
+                _infoMenu.SetActive(true);
+                _diffMenu.SetActive(true);
+            }
+        }
+
         public void AddInfoMenu(Transform parent)
         {
+            if (plugin.currentMapsetReview != null) if (plugin.currentMapsetReview.Creator == "Pink") Debug.Log("Pink cute"); // you saw nothing
             _infoMenu = new GameObject("Automodder Info Menu");
             _infoMenu.transform.parent = parent;
             _infoMenu.SetActive(false);
@@ -134,6 +159,7 @@ namespace ChroMapper_LightModding.UI
             image.type = Image.Type.Sliced;
             image.color = new Color(0.24f, 0.24f, 0.24f);
 
+            #region Top left buttons
             UIHelper.AddButton(_infoMenu.transform, "SaveAMFile", "Save File", new Vector2(-166, -18), () =>
             {
                 fileHelper.MapsetReviewSaver();
@@ -151,15 +177,13 @@ namespace ChroMapper_LightModding.UI
                 UIHelper.AddButton(_infoMenu.transform, "ReallyDeleteAMFile", "Confirm Delete", new Vector2(-104, -45), () =>
                 {
                     fileHelper.MapsetReviewRemover();
-                    GameObject gameObjectToDelete = GameObject.Find("CancelDeleteAMFile");
+                    GameObject gameObjectToDelete = GameObject.Find("Automodder Info Menu");
                     Object.Destroy(gameObjectToDelete);
-                    gameObjectToDelete = GameObject.Find("ReallyDeleteAMFile");
-                    Object.Destroy(gameObjectToDelete);
-                    _infoMenu.SetActive(false);
                 });
             });
+            #endregion
 
-
+            #region Top right buttons
             UIHelper.AddButton(_infoMenu.transform, "AutoCheckInfo", "Auto Check Song Info", new Vector2(36, -18), () =>
             {
                 Debug.Log("spawning loloppe note");
@@ -174,8 +198,66 @@ namespace ChroMapper_LightModding.UI
             {
                 exporter.ExportToDiscordMDByImportance(plugin.currentMapsetReview);
             }, 64, 25, 10);
+            #endregion
 
             
+            
+        }
+
+        public void AddDifficultyMenu(Transform parent)
+        {
+            _diffMenu = new GameObject("Automodder Difficulty Menu Overlay");
+            _diffMenu.transform.parent = parent;
+            _diffMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_diffMenu, 400, 200, 1, 10.5f, 0, 0, 1, 1);
+
+            //Image image = _diffMenu.AddComponent<Image>();
+            //image.sprite = PersistentUI.Instance.Sprites.Background;
+            //image.type = Image.Type.Sliced;
+            //image.color = new Color(0.24f, 0.24f, 0.24f);
+
+            #region Autocheck buttons
+            if (plugin.currentMapsetReview != null)
+            {
+                if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard"))
+                {
+                    UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx+", "Auto Check", new Vector2(116, -75), () =>
+                    {
+                        Debug.Log("spawning loloppe note");
+                    }, 50, 25);
+                }
+                if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard"))
+                {
+                    UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx", "Auto Check", new Vector2(116, -100.33f), () =>
+                    {
+                        Debug.Log("spawning loloppe note");
+                    }, 50, 25);
+                }
+                if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard"))
+                {
+                    UIHelper.AddButton(_diffMenu.transform, "AutoCheckH", "Auto Check", new Vector2(116, -125.66f), () =>
+                    {
+                        Debug.Log("spawning loloppe note");
+                    }, 50, 25);
+                }
+                if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard"))
+                {
+                    UIHelper.AddButton(_diffMenu.transform, "AutoCheckM", "Auto Check", new Vector2(116, -151f), () =>
+                    {
+                        Debug.Log("spawning loloppe note");
+                    }, 50, 25);
+                }
+                if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard"))
+                {
+                    UIHelper.AddButton(_diffMenu.transform, "AutoCheckE", "Auto Check", new Vector2(116, -176.33f), () =>
+                    {
+                        Debug.Log("spawning loloppe note");
+                    }, 50, 25);
+                }
+            }
+
+            #endregion
         }
 
     }

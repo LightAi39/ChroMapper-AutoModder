@@ -169,7 +169,8 @@ namespace ChroMapper_LightModding
             _beatSaberSongContainer = UnityEngine.Object.FindObjectOfType<BeatSaberSongContainer>();
             
             GameObject songInfoPanel = GameObject.Find("SongInfoPanel");
-            songInfoUI.Enable(songInfoPanel.transform.Find("Header"), songInfoPanel.transform.Find("Save"));
+            GameObject difficultyPanel = GameObject.Find("DifficultyPanel");
+            songInfoUI.Enable(songInfoPanel.transform.Find("Header"), songInfoPanel.transform.Find("Save"), difficultyPanel.transform.Find("Save"));
 
             ResetAfterLeavingEditor();
         }
