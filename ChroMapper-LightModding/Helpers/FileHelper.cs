@@ -211,5 +211,51 @@ namespace ChroMapper_LightModding.Helpers
             Debug.Log("Loaded mapset review.");
         }
 
+        /// <summary>
+        /// Check if theres a review for every difficulty and if there are any reviews for difficulties that dont exist
+        /// </summary>
+        public void CheckDifficultyReviewsExist()
+        {
+            var song = plugin.BeatSaberSongContainer.Song;
+
+            List<DifficultyReview> difficultyReviews = plugin.currentMapsetReview.DifficultyReviews;
+
+            // is there a file for every difficulty
+            foreach (var diffSet in song.DifficultyBeatmapSets)
+            {
+                foreach (var diff in diffSet.DifficultyBeatmaps)
+                {
+                    if (!difficultyReviews.Any(x => x.DifficultyCharacteristic == diffSet.BeatmapCharacteristicName && x.Difficulty == diff.Difficulty && x.DifficultyRank == diff.DifficultyRank))
+                    {
+                        difficultyReviews.Add(new()
+                        {
+                            DifficultyCharacteristic = diffSet.BeatmapCharacteristicName,
+                            Difficulty = diff.Difficulty,
+                            DifficultyRank = diff.DifficultyRank
+                        });
+                    }
+                }
+            }
+
+            // are there any review files for difficulties that dont exist
+            foreach (var diff in difficultyReviews)
+            {
+                if (!song.DifficultyBeatmapSets.Any(x => x.BeatmapCharacteristicName == diff.DifficultyCharacteristic))
+                {
+                    difficultyReviews.Remove(diff);
+                    return;
+                }
+                if (!song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == diff.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Any(y => y.Difficulty == diff.Difficulty && y.DifficultyRank == diff.DifficultyRank))
+                {
+                    difficultyReviews.Remove(diff);
+                    return;
+                }
+            }
+
+            difficultyReviews = difficultyReviews.OrderByDescending(x => x.DifficultyRank).ToList();
+
+            plugin.currentMapsetReview.DifficultyReviews = difficultyReviews;
+        }
+
     }
 }

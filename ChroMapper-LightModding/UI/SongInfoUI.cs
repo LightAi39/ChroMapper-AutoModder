@@ -138,6 +138,7 @@ namespace ChroMapper_LightModding.UI
                 if (destroyIfExists) Object.Destroy(diffMenu);
             } else
             {
+                fileHelper.CheckDifficultyReviewsExist();
                 AddInfoMenu(_infoSave);
                 AddDifficultyMenu(_diffSave);
                 _infoMenu.SetActive(true);
