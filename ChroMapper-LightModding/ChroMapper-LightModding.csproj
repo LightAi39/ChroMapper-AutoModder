@@ -88,6 +88,7 @@
     <Compile Include="BeatmapScanner\TechAlgo\ScanAlgo.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\ScanMethod.cs" />
     <Compile Include="Export\Exporter.cs" />
+    <Compile Include="Helpers\AutocheckHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Helpers\OutlineHelper.cs" />
     <Compile Include="Models\Comment.cs" />

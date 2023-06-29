@@ -25,6 +25,7 @@ namespace ChroMapper_LightModding.UI
         private Plugin plugin;
         private FileHelper fileHelper;
         private Exporter exporter;
+        private AutocheckHelper autocheckHelper;
 
         private GameObject _menuButton;
         private GameObject _loadMenu;
@@ -36,11 +37,12 @@ namespace ChroMapper_LightModding.UI
         private Transform _diffSave;
         public bool enabled = false;
 
-        public SongInfoUI(Plugin plugin, FileHelper fileHelper, Exporter exporter)
+        public SongInfoUI(Plugin plugin, FileHelper fileHelper, Exporter exporter, AutocheckHelper autocheckHelper)
         {
             this.plugin = plugin;
             this.fileHelper = fileHelper;
             this.exporter = exporter;
+            this.autocheckHelper = autocheckHelper;
         }
 
         public void Enable(Transform header, Transform infoSave, Transform diffSave)
@@ -136,19 +138,36 @@ namespace ChroMapper_LightModding.UI
         public void ToggleInfoMenu(bool destroyIfExists = true)
         {
             GameObject infoMenu = GameObject.Find("Automodder Info Menu");
-            GameObject diffMenu = GameObject.Find("Automodder Difficulty Menu Overlay");
             if (infoMenu != null)
             {
-                if (destroyIfExists) Object.Destroy(infoMenu);
-                if (destroyIfExists) Object.Destroy(diffMenu);
+                if (destroyIfExists) RemoveInfoMenu();
             } else
             {
-                fileHelper.CheckDifficultyReviewsExist();
-                AddInfoMenu(_infoSave);
-                AddDifficultyMenu(_diffSave);
-                _infoMenu.SetActive(true);
-                _diffMenu.SetActive(true);
+                CreateInfoMenu();
             }
+        }
+
+        public void RefreshInfoMenu()
+        {
+            RemoveInfoMenu();
+            CreateInfoMenu();
+        }
+
+        private void RemoveInfoMenu()
+        {
+            GameObject infoMenu = GameObject.Find("Automodder Info Menu");
+            GameObject diffMenu = GameObject.Find("Automodder Difficulty Menu Overlay");
+            Object.Destroy(infoMenu);
+            Object.Destroy(diffMenu);
+        }
+
+        private void CreateInfoMenu()
+        {
+            fileHelper.CheckDifficultyReviewsExist();
+            AddInfoMenu(_infoSave);
+            AddDifficultyMenu(_diffSave);
+            _infoMenu.SetActive(true);
+            _diffMenu.SetActive(true);
         }
 
         public void AddInfoMenu(Transform parent)
@@ -192,7 +211,8 @@ namespace ChroMapper_LightModding.UI
             #region Top right buttons
             UIHelper.AddButton(_infoMenu.transform, "AutoCheckInfo", "Auto Check Song Info", new Vector2(36, -18), () =>
             {
-                Debug.Log("spawning loloppe note");
+                autocheckHelper.RunAutoCheckOnInfo();
+                RefreshInfoMenu();
             }, 64, 25, 10);
 
             UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordBeatOrder", "Export (Beat Ordered)", new Vector2(100, -18), () =>
