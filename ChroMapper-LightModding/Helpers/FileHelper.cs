@@ -143,7 +143,7 @@ namespace ChroMapper_LightModding.Helpers
         public void MapsetReviewBackupSaver()
         {
             // preparation for the backup limit
-            List<string> files = Directory.GetFiles(plugin.BeatSaberSongContainer.Song.Directory + "/reviews", "*" + fileExtension + fileExtension).ToList();
+            List<string> files = Directory.GetFiles(plugin.BeatSaberSongContainer.Song.Directory + "/reviews", "*" + backupText + fileExtension).ToList();
 
             List<(MapsetReview, string)> reviews = new();
 
