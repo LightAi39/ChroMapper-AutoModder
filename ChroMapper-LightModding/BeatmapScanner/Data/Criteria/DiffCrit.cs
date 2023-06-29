@@ -2,7 +2,7 @@
 
 namespace ChroMapper_LightModding.BeatmapScanner.Data.Criteria
 {
-    internal class DiffCrit
+    public class DiffCrit
     {
         public Severity HotStart { get; set; } = Severity.Fail;
         public Severity ColdEnd { get; set; } = Severity.Fail;
@@ -24,5 +24,20 @@ namespace ChroMapper_LightModding.BeatmapScanner.Data.Criteria
         public Severity DifficultyLabelSize { get; set; } = Severity.Fail;
         public Severity DifficultyName { get; set; } = Severity.Fail;
         public Severity NJS { get; set; } = Severity.Fail;
+
+        public bool HasFailedSeverity()
+        {
+            DiffCrit diffCrit = this;
+            var properties = typeof(DiffCrit).GetProperties();
+            foreach (var property in properties)
+            {
+                if ((Severity)property.GetValue(diffCrit) != Severity.Success)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 }

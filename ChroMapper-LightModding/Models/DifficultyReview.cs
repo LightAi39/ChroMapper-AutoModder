@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace ChroMapper_LightModding.Models
 
         public List<Comment> Comments { get; set; } = new List<Comment>();
 
-        //public DiffCrit Critera { get; set; } uncomment when we merge
+        public DiffCrit Critera { get; set; } = new DiffCrit();
 
         public string OverallComment { get; set; } = null!;
 

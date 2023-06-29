@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Media;
+using System.Xml.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -355,10 +356,18 @@ namespace ChroMapper_LightModding.UI
             //image.color = new Color(0.24f, 0.24f, 0.24f);
 
             #region Autocheck buttons
+            List<DifficultyReview> reviews = plugin.currentMapsetReview.DifficultyReviews;
+
             if (plugin.currentMapsetReview != null)
             {
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard"))
                 {
+                    Severity severity = Severity.Success;
+                    if (reviews.Where(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HasFailedSeverity())
+                    {
+                        severity = Severity.Fail;
+                    }
+                    CreateCriteriaStatusElement(severity, "AutoCheckEx+Status", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx+", "Auto Check", new Vector2(116, -75), () =>
                     {
                         Debug.Log("spawning loloppe note");
@@ -366,6 +375,12 @@ namespace ChroMapper_LightModding.UI
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard"))
                 {
+                    Severity severity = Severity.Success;
+                    if (reviews.Where(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HasFailedSeverity())
+                    {
+                        severity = Severity.Fail;
+                    }
+                    CreateCriteriaStatusElement(severity, "AutoCheckExStatus", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx", "Auto Check", new Vector2(116, -100.33f), () =>
                     {
                         Debug.Log("spawning loloppe note");
@@ -373,6 +388,12 @@ namespace ChroMapper_LightModding.UI
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard"))
                 {
+                    Severity severity = Severity.Success;
+                    if (reviews.Where(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HasFailedSeverity())
+                    {
+                        severity = Severity.Fail;
+                    }
+                    CreateCriteriaStatusElement(severity, "AutoCheckHStatus", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckH", "Auto Check", new Vector2(116, -125.66f), () =>
                     {
                         Debug.Log("spawning loloppe note");
@@ -380,6 +401,12 @@ namespace ChroMapper_LightModding.UI
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard"))
                 {
+                    Severity severity = Severity.Success;
+                    if (reviews.Where(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HasFailedSeverity())
+                    {
+                        severity = Severity.Fail;
+                    }
+                    CreateCriteriaStatusElement(severity, "AutoCheckMStatus", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckM", "Auto Check", new Vector2(116, -151f), () =>
                     {
                         Debug.Log("spawning loloppe note");
@@ -387,6 +414,12 @@ namespace ChroMapper_LightModding.UI
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard"))
                 {
+                    Severity severity = Severity.Success;
+                    if (reviews.Where(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HasFailedSeverity())
+                    {
+                        severity = Severity.Fail;
+                    }
+                    CreateCriteriaStatusElement(severity, "AutoCheckEStatus", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckE", "Auto Check", new Vector2(116, -176.33f), () =>
                     {
                         Debug.Log("spawning loloppe note");
@@ -397,8 +430,9 @@ namespace ChroMapper_LightModding.UI
             #endregion
         }
 
-        private void CreateCriteriaStatusElement(Severity severity, string name, Vector2 pos)
+        private void CreateCriteriaStatusElement(Severity severity, string name, Vector2 pos, Transform parent = null)
         {
+            if (parent == null) parent = _infoMenu.transform;
             GameObject critStatusObj = GameObject.Find($"Crit_{name}_status");
             if (critStatusObj != null) Object.Destroy(critStatusObj);
 
@@ -418,7 +452,7 @@ namespace ChroMapper_LightModding.UI
                     color = Color.gray;
                     break;
             }
-            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}_status", "●", pos, new Vector2(25, 24), null, color, 12);
+            UIHelper.AddLabel(parent, $"Crit_{name}_status", "●", pos, new Vector2(25, 24), null, color, 12);
         }
 
         private Severity IncrementSeverity(Severity severity)
