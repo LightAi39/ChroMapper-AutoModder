@@ -52,7 +52,7 @@ namespace ChroMapper_LightModding.Helpers
 
             // Sanity check if the review is more likely than not for the currently selected map.
             // If any of these are true then we can assume this is probably a valid map-review pair without invalidating when any change is made.
-            var correctReviewFilePair = reviews.First(x =>
+            var correctReviewFilePair = reviews.FirstOrDefault(x =>
             {
                 return x.Item1.SongName == plugin.BeatSaberSongContainer.Song.SongName || x.Item1.SongAuthor == plugin.BeatSaberSongContainer.Song.SongAuthorName || x.Item1.Creator == plugin.BeatSaberSongContainer.Song.LevelAuthorName || x.Item1.SongLength == plugin.BeatSaberSongContainer.LoadedSongLength;
             });
