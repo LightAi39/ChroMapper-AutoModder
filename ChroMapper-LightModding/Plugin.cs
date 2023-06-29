@@ -167,6 +167,10 @@ namespace ChroMapper_LightModding
             {
                 SubscribeToEditorEvents();
                 outlineHelper.selectionCache = new();
+
+                MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
+                editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"));
+
             }
         }
 
@@ -374,6 +378,7 @@ namespace ChroMapper_LightModding
             {
                 outlineHelper.SetOutlineColor(comment.Objects, outlineHelper.ChooseOutlineColor(comment.Type));
             }
+            editorUI.RefreshTimelineMarkers();
         }
 
         public string HandleCreateComment(CommentTypesEnum type, string message, List<SelectedObject> selectedNotes)
@@ -393,6 +398,7 @@ namespace ChroMapper_LightModding
             currentReview.Comments = currentReview.Comments.OrderBy(f => f.StartBeat).ToList();
 
             outlineHelper.SetOutlineColor(selectedNotes, outlineHelper.ChooseOutlineColor(type));
+            editorUI.RefreshTimelineMarkers();
             return id;
         }
 
@@ -400,6 +406,7 @@ namespace ChroMapper_LightModding
         {
             outlineHelper.ClearOutlineColor(currentReview.Comments.First(x => x.Id == commentId).Objects);
             currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == commentId));
+            editorUI.RefreshTimelineMarkers();
         }
         
 

@@ -4,6 +4,9 @@ using ChroMapper_LightModding.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace ChroMapper_LightModding.UI
 {
@@ -14,6 +17,11 @@ namespace ChroMapper_LightModding.UI
         private OutlineHelper outlineHelper;
         private FileHelper fileHelper;
 
+        private GameObject _timelineMarkers;
+
+        private Transform _songTimeline;
+        public bool enabled = false;
+
         public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter)
         {
             this.plugin = plugin;
@@ -22,7 +30,7 @@ namespace ChroMapper_LightModding.UI
             this.exporter = exporter;
         }
 
-
+        #region CMUI
         public void ShowMainUI()
         {
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Automodder");
@@ -352,5 +360,78 @@ namespace ChroMapper_LightModding.UI
 
             dialog.Open();
         }
+        #endregion
+
+        #region New UI
+        public void Enable(Transform songTimeline)
+        {
+            if (enabled) { return; }
+            enabled = true;
+            _songTimeline = songTimeline;
+            CreateTimelineMarkers();
+        }
+
+        public void Disable()
+        {
+            if (!enabled) { return; }
+            enabled = false;
+        }
+
+        public void ToggleTimelineMarkers(bool destroyIfExists = true)
+        {
+            GameObject timelineMarkers = GameObject.Find("Automodder Timeline Markers");
+            if (timelineMarkers != null)
+            {
+                if (destroyIfExists) RemoveTimelineMarkers();
+            }
+            else
+            {
+                CreateTimelineMarkers();
+            }
+        }
+
+        public void RefreshTimelineMarkers()
+        {
+            RemoveTimelineMarkers();
+            CreateTimelineMarkers();
+        }
+
+        private void RemoveTimelineMarkers()
+        {
+            GameObject timelineMarkers = GameObject.Find("Automodder Timeline Markers");
+            Object.Destroy(timelineMarkers);
+        }
+
+        private void CreateTimelineMarkers()
+        {
+            AddTimelineMarkers(_songTimeline);
+            _timelineMarkers.SetActive(true);
+        }
+
+        public void AddTimelineMarkers(Transform parent)
+        {
+            _timelineMarkers = new GameObject("Automodder Timeline Markers");
+            _timelineMarkers.transform.parent = parent;
+            _timelineMarkers.SetActive(false);
+
+            UIHelper.AttachTransform(_timelineMarkers, 926, 22, 0.99f, 0.9f, 0, 0, 1, 1);
+
+            //Image image = _timelineMarkers.AddComponent<Image>();
+            //image.sprite = PersistentUI.Instance.Sprites.Background;
+            //image.type = Image.Type.Sliced;
+            //image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            float totalBeats = (plugin.BeatSaberSongContainer.Song.BeatsPerMinute / 60) * plugin.BeatSaberSongContainer.LoadedSongLength;
+
+            foreach (var comment in plugin.currentReview.Comments)
+            {
+                float position = comment.StartBeat / totalBeats * 926 - 463;
+                UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -14), new Vector2(0,0), null, outlineHelper.ChooseOutlineColor(comment.Type));
+            }
+
+            
+        }
+
+        #endregion
     }
 }
