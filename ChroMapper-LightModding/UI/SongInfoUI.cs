@@ -160,15 +160,22 @@ namespace ChroMapper_LightModding.UI
             });
 
 
-            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordSeverityOrder", "Export (Severity Ordered)", new Vector2(164, -18), () =>
+            UIHelper.AddButton(_infoMenu.transform, "RunAutoCheck", "Run Auto Checker", new Vector2(36, -18), () =>
             {
-                exporter.ExportToDiscordMDByImportance(plugin.currentMapsetReview);
+                Debug.Log("spawning loloppe note");
             }, 64, 25, 10);
 
             UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordBeatOrder", "Export (Beat Ordered)", new Vector2(100, -18), () =>
             {
                 exporter.ExportToDiscordMDByBeats(plugin.currentMapsetReview);
             }, 64, 25, 10);
+
+            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordSeverityOrder", "Export (Severity Ordered)", new Vector2(164, -18), () =>
+            {
+                exporter.ExportToDiscordMDByImportance(plugin.currentMapsetReview);
+            }, 64, 25, 10);
+
+            
         }
 
     }
