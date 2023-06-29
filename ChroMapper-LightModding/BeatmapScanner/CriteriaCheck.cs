@@ -624,7 +624,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         {
             DifficultyReview review = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault();
 
-            review.OverallComment += $"\n{message}";
+            review.OverallComment += $" \n{message}";
         }
     }
 }
