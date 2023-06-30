@@ -57,7 +57,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 Slider = SliderCheck(),
                 DifficultyLabelSize = DifficultyLabelSizeCheck(),
                 DifficultyName = DifficultyNameCheck(),
-                NJS = NJSCheck()
+                NJS = NJSCheck(),
+                FusedElement = FusedElementCheck()
             };
             return diffCrit;
         }
@@ -155,12 +156,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                         if (baseDifficulty.Notes.Any())
                         {
-                            List<BaseNote> notes = baseDifficulty.Notes.ToList();
+                            List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1).ToList();
                             notes = notes.OrderBy(o => o.JsonTime).ToList();
 
                             if (notes.Count > 0)
                             {
-                                List<BaseNote> bombs = baseDifficulty.Bombs.Cast<BaseNote>().Where(n => n.Type == 3).ToList();
+                                List<BaseNote> bombs = baseDifficulty.Notes.Where(n => n.Type == 3).ToList();
                                 bombs = bombs.OrderBy(b => b.JsonTime).ToList();
 
                                 List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
@@ -508,6 +509,81 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return issue;
         }
 
+        public Severity FusedElementCheck()
+        {
+            var issue = Severity.Success;
+            // TODO: Add chains?
+            var cubes = BeatmapScanner.Cubes;
+            var bombs = BeatmapScanner.Bombs;
+            var walls = BeatmapScanner.Walls;
+            // TODO: Make the 30ms configurable
+            var beatms = 0.03f / (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+
+            foreach (var w in walls)
+            {
+                foreach (var c in cubes)
+                {
+                    if (c.Time >= w.JsonTime - beatms && c.Time <= w.JsonTime + w.Duration + beatms && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer <= w.PosY + w.Height && c.Layer >= w.PosY - 1)
+                    {
+                        Debug.Log(c.Layer);
+                        CreateDiffCommentNote("R3FA-B - Notes cannot collide with notes, walls, or bombs within 30ms in the same line", CommentTypesEnum.Issue, c);
+                        issue = Severity.Fail;
+                    }
+                }
+                foreach (var b in bombs)
+                {
+                    if (b.JsonTime >= w.JsonTime - beatms && b.JsonTime <= w.JsonTime + w.Duration + beatms && b.PosX <= w.PosX + w.Width - 1 && b.PosX >= w.PosX && b.PosY <= w.PosY + w.Height && b.PosY >= w.PosY - 1)
+                    {
+                        Debug.Log("a " + b.PosY);
+                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within 30ms in the same line", CommentTypesEnum.Issue, b);
+                        issue = Severity.Fail;
+                    }
+                }
+            }
+
+            for (int i = 0; i < cubes.Count; i++)
+            {
+                var c = cubes[i];
+                for (int j = i + 1; j < cubes.Count; j++)
+                {
+                    var c2 = cubes[j];
+                    if (c.Time >= c2.Time && c.Time <= c2.Time + beatms && c.Line == c2.Line && c.Layer == c2.Layer && c.Type != c2.Type)
+                    {
+                        CreateDiffCommentNote("R3FA-B - Notes cannot collide with notes, walls, or bombs within 30ms in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3FA-B - Notes cannot collide with notes, walls, or bombs within 30ms in the same line", CommentTypesEnum.Issue, c2);
+                        issue = Severity.Fail;
+                    }
+                }
+                for (int j = 0; j < bombs.Count; j++)
+                {
+                    var b = bombs[j];
+                    if (b.JsonTime >= c.Time - beatms && b.JsonTime <= c.Time + beatms && c.Line == b.PosX && c.Layer == b.PosY)
+                    {
+                        CreateDiffCommentNote("R3FA-B - Notes cannot collide with notes, walls, or bombs within 30ms in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within 30ms in the same line", CommentTypesEnum.Issue, b);
+                        issue = Severity.Fail;
+                    }
+                }
+            }
+
+            for (int i = 0; i < bombs.Count; i++)
+            {
+                var b = bombs[i];
+                for (int j = i + 1; j < bombs.Count; j++)
+                {
+                    var b2 = bombs[j];
+                    if (b.JsonTime >= b2.JsonTime - beatms && b.JsonTime <= b2.JsonTime + beatms && b.PosX == b2.PosX && b.PosY == b2.PosY)
+                    {
+                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within 30ms in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within 30ms in the same line", CommentTypesEnum.Issue, b2);
+                        issue = Severity.Fail;
+                    }
+                }
+            }
+
+            return issue;
+        }
+
         /// <summary>
         /// Create a comment in the mapsetreview file
         /// </summary>
@@ -583,7 +659,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 Beat = bomb.JsonTime,
                 PosX = bomb.PosX,
                 PosY = bomb.PosY,
-                Color = 2,
+                Color = 3,
                 ObjectType = bomb.ObjectType
             };
 

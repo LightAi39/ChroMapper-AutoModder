@@ -38,12 +38,12 @@ namespace ChroMapper_LightModding.Helpers
 
             if (baseDifficulty.Notes.Any())
             {
-                List<BaseNote> notes = baseDifficulty.Notes.ToList();
+                List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1).ToList();
                 notes = notes.OrderBy(o => o.JsonTime).ToList();
 
                 if (notes.Count > 0)
                 {
-                    List<BaseNote> bombs = baseDifficulty.Bombs.Cast<BaseNote>().Where(n => n.Type == 3).ToList();
+                    List<BaseNote> bombs = baseDifficulty.Notes.Where(n => n.Type == 3).ToList();
                     bombs = bombs.OrderBy(b => b.JsonTime).ToList();
 
                     List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
