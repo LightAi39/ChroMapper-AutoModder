@@ -449,8 +449,17 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         public Severity DifficultyNameCheck()
         {
-            ExtendOverallComment("R7G - Warning - Difficulty name must not contain obscene content");
-            return Severity.Warning;
+            // TODO: Add auto detect for obscene content
+            var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
+            if (diff != null)
+            {
+                if (diff.CustomData.HasKey("_difficultyLabel"))
+                {
+                    ExtendOverallComment("R7G - Warning - Difficulty name must not contain obscene content");
+                    return Severity.Warning;
+                }
+            }
+            return Severity.Success;
         }
 
         public Severity NJSCheck()
