@@ -115,7 +115,7 @@ namespace ChroMapper_LightModding.UI
                     read = " - Marked As Read";
                 }
                 dialog.AddComponent<ButtonComponent>()
-                    .WithLabel($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type}{read}")
+                    .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
                     .OnClick(() => { ShowReviewCommentUI(comment.Id); });
             }
 
@@ -163,7 +163,7 @@ namespace ChroMapper_LightModding.UI
                     read = " - Marked As Read";
                 }
                 dialog.AddComponent<ButtonComponent>()
-                    .WithLabel($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type}{read}")
+                    .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
                     .OnClick(() => { ShowReviewCommentUI(comment.Id); });
             }
 
