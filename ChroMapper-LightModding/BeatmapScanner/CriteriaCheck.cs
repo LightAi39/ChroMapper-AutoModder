@@ -641,7 +641,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
             comments.Add(comment);
-            comments = comments.OrderBy(f => f.StartBeat).ToList();
+            comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
         }
 
         /// <summary>
@@ -676,7 +676,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
             comments.Add(comment);
-            comments = comments.OrderBy(f => f.StartBeat).ToList();
+            comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
         }
 
         /// <summary>
@@ -711,7 +711,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
             comments.Add(comment);
-            comments = comments.OrderBy(f => f.StartBeat).ToList();
+            comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
         }
 
         /// <summary>

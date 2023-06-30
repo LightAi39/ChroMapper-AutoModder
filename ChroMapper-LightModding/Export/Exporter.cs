@@ -121,7 +121,7 @@ namespace ChroMapper_LightModding.Export
                     text += $"**Overall feedback:**\n{diffReview.OverallComment}";
                 }
 
-                diffReview.Comments = diffReview.Comments.OrderBy(x => x.StartBeat).ToList();
+                diffReview.Comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
             }
 
             CopyToClipboard(text);
