@@ -1,14 +1,15 @@
 ﻿using Beatmap.Base;
 using ChroMapper_LightModding.BeatmapScanner.Data;
 using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
-using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Windows.Media.Media3D;
+using System.Windows;
 using UnityEngine;
 using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -61,19 +62,18 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return diffCrit;
         }
 
-        public static Severity SongNameCheck()
+        public Severity SongNameCheck()
         {
-            if(BeatSaberSongContainer.Instance.Song.SongName.Count() == 0)
+            if (BeatSaberSongContainer.Instance.Song.SongName.Count() == 0)
             {
-                // TODO
-                Debug.Log("Error found: Song Name is empty.");
+                CreateSongInfoComment("R7A - Song Name field is empty", CommentTypesEnum.Issue);
                 return Severity.Fail;
             }
 
             return Severity.Success;
         }
 
-        public static Severity SubNameCheck()
+        public Severity SubNameCheck()
         {
             var issue = Severity.Success;
             var name = BeatSaberSongContainer.Instance.Song.SongName.ToLower();
@@ -82,112 +82,148 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (name.Contains("remix") || name.Contains("ver.") || name.Contains("feat.") || name.Contains("ft.") || name.Contains("featuring") || name.Contains("cover"))
                 {
-                    // TODO
-                    Debug.Log("Error found in the Song Name field: Tags should be in the Sub Name field.");
+                    CreateSongInfoComment("R7B - Song Name - Tags should be in the Sub Name field", CommentTypesEnum.Issue);
                     issue = Severity.Fail;
-                }  
+                }
             }
             if (author.Count() != 0)
             {
                 if (author.Contains("remix") || author.Contains("ver.") || author.Contains("feat.") || author.Contains("ft.") || author.Contains("featuring") || author.Contains("cover"))
                 {
-                    // TODO
-                    Debug.Log("Error found in the Song Author field: Tags should be in the Sub Name field.");
+                    CreateSongInfoComment("R7B - Song Author - Tags should be in the Sub Name field", CommentTypesEnum.Issue);
                     issue = Severity.Fail;
-                }    
+                }
             }
 
             return issue;
         }
 
-        public static Severity SongAuthorCheck()
+        public Severity SongAuthorCheck()
         {
             if (BeatSaberSongContainer.Instance.Song.SongAuthorName.Count() == 0)
             {
-                // TODO
-                Debug.Log("Error found: The Song Author field is empty.");
+                CreateSongInfoComment("R7C - Song Author field is empty", CommentTypesEnum.Issue);
                 return Severity.Fail;
             }
             return Severity.Success;
         }
 
-        public static Severity CreatorCheck()
+        public Severity CreatorCheck()
         {
             if (BeatSaberSongContainer.Instance.Song.LevelAuthorName.Count() == 0)
             {
-                // TODO
-                Debug.Log("Error found: The Creator field is empty.");
+                CreateSongInfoComment("R7C - Creator field is empty", CommentTypesEnum.Issue);
                 return Severity.Fail;
             }
             // Add config
             var maximum = 30;
             if (BeatSaberSongContainer.Instance.Song.LevelAuthorName.Count() > maximum)
             {
-                // TODO
-                Debug.Log("Error found: The Creator field is too long. Maybe use a group name instead?");
+                CreateSongInfoComment("R7C - Creator field is too long. Maybe use a group name instead?", CommentTypesEnum.Suggestion);
                 return Severity.Warning;
             }
             return Severity.Success;
         }
 
-        public static Severity OffsetCheck()
+        public Severity OffsetCheck()
         {
             if (BeatSaberSongContainer.Instance.Song.SongTimeOffset != 0)
             {
-                // TODO
-                Debug.Log("Error found: Song Time Offset is not 0. This is a deprecated feature.");
+                CreateSongInfoComment("R7C - Song Time Offset is not 0. This is a deprecated feature", CommentTypesEnum.Issue);
                 return Severity.Fail;
             }
             return Severity.Success;
         }
 
-        public static Severity BPMCheck()
+        public Severity BPMCheck()
         {
-            // TODO idk
-            return Severity.Success;
+            CreateSongInfoComment("R1A - The map's BPM must be set to one of the song's BPM or a multiple of the song's BPM", CommentTypesEnum.Unsure);
+            return Severity.Warning;
         }
 
-        public static Severity DifficultyOrderingCheck()
+        public Severity DifficultyOrderingCheck()
         {
-            // TODO: Run BeatmapScanner on all diffs from the song menu to fetch the pass rating of each, and then use that info to check if the ordering is right. Ascending order.
-            return Severity.Success;
+            var passStandard = new List<double>();
+
+            foreach (var diffset in BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets)
+            {
+                if (diffset.BeatmapCharacteristicName == "Standard")
+                {
+                    foreach (var diff in diffset.DifficultyBeatmaps)
+                    {
+                        BaseDifficulty baseDifficulty = BeatSaberSongContainer.Instance.Song.GetMapFromDifficultyBeatmap(diff);
+
+                        if (baseDifficulty.Notes.Any())
+                        {
+                            List<BaseNote> notes = baseDifficulty.Notes.ToList();
+                            notes = notes.OrderBy(o => o.JsonTime).ToList();
+
+                            if (notes.Count > 0)
+                            {
+                                List<BaseNote> bombs = baseDifficulty.Bombs.Cast<BaseNote>().Where(n => n.Type == 3).ToList();
+                                bombs = bombs.OrderBy(b => b.JsonTime).ToList();
+
+                                List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
+                                obstacles = obstacles.OrderBy(o => o.JsonTime).ToList();
+
+                                var data = BeatmapScanner.Analyzer(notes, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+                                passStandard.Add(data.diff);
+                            }
+                        }
+                    }
+                }
+            }
+
+            var order = passStandard.OrderBy(x => x).ToList();
+            if (passStandard.SequenceEqual(order))
+            {
+                return Severity.Success;
+            }
+
+            CreateSongInfoComment("R7E - Difficulty Ordering is wrong\nCurrent order: " + string.Join(",", passStandard.ToArray()) + "\nExpected order: " +
+                    string.Join(",", order.ToArray()), CommentTypesEnum.Issue);
+            return Severity.Fail;
         }
 
-        public static Severity RequirementsCheck()
+        public Severity RequirementsCheck()
         {
             foreach (var diffset in BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets)
             {
                 foreach (var diff in diffset.DifficultyBeatmaps)
                 {
-                    if (diff.CustomData.HasKey("_requirements"))
+                    if (diff.CustomData != null)
                     {
-                        foreach (var req in diff.CustomData["_requirements"].Values)
+                        if (diff.CustomData.HasKey("_requirements"))
                         {
-                            // TODO
-                            Debug.Log("Error found: " + diff.BeatmapFilename + " has mod requirement.");
-                            return Severity.Fail;
+                            bool real = false;
+                            foreach (var req in diff.CustomData["_requirements"].Values)
+                            {
+                                CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue);
+                                real = true;
+                            }
+                            if (real)
+                            {
+                                return Severity.Fail;
+                            }
                         }
                     }
                 }
             }
- 
+
             return Severity.Success;
         }
 
-        public static Severity PreviewCheck()
+        public Severity PreviewCheck()
         {
             if (BeatSaberSongContainer.Instance.Song.PreviewStartTime == 12 && BeatSaberSongContainer.Instance.Song.PreviewDuration == 10)
             {
-                // TODO
-                Debug.Log("The Preview duration is currently default value, is that right?");
+                CreateSongInfoComment("R7C - Modify Default Song Preview", CommentTypesEnum.Suggestion);
                 return Severity.Warning;
             }
             return Severity.Success;
         }
 
-        
-
-        public static Severity HotStartCheck()
+        public Severity HotStartCheck()
         {
             var issue = Severity.Success;
             var cube = BeatmapScanner.Cubes;
@@ -200,8 +236,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (c.Time < limit)
                 {
-                    // TODO: Add error message on the note here
-                    Debug.Log("Error found: note at " + c.Time + " beat is a hot start. Minimum " + limit.ToString() + " beat.");
+                    CreateDiffCommentNote("R1E - Hot Start", CommentTypesEnum.Issue, c);
                     issue = Severity.Fail;
                 }
                 else break;
@@ -210,8 +245,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (w.JsonTime < limit && (w.PosX == 1 || w.PosX == 2))
                 {
-                    // TODO: Add error message on the wall here
-                    Debug.Log("Error found: wall at " + w.JsonTime + " is a hot start. Minimum " + limit.ToString() + " beat.");
+                    CreateDiffCommentObstacle("R1E - Hot Start", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
                 else break;
@@ -219,7 +253,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return issue;
         }
 
-        public static Severity ColdEndCheck()
+        public Severity ColdEndCheck()
         {
             var issue = Severity.Success;
             var cube = BeatmapScanner.Cubes;
@@ -232,8 +266,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (c.Time > limit)
                 {
-                    // TODO: Add error message on the note here
-                    Debug.Log("Error found: note at " + c.Time + " beat is a cold end. Maximum " + limit.ToString() + " beat.");
+                    CreateDiffCommentNote("R1E - Cold End", CommentTypesEnum.Issue, c);
                     issue = Severity.Fail;
                 }
                 else break;
@@ -242,8 +275,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (w.JsonTime + w.Duration > limit && (w.PosX == 1 || w.PosX == 2))
                 {
-                    // TODO: Add error message on the wall here
-                    Debug.Log("Error found: wall at " + w.JsonTime + " beat is a cold end. Maximum " + limit.ToString() + " beat.");
+                    CreateDiffCommentObstacle("R1E - Cold End", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
                 else break;
@@ -251,7 +283,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return issue;
         }
 
-        public static Severity MinSongDurationCheck()
+        public Severity MinSongDurationCheck()
         {
             var cube = BeatmapScanner.Cubes;
             cube = cube.OrderBy(c => c.Time).ToList();
@@ -261,22 +293,21 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var duration = (cube.Last().Time - cube.First().Time) * (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
             if (duration < limit)
             {
-                // TODO: Add error message on the note here
-                Debug.Log("Error found: Current map duration is " + duration.ToString() + "s. Expected map duration is " + limit.ToString() + "s.");
+                ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + limit.ToString() + "s.");
                 return Severity.Fail;
             }
 
             return Severity.Success;
         }
 
-        public static Severity SliderCheck()
+        public Severity SliderCheck()
         {
             var issue = Severity.Success;
             var precision = 0d;
             var cube = BeatmapScanner.Cubes.Where(c => c.Slider && !c.Head);
             cube = cube.OrderBy(c => c.Time).ToList();
             var temp = cube.Where(c => c.Spacing == 0).Select(c => c.Precision).ToList();
-            if(temp.Count() == 0)
+            if (temp.Count() == 0)
             {
                 temp = cube.Where(c => c.Spacing == 1).Select(c => c.Precision).ToList();
                 if (temp.Count() == 0)
@@ -301,18 +332,17 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 precision = ScanMethod.Mode(temp).FirstOrDefault();
             }
-            
-            foreach(var c in cube)
+
+            foreach (var c in cube)
             {
-                if(c.Slider && !c.Head)
+                if (c.Slider && !c.Head)
                 {
-                    if(!(c.Precision <= ((c.Spacing + 1) * precision) + 0.001 && c.Precision >= ((c.Spacing + 1) * precision) - 0.001))
+                    if (!(c.Precision <= ((c.Spacing + 1) * precision) + 0.001 && c.Precision >= ((c.Spacing + 1) * precision) - 0.001))
                     {
                         var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
                         var expected = ScanMethod.RealToFraction(((c.Spacing + 1) * precision), 0.01);
-                        // TODO: Add error message on the note here
-                        Debug.Log("Error found: " + c.Time + " is " + reality.N.ToString() + "/" + reality.D.ToString() + " but should of been " + expected.N.ToString() + "/" + expected.D.ToString() + ".");
-                        issue = Severity.Warning; // Maybe fail idk
+                        CreateDiffCommentNote("R2A - " + c.Time + " is " + reality.N.ToString() + "/" + reality.D.ToString() + ". Expected precision is " + expected.N.ToString() + "/" + expected.D.ToString() + ".", CommentTypesEnum.Unsure, c);
+                        issue = Severity.Warning;
                     }
                 }
             }
@@ -349,8 +379,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (!ScanMethod.IsSameDirectionRestrained(dir[j], degree) || !ScanMethod.IsSameDirectionRestrained(dir[j - 1], dir[j]))
                         {
-                            // TODO: Add error message on the note here
-                            Debug.Log("Error found: Slider note " + red[i - dir.Count() + j].Time + " is over 45 degrees.");
+                            CreateDiffCommentNote("R3F - Multiple notes of the same color on the same swing must not differ by more than 45°", CommentTypesEnum.Issue, red[i - dir.Count() + j]);
                             issue = Severity.Fail;
                         }
                     }
@@ -370,7 +399,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     do
                     {
                         i++;
-                        if(blue.Count() == i)
+                        if (blue.Count() == i)
                         {
                             break;
                         }
@@ -386,8 +415,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (!ScanMethod.IsSameDirectionRestrained(dir[j], degree) || !ScanMethod.IsSameDirectionRestrained(dir[j - 1], dir[j]))
                         {
-                            // TODO: Add error message on the note here
-                            Debug.Log("Error found: Slider note " + blue[i - dir.Count() + j].Time + " is over 45 degrees.");
+                            CreateDiffCommentNote("R3F - Multiple notes of the same color on the same swing must not differ by more than 45°", CommentTypesEnum.Issue, blue[i - dir.Count() + j]);
                             issue = Severity.Fail;
                         }
                     }
@@ -399,36 +427,32 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return issue;
         }
 
-        public static Severity DifficultyLabelSizeCheck()
+        public Severity DifficultyLabelSizeCheck()
         {
             // TODO: Add config
             var maximum = 30;
-            foreach (var diffset in BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets)
+            var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
+            if (diff != null)
             {
-                foreach (var diff in diffset.DifficultyBeatmaps)
+                if (diff.CustomData.HasKey("_difficultyLabel"))
                 {
-                    // TODO add a check here to only check the select diff
-                    if (diff.CustomData.HasKey("_difficultyLabel"))
+                    if (diff.CustomData["_difficultyLabel"].ToString().Count() > 30)
                     {
-                        if (diff.CustomData["_difficultyLabel"].ToString().Count() > 30)
-                        {
-                            // TODO
-                            Debug.Log("Error found: " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + maximum.ToString() + " characters.");
-                            return Severity.Fail;
-                        }
+                        ExtendOverallComment("R7E - " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + maximum.ToString() + " characters.");
+                        return Severity.Fail;
                     }
                 }
             }
             return Severity.Success;
         }
 
-        public static Severity DifficultyNameCheck()
+        public Severity DifficultyNameCheck()
         {
-            // TODO: Ask the mapper to check that it is obscene-free. Could test the label in some kind of database but probably not worth the effort.
+            ExtendOverallComment("R7G - Warning - Difficulty name must not contain obscene content");
             return Severity.Warning;
         }
 
-        public static Severity NJSCheck()
+        public Severity NJSCheck()
         {
             var issue = Severity.Success;
             var swingData = BeatmapScanner.Datas;
@@ -453,32 +477,28 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
             }
 
-            Debug.Log(peak);
-
             foreach (var diffset in BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets)
             {
                 foreach (var diff in diffset.DifficultyBeatmaps)
                 {
                     if (diff.NoteJumpMovementSpeed == 0)
                     {
-                        // TODO
-                        Debug.Log("Error: NJS for X beatmap is currently 0");
+                        ExtendOverallComment("R1A - NJS is currently 0");
                         issue = Severity.Fail;
                     }
                     else
                     {
                         if (diff.NoteJumpMovementSpeed < NJS.min || diff.NoteJumpMovementSpeed > NJS.max)
                         {
-                            // TODO
-                            Debug.Log("Warning: Recommended NJS for X beatmap is " + NJS.min.ToString() + " - " + NJS.max.ToString());
+                            ExtendOverallComment("R1A - Warning - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString());
                             issue = Severity.Warning;
                         }
-                        var currRT = diff.NoteJumpStartBeatOffset / (2.0f * diff.NoteJumpMovementSpeed) * 1000.0f;
-                        if (currRT < RT.min || currRT > RT.max)
+                        var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(diff.NoteJumpMovementSpeed, diff.NoteJumpStartBeatOffset, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+                        var beatms = 60000 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
+                        var reactionTime = beatms * halfJumpDuration;
+                        if (reactionTime < RT.min || reactionTime > RT.max)
                         {
-                            // TODO
-                            Debug.Log("Warning: Recommended RT for X beatmap is " + RT.min.ToString() + " - " + RT.max.ToString());
-                            Debug.Log("Current RT is " + currRT);
+                            ExtendOverallComment("R1A - Warning - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString());
                             issue = Severity.Warning;
                         }
                     }
@@ -506,9 +526,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 Type = type,
                 Message = message
             };
-
             List<Comment> comments = plugin.currentMapsetReview.Comments;
-
             comments.Add(comment);
             comments = comments.OrderBy(f => f.Type).ToList();
         }
