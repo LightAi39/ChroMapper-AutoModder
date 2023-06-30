@@ -170,7 +170,7 @@ namespace ChroMapper_LightModding
 
                 MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
                 editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"));
-
+                
             }
         }
 
@@ -474,6 +474,7 @@ namespace ChroMapper_LightModding
         #region Other
         private void ResetAfterLeavingEditor()
         {
+            editorUI.Disable();
             hasLoadedIntoEditor = false;
             addCommentAction.Disable();
             openCommentAction.Disable();

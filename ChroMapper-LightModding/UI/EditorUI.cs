@@ -377,6 +377,7 @@ namespace ChroMapper_LightModding.UI
         {
             if (!enabled) { return; }
             enabled = false;
+            _songTimeline = null;
         }
 
         public void ToggleTimelineMarkers(bool destroyIfExists = true)
@@ -428,6 +429,7 @@ namespace ChroMapper_LightModding.UI
             foreach (var comment in plugin.currentReview.Comments)
             {
                 float? cmbeat = FindOldBeatForSelectedNote(comment.Objects.FirstOrDefault());
+                Debug.Log(cmbeat);
                 if (cmbeat != null)
                 {
                     float position = (float)(cmbeat / totalBeats * 926 - 463);
