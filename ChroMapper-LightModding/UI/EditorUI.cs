@@ -51,6 +51,9 @@ namespace ChroMapper_LightModding.UI
                 dialog.AddComponent<TextComponent>()
                     .WithInitialValue($"Review file loaded!");
 
+                dialog.AddComponent<TextComponent>()
+                    .WithInitialValue($"Overall Comment: {plugin.currentReview.OverallComment}");
+
                 dialog.AddComponent<ButtonComponent>()
                 .WithLabel("Copy comments to clipboard")
                     .OnClick(() => { exporter.ExportToBeatLeaderComment(plugin.currentReview); });
