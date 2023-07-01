@@ -101,11 +101,11 @@ namespace ChroMapper_LightModding
             openCommentAction.performed += _ => { OpenCommentKeyEvent(); };
 
             quickMarkUnsureAction = new InputAction("Quick mark unsure", type: InputActionType.Button);
-            quickMarkUnsureAction.AddBinding("<Keyboard>/9");
+            quickMarkUnsureAction.AddBinding("<Keyboard>/f9");
             quickMarkUnsureAction.performed += _ => { QuickMarkUnsureEvent(); };
 
             quickMarkIssueAction = new InputAction("Quick mark issue", type: InputActionType.Button);
-            quickMarkIssueAction.AddBinding("<Keyboard>/0");
+            quickMarkIssueAction.AddBinding("<Keyboard>/f10");
             quickMarkIssueAction.performed += _ => { QuickMarkIssueEvent(); };
 
         }
