@@ -1,13 +1,17 @@
 ﻿using Beatmap.Base;
 using Beatmap.Enums;
+using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
 using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
 using Object = UnityEngine.Object;
 
 namespace ChroMapper_LightModding.UI
@@ -18,20 +22,27 @@ namespace ChroMapper_LightModding.UI
         private Exporter exporter;
         private OutlineHelper outlineHelper;
         private FileHelper fileHelper;
+        private AutocheckHelper autocheckHelper;
 
         private GameObject _timelineMarkers;
+        private GameObject _criteriaMenu;
+        private GameObject _ratingsMenu;
 
         private Transform _songTimeline;
+        private Transform _pauseMenu;
         public bool enabled = false;
 
         private bool showTimelineMarkers = false;
 
-        public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter)
+        private (double diff, double tech, double ebpm, double slider, double reset, double bomb, int crouch, double linear) stats;
+
+        public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter, AutocheckHelper autocheckHelper)
         {
             this.plugin = plugin;
             this.outlineHelper = outlineHelper;
             this.fileHelper = fileHelper;
             this.exporter = exporter;
+            this.autocheckHelper = autocheckHelper;
         }
 
         #region CMUI
@@ -385,12 +396,16 @@ namespace ChroMapper_LightModding.UI
         #endregion
 
         #region New UI
-        public void Enable(Transform songTimeline)
+        public void Enable(Transform songTimeline, Transform pauseMenu)
         {
             if (enabled) { return; }
             enabled = true;
             _songTimeline = songTimeline;
+            _pauseMenu = pauseMenu;
+            if (plugin.currentReview != null) RunBeatmapScannerOnThisDiff();
             CreateTimelineMarkers();
+            CreateCriteriaMenu();
+            
         }
 
         public void Disable()
@@ -398,6 +413,7 @@ namespace ChroMapper_LightModding.UI
             if (!enabled) { return; }
             enabled = false;
             _songTimeline = null;
+            _pauseMenu = null;
         }
 
         public void ToggleTimelineMarkers(bool destroyIfExists = true)
@@ -461,8 +477,343 @@ namespace ChroMapper_LightModding.UI
             
         }
 
+        public void RefreshCriteriaMenu()
+        {
+            RemoveCriteriaMenu();
+            CreateCriteriaMenu();
+        }
+
+        private void RemoveCriteriaMenu()
+        {
+            Object.Destroy(_criteriaMenu);
+            Object.Destroy(_ratingsMenu);
+        }
+
+        private void CreateCriteriaMenu()
+        {
+            if (plugin.currentReview == null) return;
+            AddCriteriaMenu(_pauseMenu);
+            _criteriaMenu.SetActive(true);
+            AddRatingsMenu(_pauseMenu);
+            _ratingsMenu.SetActive(true);
+        }
+
+        public void AddCriteriaMenu(Transform parent)
+        {
+            _criteriaMenu = new GameObject("Automodder Criteria Menu");
+            _criteriaMenu.transform.parent = parent;
+            _criteriaMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_criteriaMenu, 572, 215, 0.05f, 1.20f, 0, 0, 0, 1);
+
+            Image image = _criteriaMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            #region Top left buttons
+            UIHelper.AddButton(_criteriaMenu.transform, "SaveAMFile", "Save File", new Vector2(-250, -18), () =>
+            {
+                fileHelper.MapsetReviewSaver();
+            });
+
+            UIHelper.AddButton(_criteriaMenu.transform, "RunAutoCheck", "Auto Check", new Vector2(-188, -18), () =>
+            {
+                RunAutoCheckOnThisDiff();
+                RefreshCriteriaMenu();
+            });
+
+            UIHelper.AddButton(_criteriaMenu.transform, "RunBeatmapScanner", "Refresh Map Analytics", new Vector2(-126, -18), () =>
+            {
+                RunBeatmapScannerOnThisDiff();
+                RefreshCriteriaMenu();
+            });
+            #endregion
+
+            #region Criteria
+            DiffCrit criteria = plugin.currentReview.Critera;
+            float startPosY = -42, posY, offsetX = -80;
+            string name;
+
+            // ugly
+            #region please collapse this
+            posY = startPosY;
+            name = "Hot Start";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.HotStart, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.HotStart = IncrementSeverity(criteria.HotStart);
+                posY = startPosY;
+                offsetX = -80;
+                name = "Hot Start";
+                CreateCriteriaStatusElement(criteria.HotStart, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26;
+            name = "Cold End";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.ColdEnd, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.ColdEnd = IncrementSeverity(criteria.ColdEnd);
+                posY = startPosY - 26;
+                offsetX = -80;
+                name = "Cold End";
+                CreateCriteriaStatusElement(criteria.ColdEnd, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 2;
+            name = "Min. Song Duration";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.MinSongDuration, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.MinSongDuration = IncrementSeverity(criteria.MinSongDuration);
+                posY = startPosY - 26 * 2;
+                offsetX = -80;
+                name = "Min. Song Duration";
+                CreateCriteriaStatusElement(criteria.MinSongDuration, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 3;
+            name = "Outside";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Outside, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Outside = IncrementSeverity(criteria.Outside);
+                posY = startPosY - 26 * 3;
+                offsetX = -80;
+                name = "Outside";
+                CreateCriteriaStatusElement(criteria.Outside, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 4;
+            name = "Prolonged Swing";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.ProlongedSwing, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.ProlongedSwing = IncrementSeverity(criteria.ProlongedSwing);
+                posY = startPosY - 26 * 4;
+                offsetX = -80;
+                name = "Prolonged Swing";
+                CreateCriteriaStatusElement(criteria.ProlongedSwing, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 5;
+            name = "Vision Block";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.VisionBlock, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.VisionBlock = IncrementSeverity(criteria.VisionBlock);
+                posY = startPosY - 26 * 5;
+                offsetX = -80;
+                name = "Vision Block";
+                CreateCriteriaStatusElement(criteria.VisionBlock, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 6;
+            name = "Parity";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Parity, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Parity = IncrementSeverity(criteria.Parity);
+                posY = startPosY - 26 * 6;
+                offsetX = -80;
+                name = "Parity";
+                CreateCriteriaStatusElement(criteria.Parity, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            // next column
+            offsetX = 110;
+            posY = startPosY;
+            name = "Chain";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Chain, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Chain = IncrementSeverity(criteria.Chain);
+                posY = startPosY;
+                offsetX = 110;
+                name = "Chain";
+                CreateCriteriaStatusElement(criteria.Chain, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26;
+            name = "Fused Element";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.FusedElement, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.FusedElement = IncrementSeverity(criteria.FusedElement);
+                posY = startPosY - 26;
+                offsetX = 110;
+                name = "Fused Element";
+                CreateCriteriaStatusElement(criteria.FusedElement, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 2;
+            name = "Loloppe";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Loloppe, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Loloppe = IncrementSeverity(criteria.Loloppe);
+                posY = startPosY - 26 * 2;
+                offsetX = 110;
+                name = "Loloppe";
+                CreateCriteriaStatusElement(criteria.Loloppe, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 3;
+            name = "Hand Clap";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.HandClap, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.HandClap = IncrementSeverity(criteria.HandClap);
+                posY = startPosY - 26 * 3;
+                offsetX = 110;
+                name = "Hand Clap";
+                CreateCriteriaStatusElement(criteria.HandClap, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 4;
+            name = "Swing Path";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.SwingPath, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.SwingPath = IncrementSeverity(criteria.SwingPath);
+                posY = startPosY - 26 * 4;
+                offsetX = 110;
+                name = "Swing Path";
+                CreateCriteriaStatusElement(criteria.SwingPath, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 5;
+            name = "Hitbox Issue";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Hitbox, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Hitbox = IncrementSeverity(criteria.Hitbox);
+                posY = startPosY - 26 * 5;
+                offsetX = 110;
+                name = "Hitbox Issue";
+                CreateCriteriaStatusElement(criteria.Hitbox, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            // next column
+            offsetX = 300;
+            posY = startPosY;
+            name = "Slider issues";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Slider, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Slider = IncrementSeverity(criteria.Slider);
+                posY = startPosY;
+                offsetX = 300;
+                name = "Slider issues";
+                CreateCriteriaStatusElement(criteria.Slider, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26;
+            name = "Wall issues";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Wall, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Wall = IncrementSeverity(criteria.Wall);
+                posY = startPosY - 26;
+                offsetX = 300;
+                name = "Wall issues";
+                CreateCriteriaStatusElement(criteria.Wall, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 2;
+            name = "Insufficient Lighting";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Light, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Light = IncrementSeverity(criteria.Light);
+                posY = startPosY - 26 * 2;
+                offsetX = 300;
+                name = "Insufficient Lighting";
+                CreateCriteriaStatusElement(criteria.Light, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 3;
+            name = "Difficulty Label Size";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.DifficultyLabelSize, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.DifficultyLabelSize = IncrementSeverity(criteria.DifficultyLabelSize);
+                posY = startPosY - 26 * 3;
+                offsetX = 300;
+                name = "Difficulty Label Size";
+                CreateCriteriaStatusElement(criteria.DifficultyLabelSize, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 4;
+            name = "Difficulty Name";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.DifficultyName, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.DifficultyName = IncrementSeverity(criteria.DifficultyName);
+                posY = startPosY - 26 * 4;
+                offsetX = 300;
+                name = "Difficulty Name";
+                CreateCriteriaStatusElement(criteria.DifficultyName, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 5;
+            name = "NJS";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.NJS, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.NJS = IncrementSeverity(criteria.NJS);
+                posY = startPosY - 26 * 5;
+                offsetX = 300;
+                name = "NJS";
+                CreateCriteriaStatusElement(criteria.NJS, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            #endregion
+            #endregion
+
+        }
+
+        public void AddRatingsMenu(Transform parent)
+        {
+            _ratingsMenu = new GameObject("Automodder Ratings Menu");
+            _ratingsMenu.transform.parent = parent;
+            _ratingsMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_ratingsMenu, 400, 50, 0.05f, 0.65f, 0, 0, 0, 1);
+
+            Image image = _ratingsMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues", $"Difficulty: {stats.diff}☆ | Tech: {stats.tech}☆ | eBPM: {stats.ebpm} | Slider: {stats.slider}%", new Vector2(-44, -12), new Vector2(292, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Resets: {stats.reset}% | Bomb resets: {stats.bomb}% | Crouch: {stats.crouch} | Linear: {stats.linear}%", new Vector2(-44, -36), new Vector2(292, 24), TextAlignmentOptions.Left);
+
+            
+        }
+
         #endregion
-         
+
         public float? FindOldBeatForSelectedNote(SelectedObject mapObject)
         {
             var collection = BeatmapObjectContainerCollection.GetCollectionForType(mapObject.ObjectType);
@@ -530,6 +881,53 @@ namespace ChroMapper_LightModding.UI
                 if (container != null) return container.SongBpmTime;
             }
             return null;
+        }
+
+        private void RunBeatmapScannerOnThisDiff()
+        {
+            var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
+
+            stats = autocheckHelper.RunBeatmapScanner(difficultyData.ParentBeatmapSet.BeatmapCharacteristicName, difficultyData.DifficultyRank, difficultyData.Difficulty);
+        }
+
+        private void RunAutoCheckOnThisDiff()
+        {
+            var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
+
+            autocheckHelper.RunAutoCheckOnDiff(difficultyData.ParentBeatmapSet.BeatmapCharacteristicName, difficultyData.DifficultyRank, difficultyData.Difficulty);
+        }
+
+        private void CreateCriteriaStatusElement(Severity severity, string name, Vector2 pos, Transform parent = null)
+        {
+            if (parent == null) parent = _criteriaMenu.transform;
+            GameObject critStatusObj = GameObject.Find($"Crit_{name}_status");
+            if (critStatusObj != null) Object.Destroy(critStatusObj);
+
+            Color color;
+            switch (severity)
+            {
+                case Severity.Success:
+                    color = Color.green;
+                    break;
+                case Severity.Warning:
+                    color = Color.yellow;
+                    break;
+                case Severity.Fail:
+                    color = Color.red;
+                    break;
+                default:
+                    color = Color.gray;
+                    break;
+            }
+            UIHelper.AddLabel(parent, $"Crit_{name}_status", "●", pos, new Vector2(25, 24), null, color, 12);
+        }
+
+        private Severity IncrementSeverity(Severity severity)
+        {
+            Severity[] enumValues = (Severity[])Enum.GetValues(typeof(Severity));
+            int currentIndex = Array.IndexOf(enumValues, severity);
+            int nextIndex = (currentIndex + 1) % enumValues.Length;
+            return enumValues[nextIndex];
         }
     }
 }

@@ -31,6 +31,18 @@ namespace ChroMapper_LightModding.Helpers
         public void RunAutoCheckOnDiff(string characteristic, int difficultyRank, string difficulty)
         {
             fileHelper.CheckDifficultyReviewsExist();
+
+            var result = RunBeatmapScanner(characteristic, difficultyRank, difficulty);
+
+            if (result != (-1, -1, -1, -1, -1, -1, -1, -1))
+            {
+                RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
+                plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = criteriaCheck.AutoDiffCheck(characteristic, difficultyRank, difficulty);
+            }
+        }
+
+        public (double diff, double tech, double ebpm, double slider, double reset, double bomb, int crouch, double linear) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
+        {
             var song = plugin.BeatSaberSongContainer.Song;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
 
@@ -52,12 +64,11 @@ namespace ChroMapper_LightModding.Helpers
                     List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
                     obstacles = obstacles.OrderBy(o => o.JsonTime).ToList();
 
-                    BeatmapScanner.BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
-
-                    RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
-                    plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = criteriaCheck.AutoDiffCheck(characteristic, difficultyRank, difficulty);
+                    
+                    return BeatmapScanner.BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute); ;
                 }
             }
+            return (-1, -1, -1, -1, -1, -1, -1, -1);
         }
 
         public void RemovePastAutoCheckCommentsSongInfo()

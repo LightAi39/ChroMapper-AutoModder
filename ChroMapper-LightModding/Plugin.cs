@@ -16,6 +16,7 @@ using static UnityEngine.InputSystem.InputRemoting;
 using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.BeatmapScanner;
 using UnityEngine.UI;
+using System.Windows.Input;
 
 namespace ChroMapper_LightModding
 {
@@ -75,7 +76,7 @@ namespace ChroMapper_LightModding
             fileHelper = new(this);
             autocheckHelper = new(this, criteriaCheck, fileHelper);
             outlineHelper = new(this);
-            editorUI = new(this, outlineHelper, fileHelper, exporter);
+            editorUI = new(this, outlineHelper, fileHelper, exporter, autocheckHelper);
             songInfoUI = new(this, fileHelper, exporter, autocheckHelper);
 
             SceneManager.sceneLoaded += SceneLoaded;
@@ -169,7 +170,7 @@ namespace ChroMapper_LightModding
                 outlineHelper.selectionCache = new();
 
                 MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
-                editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"));
+                editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"), mapEditorUI.transform.Find("Pause Menu Canvas").transform.Find("Extras Menu"));
                 
             }
         }
