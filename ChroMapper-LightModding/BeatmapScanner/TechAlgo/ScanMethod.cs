@@ -8,7 +8,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 {
     internal class ScanMethod
     {
-        public static double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315, 270 };
+        public static int[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315, 270 };
 
         public static List<Vector2> CalcCurvePoints(List<Vector2> controlPoints, double interval)
         {
@@ -276,11 +276,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             currentAngle = Math.Round(currentAngle / 45) * 45;
 
-            if (pattern && !IsSameDirection(guideAngle, currentAngle))
+            if (pattern && !IsSameDirection(guideAngle, currentAngle, 67.5))
             {
                 currentAngle = ReverseCutDirection(currentAngle);
             }
-            else if (!pattern && IsSameDirection(guideAngle, currentAngle))
+            else if (!pattern && IsSameDirection(guideAngle, currentAngle, 67.5))
             {
                 currentAngle = ReverseCutDirection(currentAngle);
             }
@@ -288,44 +288,21 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return currentAngle;
         }
 
-        public static bool IsSameDirection(double before, double after)
+        public static bool IsSameDirection(double before, double after, double degree)
         {
             Mod(before, 360);
             Mod(after, 360);
 
             if (Math.Abs(before - after) <= 180)
             {
-                if (Math.Abs(before - after) < 67.5)
+                if (Math.Abs(before - after) <= degree)
                 {
                     return true;
                 }
             }
             else if (Math.Abs(before - after) > 180)
             {
-                if (360 - Math.Abs(before - after) < 67.5)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static bool IsSameDirectionRestrained(double before, double after)
-        {
-            Mod(before, 360);
-            Mod(after, 360);
-
-            if (Math.Abs(before - after) <= 180)
-            {
-                if (Math.Abs(before - after) <= 45)
-                {
-                    return true;
-                }
-            }
-            else if (Math.Abs(before - after) > 180)
-            {
-                if (360 - Math.Abs(before - after) <= 45)
+                if (360 - Math.Abs(before - after) <= degree)
                 {
                     return true;
                 }
@@ -491,7 +468,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 var duration = cubes[i].Time - cubes[i - 1].Time;
 
-                if (ScanMethod.IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction))
+                if (IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction, 67.5))
                 {
                     duration /= 2;
                 }

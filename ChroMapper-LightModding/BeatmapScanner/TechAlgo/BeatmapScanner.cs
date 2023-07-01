@@ -11,11 +11,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
         static public List<Cube> Cubes = new();
         static public List<BaseNote> Bombs = new();
         static public List<BaseObstacle> Walls = new();
+        static public List<BaseSlider> Chains = new();
         static public List<SwingData> Datas = new();
 
         #region Analyzer
 
-        public static (double diff, double tech, double ebpm, double slider, double reset, double bomb, int crouch, double linear) Analyzer(List<BaseNote> notes, List<BaseNote> bombs, List<BaseObstacle> obstacles, float bpm)
+        public static (double diff, double tech, double ebpm, double slider, double reset, double bomb, int crouch, double linear) Analyzer(List<BaseNote> notes, List<BaseSlider> chains, List<BaseNote> bombs, List<BaseObstacle> obstacles, float bpm)
         {
             #region Prep
 
@@ -211,6 +212,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             #endregion
 
             Cubes = cube;
+            Chains = chains;
             Walls = obstacles;
             Bombs = bombs;
             Datas = data;

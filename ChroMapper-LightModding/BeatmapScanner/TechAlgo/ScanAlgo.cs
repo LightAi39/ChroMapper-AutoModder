@@ -174,7 +174,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 cubes[1].Direction = ScanMethod.Mod(ScanMethod.DirectionToDegree[cubes[1].CutDirection] + cubes[1].AngleOffset, 360);
                 if (((cubes[1].Time - cubes[0].Time <= 0.25 && ScanMethod.IsSlider(cubes[0], cubes[1], cubes[0].Direction, true)) || cubes[1].Time - cubes[0].Time <= 0.1429)
-                    && ScanMethod.IsSameDirection(cubes[0].Direction, cubes[1].Direction))
+                    && ScanMethod.IsSameDirection(cubes[0].Direction, cubes[1].Direction, 67.5))
                 {
                     if (cubes[0].Time != cubes[1].Time)
                     {
@@ -223,21 +223,21 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
 
                     // Check if the flow work
-                    if (!ScanMethod.IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction))
+                    if (!ScanMethod.IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction, 67.5))
                     {
                         if (cubes[i + 1].CutDirection != 8)
                         {
                             // If the next note is an arrow, we want to check that too
                             var nextDir = ScanMethod.Mod(ScanMethod.DirectionToDegree[cubes[i + 1].CutDirection] + cubes[i + 1].AngleOffset, 360);
-                            if (ScanMethod.IsSameDirection(cubes[i].Direction, nextDir))
+                            if (ScanMethod.IsSameDirection(cubes[i].Direction, nextDir, 67.5))
                             {
                                 // Attempt a different angle
-                                if (!ScanMethod.IsSameDirection(cubes[i].Direction + testValue, nextDir))
+                                if (!ScanMethod.IsSameDirection(cubes[i].Direction + testValue, nextDir, 67.5))
                                 {
                                     cubes[i].Direction = ScanMethod.Mod(cubes[i].Direction + testValue, 360);
                                     continue; // Work
                                 }
-                                else if (!ScanMethod.IsSameDirection(cubes[i].Direction - testValue, nextDir))
+                                else if (!ScanMethod.IsSameDirection(cubes[i].Direction - testValue, nextDir, 67.5))
                                 {
                                     cubes[i].Direction = ScanMethod.Mod(cubes[i].Direction - testValue, 360);
                                     continue; // Work
@@ -246,32 +246,32 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         continue;
                     }
-                    if (!ScanMethod.IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction + testValue))
+                    if (!ScanMethod.IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction + testValue, 67.5))
                     {
                         cubes[i].Direction = ScanMethod.Mod(cubes[i].Direction + testValue, 360);
                         continue; // Work
                     }
-                    else if (!ScanMethod.IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction - testValue))
+                    else if (!ScanMethod.IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction - testValue, 67.5))
                     {
                         cubes[i].Direction = ScanMethod.Mod(cubes[i].Direction - testValue, 360);
                         continue; // Work
                     }
 
                     // Maybe the note before is wrong?
-                    if (cubes[i - 1].CutDirection == 8 && !ScanMethod.IsSameDirection(cubes[i - 2].Direction, cubes[i - 1].Direction + testValue))
+                    if (cubes[i - 1].CutDirection == 8 && !ScanMethod.IsSameDirection(cubes[i - 2].Direction, cubes[i - 1].Direction + testValue, 67.5))
                     {
                         var lastDir = ScanMethod.Mod(cubes[i - 1].Direction + testValue, 360);
-                        if (!ScanMethod.IsSameDirection(lastDir, cubes[i].Direction + testValue * 2))
+                        if (!ScanMethod.IsSameDirection(lastDir, cubes[i].Direction + testValue * 2, 67.5))
                         {
                             cubes[i - 1].Direction = ScanMethod.Mod(cubes[i - 1].Direction + testValue, 360);
                             cubes[i].Direction = ScanMethod.Mod(cubes[i].Direction + testValue * 2, 360);
                             continue; // Work
                         }
                     }
-                    else if (cubes[i - 1].CutDirection == 8 && !ScanMethod.IsSameDirection(cubes[i - 2].Direction, cubes[i - 1].Direction - testValue))
+                    else if (cubes[i - 1].CutDirection == 8 && !ScanMethod.IsSameDirection(cubes[i - 2].Direction, cubes[i - 1].Direction - testValue, 67.5))
                     {
                         var lastDir = ScanMethod.Mod(cubes[i - 1].Direction - testValue, 360);
-                        if (!ScanMethod.IsSameDirection(lastDir, cubes[i].Direction - testValue * 2))
+                        if (!ScanMethod.IsSameDirection(lastDir, cubes[i].Direction - testValue * 2, 67.5))
                         {
                             cubes[i - 1].Direction = ScanMethod.Mod(cubes[i - 1].Direction - testValue, 360);
                             cubes[i].Direction = ScanMethod.Mod(cubes[i].Direction - testValue * 2, 360);
@@ -284,7 +284,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     cubes[i].Direction = ScanMethod.Mod(ScanMethod.DirectionToDegree[cubes[i].CutDirection] + cubes[i].AngleOffset, 360);
                     if (((cubes[i].Time - cubes[i - 1].Time <= 0.25 && ScanMethod.IsSlider(cubes[i - 1], cubes[i], cubes[i - 1].Direction, false))
                         || cubes[i].Time - cubes[i - 1].Time <= 0.1429)
-                    && ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i - 1].Direction))
+                    && ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i - 1].Direction, 67.5))
                     {
                         cubes[i].Pattern = true;
                         if (cubes[i].Time != cubes[i - 1].Time)
@@ -308,14 +308,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (cubes[i].CutDirection == 8 && cubes[i].Time - cubes[i - 1].Time >= 0.125) // If a dot note only flow from one way
                 {
-                    if ((ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i - 1].Direction) && !ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i + 1].Direction))
-                        || (!ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i - 1].Direction) && ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i + 1].Direction)))
+                    if ((ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i - 1].Direction, 67.5) && !ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i + 1].Direction, 67.5))
+                        || (!ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i - 1].Direction, 67.5) && ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i + 1].Direction, 67.5)))
                     {
-                        if (!ScanMethod.IsSameDirection(cubes[i].Direction + testValue, cubes[i - 1].Direction) && !ScanMethod.IsSameDirection(cubes[i].Direction + testValue, cubes[i + 1].Direction))
+                        if (!ScanMethod.IsSameDirection(cubes[i].Direction + testValue, cubes[i - 1].Direction, 67.5) && !ScanMethod.IsSameDirection(cubes[i].Direction + testValue, cubes[i + 1].Direction, 67.5))
                         {
                             cubes[i].Direction = ScanMethod.Mod(cubes[i].Direction + testValue, 360);
                         }
-                        else if (!ScanMethod.IsSameDirection(cubes[i].Direction - testValue, cubes[i - 1].Direction) && !ScanMethod.IsSameDirection(cubes[i].Direction - testValue, cubes[i + 1].Direction))
+                        else if (!ScanMethod.IsSameDirection(cubes[i].Direction - testValue, cubes[i - 1].Direction, 67.5) && !ScanMethod.IsSameDirection(cubes[i].Direction - testValue, cubes[i + 1].Direction, 67.5))
                         {
                             cubes[i].Direction = ScanMethod.Mod(cubes[i].Direction - testValue, 360);
                         }
@@ -356,7 +356,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 cubes.Last().Direction = ScanMethod.Mod(ScanMethod.DirectionToDegree[cubes.Last().CutDirection] + cubes.Last().AngleOffset, 360);
                 if (((cubes.Last().Time - cubes[cubes.Count() - 2].Time <= 0.25 && ScanMethod.IsSlider(cubes[cubes.Count() - 2], cubes.Last(), cubes[cubes.Count() - 2].Direction, false))
-                    || cubes.Last().Time - cubes[cubes.Count() - 2].Time <= 0.1429) && ScanMethod.IsSameDirection(cubes[cubes.Count() - 2].Direction, cubes.Last().Direction))
+                    || cubes.Last().Time - cubes[cubes.Count() - 2].Time <= 0.1429) && ScanMethod.IsSameDirection(cubes[cubes.Count() - 2].Direction, cubes.Last().Direction, 67.5))
                 {
                     cubes.Last().Pattern = true;
                     if (cubes.Last().Time != cubes[cubes.Count() - 2].Time)
@@ -419,7 +419,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             break;
                         }
                     }
-                    if (!ScanMethod.IsSameDirection(currentAngle, previousAngle))
+                    if (!ScanMethod.IsSameDirection(currentAngle, previousAngle, 67.5))
                     {
                         currentAngle = ScanMethod.ReverseCutDirection(currentAngle);
                     }
@@ -569,7 +569,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (i > 0)
                     {
-                        if (ScanMethod.IsSameDirection(testData1[i - 1].Angle, testData1[i].Angle))
+                        if (ScanMethod.IsSameDirection(testData1[i - 1].Angle, testData1[i].Angle, 67.5))
                         {
                             testData1[i].Reset = true;
                             testData1[i].Forehand = testData1[i - 1].Forehand;
@@ -590,7 +590,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (i > 0)
                     {
-                        if (ScanMethod.IsSameDirection(testData2[i - 1].Angle, testData2[i].Angle))
+                        if (ScanMethod.IsSameDirection(testData2[i - 1].Angle, testData2[i].Angle, 67.5))
                         {
                             testData2[i].Reset = true;
                             testData2[i].Forehand = testData2[i - 1].Forehand;

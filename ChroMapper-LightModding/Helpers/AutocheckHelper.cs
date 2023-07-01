@@ -43,13 +43,16 @@ namespace ChroMapper_LightModding.Helpers
 
                 if (notes.Count > 0)
                 {
+                    List<BaseSlider> chains = baseDifficulty.Chains.Cast<BaseSlider>().ToList();
+                    chains = chains.OrderBy(o => o.JsonTime).ToList();
+
                     List<BaseNote> bombs = baseDifficulty.Notes.Where(n => n.Type == 3).ToList();
                     bombs = bombs.OrderBy(b => b.JsonTime).ToList();
 
                     List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
                     obstacles = obstacles.OrderBy(o => o.JsonTime).ToList();
 
-                    BeatmapScanner.BeatmapScanner.Analyzer(notes, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+                    BeatmapScanner.BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
 
                     RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                     plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = criteriaCheck.AutoDiffCheck(characteristic, difficultyRank, difficulty);
