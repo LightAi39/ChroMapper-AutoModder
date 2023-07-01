@@ -24,6 +24,8 @@ namespace ChroMapper_LightModding.UI
         private Transform _songTimeline;
         public bool enabled = false;
 
+        private bool showTimelineMarkers = false;
+
         public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter)
         {
             this.plugin = plugin;
@@ -76,6 +78,16 @@ namespace ChroMapper_LightModding.UI
                             outlineHelper.RefreshOutlines();
                         }
                     });
+                dialog.AddComponent<ToggleComponent>()
+                    .WithLabel("Show timeline markers (Experimental)")
+                    .WithInitialValue(showTimelineMarkers)
+                    .OnChanged((bool o) => {
+                        if (o != showTimelineMarkers)
+                        {
+                            showTimelineMarkers = o;
+                            ToggleTimelineMarkers();
+                        }
+                    });
 
                 dialog.AddFooterButton(ShowSaveFileUI, "Save review file");
             }
@@ -112,7 +124,7 @@ namespace ChroMapper_LightModding.UI
                 string read = "";
                 if (comment.MarkAsSuppressed)
                 {
-                    read = " - Marked As Read";
+                    read = " - Marked As Suppressed";
                 }
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
@@ -160,7 +172,7 @@ namespace ChroMapper_LightModding.UI
                 string read = "";
                 if (comment.MarkAsSuppressed)
                 {
-                    read = " - Marked As Read";
+                    read = " - Marked As Suppressed";
                 }
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
@@ -295,8 +307,13 @@ namespace ChroMapper_LightModding.UI
 
             foreach (var comment in comments)
             {
+                string read = "";
+                if (comment.MarkAsSuppressed)
+                {
+                    read = " - Marked As Suppressed";
+                }
                 dialog.AddComponent<ButtonComponent>()
-                    .WithLabel($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type}")
+                    .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
                     .OnClick(() => { ShowReviewCommentUI(comment.Id); });
             }
 
@@ -410,6 +427,7 @@ namespace ChroMapper_LightModding.UI
 
         private void CreateTimelineMarkers()
         {
+            if (!showTimelineMarkers) return;
             AddTimelineMarkers(_songTimeline);
             _timelineMarkers.SetActive(true);
         }
@@ -444,7 +462,7 @@ namespace ChroMapper_LightModding.UI
         }
 
         #endregion
-
+         
         public float? FindOldBeatForSelectedNote(SelectedObject mapObject)
         {
             var collection = BeatmapObjectContainerCollection.GetCollectionForType(mapObject.ObjectType);
