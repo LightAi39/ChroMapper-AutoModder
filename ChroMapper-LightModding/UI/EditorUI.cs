@@ -494,7 +494,7 @@ namespace ChroMapper_LightModding.UI
             if (plugin.currentReview == null) return;
             AddCriteriaMenu(_pauseMenu);
             _criteriaMenu.SetActive(true);
-            AddRatingsMenu(_pauseMenu);
+            AddRatingsMenu(_criteriaMenu.transform);
             _ratingsMenu.SetActive(true);
         }
 
@@ -799,7 +799,7 @@ namespace ChroMapper_LightModding.UI
             _ratingsMenu.transform.parent = parent;
             _ratingsMenu.SetActive(false);
 
-            UIHelper.AttachTransform(_ratingsMenu, 400, 50, 0.05f, 0.65f, 0, 0, 0, 1);
+            UIHelper.AttachTransform(_ratingsMenu, 400, 50, 0f, 0f, 0, 0, 0, 1);
 
             Image image = _ratingsMenu.AddComponent<Image>();
             image.sprite = PersistentUI.Instance.Sprites.Background;
