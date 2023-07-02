@@ -1104,7 +1104,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         /// </summary>
         /// <param name="message">the message</param>
         /// <param name="type">the type</param>
-        public void CreateSongInfoComment(string message, CommentTypesEnum type)
+        private void CreateSongInfoComment(string message, CommentTypesEnum type)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -1130,7 +1130,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         /// <param name="message">the mesasge</param>
         /// <param name="type">the severity</param>
         /// <param name="cube">the cube</param>
-        public void CreateDiffCommentNote(string message, CommentTypesEnum type, Cube cube)
+        private void CreateDiffCommentNote(string message, CommentTypesEnum type, Cube cube)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -1155,8 +1155,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
-            comments.Add(comment);
-            comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            if (!CheckIfCommentAlreadyExists(comment))
+            {
+                comments.Add(comment);
+                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            }
         }
 
         /// <summary>
@@ -1165,7 +1168,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         /// <param name="message">the mesasge</param>
         /// <param name="type">the severity</param>
         /// <param name="cube">the cube</param>
-        public void CreateDiffCommentLink(string message, CommentTypesEnum type, BaseSlider chainLink)
+        private void CreateDiffCommentLink(string message, CommentTypesEnum type, BaseSlider chainLink)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -1190,8 +1193,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
-            comments.Add(comment);
-            comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            if (!CheckIfCommentAlreadyExists(comment))
+            {
+                comments.Add(comment);
+                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            }
         }
 
         /// <summary>
@@ -1200,7 +1206,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         /// <param name="message">the mesasge</param>
         /// <param name="type">the severity</param>
         /// <param name="bomb">the bomb</param>
-        public void CreateDiffCommentBomb(string message, CommentTypesEnum type, BaseNote bomb)
+        private void CreateDiffCommentBomb(string message, CommentTypesEnum type, BaseNote bomb)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -1225,8 +1231,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
-            comments.Add(comment);
-            comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            if (!CheckIfCommentAlreadyExists(comment))
+            {
+                comments.Add(comment);
+                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            }
         }
 
         /// <summary>
@@ -1235,7 +1244,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         /// <param name="message">the mesasge</param>
         /// <param name="type">the severity</param>
         /// <param name="wall">the wall</param>
-        public void CreateDiffCommentObstacle(string message, CommentTypesEnum type, BaseObstacle wall)
+        private void CreateDiffCommentObstacle(string message, CommentTypesEnum type, BaseObstacle wall)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -1260,19 +1269,29 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
-            comments.Add(comment);
-            comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            if (!CheckIfCommentAlreadyExists(comment))
+            {
+                comments.Add(comment);
+                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            }
         }
 
         /// <summary>
         /// Add another line to the OverallComment in the difficultyreview
         /// </summary>
         /// <param name="message">the message</param>
-        public void ExtendOverallComment(string message)
+        private void ExtendOverallComment(string message)
         {
             DifficultyReview review = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault();
 
             review.OverallComment += $" \n{message}";
+        }
+
+        private bool CheckIfCommentAlreadyExists(Comment comment)
+        {
+            List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+
+            return comments.Any(x => x.Message == comment.Message && x.Objects.SequenceEqual(comment.Objects) && x.IsAutogenerated == comment.IsAutogenerated);
         }
 
         #endregion

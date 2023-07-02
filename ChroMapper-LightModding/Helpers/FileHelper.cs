@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -83,7 +84,7 @@ namespace ChroMapper_LightModding.Helpers
             review.SongLength = plugin.BeatSaberSongContainer.LoadedSongLength;
             review.LastEdited = DateTime.UtcNow;
 
-            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}" + fileExtension;
+            string newFilePath = CleanFileName($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{CleanFileName($"{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}")}" + fileExtension);
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
 
             if (overrideExisting)
@@ -137,7 +138,8 @@ namespace ChroMapper_LightModding.Helpers
                 Directory.CreateDirectory($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews");
             }
 
-            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}" + fileExtension;
+            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{CleanFileName($"{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}")}" + fileExtension;
+            Debug.Log(newFilePath);
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
             plugin.currentlyLoadedFilePath = newFilePath;
         }
@@ -176,7 +178,7 @@ namespace ChroMapper_LightModding.Helpers
             review.SongLength = plugin.BeatSaberSongContainer.LoadedSongLength;
             review.LastEdited = DateTime.UtcNow;
 
-            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second} " + backupText + fileExtension;
+            string newFilePath = CleanFileName($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{CleanFileName($"{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}")}" + backupText + fileExtension);
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
 
             plugin.currentlyLoadedFilePath = newFilePath;
@@ -255,6 +257,18 @@ namespace ChroMapper_LightModding.Helpers
             difficultyReviews = difficultyReviews.OrderByDescending(x => x.DifficultyRank).ToList();
 
             plugin.currentMapsetReview.DifficultyReviews = difficultyReviews;
+        }
+
+        private static string CleanFileName(string fileName)
+        {
+            string invalidChars = Regex.Escape(new string(Path.GetInvalidFileNameChars()));
+            string validFileName = Regex.Replace(fileName, "[" + invalidChars + "]", "");
+
+            validFileName = validFileName.Trim();
+
+            validFileName = Regex.Replace(validFileName, @"\s+", " ");
+
+            return validFileName;
         }
 
     }
