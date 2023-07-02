@@ -528,6 +528,7 @@ namespace ChroMapper_LightModding.UI
                 RunBeatmapScannerOnThisDiff();
                 RefreshCriteriaMenu();
             });
+            UIHelper.AddLabel(_criteriaMenu.transform, "FileSaveWarning", "Save the map before using these buttons!", new Vector2(0, -18), new Vector2(180, 24), TextAlignmentOptions.Left);
             #endregion
 
             #region Criteria
