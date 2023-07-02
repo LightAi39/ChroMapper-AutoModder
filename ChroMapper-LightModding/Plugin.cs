@@ -82,7 +82,7 @@ namespace ChroMapper_LightModding
             SceneManager.sceneLoaded += SceneLoaded;
 
             // register a button in the side tab menu
-            ExtensionButton button = ExtensionButtons.AddButton(LoadSprite("ChroMapper_LightModding.Assets.Icon.png"), "LightModding", editorUI.ShowMainUI);
+            ExtensionButton button = ExtensionButtons.AddButton(LoadSprite("ChroMapper_LightModding.Assets.Icon.png"), "AutoModder", editorUI.ShowMainUI);
 
             // registering keybinds
             addCommentAction = new InputAction("Add Comment", type: InputActionType.Button);
