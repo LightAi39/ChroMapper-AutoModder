@@ -577,7 +577,7 @@ namespace ChroMapper_LightModding.UI
             }, 50, 20, 10);
 
             posY = startPosY - 26 * 3;
-            name = "Outside";
+            name = "Outside Of Map";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.Outside, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
@@ -585,7 +585,7 @@ namespace ChroMapper_LightModding.UI
                 criteria.Outside = IncrementSeverity(criteria.Outside);
                 posY = startPosY - 26 * 3;
                 offsetX = -80;
-                name = "Outside";
+                name = "Outside Of Map";
                 CreateCriteriaStatusElement(criteria.Outside, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
@@ -631,7 +631,7 @@ namespace ChroMapper_LightModding.UI
             // next column
             offsetX = 110;
             posY = startPosY;
-            name = "Chain";
+            name = "Chain Issues";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.Chain, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
@@ -639,7 +639,7 @@ namespace ChroMapper_LightModding.UI
                 criteria.Chain = IncrementSeverity(criteria.Chain);
                 posY = startPosY;
                 offsetX = 110;
-                name = "Chain";
+                name = "Chain Issues";
                 CreateCriteriaStatusElement(criteria.Chain, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
@@ -683,7 +683,7 @@ namespace ChroMapper_LightModding.UI
             }, 50, 20, 10);
 
             posY = startPosY - 26 * 4;
-            name = "Swing Path";
+            name = "Swing Path Issue";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.SwingPath, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
@@ -691,12 +691,12 @@ namespace ChroMapper_LightModding.UI
                 criteria.SwingPath = IncrementSeverity(criteria.SwingPath);
                 posY = startPosY - 26 * 4;
                 offsetX = 110;
-                name = "Swing Path";
+                name = "Swing Path Issue";
                 CreateCriteriaStatusElement(criteria.SwingPath, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
             posY = startPosY - 26 * 5;
-            name = "Hitbox Issue";
+            name = "Hitbox Issues";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.Hitbox, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
@@ -704,14 +704,14 @@ namespace ChroMapper_LightModding.UI
                 criteria.Hitbox = IncrementSeverity(criteria.Hitbox);
                 posY = startPosY - 26 * 5;
                 offsetX = 110;
-                name = "Hitbox Issue";
+                name = "Hitbox Issues";
                 CreateCriteriaStatusElement(criteria.Hitbox, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
             // next column
             offsetX = 300;
             posY = startPosY;
-            name = "Slider issues";
+            name = "Slider Issues";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.Slider, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
@@ -719,12 +719,12 @@ namespace ChroMapper_LightModding.UI
                 criteria.Slider = IncrementSeverity(criteria.Slider);
                 posY = startPosY;
                 offsetX = 300;
-                name = "Slider issues";
+                name = "Slider Issues";
                 CreateCriteriaStatusElement(criteria.Slider, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
             posY = startPosY - 26;
-            name = "Wall issues";
+            name = "Wall Issues";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.Wall, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
@@ -732,7 +732,7 @@ namespace ChroMapper_LightModding.UI
                 criteria.Wall = IncrementSeverity(criteria.Wall);
                 posY = startPosY - 26;
                 offsetX = 300;
-                name = "Wall issues";
+                name = "Wall Issues";
                 CreateCriteriaStatusElement(criteria.Wall, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
