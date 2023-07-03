@@ -8,6 +8,7 @@ using System.Linq;
 using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
 using ChroMapper_LightModding.BeatmapScanner.MapCheck;
 using UnityEngine;
+using Beatmap.Enums;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -247,15 +248,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 foreach (var diff in diffset.DifficultyBeatmaps)
                 {
-                    if (diff.CustomData != null)
+                    var data = diff.GetOrCreateCustomData();
+                    if (data.HasKey("_requirements"))
                     {
-                        if (diff.CustomData.HasKey("_requirements"))
+                        foreach (var req in diff.CustomData["_requirements"].Values)
                         {
-                            foreach (var req in diff.CustomData["_requirements"].Values)
-                            {
-                                CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue);
-                                issue = Severity.Fail;
-                            }
+                            CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue);
+                            issue = Severity.Fail;
                         }
                     }
                 }
@@ -514,9 +513,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
             if (diff != null)
             {
-                if (diff.CustomData.HasKey("_difficultyLabel"))
+                var data = diff.GetOrCreateCustomData();
+                if (data.HasKey("_difficultyLabel"))
                 {
-                    if (diff.CustomData["_difficultyLabel"].ToString().Count() > 30)
+                    if (data["_difficultyLabel"].ToString().Count() > 30)
                     {
                         ExtendOverallComment("R7E - " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + maximum.ToString() + " characters.");
                         return Severity.Fail;
@@ -532,16 +532,23 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         public Severity DifficultyNameCheck()
         {
-            // TODO: Add auto detect for obscene content
             var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
             if (diff != null)
             {
-                if (diff.CustomData.HasKey("_difficultyLabel"))
+                var data = diff.GetOrCreateCustomData();
+                if (data.HasKey("_difficultyLabel"))
                 {
-                    ExtendOverallComment("R7G - Warning - Difficulty name must not contain obscene content");
-                    return Severity.Warning;
+                    var label = data["_difficultyLabel"].ToString();
+                    ProfanityFilter.ProfanityFilter pf = new();
+                    var isProfanity = pf.ContainsProfanity(label);
+                    if(isProfanity)
+                    {
+                        ExtendOverallComment("R7G - Difficulty name must not contain obscene content");
+                        return Severity.Fail;
+                    }
                 }
             }
+
             return Severity.Success;
         }
 
@@ -1120,9 +1127,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 notes = notes.OrderBy(o => o.JsonTime).ToList();
                 var bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
                 // TODO: Could be config I guess
-                var warningThres = 90;
-                var errorThres = 45;
-                var allowedRot = 90;
+                var warningThres = 60; // Default: 90
+                var errorThres = 45; // Default: 45
+                var allowedRot = 90; // Default: 90
                 var lastNote = new BaseNote[2];
                 lastNote[0] = null;
                 lastNote[1] = null;
@@ -1388,7 +1395,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentLink("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, ch);
                     issue = Severity.Fail;
                 }
-                if(!ch.HasAttachedContainer)
+                if(!cubes.Exists(c => c.Time == ch.JsonTime && c.Type == ch.Color && c.Line == ch.PosX && c.Layer == ch.PosY))
                 {
                     // Link spam maybe idk
                     CreateDiffCommentLink("R2D - Chain links must have a head note", CommentTypesEnum.Issue, ch);
@@ -1449,58 +1456,33 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 notes = notes.OrderBy(o => o.JsonTime).ToList();
                 var red = notes.Where(c => c.Type == 0).ToList();
                 var blue = notes.Where(c => c.Type == 1).ToList();
-
+                // TODO: Add diagonal detection, but this is a pain, probably not worth the effort.
                 if (red.Count > 0)
                 {
                     var previous = red[0];
                     for (int i = 1; i < red.Count; i++)
                     {
-                        if (red[i].JsonTime == previous.JsonTime)
+                        if (red[i].JsonTime == previous.JsonTime && red[i].CutDirection != 8 && previous.CutDirection != 8)
                         {
-                            if ((SwingType.Up.Contains(red[i].CutDirection) && SwingType.Up.Contains(previous.CutDirection)) ||
+                            if (previous.PosY == red[i].PosY)
+                            {
+                                if ((SwingType.Up.Contains(red[i].CutDirection) && SwingType.Up.Contains(previous.CutDirection)) ||
                                 SwingType.Down.Contains(red[i].CutDirection) && SwingType.Down.Contains(previous.CutDirection))
-                            {
-                                if (previous.PosX != red[i].PosX)
                                 {
-                                    CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue, 
-                                        cubes.Find(c => c.Time == red[i].JsonTime && c.Type == red[i].Type
-                                        && red[i].PosX == c.Line && red[i].PosY == c.Layer));
+                                    CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue,
+                                    cubes.Find(c => c.Time == red[i].JsonTime && c.Type == red[i].Type
+                                    && red[i].PosX == c.Line && red[i].PosY == c.Layer));
                                     issue = Severity.Fail;
                                 }
                             }
-                            else if ((SwingType.Left.Contains(red[i].CutDirection) && SwingType.Left.Contains(previous.CutDirection)) ||
+                            else if (previous.PosX == red[i].PosX)
+                            {
+                                if ((SwingType.Left.Contains(red[i].CutDirection) && SwingType.Left.Contains(previous.CutDirection)) ||
                                 SwingType.Right.Contains(red[i].CutDirection) && SwingType.Right.Contains(previous.CutDirection))
-                            {
-                                if (previous.PosY != red[i].PosY)
                                 {
                                     CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue,
-                                        cubes.Find(c => c.Time == red[i].JsonTime && c.Type == red[i].Type
-                                        && red[i].PosX == c.Line && red[i].PosY == c.Layer));
-                                    issue = Severity.Fail;
-                                }
-                            }
-                            else if ((SwingType.Up_Left.Contains(red[i].CutDirection) && SwingType.Up_Left.Contains(previous.CutDirection)) ||
-                                SwingType.Up_Right.Contains(red[i].CutDirection) && SwingType.Up_Right.Contains(previous.CutDirection) ||
-                                (SwingType.Down_Left.Contains(red[i].CutDirection) && SwingType.Down_Left.Contains(previous.CutDirection)) ||
-                                SwingType.Down_Right.Contains(red[i].CutDirection) && SwingType.Down_Right.Contains(previous.CutDirection))
-                            {
-                                var dX = Math.Abs(red[i].PosX - previous.PosX);
-                                var dY = Math.Abs(red[i].PosY - previous.PosY);
-                                if (dX != dY)
-                                {
-                                    CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue,
-                                        cubes.Find(c => c.Time == red[i].JsonTime && c.Type == red[i].Type
-                                        && red[i].PosX == c.Line && red[i].PosY == c.Layer));
-                                    issue = Severity.Fail;
-                                }
-                            }
-                            else // Parity mismatch
-                            {
-                                if (red[i].CutDirection != 8 && previous.CutDirection != 8)
-                                {
-                                    CreateDiffCommentNote("R2A/R3F - Swing speed should be consistent throughout the map/max 45 degree rotation", CommentTypesEnum.Issue,
-                                        cubes.Find(c => c.Time == red[i].JsonTime && c.Type == red[i].Type
-                                        && red[i].PosX == c.Line && red[i].PosY == c.Layer));
+                                    cubes.Find(c => c.Time == red[i].JsonTime && c.Type == red[i].Type
+                                    && red[i].PosX == c.Line && red[i].PosY == c.Layer));
                                     issue = Severity.Fail;
                                 }
                             }
@@ -1515,52 +1497,27 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var previous = blue[0];
                     for (int i = 1; i < blue.Count; i++)
                     {
-                        if (blue[i].JsonTime == previous.JsonTime)
+                        if (blue[i].JsonTime == previous.JsonTime && blue[i].CutDirection != 8 && previous.CutDirection != 8)
                         {
-                            if ((SwingType.Up.Contains(blue[i].CutDirection) && SwingType.Up.Contains(previous.CutDirection)) ||
+                            if (previous.PosY == blue[i].PosY)
+                            {
+                                if ((SwingType.Up.Contains(blue[i].CutDirection) && SwingType.Up.Contains(previous.CutDirection)) ||
                                 SwingType.Down.Contains(blue[i].CutDirection) && SwingType.Down.Contains(previous.CutDirection))
-                            {
-                                if (previous.PosX != blue[i].PosX)
                                 {
                                     CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue,
-                                        cubes.Find(c => c.Time == blue[i].JsonTime && c.Type == blue[i].Type
-                                        && blue[i].PosX == c.Line && blue[i].PosY == c.Layer));
+                                    cubes.Find(c => c.Time == blue[i].JsonTime && c.Type == blue[i].Type
+                                    && blue[i].PosX == c.Line && blue[i].PosY == c.Layer));
                                     issue = Severity.Fail;
                                 }
                             }
-                            else if ((SwingType.Left.Contains(blue[i].CutDirection) && SwingType.Left.Contains(previous.CutDirection)) ||
+                            else if (previous.PosX == blue[i].PosX)
+                            {
+                                if ((SwingType.Left.Contains(blue[i].CutDirection) && SwingType.Left.Contains(previous.CutDirection)) ||
                                 SwingType.Right.Contains(blue[i].CutDirection) && SwingType.Right.Contains(previous.CutDirection))
-                            {
-                                if (previous.PosY != blue[i].PosY)
                                 {
                                     CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue,
-                                        cubes.Find(c => c.Time == blue[i].JsonTime && c.Type == blue[i].Type
-                                        && blue[i].PosX == c.Line && blue[i].PosY == c.Layer));
-                                    issue = Severity.Fail;
-                                }
-                            }
-                            else if ((SwingType.Up_Left.Contains(blue[i].CutDirection) && SwingType.Up_Left.Contains(previous.CutDirection)) ||
-                                SwingType.Up_Right.Contains(blue[i].CutDirection) && SwingType.Up_Right.Contains(previous.CutDirection) ||
-                                (SwingType.Down_Left.Contains(blue[i].CutDirection) && SwingType.Down_Left.Contains(previous.CutDirection)) ||
-                                SwingType.Down_Right.Contains(blue[i].CutDirection) && SwingType.Down_Right.Contains(previous.CutDirection))
-                            {
-                                var dX = Math.Abs(blue[i].PosX - previous.PosX);
-                                var dY = Math.Abs(blue[i].PosY - previous.PosY);
-                                if (dX != dY)
-                                {
-                                    CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue,
-                                        cubes.Find(c => c.Time == blue[i].JsonTime && c.Type == blue[i].Type
-                                        && blue[i].PosX == c.Line && blue[i].PosY == c.Layer));
-                                    issue = Severity.Fail;
-                                }
-                            }
-                            else // Parity mismatch
-                            {
-                                if (blue[i].CutDirection != 8 && previous.CutDirection != 8)
-                                {
-                                    CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue,
-                                        cubes.Find(c => c.Time == blue[i].JsonTime && c.Type == blue[i].Type
-                                        && blue[i].PosX == c.Line && blue[i].PosY == c.Layer));
+                                    cubes.Find(c => c.Time == blue[i].JsonTime && c.Type == blue[i].Type
+                                    && blue[i].PosX == c.Line && blue[i].PosY == c.Layer));
                                     issue = Severity.Fail;
                                 }
                             }
@@ -1955,7 +1912,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         else if (d >= 2 && d <= 2.99) // 1-2 wide
                         {
-                            if(NoteDirection.Move((note.PosX, note.PosY), note.CutDirection) == NoteDirection.Move((other.PosX, other.PosY), other.CutDirection))
+                            if(NoteDirection.Move(note) == NoteDirection.Move(other))
                             {
                                 arr.Add(other);
                                 arr.Add(note);

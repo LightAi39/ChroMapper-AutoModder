@@ -155,10 +155,8 @@ namespace ChroMapper_LightModding.UI
 
         private void RemoveInfoMenu()
         {
-            GameObject infoMenu = GameObject.Find("Automodder Info Menu");
-            GameObject diffMenu = GameObject.Find("Automodder Difficulty Menu Overlay");
-            Object.Destroy(infoMenu);
-            Object.Destroy(diffMenu);
+            Object.Destroy(_infoMenu);
+            Object.Destroy(_diffMenu);
         }
 
         private void CreateInfoMenu()
@@ -388,6 +386,8 @@ namespace ChroMapper_LightModding.UI
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx+", "Auto Check", new Vector2(116, -75), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 9, "ExpertPlus");
+                        Severity severity = reviews.Where(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CreateCriteriaStatusElement(severity, "AutoCheckEx+Status", new Vector2(84, -75), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard"))
@@ -397,6 +397,8 @@ namespace ChroMapper_LightModding.UI
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx", "Auto Check", new Vector2(116, -100.33f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 7, "Expert");
+                        Severity severity = reviews.Where(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CreateCriteriaStatusElement(severity, "AutoCheckExStatus", new Vector2(84, -75), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard"))
@@ -406,6 +408,8 @@ namespace ChroMapper_LightModding.UI
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckH", "Auto Check", new Vector2(116, -125.66f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 5, "Hard");
+                        Severity severity = reviews.Where(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CreateCriteriaStatusElement(severity, "AutoCheckHStatus", new Vector2(84, -75), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard"))
@@ -415,6 +419,8 @@ namespace ChroMapper_LightModding.UI
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckN", "Auto Check", new Vector2(116, -151f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 3, "Normal");
+                        Severity severity = reviews.Where(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CreateCriteriaStatusElement(severity, "AutoCheckNStatus", new Vector2(84, -75), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard"))
@@ -424,6 +430,8 @@ namespace ChroMapper_LightModding.UI
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckE", "Auto Check", new Vector2(116, -176.33f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 1, "Easy");
+                        Severity severity = reviews.Where(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CreateCriteriaStatusElement(severity, "AutoCheckEStatus", new Vector2(84, -75), _diffMenu.transform);
                     }, 50, 25);
                 }
             }

@@ -780,18 +780,20 @@ namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
         public static int DOWN_RIGHT { get; set; } = 7;
         public static int ANY { get; set; } = 8;
 
-        public static (int x, int y) Move((int x, int y) position, int direction)
+        public static (int x, int y) Move(BaseNote note, int amount = 1)
         {
+            (int x, int y) position = (note.PosX, note.PosY);
+            int direction = note.CutDirection;
             switch(direction)
             {
-                case 0: return (position.x, position.y + 1);
-                case 1: return (position.x, position.y - 1);
-                case 2: return (position.x - 1, position.y);
-                case 3: return (position.x + 1, position.y);
-                case 4: return (position.x - 1, position.y + 1);
-                case 5: return (position.x + 1, position.y + 1);
-                case 6: return (position.x - 1, position.y - 1);
-                case 7: return (position.x + 1, position.y - 1);
+                case 0: return (position.x, position.y + (1 * amount));
+                case 1: return (position.x, position.y - (1 * amount));
+                case 2: return (position.x - (1 * amount), position.y);
+                case 3: return (position.x + (1 * amount), position.y);
+                case 4: return (position.x - (1 * amount), position.y + (1 * amount));
+                case 5: return (position.x + (1 * amount), position.y + (1 * amount));
+                case 6: return (position.x - (1 * amount), position.y - (1 * amount));
+                case 7: return (position.x + (1 * amount), position.y - (1 * amount));
                 default: return (position.x, position.y);
             }
         }

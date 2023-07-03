@@ -86,6 +86,12 @@
     <Compile Include="BeatmapScanner\Data\SwingData.cs" />
     <Compile Include="BeatmapScanner\MapCheck\Parity.cs" />
     <Compile Include="BeatmapScanner\MapCheck\Swing.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\AllowList.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IAllowList.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IProfanityFilter.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityBase.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityFilter.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityList.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\BeatmapScanner.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\ScanAlgo.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\ScanMethod.cs" />
