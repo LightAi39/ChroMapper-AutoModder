@@ -18,6 +18,10 @@ namespace ChroMapper_LightModding.BeatmapScanner.Data
         public double Spacing { get; set; } = 0;
         public bool Linear { get; set; } = false;
 
+        public Cube()
+        {
+        }
+
         public Cube(Cube cube)
         {
             AngleOffset = cube.AngleOffset;

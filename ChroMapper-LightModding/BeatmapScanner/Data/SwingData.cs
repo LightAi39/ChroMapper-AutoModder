@@ -1,7 +1,10 @@
-﻿namespace ChroMapper_LightModding.BeatmapScanner.Data
+﻿using Discord;
+
+namespace ChroMapper_LightModding.BeatmapScanner.Data
 {
     internal class SwingData
     {
+        public Cube Start { get; set; } = null;
         public double Time { get; set; } = 0;
         public double Angle { get; set; } = 0;
         public (double x, double y) EntryPosition { get; set; } = (0, 0);
@@ -22,10 +25,11 @@
 
         }
 
-        public SwingData(double beat, double angle)
+        public SwingData(double beat, double angle, Cube start)
         {
             Time = beat;
             Angle = angle;
+            Start = start;
         }
     }
 

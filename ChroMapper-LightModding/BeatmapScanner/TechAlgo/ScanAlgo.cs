@@ -393,7 +393,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 return swingData;
             }
 
-            swingData.Add(new SwingData(cubes[0].Time, cubes[0].Direction));
+            swingData.Add(new SwingData(cubes[0].Time, cubes[0].Direction, cubes[0]));
             (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = ScanMethod.CalculateBaseEntryExit((cubes[0].Line, cubes[0].Layer), cubes[0].Direction);
 
             for (int i = 1; i < cubes.Count - 1; i++)
@@ -406,7 +406,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 if (!cubes[i].Pattern || cubes[i].Head)
                 {
-                    swingData.Add(new SwingData(currentBeat, currentAngle));
+                    swingData.Add(new SwingData(currentBeat, currentAngle, cubes[i]));
                     (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = ScanMethod.CalculateBaseEntryExit(currentPosition, currentAngle);
                 }
                 else
@@ -544,6 +544,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     PreviousDistance = d.PreviousDistance,
                     PositionComplexity = d.PositionComplexity,
                     CurveComplexity = d.CurveComplexity,
+                    Start = d.Start
                 };
 
                 cloneList.Add(clone);

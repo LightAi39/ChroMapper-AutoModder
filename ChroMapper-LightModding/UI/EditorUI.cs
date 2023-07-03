@@ -34,7 +34,7 @@ namespace ChroMapper_LightModding.UI
 
         private bool showTimelineMarkers = false;
 
-        private (double diff, double tech, double ebpm, double slider, double reset, double bomb, int crouch, double linear) stats;
+        private (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear) stats;
 
         public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter, AutocheckHelper autocheckHelper)
         {
@@ -808,7 +808,7 @@ namespace ChroMapper_LightModding.UI
             image.color = new Color(0.35f, 0.35f, 0.35f);
 
             UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues", $"Difficulty: {stats.diff}☆ | Tech: {stats.tech}☆ | eBPM: {stats.ebpm} | Slider: {stats.slider}%", new Vector2(-44, -12), new Vector2(292, 24), TextAlignmentOptions.Left);
-            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Resets: {stats.reset}% | Bomb resets: {stats.bomb}% | Crouch: {stats.crouch} | Linear: {stats.linear}%", new Vector2(-44, -36), new Vector2(292, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Resets: {stats.reset}% | Crouch: {stats.crouch} | Linear: {stats.linear}%", new Vector2(-44, -36), new Vector2(292, 24), TextAlignmentOptions.Left);
 
             
         }

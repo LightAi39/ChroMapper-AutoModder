@@ -84,6 +84,8 @@
     <Compile Include="BeatmapScanner\Data\Criteria\Recommended.cs" />
     <Compile Include="BeatmapScanner\Data\Cube.cs" />
     <Compile Include="BeatmapScanner\Data\SwingData.cs" />
+    <Compile Include="BeatmapScanner\MapCheck\Parity.cs" />
+    <Compile Include="BeatmapScanner\MapCheck\Swing.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\BeatmapScanner.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\ScanAlgo.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\ScanMethod.cs" />

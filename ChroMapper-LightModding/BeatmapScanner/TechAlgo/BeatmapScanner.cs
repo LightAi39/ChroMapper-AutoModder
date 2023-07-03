@@ -16,7 +16,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         #region Analyzer
 
-        public static (double diff, double tech, double ebpm, double slider, double reset, double bomb, int crouch, double linear) Analyzer(List<BaseNote> notes, List<BaseSlider> chains, List<BaseNote> bombs, List<BaseObstacle> obstacles, float bpm)
+        public static (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear) Analyzer(List<BaseNote> notes, List<BaseSlider> chains, List<BaseNote> bombs, List<BaseObstacle> obstacles, float bpm)
         {
             #region Prep
 
@@ -24,7 +24,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var tech = 0d;
             var ebpm = 0d;
             var reset = 0d;
-            var bomb = 0d;
             var slider = 0d;
             var crouch = 0;
             var linear = 0d;
@@ -113,7 +112,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
             slider = Math.Round((double)cube.Where(c => c.Slider && c.Head).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
             linear = Math.Round((double)cube.Where(c => c.Linear && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
             reset = Math.Round((double)data.Where(c => c.Reset).Count() / data.Count() * 100, 2);
-            //bomb = Math.Round((double)data.Where(c => c.Reset && c.Bomb && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
 
             // Find group of walls and list them together
             List<List<BaseObstacle>> wallsGroup = new()
@@ -216,7 +214,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             Walls = obstacles;
             Bombs = bombs;
             Datas = data;
-            return (Math.Round(pass, 3), Math.Round(tech, 3), Math.Round(ebpm, 3), Math.Round(slider, 3), Math.Round(reset, 3), Math.Round(bomb, 3), crouch, Math.Round(linear, 3));
+            return (Math.Round(pass, 3), Math.Round(tech, 3), Math.Round(ebpm, 3), Math.Round(slider, 3), Math.Round(reset, 3), crouch, Math.Round(linear, 3));
         }
 
         #endregion

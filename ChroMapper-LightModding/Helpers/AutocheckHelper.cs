@@ -34,14 +34,14 @@ namespace ChroMapper_LightModding.Helpers
 
             var result = RunBeatmapScanner(characteristic, difficultyRank, difficulty);
 
-            if (result != (-1, -1, -1, -1, -1, -1, -1, -1))
+            if (result != (-1, -1, -1, -1, -1, -1, -1))
             {
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                 plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = criteriaCheck.AutoDiffCheck(characteristic, difficultyRank, difficulty);
             }
         }
 
-        public (double diff, double tech, double ebpm, double slider, double reset, double bomb, int crouch, double linear) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
+        public (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
         {
             var song = plugin.BeatSaberSongContainer.Song;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
@@ -68,7 +68,7 @@ namespace ChroMapper_LightModding.Helpers
                     return BeatmapScanner.BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute); ;
                 }
             }
-            return (-1, -1, -1, -1, -1, -1, -1, -1);
+            return (-1, -1, -1, -1, -1, -1, -1);
         }
 
         public void RemovePastAutoCheckCommentsSongInfo()
