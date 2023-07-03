@@ -474,7 +474,7 @@ namespace ChroMapper_LightModding.UI
             BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
             BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
 
-            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, plugin.BPMChangeGridContainer.LoadedObjects.Cast<BaseBpmEvent>().ToList(), BeatSaberSongContainer.Instance.Song.SongTimeOffset);
 
             foreach (var comment in plugin.currentReview.Comments)
             {
