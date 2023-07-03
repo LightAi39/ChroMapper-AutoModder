@@ -101,7 +101,7 @@ namespace ChroMapper_LightModding.Export
                         lastType = comment.Type;
                     }
 
-                    text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} |** {comment.Message}";
+                    text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} |**\n {comment.Message}";
 
                     if (comment.Response != "")
                     {
