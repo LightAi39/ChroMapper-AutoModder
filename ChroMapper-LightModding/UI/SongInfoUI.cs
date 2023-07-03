@@ -200,8 +200,7 @@ namespace ChroMapper_LightModding.UI
                 UIHelper.AddButton(_infoMenu.transform, "ReallyDeleteAMFile", "Confirm Delete", new Vector2(-104, -45), () =>
                 {
                     fileHelper.MapsetReviewRemover();
-                    GameObject gameObjectToDelete = GameObject.Find("Automodder Info Menu");
-                    Object.Destroy(gameObjectToDelete);
+                    RemoveInfoMenu();
                 });
             });
             #endregion
