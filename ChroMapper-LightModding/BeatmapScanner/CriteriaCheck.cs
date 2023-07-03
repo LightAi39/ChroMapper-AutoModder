@@ -9,6 +9,7 @@ using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
 using ChroMapper_LightModding.BeatmapScanner.MapCheck;
 using UnityEngine;
 using Beatmap.Enums;
+using Beatmap.Base.Customs;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -19,6 +20,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
         private string characteristic;
         private int difficultyRank;
         private string difficulty;
+        private BaseDifficulty baseDifficulty;
+        private double songOffset;
+        private BeatPerMinute bpm;
         #endregion
 
         #region Constructors
@@ -52,6 +56,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
             this.characteristic = characteristic;
             this.difficultyRank = difficultyRank;
             this.difficulty = difficulty;
+
+            var song = plugin.BeatSaberSongContainer.Song;
+            BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
+            baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
+            songOffset = BeatSaberSongContainer.Instance.Song.SongTimeOffset;
+            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents, songOffset);
 
             DiffCrit diffCrit = new()
             {
@@ -327,7 +337,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var wall = BeatmapScanner.Walls;
             wall = wall.OrderByDescending(w => w.JsonTime).ToList();
             // TODO: Make the 2f a config instead
-            var limit = (BeatSaberSongContainer.Instance.LoadedSongLength - 2f) / (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+            var limit = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength - 2f, true);
             foreach (var c in cube)
             {
                 if (c.Time > limit)
@@ -360,7 +370,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             // TODO: Make the 45 a config instead
             var limit = 45;
-            var duration = (cube.Last().Time - cube.First().Time) * (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+            var duration = bpm.ToRealTime(cube.Last().Time - cube.First().Time);
             if (duration < limit)
             {
                 ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + limit.ToString() + "s.");
@@ -541,7 +551,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var label = data["_difficultyLabel"].ToString();
                     ProfanityFilter.ProfanityFilter pf = new();
                     var isProfanity = pf.ContainsProfanity(label);
-                    if(isProfanity)
+                    if (isProfanity)
                     {
                         ExtendOverallComment("R7G - Difficulty name must not contain obscene content");
                         return Severity.Fail;
@@ -619,13 +629,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
             var walls = BeatmapScanner.Walls.OrderBy(w => w.JsonTime).ToList();
             // TODO: Make the 30ms configurable
-            var beatms = 0.03f / (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+
+            var beatms = bpm.ToBeatTime(0.03, false);
 
             foreach (var w in walls)
             {
                 foreach (var c in cubes)
                 {
-                    if(c.Time > w.JsonTime + w.Duration + beatms)
+                    if (c.Time > w.JsonTime + w.Duration + beatms)
                     {
                         break;
                     }
@@ -708,10 +719,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
             }
 
-            for(int i = 0; i < bombs.Count; i++)
+            for (int i = 0; i < bombs.Count; i++)
             {
                 var b = bombs[i];
-                for(int j = i + 1; j < bombs.Count; j++)
+                for (int j = i + 1; j < bombs.Count; j++)
                 {
                     var b2 = bombs[j];
                     if (b2.JsonTime > b.JsonTime + beatms)
@@ -775,9 +786,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var bombs = BeatmapScanner.Bombs;
             var walls = BeatmapScanner.Walls;
 
-            var end = BeatSaberSongContainer.Instance.LoadedSongLength / (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
-
-            if (cubes.Exists(c => c.Time < 0 || c.Time > end) || chains.Exists(c => c.JsonTime < 0 || c.JsonTime > end) 
+            var end = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength, true);
+            if (cubes.Exists(c => c.Time < 0 || c.Time > end) || chains.Exists(c => c.JsonTime < 0 || c.JsonTime > end)
                 || bombs.Exists(b => b.JsonTime < 0 || b.JsonTime > end) || walls.Exists(w => w.JsonTime < 0 || w.JsonTime + w.Duration > end))
             {
                 ExtendOverallComment("R1B - Object detected outside of playable timeframe");
@@ -797,7 +807,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
             BaseDifficulty baseDifficulty = BeatSaberSongContainer.Instance.Song.GetMapFromDifficultyBeatmap(diff);
             var events = baseDifficulty.Events.OrderBy(e => e.JsonTime).ToList();
-            var end = BeatSaberSongContainer.Instance.LoadedSongLength / (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+            var end = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength, true);
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
 
             if (!events.Any() || !events.Exists(e => e.Type >= 0 && e.Type <= 5))
@@ -805,31 +815,31 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 ExtendOverallComment("R6A - Map has no light");
                 return Severity.Fail;
             }
-            else 
+            else
             {
                 var lights = events.Where(e => e.Type >= 0 && e.Type <= 5).OrderBy(e => e.JsonTime).ToList();
                 var average = lights.Count() / end;
-                if(average < 1) // TODO: Make the average a config
+                if (average < 1) // TODO: Make the average a config
                 {
                     ExtendOverallComment("R6A - Map doesn't have enough light");
                     issue = Severity.Fail;
                 }
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 // TODO: make fadetime and reactime config
-                var fadeTime = 1f * (BeatSaberSongContainer.Instance.Song.BeatsPerMinute / 60);
-                var reactTime = 0.25f * (BeatSaberSongContainer.Instance.Song.BeatsPerMinute / 60);
+                var fadeTime = bpm.ToBeatTime(1f, false);
+                var reactTime = bpm.ToBeatTime(0.25f, false);
                 var eventState = new List<EventState>();
                 var eventLitTime = new List<List<EventLitTime>>();
-                for(var i = 0; i < 12; i++)
+                for (var i = 0; i < 12; i++)
                 {
                     EventState es = new(false, 0, 0);
                     eventState.Add(es);
                     eventLitTime.Add(new());
                 }
-                for(int i = 0; i < lights.Count; i++)
+                for (int i = 0; i < lights.Count; i++)
                 {
                     var ev = lights[i];
-                    if((ev.IsOn || ev.IsFlash) && eventState[ev.Type].State == false)
+                    if ((ev.IsOn || ev.IsFlash) && eventState[ev.Type].State == false)
                     {
                         eventState[ev.Type].State = true;
                         eventState[ev.Type].Time = ev.JsonTime;
@@ -845,7 +855,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             eventLitTime[ev.Type].Add(new(ev.JsonTime, true));
                         }
                     }
-                    if(ev.IsFade)
+                    if (ev.IsFade)
                     {
                         eventState[ev.Type].State = false;
                         eventState[ev.Type].Time = ev.JsonTime;
@@ -870,23 +880,23 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         eventLitTime[ev.Type].Add(new(ev.JsonTime + (eventState[ev.Type].State == true ? reactTime : Math.Min(reactTime, eventState[ev.Type].FadeTime)), false));
                     }
                 }
-                foreach(var elt in eventLitTime)
+                foreach (var elt in eventLitTime)
                 {
                     elt.Reverse();
                 }
-                for(int i = 0; i < bombs.Count; i++)
+                for (int i = 0; i < bombs.Count; i++)
                 {
                     var bomb = bombs[i];
                     var isLit = false;
-                    foreach(var el in eventLitTime)
+                    foreach (var el in eventLitTime)
                     {
                         var t = el.Find(e => e.Time <= bomb.JsonTime);
-                        if(t != null)
+                        if (t != null)
                         {
                             isLit = isLit || t.State;
                         }
                     }
-                    if(!isLit)
+                    if (!isLit)
                     {
                         CreateDiffCommentBomb("R5B - There must be sufficient lighting whenever bombs are present", CommentTypesEnum.Issue, bomb);
                         issue = Severity.Fail;
@@ -937,10 +947,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var leftWall = walls.Where(w => w.PosX == 1 && w.Width == 1);
             var rightWall = walls.Where(w => w.PosX == 2 && w.Width == 1);
 
-            foreach(var w in leftWall)
+            foreach (var w in leftWall)
             {
                 var note = notes.Where(n => n.Line == 0 && (n.Layer >= 2 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration).ToList();
-                foreach(var n in note)
+                foreach (var n in note)
                 {
                     CreateDiffCommentNote("R3B - Notes cannot be hidden behind walls", CommentTypesEnum.Issue, n);
                     issue = Severity.Fail;
@@ -996,7 +1006,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentObstacle("R4D - Walls must have a positive width, height and duration", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
-                if (w.Duration < min && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3) && 
+                if (w.Duration < min && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3) &&
                     !walls.Exists(wa => wa != w && wa.PosX + wa.Width >= w.PosX + w.Width && wa.PosX <= w.PosX + w.Width && wa.Duration >= min && w.JsonTime >= wa.JsonTime && w.JsonTime <= wa.JsonTime + wa.Duration + max))
                 {
                     CreateDiffCommentObstacle("R4E - Walls shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w);
@@ -1040,7 +1050,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             // TODO: Make max degree a config, also no idea how to actually calculate that properly.
             var limit = 30;
 
-            if(notes.Count >= 16)
+            if (notes.Count >= 16)
             {
                 var link = links.Where(l => l.JsonTime <= notes[15].Time).ToList();
                 foreach (var l in link)
@@ -1049,7 +1059,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     issue = Severity.Fail;
                 }
             }
-            else if(links.Any())
+            else if (links.Any())
             {
                 var link = links.Where(l => l.JsonTime >= notes.Last().Time).Take(16 - notes.Count).ToList();
                 foreach (var l in link)
@@ -1058,9 +1068,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     issue = Severity.Fail;
                 }
             }
-            
+
             // TODO: Make this mess better idk
-            foreach(var l in links)
+            foreach (var l in links)
             {
                 var chain = (BaseChain)l;
                 var spacing = Math.Round(Math.Max(Math.Max(Math.Abs(l.TailPosX - l.PosX) * chain.Squish, Math.Abs(l.TailPosY - l.PosY) * chain.Squish), 0), 0);
@@ -1156,7 +1166,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (var i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
-                    if((note.Type == 0 && lastNote[0] != null) || (note.Type == 1 && lastNote[1] != null))
+                    if ((note.Type == 0 && lastNote[0] != null) || (note.Type == 1 && lastNote[1] != null))
                     {
                         if (Swing.Next(note, lastNote[note.Type], bpm, swingNoteArray[note.Type]))
                         {
@@ -1188,7 +1198,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         bombContext[0].Add(note);
                         bombContext[1].Add(note);
                     }
-                    else if(note.Type == 0 || note.Type == 1)
+                    else if (note.Type == 0 || note.Type == 1)
                     {
                         lastNote[note.Type] = note;
                         swingNoteArray[note.Type].Add(note);
@@ -1257,7 +1267,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             {
                                 // Fine
                             }
-                            else if((note.PosX != 1 || note.PosY != 1) && note.JsonTime - lastMidL.First().JsonTime <= OverallMin)
+                            else if ((note.PosX != 1 || note.PosY != 1) && note.JsonTime - lastMidL.First().JsonTime <= OverallMin)
                             {
                                 // Also fine
                             }
@@ -1297,11 +1307,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                 }
 
-                foreach(var n in arr)
+                foreach (var n in arr)
                 {
-                    if(n.Type == 0 || n.Type == 1)
+                    if (n.Type == 0 || n.Type == 1)
                     {
-                        CreateDiffCommentNote("R2B - Notes must be placed to give the player acceptable time to react", CommentTypesEnum.Issue, 
+                        CreateDiffCommentNote("R2B - Notes must be placed to give the player acceptable time to react", CommentTypesEnum.Issue,
                             cubes.Find(c => c.Time == n.JsonTime && c.Type == n.Type && n.PosX == c.Line && n.PosY == c.Layer));
                         issue = Severity.Fail;
                     }
@@ -1317,7 +1327,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (note.JsonTime - lastMidL.First().JsonTime <= MaxTimeBomb)
                         {
-                            if(note.PosX == 0 && note.JsonTime - lastMidL.First().JsonTime <= MinTimeBomb)
+                            if (note.PosX == 0 && note.JsonTime - lastMidL.First().JsonTime <= MinTimeBomb)
                             {
                                 // Fine
                             }
@@ -1371,7 +1381,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                 }
             }
- 
+
             return issue;
         }
 
@@ -1389,13 +1399,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var maxBeat = 0.4;
             foreach (var ch in chains)
             {
-                if(ch.TailJsonTime - ch.JsonTime >= maxBeat)
+                if (ch.TailJsonTime - ch.JsonTime >= maxBeat)
                 {
                     // Slow chains
                     CreateDiffCommentLink("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, ch);
                     issue = Severity.Fail;
                 }
-                if(!cubes.Exists(c => c.Time == ch.JsonTime && c.Type == ch.Color && c.Line == ch.PosX && c.Layer == ch.PosY))
+                if (!cubes.Exists(c => c.Time == ch.JsonTime && c.Type == ch.Color && c.Line == ch.PosX && c.Layer == ch.PosY))
                 {
                     // Link spam maybe idk
                     CreateDiffCommentLink("R2D - Chain links must have a head note", CommentTypesEnum.Issue, ch);
@@ -1553,10 +1563,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 List<BaseNote> arr = new();
                 var lastTime = 0d;
-                for(int i = 0; i < notes.Count; i++)
+                for (int i = 0; i < notes.Count; i++)
                 {
                     var currentNote = notes[i];
-                    if(currentNote.Type == 3 || (currentNote.JsonTime / bpm * 60) < lastTime + 0.01)
+                    if (currentNote.Type == 3 || (currentNote.JsonTime / bpm * 60) < lastTime + 0.01)
                     {
                         continue;
                     }
@@ -1580,7 +1590,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             IsDiagonal = true;
                         }
-                        if (((currentNote.PosY == compareTo.PosY || currentNote.PosX == compareTo.PosX) && Swing.IsIntersect(currentNote, compareTo, angle, 2)) || 
+                        if (((currentNote.PosY == compareTo.PosY || currentNote.PosX == compareTo.PosX) && Swing.IsIntersect(currentNote, compareTo, angle, 2)) ||
                                 (IsDiagonal && Swing.IsIntersect(currentNote, compareTo, angle2, 2)))
                         {
                             arr.Add(currentNote);
@@ -1588,7 +1598,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                     }
                 }
-                foreach(var item in arr)
+                foreach (var item in arr)
                 {
                     CreateDiffCommentNote("R3E - Notes cannot be placed in the path of a bomb or another note", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
@@ -1639,7 +1649,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             swingNoteArray[note.Type].Clear();
                         }
                     }
-                    foreach(var other in swingNoteArray[(note.Type + 1) % 2])
+                    foreach (var other in swingNoteArray[(note.Type + 1) % 2])
                     {
                         if (other.Type != 0 && other.Type != 1)
                         {
@@ -1647,7 +1657,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         var isInline = false;
                         var distance = Math.Sqrt(Math.Pow(note.PosX - other.PosX, 2) + Math.Pow(note.PosY - other.PosY, 2));
-                        if(distance <= 0.5)
+                        if (distance <= 0.5)
                         {
                             isInline = true;
                         }
@@ -1663,7 +1673,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3G - Inline - Hitbox abusive patterns are not allowed", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3G - Inline - Hitbox abusive patterns are not allowed", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Warning;
                 }
@@ -1681,7 +1691,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 };
                 Cube[] noteOccupy = { new(), new() };
                 arr.Clear();
-                for (int i = 0; i < notes.Count; i++) 
+                for (int i = 0; i < notes.Count; i++)
                 {
                     if (notes[i].Type != 0 && notes[i].Type != 1)
                     {
@@ -1696,7 +1706,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             if (note.CutDirection != NoteDirection.ANY)
                             {
                                 noteOccupy[note.Type].Line = note.PosX + NoteDirectionSpace.Get(note.CutDirection)[0];
-                                noteOccupy[note.Type].Layer =  note.PosY + NoteDirectionSpace.Get(note.CutDirection)[1];
+                                noteOccupy[note.Type].Layer = note.PosY + NoteDirectionSpace.Get(note.CutDirection)[1];
                             }
                             else
                             {
@@ -1706,7 +1716,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             swingNoteArray[note.Type].Clear();
                             lastNoteDirection[note.Type] = note.CutDirection;
                         }
-                        else if(Parity.IsEnd(note, lastNote[note.Type], lastNoteDirection[note.Type]))
+                        else if (Parity.IsEnd(note, lastNote[note.Type], lastNoteDirection[note.Type]))
                         {
                             if (note.CutDirection != NoteDirection.ANY)
                             {
@@ -1720,7 +1730,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                 noteOccupy[note.Type].Layer = note.PosY + NoteDirectionSpace.Get(lastNoteDirection[note.Type])[1];
                             }
                         }
-                        if(lastNote[(note.Type + 1) % 2] != null)
+                        if (lastNote[(note.Type + 1) % 2] != null)
                         {
                             if (note.JsonTime - lastNote[(note.Type + 1) % 2].JsonTime != 0 &&
                                 note.JsonTime - lastNote[(note.Type + 1) % 2].JsonTime < Math.Min(hitboxTime, lastSpeed[(note.Type + 1) % 2]))
@@ -1788,7 +1798,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             continue;
                         }
-                        if(other.CutDirection != NoteDirection.ANY)
+                        if (other.CutDirection != NoteDirection.ANY)
                         {
                             if (!((note.JsonTime / bpm * 60) > (other.JsonTime / bpm * 60) + 0.01))
                             {
@@ -1797,10 +1807,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             var isDiagonal = Swing.NoteDirectionAngle[other.CutDirection] % 90 > 15 && Swing.NoteDirectionAngle[other.CutDirection] % 90 < 75;
                             double[,] value = { { 15, 1.5 } };
                             if (njs < 1.425 / ((60 * (note.JsonTime - other.JsonTime)) / bpm + (isDiagonal ? constantDiagonal : constant)) &&
-                                Swing.IsIntersect(note, other, value, 1)) 
+                                Swing.IsIntersect(note, other, value, 1))
                             {
-                                    arr.Add(other);
-                                    break;
+                                arr.Add(other);
+                                break;
                             }
                         }
 
@@ -1861,7 +1871,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     foreach (var other in swingNoteArray[(note.Type + 1) % 2])
                     {
-                        if(other.CutDirection == 8)
+                        if (other.CutDirection == 8)
                         {
                             continue;
                         }
@@ -1869,17 +1879,17 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             continue;
                         }
-                        if(note.JsonTime != other.JsonTime)
+                        if (note.JsonTime != other.JsonTime)
                         {
                             continue;
                         }
                         var d = Math.Sqrt(Math.Pow(note.PosX - other.PosX, 2) + Math.Pow(note.PosY - other.PosY, 2));
-                        if(d > 0.499 && d < 1.001) // Adjacent
+                        if (d > 0.499 && d < 1.001) // Adjacent
                         {
-                            
+
                             if (other.PosX == note.PosX)
                             {
-                                if((SwingType.Up.Contains(note.CutDirection) && SwingType.Down.Contains(other.CutDirection)) || 
+                                if ((SwingType.Up.Contains(note.CutDirection) && SwingType.Down.Contains(other.CutDirection)) ||
                                     (SwingType.Down.Contains(note.CutDirection) && SwingType.Up.Contains(other.CutDirection)))
                                 {
                                     arr.Add(other);
@@ -1900,7 +1910,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         else if (d >= 1.001 && d < 2) // Diagonal
                         {
-                            if(((note.CutDirection == 6 && note.PosY > other.PosY && note.PosX > other.PosX) ||
+                            if (((note.CutDirection == 6 && note.PosY > other.PosY && note.PosX > other.PosX) ||
                                 (note.CutDirection == 7 && note.PosY > other.PosY && note.PosX < other.PosX) ||
                                 (note.CutDirection == 4 && note.PosY < other.PosY && note.PosX > other.PosX) ||
                                 (note.CutDirection == 5 && note.PosY < other.PosY && note.PosX < other.PosX)) && Reverse.Get(note.CutDirection) == other.CutDirection)
@@ -1912,14 +1922,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         else if (d >= 2 && d <= 2.99) // 1-2 wide
                         {
-                            if(NoteDirection.Move(note) == NoteDirection.Move(other))
+                            if (NoteDirection.Move(note) == NoteDirection.Move(other))
                             {
                                 arr.Add(other);
                                 arr.Add(note);
                                 break;
                             }
                         }
-                        else if(d > 2.99 && ((note.Type == 0 && note.PosX > 2) || (note.Type == 1 && note.PosX < 1))) // 3-wide
+                        else if (d > 2.99 && ((note.Type == 0 && note.PosX > 2) || (note.Type == 1 && note.PosX < 1))) // 3-wide
                         {
                             // TODO: This is trash, could easily be done better
                             if (other.PosY == note.PosY)
@@ -2084,7 +2094,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 Beat = bomb.JsonTime,
                 PosX = bomb.PosX,
                 PosY = bomb.PosY,
-                Color = 3,
+                Color = 2,
                 ObjectType = bomb.ObjectType
             };
 
