@@ -8,6 +8,11 @@ using System.Linq;
 using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
 using ChroMapper_LightModding.BeatmapScanner.MapCheck;
 using static ChroMapper_LightModding.Configs.Configs;
+using JoshaParity;
+using SwingData = ChroMapper_LightModding.BeatmapScanner.Data.SwingData;
+using Parity = ChroMapper_LightModding.BeatmapScanner.MapCheck.Parity;
+using UnityEngine;
+using Newtonsoft.Json;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -1109,110 +1114,62 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         public Severity ParityCheck()
         {
-            var issue = Severity.Success;
-            // Based on https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/notes/parity.ts
+            // implementation of JoshaParity
+            // TODO: make configurable
+            bool hadIssue = false;
+            bool hadWarning = false;
+
             var song = plugin.BeatSaberSongContainer.Song;
-            BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
-            BaseDifficulty baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
-            if (baseDifficulty.Notes.Any())
+
+            MapAnalyser analysedMap = new MapAnalyser(song.Directory);
+
+            List<JoshaParity.SwingData> swings = analysedMap.GetSwingData((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower());
+
+            foreach (var swing in swings.Where(x => x.resetType == ResetType.Rebound).ToList())
             {
-                var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
-                var datas = BeatmapScanner.Datas.OrderBy(d => d.Time).ToList();
-                List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).ToList();
-                notes = notes.OrderBy(o => o.JsonTime).ToList();
-                var lastNote = new BaseNote[2];
-                lastNote[0] = null;
-                lastNote[1] = null;
-                var swingNoteArray = new List<List<BaseNote>>
+                CreateDiffCommentNotes("R2 - Error - Parity", CommentTypesEnum.Issue, swing.notes);
+                hadIssue = true;
+            }
+
+            List<JoshaParity.SwingData> rightHandSwings = swings.Where(x => x.rightHand).ToList();
+            List<JoshaParity.SwingData> leftHandSwings = swings.Where(x => !x.rightHand).ToList();
+
+            for (int i = 0; i < rightHandSwings.Count; i++)
+            {
+                if (i != 0)
                 {
-                    new List<BaseNote>(),
-                    new List<BaseNote>()
-                };
-                var bombContext = new List<List<BaseNote>>
-                {
-                    new List<BaseNote>(),
-                    new List<BaseNote>()
-                };
-                var lastBombContext = new List<List<BaseNote>>
-                {
-                    new List<BaseNote>(),
-                    new List<BaseNote>()
-                };
-                var swingParity = new List<Parity>
-                {
-                    new(notes.Where(n => n.Type == 0).ToList(), 0, ParityWarningThreshold, ParityErrorThreshold, ParityAllowedRotation, null),
-                    new(notes.Where(n => n.Type == 1).ToList(), 1, ParityWarningThreshold, ParityErrorThreshold, ParityAllowedRotation, null)
-                };
-                for (var i = 0; i < notes.Count; i++)
-                {
-                    var note = notes[i];
-                    if ((note.Type == 0 && lastNote[0] != null) || (note.Type == 1 && lastNote[1] != null))
+                    float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
+                    if (difference >= 180 || difference <= -180)
                     {
-                        if (Swing.Next(note, lastNote[note.Type], BeatSaberSongContainer.Instance.Song.BeatsPerMinute, swingNoteArray[note.Type]))
-                        {
-                            var parityStatus = swingParity[note.Type].Check(swingNoteArray[note.Type], bombContext[note.Type]);
-                            switch (parityStatus)
-                            {
-                                case ParityStatus.Warning:
-                                    {
-                                        CreateDiffCommentNote("R2 - Warning - Parity", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == swingNoteArray[note.Type][0].JsonTime && c.Type == note.Type
-                                        && swingNoteArray[note.Type][0].PosX == c.Line && swingNoteArray[note.Type][0].PosY == c.Layer));
-                                        issue = Severity.Warning;
-                                        break;
-                                    }
-                                case ParityStatus.Error:
-                                    {
-                                        var t = datas.Where(d => d.Time == swingNoteArray[note.Type][0].JsonTime && d.Start.Line == swingNoteArray[note.Type][0].PosX && d.Start.Layer == swingNoteArray[note.Type][0].PosY
-                                        && d.Start.Type == swingNoteArray[note.Type][0].Type).FirstOrDefault();
-                                        if(t != null && t.Reset)
-                                        {
-                                            CreateDiffCommentNote("R2 - Error - Parity", CommentTypesEnum.Issue, cubes.Find(c => c.Time == swingNoteArray[note.Type][0].JsonTime && c.Type == note.Type
-                                            && swingNoteArray[note.Type][0].PosX == c.Line && swingNoteArray[note.Type][0].PosY == c.Layer));
-                                            issue = Severity.Fail;
-                                        }
-                                        break;
-                                    }
-                            }
-                            swingParity[note.Type].Next(swingNoteArray[note.Type], bombContext[note.Type]);
-                            bombContext[note.Type].Clear();
-                            swingNoteArray[note.Type].Clear();
-                        }
-                    }
-                    if (note.Type == 3)
-                    {
-                        bombContext[0].Add(note);
-                        bombContext[1].Add(note);
-                    }
-                    else if (note.Type == 0 || note.Type == 1)
-                    {
-                        lastNote[note.Type] = note;
-                        swingNoteArray[note.Type].Add(note);
-                    }
-                }
-                for (var i = 0; i < 2; i++)
-                {
-                    var parityStatus = swingParity[i].Check(swingNoteArray[i], bombContext[i]);
-                    switch (parityStatus)
-                    {
-                        case ParityStatus.Warning:
-                            {
-                                CreateDiffCommentNote("R2 - Warning - Parity", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == swingNoteArray[i][0].JsonTime && c.Type == i
-                                            && swingNoteArray[i][0].PosX == c.Line && swingNoteArray[i][0].PosY == c.Layer));
-                                issue = Severity.Warning;
-                                break;
-                            }
-                        case ParityStatus.Error:
-                            {
-                                CreateDiffCommentNote("R2 - Error - Parity", CommentTypesEnum.Issue, cubes.Find(c => c.Time == swingNoteArray[i][0].JsonTime && c.Type == i
-                                            && swingNoteArray[i][0].PosX == c.Line && swingNoteArray[i][0].PosY == c.Layer));
-                                issue = Severity.Fail;
-                                break;
-                            }
+                        CreateDiffCommentNotes("R2 - Warning - Parity", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
+                        hadWarning = true;
                     }
                 }
             }
 
-            return issue;
+            for (int i = 0; i < leftHandSwings.Count; i++)
+            {
+                if (i != 0)
+                {
+                    float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
+                    if (difference >= 180 || difference <= -180)
+                    {
+                        CreateDiffCommentNotes("R2 - Warning - Parity", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
+                        hadWarning = true;
+                    }
+                }
+            }
+
+            if (hadIssue)
+            {
+                return Severity.Fail;
+            } else if (hadWarning)
+            {
+                return Severity.Warning;
+            } else
+            {
+                return Severity.Success;
+            }
         }
 
         #endregion
@@ -2153,6 +2110,43 @@ namespace ChroMapper_LightModding.BeatmapScanner
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
             return comments.Any(x => x.Message == comment.Message && x.Objects.SequenceEqual(comment.Objects) && x.IsAutogenerated == comment.IsAutogenerated);
+        }
+
+        private void CreateDiffCommentNotes(string message, CommentTypesEnum type, List<Note> notes)
+        {
+            string id = Guid.NewGuid().ToString();
+
+            List<SelectedObject> objects = new List<SelectedObject>();
+
+            foreach (var note in notes)
+            {
+                objects.Add(new()
+                {
+                    Beat = note.b,
+                    PosX = note.x,
+                    PosY = note.y,
+                    Color = note.c,
+                    ObjectType = Beatmap.Enums.ObjectType.Note
+                });
+            }
+
+            Comment comment = new()
+            {
+                Id = id,
+                StartBeat = objects.FirstOrDefault().Beat,
+                Objects = objects,
+                Type = type,
+                Message = message,
+                IsAutogenerated = true
+            };
+
+            List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+
+            if (!CheckIfCommentAlreadyExists(comment))
+            {
+                comments.Add(comment);
+                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            }
         }
 
         #endregion

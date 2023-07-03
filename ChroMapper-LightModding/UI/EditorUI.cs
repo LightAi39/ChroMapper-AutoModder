@@ -525,6 +525,8 @@ namespace ChroMapper_LightModding.UI
             {
                 RunAutoCheckOnThisDiff();
                 RefreshCriteriaMenu();
+                outlineHelper.RefreshOutlines();
+                RefreshTimelineMarkers();
             });
 
             UIHelper.AddButton(_criteriaMenu.transform, "RunBeatmapScanner", "Refresh Map Analytics", new Vector2(-126, -18), () =>
