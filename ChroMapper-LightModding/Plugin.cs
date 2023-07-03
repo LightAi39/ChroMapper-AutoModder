@@ -37,6 +37,7 @@ namespace ChroMapper_LightModding
         private ChainGridContainer _chainGridContainer = null!;
         private BPMChangeGridContainer _bpmChangeGridContainer = null!;
         private BeatmapObjectContainerCollection _beatmapObjectContainerCollection = null!;
+        private AudioTimeSyncController _audioTimeSyncController = null!;
 
         public BeatSaberSongContainer BeatSaberSongContainer { get => _beatSaberSongContainer; }
         public NoteGridContainer NoteGridContainer { get => _noteGridContainer; }
@@ -46,6 +47,7 @@ namespace ChroMapper_LightModding
         public ChainGridContainer ChainGridContainer { get => _chainGridContainer; }
         public BPMChangeGridContainer BPMChangeGridContainer { get => _bpmChangeGridContainer; }
         public BeatmapObjectContainerCollection BeatmapObjectContainerCollection { get => _beatmapObjectContainerCollection; }
+        public AudioTimeSyncController AudoTimeSyncController { get => _audioTimeSyncController; }
 
         private bool subscribedToEvents = false;
         private bool hasLoadedIntoEditor = false;
@@ -163,6 +165,7 @@ namespace ChroMapper_LightModding
             _beatmapObjectContainerCollection = UnityEngine.Object.FindObjectOfType<BeatmapObjectContainerCollection>();
             _arcGridContainer = UnityEngine.Object.FindObjectOfType<ArcGridContainer>();
             _chainGridContainer = UnityEngine.Object.FindObjectOfType<ChainGridContainer>();
+            _audioTimeSyncController = UnityEngine.Object.FindObjectOfType<AudioTimeSyncController>();
 
             if (currentReview != null)
             {

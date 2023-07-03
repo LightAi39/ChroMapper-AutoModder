@@ -293,6 +293,10 @@ namespace ChroMapper_LightModding.UI
                 .WithInitialValue(read)
                 .OnChanged((bool o) => { read = o; });
 
+            dialog.AddComponent<ButtonComponent>()
+                    .WithLabel("Go to beat")
+                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToSongBpmTime(comment.StartBeat); });
+
             dialog.AddFooterButton(null, "Close");
             dialog.AddFooterButton(() =>
             {
