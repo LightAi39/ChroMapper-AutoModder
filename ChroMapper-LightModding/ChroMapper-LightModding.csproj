@@ -87,6 +87,7 @@
     <Compile Include="BeatmapScanner\Data\SwingData.cs" />
     <Compile Include="BeatmapScanner\MapCheck\Parity.cs" />
     <Compile Include="BeatmapScanner\MapCheck\Swing.cs" />
+    <Compile Include="BeatmapScanner\MapCheck\Timescale.cs" />
     <Compile Include="BeatmapScanner\ProfanityFilter\AllowList.cs" />
     <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IAllowList.cs" />
     <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IProfanityFilter.cs" />
