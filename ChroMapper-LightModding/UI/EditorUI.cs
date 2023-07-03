@@ -36,7 +36,7 @@ namespace ChroMapper_LightModding.UI
         private Transform _pauseMenu;
         public bool enabled = false;
 
-        private bool showTimelineMarkers = false;
+        private bool showTimelineMarkers = true;
 
         private (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear) stats;
 
