@@ -397,7 +397,7 @@ namespace ChroMapper_LightModding.UI
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 7, "Expert");
                         Severity severity = reviews.Where(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
-                        CreateCriteriaStatusElement(severity, "AutoCheckExStatus", new Vector2(84, -75), _diffMenu.transform);
+                        CreateCriteriaStatusElement(severity, "AutoCheckExStatus", new Vector2(84, -100.33f), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard"))
@@ -408,7 +408,7 @@ namespace ChroMapper_LightModding.UI
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 5, "Hard");
                         Severity severity = reviews.Where(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
-                        CreateCriteriaStatusElement(severity, "AutoCheckHStatus", new Vector2(84, -75), _diffMenu.transform);
+                        CreateCriteriaStatusElement(severity, "AutoCheckHStatus", new Vector2(84, -125.66f), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard"))
@@ -419,7 +419,7 @@ namespace ChroMapper_LightModding.UI
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 3, "Normal");
                         Severity severity = reviews.Where(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
-                        CreateCriteriaStatusElement(severity, "AutoCheckNStatus", new Vector2(84, -75), _diffMenu.transform);
+                        CreateCriteriaStatusElement(severity, "AutoCheckNStatus", new Vector2(84, -151f), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard"))
@@ -430,7 +430,7 @@ namespace ChroMapper_LightModding.UI
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 1, "Easy");
                         Severity severity = reviews.Where(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
-                        CreateCriteriaStatusElement(severity, "AutoCheckEStatus", new Vector2(84, -75), _diffMenu.transform);
+                        CreateCriteriaStatusElement(severity, "AutoCheckEStatus", new Vector2(84, -176.33f), _diffMenu.transform);
                     }, 50, 25);
                 }
             }
