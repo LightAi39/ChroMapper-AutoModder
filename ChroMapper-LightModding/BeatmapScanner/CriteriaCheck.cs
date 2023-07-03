@@ -7,9 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
 using ChroMapper_LightModding.BeatmapScanner.MapCheck;
-using UnityEngine;
-using Beatmap.Enums;
-using Beatmap.Base.Customs;
+using static ChroMapper_LightModding.Configs.Configs;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -159,9 +157,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 CreateSongInfoComment("R7C - Creator field is empty", CommentTypesEnum.Issue);
                 return Severity.Fail;
             }
-            // Add config
-            var maximum = 30;
-            if (BeatSaberSongContainer.Instance.Song.LevelAuthorName.Count() > maximum)
+            if (BeatSaberSongContainer.Instance.Song.LevelAuthorName.Count() > MaxChar)
             {
                 CreateSongInfoComment("R7C - Creator field is too long. Maybe use a group name instead?", CommentTypesEnum.Suggestion);
                 return Severity.Warning;
@@ -302,8 +298,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             cube = cube = cube.OrderBy(c => c.Time).ToList();
             var wall = BeatmapScanner.Walls;
             wall = wall.OrderBy(w => w.JsonTime).ToList();
-            // TODO: Make the 1.33f a config instead
-            var limit = 1.33f / (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+            var limit = bpm.ToBeatTime(HotStartDuration);
             foreach (var c in cube)
             {
                 if (c.Time < limit)
@@ -336,8 +331,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             cube = cube.OrderByDescending(c => c.Time).ToList();
             var wall = BeatmapScanner.Walls;
             wall = wall.OrderByDescending(w => w.JsonTime).ToList();
-            // TODO: Make the 2f a config instead
-            var limit = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength - 2f, true);
+            var limit = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength - ColdEndDuration, true);
             foreach (var c in cube)
             {
                 if (c.Time > limit)
@@ -367,13 +361,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
         {
             var cube = BeatmapScanner.Cubes;
             cube = cube.OrderBy(c => c.Time).ToList();
-
-            // TODO: Make the 45 a config instead
-            var limit = 45;
             var duration = bpm.ToRealTime(cube.Last().Time - cube.First().Time);
-            if (duration < limit)
+            if (duration < MinSongDuration)
             {
-                ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + limit.ToString() + "s.");
+                ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + MinSongDuration.ToString() + "s.");
                 return Severity.Fail;
             }
 
@@ -518,17 +509,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         public Severity DifficultyLabelSizeCheck()
         {
-            // TODO: Add config
-            var maximum = 30;
             var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
             if (diff != null)
             {
                 var data = diff.GetOrCreateCustomData();
                 if (data.HasKey("_difficultyLabel"))
                 {
-                    if (data["_difficultyLabel"].ToString().Count() > 30)
+                    if (data["_difficultyLabel"].ToString().Count() > MaxChar)
                     {
-                        ExtendOverallComment("R7E - " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + maximum.ToString() + " characters.");
+                        ExtendOverallComment("R7E - " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + MaxChar.ToString() + " characters.");
                         return Severity.Fail;
                     }
                 }
@@ -628,9 +617,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
             var walls = BeatmapScanner.Walls.OrderBy(w => w.JsonTime).ToList();
-            // TODO: Make the 30ms configurable
 
-            var beatms = bpm.ToBeatTime(0.03, false);
+            var beatms = bpm.ToBeatTime(FusedElementDuration, false);
 
             foreach (var w in walls)
             {
@@ -819,15 +807,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 var lights = events.Where(e => e.Type >= 0 && e.Type <= 5).OrderBy(e => e.JsonTime).ToList();
                 var average = lights.Count() / end;
-                if (average < 1) // TODO: Make the average a config
+                if (average < AverageLightPerBeat)
                 {
                     ExtendOverallComment("R6A - Map doesn't have enough light");
                     issue = Severity.Fail;
                 }
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
-                // TODO: make fadetime and reactime config
-                var fadeTime = bpm.ToBeatTime(1f, false);
-                var reactTime = bpm.ToBeatTime(0.25f, false);
+                var fadeTime = bpm.ToBeatTime(LightFadeDuration, false);
+                var reactTime = bpm.ToBeatTime(LightBombReactionTime, false);
                 var eventState = new List<EventState>();
                 var eventLitTime = new List<List<EventLitTime>>();
                 for (var i = 0; i < 12; i++)
@@ -978,11 +965,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     issue = Severity.Fail;
                 }
             }
-            // TODO: Make wall min/max duration a config
-            var min = 0.0138f / (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
-            var max = 0.250f / (60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
-            // TODO: Make dodge limit per second configurable
-            var limit = 2;
+            
+            var min = bpm.ToBeatTime(MinimumWallDuration);
+            var max = bpm.ToBeatTime(ShortWallTrailDuration);
+            var limit = MaximumDodgeWallPerSecond;
             var last = 0d;
             var dodge = 0;
             var side = 0;
@@ -1047,8 +1033,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var issue = Severity.Success;
             var links = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
             var notes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
-            // TODO: Make max degree a config, also no idea how to actually calculate that properly.
-            var limit = 30;
 
             if (notes.Count >= 16)
             {
@@ -1109,7 +1093,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     temp,
                     temp2
                 };
-                if (!ScanMethod.IsSameDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1, temp.Direction, true) * (chain.Squish / 2 + 0.5), temp.Direction, limit))
+                if (!ScanMethod.IsSameDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1, temp.Direction, true) * (chain.Squish / 2 + 0.5), temp.Direction, MaxChainRotation))
                 {
                     CreateDiffCommentLink("R2D - Chains cannot change in direction by more than 45°", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
@@ -1133,13 +1117,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
             if (baseDifficulty.Notes.Any())
             {
                 var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
+                var datas = BeatmapScanner.Datas.OrderBy(d => d.Time).ToList();
                 List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).ToList();
                 notes = notes.OrderBy(o => o.JsonTime).ToList();
-                var bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
-                // TODO: Could be config I guess
-                var warningThres = 60; // Default: 90
-                var errorThres = 45; // Default: 45
-                var allowedRot = 90; // Default: 90
                 var lastNote = new BaseNote[2];
                 lastNote[0] = null;
                 lastNote[1] = null;
@@ -1158,17 +1138,17 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     new List<BaseNote>(),
                     new List<BaseNote>()
                 };
-                var swingParity = new List<MapCheck.Parity>
+                var swingParity = new List<Parity>
                 {
-                    new(notes.Where(n => n.Type == 0).ToList(), 0, warningThres, errorThres, allowedRot, null),
-                    new(notes.Where(n => n.Type == 1).ToList(), 1, warningThres, errorThres, allowedRot, null)
+                    new(notes.Where(n => n.Type == 0).ToList(), 0, ParityWarningThreshold, ParityErrorThreshold, ParityAllowedRotation, null),
+                    new(notes.Where(n => n.Type == 1).ToList(), 1, ParityWarningThreshold, ParityErrorThreshold, ParityAllowedRotation, null)
                 };
                 for (var i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
                     if ((note.Type == 0 && lastNote[0] != null) || (note.Type == 1 && lastNote[1] != null))
                     {
-                        if (Swing.Next(note, lastNote[note.Type], bpm, swingNoteArray[note.Type]))
+                        if (Swing.Next(note, lastNote[note.Type], BeatSaberSongContainer.Instance.Song.BeatsPerMinute, swingNoteArray[note.Type]))
                         {
                             var parityStatus = swingParity[note.Type].Check(swingNoteArray[note.Type], bombContext[note.Type]);
                             switch (parityStatus)
@@ -1182,9 +1162,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     }
                                 case ParityStatus.Error:
                                     {
-                                        CreateDiffCommentNote("R2 - Error - Parity", CommentTypesEnum.Issue, cubes.Find(c => c.Time == swingNoteArray[note.Type][0].JsonTime && c.Type == note.Type
-                                        && swingNoteArray[note.Type][0].PosX == c.Line && swingNoteArray[note.Type][0].PosY == c.Layer));
-                                        issue = Severity.Fail;
+                                        var t = datas.Where(d => d.Time == swingNoteArray[note.Type][0].JsonTime && d.Start.Line == swingNoteArray[note.Type][0].PosX && d.Start.Layer == swingNoteArray[note.Type][0].PosY
+                                        && d.Start.Type == swingNoteArray[note.Type][0].Type).FirstOrDefault();
+                                        if(t != null && t.Reset)
+                                        {
+                                            CreateDiffCommentNote("R2 - Error - Parity", CommentTypesEnum.Issue, cubes.Find(c => c.Time == swingNoteArray[note.Type][0].JsonTime && c.Type == note.Type
+                                            && swingNoteArray[note.Type][0].PosX == c.Line && swingNoteArray[note.Type][0].PosY == c.Layer));
+                                            issue = Severity.Fail;
+                                        }
                                         break;
                                     }
                             }
@@ -1245,13 +1230,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
                 var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
                 List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).OrderBy(n => n.JsonTime).ToList();
-                var bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
-                // TODO: add config for this
-                var MinTimeNote = (0.15 * bpm) / 60;
-                var MaxTimeNote = (0.25 * bpm) / 60;
-                var MinTimeBomb = (0.15 * bpm) / 60;
-                var MaxTimeBomb = (0.20 * bpm) / 60;
-                var OverallMin = (0.05 * bpm) / 60;
+
+                var MinTimeNote = bpm.ToBeatTime(VBMinimumNoteTime);
+                var MaxTimeNote = bpm.ToBeatTime(VBMaximumNoteTime);
+                var MinTimeBomb = bpm.ToBeatTime(VBMinimumBombTime);
+                var MaxTimeBomb = bpm.ToBeatTime(VBMaximumBombTime);
+                var OverallMin = bpm.ToBeatTime(VBAllowedMinimum);
 
                 List<BaseNote> lastMidL = new();
                 List<BaseNote> lastMidR = new();
@@ -1395,11 +1379,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
             var datas = BeatmapScanner.Datas.OrderBy(d => d.Time).ToList();
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
-            // TODO: Maybe make this a config. No idea if leaving it at 0.4 is good enough.
-            var maxBeat = 0.4;
             foreach (var ch in chains)
             {
-                if (ch.TailJsonTime - ch.JsonTime >= maxBeat)
+                if (ch.TailJsonTime - ch.JsonTime >= MaxChainBeatLength)
                 {
                     // Slow chains
                     CreateDiffCommentLink("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, ch);
