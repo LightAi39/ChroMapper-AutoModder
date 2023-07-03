@@ -1,9 +1,11 @@
 ﻿using Beatmap.Base;
 using Beatmap.Enums;
 using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
+using ChroMapper_LightModding.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
+using JoshaParity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +25,8 @@ namespace ChroMapper_LightModding.UI
         private OutlineHelper outlineHelper;
         private FileHelper fileHelper;
         private AutocheckHelper autocheckHelper;
+
+        private BeatPerMinute bpm;
 
         private GameObject _timelineMarkers;
         private GameObject _criteriaMenu;
@@ -467,15 +471,19 @@ namespace ChroMapper_LightModding.UI
 
             float totalBeats = (plugin.BeatSaberSongContainer.Song.BeatsPerMinute / 60) * plugin.BeatSaberSongContainer.LoadedSongLength;
 
+            BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
+            BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
+
+            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+
             foreach (var comment in plugin.currentReview.Comments)
             {
-                float? cmbeat = FindOldBeatForSelectedNote(comment.Objects.FirstOrDefault());
+                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat));
+
                 Debug.Log(cmbeat);
-                if (cmbeat != null)
-                {
-                    float position = (float)(cmbeat / totalBeats * 926 - 463);
-                    UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -14), new Vector2(0, 0), null, outlineHelper.ChooseOutlineColor(comment.Type));
-                } 
+
+                float position = (float)(cmbeat / totalBeats * 926 - 463);
+                UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -14), new Vector2(0, 0), null, outlineHelper.ChooseOutlineColor(comment.Type));
             }
 
             
