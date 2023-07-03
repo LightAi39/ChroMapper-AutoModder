@@ -1127,7 +1127,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             foreach (var swing in swings.Where(x => x.resetType == ResetType.Rebound).ToList())
             {
-                CreateDiffCommentNotes("R2 - Error - Parity", CommentTypesEnum.Issue, swing.notes);
+                CreateDiffCommentNotes("R2 - Parity Error", CommentTypesEnum.Issue, swing.notes);
                 hadIssue = true;
             }
 
@@ -1139,9 +1139,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (i != 0)
                 {
                     float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
-                    if (difference >= 180 || difference <= -180)
+                    if (Math.Abs(difference) == 180)
                     {
-                        CreateDiffCommentNotes("R2 - Warning - Parity", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
+                        CreateDiffCommentNotes("Parity Warning - 180 degree difference", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
+                        hadWarning = true;
+                    }
+                    else if (Math.Abs(rightHandSwings[i].startPos.rotation) > 135 || Math.Abs(rightHandSwings[i].endPos.rotation) > 135)
+                    {
+                        CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
                         hadWarning = true;
                     }
                 }
@@ -1152,9 +1157,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (i != 0)
                 {
                     float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
-                    if (difference >= 180 || difference <= -180)
+                    if (Math.Abs(difference) == 180)
                     {
-                        CreateDiffCommentNotes("R2 - Warning - Parity", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
+                        CreateDiffCommentNotes("Parity Warning - 180 degree difference", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
+                        hadWarning = true;
+                    }
+                    else if (Math.Abs(leftHandSwings[i].startPos.rotation) > 135 || Math.Abs(leftHandSwings[i].endPos.rotation) > 135)
+                    {
+                        CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
                         hadWarning = true;
                     }
                 }
