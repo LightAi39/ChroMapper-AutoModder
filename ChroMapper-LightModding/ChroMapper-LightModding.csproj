@@ -127,6 +127,7 @@
     <Content Include="dll\Newtonsoft.Json.dll" />
     <Content Include="Licenses\LICENSE BeatMapEvaluator.txt" />
     <Content Include="Licenses\LICENSE BeatSaber-MapCheck.txt" />
+    <Content Include="Licenses\LICENSE JoshaParity.txt" />
     <Content Include="Licenses\LICENSE Newtonsoft.Json.txt" />
   </ItemGroup>
   <ItemGroup />
