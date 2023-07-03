@@ -35,10 +35,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FileBrowser">
-      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\FileBrowser.dll</HintPath>
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\FileBrowser.dll</HintPath>
     </Reference>
     <Reference Include="Main">
-      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\Main.dll</HintPath>
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Main.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -46,7 +46,7 @@
     </Reference>
     <Reference Include="Plugins, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Chromapper folder\chromapper\ChroMapper_Data\Managed\Plugins.dll</HintPath>
+      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Plugins.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
