@@ -32,6 +32,8 @@ namespace ChroMapper_LightModding.UI
         private GameObject _commentMenu;
         private GameObject _commentSelectMenu;
 
+        private string currentCommentMenuId;
+
         private Transform _songTimeline;
         private Transform _pauseMenu;
         private Transform _rightBar;
@@ -885,6 +887,7 @@ namespace ChroMapper_LightModding.UI
         private void RemoveCommentMenu()
         {
             Object.Destroy(_commentMenu);
+            currentCommentMenuId = null;
         }
 
         private void CreateCommentMenu(Comment comment)
@@ -902,6 +905,7 @@ namespace ChroMapper_LightModding.UI
 
         public void AddCommentMenu(Transform parent, Comment comment)
         {
+            currentCommentMenuId = comment.Id;
             _commentMenu = new GameObject("Automodder Comment Menu");
             _commentMenu.transform.parent = parent;
             _commentMenu.SetActive(false);
@@ -1068,9 +1072,11 @@ namespace ChroMapper_LightModding.UI
             else if (comments.Count == 1)
             {
                 // open top right comment UI
-                if (_commentMenu == null)
+                if (currentCommentMenuId != comments.FirstOrDefault().Id)
                 {
+                    RemoveCommentMenu();
                     CreateCommentMenu(comments.FirstOrDefault());
+                    RemoveCommentSelectMenu();
                 }
             }
             else if (comments.Count > 1)
@@ -1079,6 +1085,7 @@ namespace ChroMapper_LightModding.UI
                 if (_commentSelectMenu == null)
                 {
                     CreateCommentSelectMenu(comments);
+                    RemoveCommentMenu();
                 }
             }
 
