@@ -1343,9 +1343,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         public Severity ProlongedSwingCheck()
         {
-            var issue = Severity.Success;
+            var issue = false;
+            var unsure = false;
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
-            var datas = BeatmapScanner.Datas.OrderBy(d => d.Time).ToList();
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
             foreach (var ch in chains)
             {
@@ -1353,49 +1353,74 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     // Slow chains
                     CreateDiffCommentLink("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, ch);
-                    issue = Severity.Fail;
+                    issue = true;
                 }
                 if (!cubes.Exists(c => c.Time == ch.JsonTime && c.Type == ch.Color && c.Line == ch.PosX && c.Layer == ch.PosY))
                 {
                     // Link spam maybe idk
                     CreateDiffCommentLink("R2D - Chain links must have a head note", CommentTypesEnum.Issue, ch);
-                    issue = Severity.Fail;
+                    issue = true;
                 }
             }
             // Dot spam and pauls maybe
-            var leftData = datas.Where(d => d.Start.Type == 0).ToList();
-            var rightData = datas.Where(d => d.Start.Type == 1).ToList();
-            SwingData previous = null;
-            foreach (var data in leftData)
+            var leftCube = cubes.Where(d => d.Type == 0).ToList();
+            var rightCube = cubes.Where(d => d.Type == 1).ToList();
+            Cube previous = null;
+            foreach (var left in leftCube)
             {
                 if (previous != null)
                 {
-                    if ((data.Time - previous.Time <= 0.25 && ScanMethod.IsSameDirection(data.Angle, previous.Angle, 67.5)) || (data.Time - previous.Time <= 0.142857))
+                    if (((left.Time - previous.Time <= 0.25 && ScanMethod.IsSameDirection(left.Direction, previous.Direction, 67.5)) || (left.Time - previous.Time <= 0.142857)) && left.Time != previous.Time && left.Line == previous.Line && left.Layer == previous.Layer)
                     {
-                        CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, data.Start);
-                        issue = Severity.Fail;
+                        if(left.CutDirection == 8)
+                        {
+                            CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Unsure, left);
+                            unsure = true;
+                        }
+                        else
+                        {
+                            CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, left);
+                            issue = true;
+                        }
                     }
                 }
 
-                previous = data;
+                previous = left;
             }
 
             previous = null;
-            foreach (var data in rightData)
+            foreach (var right in rightCube)
             {
                 if (previous != null)
                 {
-                    if ((data.Time - previous.Time <= 0.25 && ScanMethod.IsSameDirection(data.Angle, previous.Angle, 67.5)) || (data.Time - previous.Time <= 0.142857))
+                    if (((right.Time - previous.Time <= 0.25 && ScanMethod.IsSameDirection(right.Direction, previous.Direction, 67.5)) || (right.Time - previous.Time <= 0.142857)) && right.Time != previous.Time && right.Line == previous.Line && right.Layer == previous.Layer)
                     {
-                        CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, data.Start);
-                        issue = Severity.Fail;
+                        if (right.CutDirection == 8)
+                        {
+                            CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Unsure, right);
+                            unsure = true;
+                        }
+                        else
+                        {
+                            CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, right);
+                            issue = true;
+                        }
                     }
                 }
 
-                previous = data;
+                previous = right;
             }
 
-            return issue;
+            if(issue)
+            {
+                return Severity.Fail;
+            }
+            else if(unsure)
+            {
+                return Severity.Warning;
+            }
+
+            return Severity.Success;
         }
 
         #endregion
