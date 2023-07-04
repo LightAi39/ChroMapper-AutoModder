@@ -93,12 +93,17 @@ namespace ChroMapper_LightModding.Helpers
                 };
             }
 
+            if (spawnedObject == null)
+            {
+                return;
+            }
+
             try
             {
-                if (plugin.currentReview.Comments.Any(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject))))
+                Comment comment = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat == spawnedObject.Beat && o.PosX == spawnedObject.PosX && o.PosY == spawnedObject.PosY && o.Color == spawnedObject.Color && o.ObjectType == spawnedObject.ObjectType)).FirstOrDefault();
+                if (comment != null)
                 {
-                    Comment comment = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject))).FirstOrDefault();
-                    SelectedObject selectedObject = comment.Objects.Where(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(spawnedObject)).FirstOrDefault();
+                    SelectedObject selectedObject = comment.Objects.Where(o => o.Beat == spawnedObject.Beat && o.PosX == spawnedObject.PosX && o.PosY == spawnedObject.PosY && o.Color == spawnedObject.Color && o.ObjectType == spawnedObject.ObjectType).FirstOrDefault();
 
                     if (comment.MarkAsSuppressed)
                     {
