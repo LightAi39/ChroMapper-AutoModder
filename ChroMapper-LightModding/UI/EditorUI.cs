@@ -513,21 +513,15 @@ namespace ChroMapper_LightModding.UI
 
             BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
             BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
-
             var bpmChanges = plugin.BPMChangeGridContainer.LoadedObjects.Cast<BaseBpmEvent>().ToList();
             if (bpmChanges.Count == 0) // apparently on intial load we are getting no bpm changes, so doing this for now to try and get them from the saved file anyway
             {
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
-            var mul = 926;
-            var sub = 463;
-
-            if((Screen.width / Screen.height) / (2560 / 1337) > 1.5)
-            {
-                mul = 1092;
-                sub = 628;
-            }
+            var mul = 930;
+            var sub = 472;
+            var val = ((double)Screen.width / Screen.height) / ((double)2560 / 1337);
 
             BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
 
@@ -536,7 +530,7 @@ namespace ChroMapper_LightModding.UI
             foreach (var comment in plugin.currentReview.Comments)
             {
                 double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat), true);
-                float position = (float)(cmbeat / totalBeats * mul - sub);
+                float position = (float)(cmbeat / totalBeats * (mul * (0.5 + (val / 2))) - (sub * val));
                 UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -15), new Vector2(0, 0), null, outlineHelper.ChooseOutlineColor(comment.Type));
             }
         }
