@@ -2067,7 +2067,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 Beat = bomb.JsonTime,
                 PosX = bomb.PosX,
                 PosY = bomb.PosY,
-                Color = 2,
+                Color = 3,
                 ObjectType = bomb.ObjectType
             };
 
@@ -2147,7 +2147,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         private void FuseBombComments()
         {
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-            var bombComments = comments.Where(c => c.Objects.All(o => o.Color == 2)).ToList(); // Only bombs comments
+            var bombComments = comments.Where(c => c.Objects.All(o => o.Color == 3)).ToList(); // Only bombs comments
             for(int i = bombComments.Count() - 2; i >= 0; i--)
             {
                 if (bombComments[i + 1].Message == bombComments[i].Message && bombComments[i + 1].StartBeat >= bombComments[i].StartBeat && bombComments[i + 1].StartBeat <= bombComments[i].StartBeat + 0.25)
