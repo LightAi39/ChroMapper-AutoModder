@@ -15,6 +15,7 @@
         public double MaximumDodgeWallPerSecond { get; set; } = 2;
         public int MaxChainRotation { get; set; } = 30;
         public double MaxChainBeatLength { get; set; } = 0.4;
+        public double ChainLinkVsAir { get; set; } = 1.5;
         public double VBMinimumNoteTime { get; set; } = 0.15;
         public double VBMaximumNoteTime { get; set; } = 0.25;
         public double VBMinimumBombTime { get; set; } = 0.15;

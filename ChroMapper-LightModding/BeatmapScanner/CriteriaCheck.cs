@@ -1064,7 +1064,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 var chain = (BaseChain)l;
                 var spacing = Math.Round(Math.Max(Math.Max(Math.Abs(l.TailPosX - l.PosX) * chain.Squish, Math.Abs(l.TailPosY - l.PosY) * chain.Squish), 0), 0);
-                if (chain.SliceCount / spacing < 1.5)
+                if (chain.SliceCount / spacing < Plugin.configs.ChainLinkVsAir)
                 {
                     CreateDiffCommentLink("R2D - Chains must be >25% links versus air/empty-space to improve chain recognition", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
