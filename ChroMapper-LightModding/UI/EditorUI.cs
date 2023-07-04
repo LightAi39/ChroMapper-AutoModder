@@ -1014,12 +1014,18 @@ namespace ChroMapper_LightModding.UI
             else if (comments.Count == 1)
             {
                 // open top right comment UI
-                CreateCommentMenu(comments.FirstOrDefault());
+                if (_commentMenu == null)
+                {
+                    CreateCommentMenu(comments.FirstOrDefault());
+                }
             }
             else if (comments.Count > 1)
             {
                 // open top right comment selection UI
-                CreateCommentSelectMenu(comments);
+                if (_commentSelectMenu == null)
+                {
+                    CreateCommentSelectMenu(comments);
+                }
             }
 
         }
