@@ -29,9 +29,12 @@ namespace ChroMapper_LightModding.UI
         private GameObject _timelineMarkers;
         private GameObject _criteriaMenu;
         private GameObject _ratingsMenu;
+        private GameObject _commentMenu;
+        private GameObject _commentSelectMenu;
 
         private Transform _songTimeline;
         private Transform _pauseMenu;
+        private Transform _rightBar;
         public bool enabled = false;
 
         private bool showTimelineMarkers = true;
@@ -141,7 +144,7 @@ namespace ChroMapper_LightModding.UI
                 }
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
-                    .OnClick(() => { ShowReviewCommentUI(comment.Id); });
+                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
             }
 
             if (plugin.currentReview.Comments.Count == 0)
@@ -189,7 +192,7 @@ namespace ChroMapper_LightModding.UI
                 }
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
-                    .OnClick(() => { ShowReviewCommentUI(comment.Id); });
+                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
             }
 
             if (startIndex == 5)
@@ -251,7 +254,7 @@ namespace ChroMapper_LightModding.UI
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment");
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Objects: " + string.Join(", ", selectedObjects.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Beats: " + string.Join(", ", selectedObjects.ConvertAll(p => p.ToString())));
 
             dialog.AddComponent<TextBoxComponent>()
                 .WithLabel("Comment")
@@ -277,7 +280,7 @@ namespace ChroMapper_LightModding.UI
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("View comment");
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())));
 
             dialog.AddComponent<TextComponent>()
                 .WithInitialValue($"Type: {comment.Type}");
@@ -297,7 +300,7 @@ namespace ChroMapper_LightModding.UI
 
             dialog.AddComponent<ButtonComponent>()
                     .WithLabel("Go to beat")
-                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToSongBpmTime(comment.StartBeat); });
+                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
 
             dialog.AddFooterButton(null, "Close");
             dialog.AddFooterButton(() =>
@@ -352,7 +355,7 @@ namespace ChroMapper_LightModding.UI
             }
 
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Objects: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())));
 
             dialog.AddComponent<TextBoxComponent>()
                 .WithLabel("Comment")
@@ -402,12 +405,13 @@ namespace ChroMapper_LightModding.UI
         #endregion
 
         #region New UI
-        public void Enable(Transform songTimeline, Transform pauseMenu)
+        public void Enable(Transform songTimeline, Transform pauseMenu, Transform rightBar)
         {
             if (enabled) { return; }
             enabled = true;
             _songTimeline = songTimeline;
             _pauseMenu = pauseMenu;
+            _rightBar = rightBar;
             if (plugin.currentReview != null) RunBeatmapScannerOnThisDiff();
             CreateTimelineMarkers();
             CreateCriteriaMenu();
@@ -472,7 +476,13 @@ namespace ChroMapper_LightModding.UI
             BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
             BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
 
-            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, plugin.BPMChangeGridContainer.LoadedObjects.Cast<BaseBpmEvent>().ToList(), BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            var bpmChanges = plugin.BPMChangeGridContainer.LoadedObjects.Cast<BaseBpmEvent>().ToList();
+            if (bpmChanges.Count == 0) // apparently on intial load we are getting no bpm changes, so doing this for now to try and get them from the saved file anyway
+            {
+                bpmChanges = baseDifficulty.BpmEvents;
+            }
+
+            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
 
             foreach (var comment in plugin.currentReview.Comments)
             {
@@ -825,6 +835,122 @@ namespace ChroMapper_LightModding.UI
             
         }
 
+        public void RefreshCommentMenu(Comment comment)
+        {
+            RemoveCommentMenu();
+            CreateCommentMenu(comment);
+        }
+
+        private void RemoveCommentMenu()
+        {
+            Object.Destroy(_commentMenu);
+        }
+
+        private void CreateCommentMenu(Comment comment)
+        {
+            if (plugin.currentReview == null) return;
+            AddCommentMenu(_rightBar, comment);
+            _commentMenu.SetActive(true);
+        }
+
+        private void OpenCommentMenuFromSelectionMenu(Comment comment)
+        {
+            Object.Destroy(_commentSelectMenu);
+            CreateCommentMenu(comment);
+        }
+
+        public void AddCommentMenu(Transform parent, Comment comment)
+        {
+            _commentMenu = new GameObject("Automodder Comment Menu");
+            _commentMenu.transform.parent = parent;
+            _commentMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_commentMenu, 325, 175, 1, 1, 0, 0, 1, 1);
+
+            Image image = _commentMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            UIHelper.AddLabel(_commentMenu.transform, "Beats", $"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())), new Vector2(0, -14), new Vector2(313, 24), TextAlignmentOptions.Left);
+
+            UIHelper.AddLabel(_commentMenu.transform, "Type", $"Type: {comment.Type}", new Vector2(0, -38), new Vector2(313, 24), TextAlignmentOptions.Left);
+
+            UIHelper.AddLabel(_commentMenu.transform, "Comment", $"Comment: {comment.Message}", new Vector2(0, -62), new Vector2(313, 24), TextAlignmentOptions.Left);
+
+            if (comment.Response != "") { UIHelper.AddLabel(_commentMenu.transform, "Response", $"Response: {comment.Response}", new Vector2(0, -108), new Vector2(313, 24), TextAlignmentOptions.Left); }
+            else UIHelper.AddLabel(_commentMenu.transform, "Response", $"No Response", new Vector2(0, -108), new Vector2(313, 24), TextAlignmentOptions.Left);
+
+            if (comment.MarkAsSuppressed) UIHelper.AddLabel(_commentMenu.transform, "Suppressed", $"Marked as Suppressed", new Vector2(0, -159), new Vector2(313, 24), TextAlignmentOptions.Right);
+
+            UIHelper.AddButton(_commentMenu.transform, "OpenComment", "Open Comment", new Vector2(-128.5f, -159), () =>
+            {
+                ShowReviewCommentUI(comment.Id);
+            });
+
+            UIHelper.AddButton(_commentMenu.transform, "EditComment", "Edit Comment", new Vector2(-66.5f, -159), () =>
+            {
+                ShowEditCommentUI(comment);
+            });
+
+            UIHelper.AddButton(_commentMenu.transform, "SuppressComment", "Toggle Suppress", new Vector2(-4.5f, -159), () =>
+            {
+                comment.MarkAsSuppressed = !comment.MarkAsSuppressed;
+                RefreshCommentMenu(comment);
+            });
+
+
+        }
+
+        public void RefreshCommentSelectMenu(List<Comment> comments)
+        {
+            RemoveCommentSelectMenu();
+            CreateCommentSelectMenu(comments);
+        }
+
+        private void RemoveCommentSelectMenu()
+        {
+            Object.Destroy(_commentSelectMenu);
+        }
+
+        private void CreateCommentSelectMenu(List<Comment> comments)
+        {
+            if (plugin.currentReview == null) return;
+            AddCommentSelectMenu(_rightBar, comments);
+            _commentSelectMenu.SetActive(true);
+        }
+
+        public void AddCommentSelectMenu(Transform parent, List<Comment> comments)
+        {
+            _commentSelectMenu = new GameObject("Automodder Comment Select Menu");
+            _commentSelectMenu.transform.parent = parent;
+            _commentSelectMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_commentSelectMenu, 325, 175, 1, 1, 0, 0, 1, 1);
+
+            Image image = _commentSelectMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            float height = -16f;
+
+            foreach (var comment in comments)
+            {
+                string read = "";
+                if (comment.MarkAsSuppressed)
+                {
+                    read = " - Marked As Suppressed";
+                }
+                UIHelper.AddButton(_commentSelectMenu.transform, $"OpenComment-{comment.Id}", $"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}", new Vector2(0, height), () =>
+                {
+                    OpenCommentMenuFromSelectionMenu(comment);
+                }, 290, 24);
+                height -= 26f;
+            }
+
+        }
+
         #endregion
 
         private void RunBeatmapScannerOnThisDiff()
@@ -872,6 +998,30 @@ namespace ChroMapper_LightModding.UI
             int currentIndex = Array.IndexOf(enumValues, severity);
             int nextIndex = (currentIndex + 1) % enumValues.Length;
             return enumValues[nextIndex];
+        }
+
+        public void CheckBeatForComment()
+        {
+            float beat = plugin.AudoTimeSyncController.CurrentJsonTime;
+
+            List<Comment> comments = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat == beat)).ToList();
+
+            if (comments.Count == 0)
+            {
+                RemoveCommentMenu();
+                RemoveCommentSelectMenu();
+            }
+            else if (comments.Count == 1)
+            {
+                // open top right comment UI
+                CreateCommentMenu(comments.FirstOrDefault());
+            }
+            else if (comments.Count > 1)
+            {
+                // open top right comment selection UI
+                CreateCommentSelectMenu(comments);
+            }
+
         }
     }
 }

@@ -173,7 +173,7 @@ namespace ChroMapper_LightModding
                 outlineHelper.selectionCache = new();
 
                 MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
-                editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"), mapEditorUI.transform.Find("Pause Menu Canvas").transform.Find("Extras Menu"));
+                editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"), mapEditorUI.transform.Find("Pause Menu Canvas").transform.Find("Extras Menu"), mapEditorUI.transform.Find("Right Bar Canvas"));
                 
             }
         }
@@ -501,6 +501,7 @@ namespace ChroMapper_LightModding
             _chainGridContainer.ContainerSpawnedEvent += outlineHelper.SetOutlineIfInReview;
             SelectionController.ObjectWasSelectedEvent += outlineHelper.UpdateSelectionCache;
             SelectionController.SelectionChangedEvent += outlineHelper.ManageSelectionCacheAndOutlines;
+            _audioTimeSyncController.TimeChanged += editorUI.CheckBeatForComment;
             subscribedToEvents = true;
         }
 
@@ -514,6 +515,7 @@ namespace ChroMapper_LightModding
             _chainGridContainer.ContainerSpawnedEvent -= outlineHelper.SetOutlineIfInReview;
             SelectionController.ObjectWasSelectedEvent -= outlineHelper.UpdateSelectionCache;
             SelectionController.SelectionChangedEvent -= outlineHelper.ManageSelectionCacheAndOutlines;
+            _audioTimeSyncController.TimeChanged -= editorUI.CheckBeatForComment;
             subscribedToEvents = false;
         }
 
