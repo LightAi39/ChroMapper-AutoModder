@@ -1,15 +1,12 @@
 ﻿using Beatmap.Base;
-using Beatmap.Enums;
 using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
 using ChroMapper_LightModding.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
-using JoshaParity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -514,8 +511,6 @@ namespace ChroMapper_LightModding.UI
             //image.type = Image.Type.Sliced;
             //image.color = new Color(0.35f, 0.35f, 0.35f);
 
-            float totalBeats = (plugin.BeatSaberSongContainer.Song.BeatsPerMinute / 60) * plugin.BeatSaberSongContainer.LoadedSongLength;
-
             BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
             BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
 
@@ -525,19 +520,25 @@ namespace ChroMapper_LightModding.UI
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
+            var mul = 926;
+            var sub = 463;
+
+            if((Screen.width / Screen.height) / (2560 / 1337) > 1.5)
+            {
+                mul = 1092;
+                sub = 628;
+            }
+
             BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+
+            var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength, true);
 
             foreach (var comment in plugin.currentReview.Comments)
             {
-                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat));
-
-                Debug.Log(cmbeat);
-
-                float position = (float)(cmbeat / totalBeats * 926 - 463);
-                UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -14), new Vector2(0, 0), null, outlineHelper.ChooseOutlineColor(comment.Type));
+                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat), true);
+                float position = (float)(cmbeat / totalBeats * mul - sub);
+                UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -15), new Vector2(0, 0), null, outlineHelper.ChooseOutlineColor(comment.Type));
             }
-
-            
         }
 
         public void RefreshCriteriaMenu()

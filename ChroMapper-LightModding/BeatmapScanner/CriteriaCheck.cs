@@ -7,9 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
 using ChroMapper_LightModding.BeatmapScanner.MapCheck;
-using static ChroMapper_LightModding.Configs.Configs;
 using JoshaParity;
-using SwingData = ChroMapper_LightModding.BeatmapScanner.Data.SwingData;
 using Parity = ChroMapper_LightModding.BeatmapScanner.MapCheck.Parity;
 
 namespace ChroMapper_LightModding.BeatmapScanner

@@ -14,7 +14,7 @@ namespace ChroMapper_LightModding.BeatmapScanner.Data.Criteria
         public Severity Chain { get; set; } = Severity.Fail;
         public Severity FusedElement { get; set; } = Severity.Fail;
         public Severity Loloppe { get; set; } = Severity.Fail;
-        public Severity HandClap { get; set; } = Severity.Fail; // semi-automated, mark specific position + angle as issue, otherwise subjective
+        public Severity HandClap { get; set; } = Severity.Fail;
         public Severity SwingPath { get; set; } = Severity.Fail;
         public Severity Hitbox { get; set; } = Severity.Fail;
         public Severity Slider { get; set; } = Severity.Fail;
