@@ -1180,7 +1180,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var swingWithoutNotes = swing;
                     swingWithoutNotes.notes = null;
                     string message = JsonConvert.SerializeObject(swingWithoutNotes);
-                    CreateDiffCommentNotes(message, CommentTypesEnum.Suggestion, swing.notes);
+                    CommentTypesEnum commentType = CommentTypesEnum.Suggestion;
+                    if (swing.resetType == ResetType.Rebound) commentType = CommentTypesEnum.Issue;
+                    if (Math.Abs(swing.endPos.rotation) > 135 || Math.Abs(swing.endPos.rotation) > 135) commentType = CommentTypesEnum.Unsure;
+                    CreateDiffCommentNotes(message, commentType, swing.notes);
                 }
             }
 
