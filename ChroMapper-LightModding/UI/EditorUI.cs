@@ -504,7 +504,11 @@ namespace ChroMapper_LightModding.UI
             _timelineMarkers.transform.parent = parent;
             _timelineMarkers.SetActive(false);
 
-            UIHelper.AttachTransform(_timelineMarkers, 926, 22, 0.99f, 0.9f, 0, 0, 1, 1);
+            RectTransform timelineCanvas = parent.parent.GetComponent<RectTransform>();
+
+            float width = timelineCanvas.sizeDelta.x - 20f;
+
+            UIHelper.AttachTransform(_timelineMarkers, width, 22, 0.5f, 0.9f, 0, 0, 0.5f, 1);
 
             //Image image = _timelineMarkers.AddComponent<Image>();
             //image.sprite = PersistentUI.Instance.Sprites.Background;
@@ -519,19 +523,16 @@ namespace ChroMapper_LightModding.UI
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
-            var mul = 930;
-            var sub = 472;
-            var val = ((double)Screen.width / Screen.height) / ((double)2560 / 1337);
-
             BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
 
-            var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength, true);
+            var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
 
             foreach (var comment in plugin.currentReview.Comments)
             {
-                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat), true);
-                float position = (float)(cmbeat / totalBeats * (mul * (0.5 + (val / 2))) - (sub * val));
-                UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -15), new Vector2(0, 0), null, outlineHelper.ChooseOutlineColor(comment.Type));
+                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat));
+
+                float position = (float)(cmbeat / totalBeats * width - (width / 2));
+                UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -14), new Vector2(0, 0), null, outlineHelper.ChooseOutlineColor(comment.Type));
             }
         }
 
