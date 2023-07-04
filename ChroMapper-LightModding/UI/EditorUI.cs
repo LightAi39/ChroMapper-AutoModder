@@ -26,8 +26,6 @@ namespace ChroMapper_LightModding.UI
         private FileHelper fileHelper;
         private AutocheckHelper autocheckHelper;
 
-        private BeatPerMinute bpm;
-
         private GameObject _timelineMarkers;
         private GameObject _criteriaMenu;
         private GameObject _ratingsMenu;
