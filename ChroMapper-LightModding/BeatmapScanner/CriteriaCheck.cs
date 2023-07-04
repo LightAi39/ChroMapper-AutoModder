@@ -163,7 +163,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 CreateSongInfoComment("R7C - Creator field is empty", CommentTypesEnum.Issue);
                 return Severity.Fail;
             }
-            if (BeatSaberSongContainer.Instance.Song.LevelAuthorName.Count() > MaxChar)
+            if (BeatSaberSongContainer.Instance.Song.LevelAuthorName.Count() > Plugin.configs.MaxChar)
             {
                 CreateSongInfoComment("R7C - Creator field is too long. Maybe use a group name instead?", CommentTypesEnum.Suggestion);
                 return Severity.Warning;
@@ -304,7 +304,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             cube = cube = cube.OrderBy(c => c.Time).ToList();
             var wall = BeatmapScanner.Walls;
             wall = wall.OrderBy(w => w.JsonTime).ToList();
-            var limit = bpm.ToBeatTime(HotStartDuration);
+            var limit = bpm.ToBeatTime(Plugin.configs.HotStartDuration);
             foreach (var c in cube)
             {
                 if (c.Time < limit)
@@ -337,7 +337,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             cube = cube.OrderByDescending(c => c.Time).ToList();
             var wall = BeatmapScanner.Walls;
             wall = wall.OrderByDescending(w => w.JsonTime).ToList();
-            var limit = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength - ColdEndDuration, true);
+            var limit = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength - Plugin.configs.ColdEndDuration, true);
             foreach (var c in cube)
             {
                 if (c.Time > limit)
@@ -368,9 +368,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var cube = BeatmapScanner.Cubes;
             cube = cube.OrderBy(c => c.Time).ToList();
             var duration = bpm.ToRealTime(cube.Last().Time - cube.First().Time);
-            if (duration < MinSongDuration)
+            if (duration < Plugin.configs.MinSongDuration)
             {
-                ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + MinSongDuration.ToString() + "s.");
+                ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + Plugin.configs.MinSongDuration.ToString() + "s.");
                 return Severity.Fail;
             }
 
@@ -521,9 +521,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var data = diff.GetOrCreateCustomData();
                 if (data.HasKey("_difficultyLabel"))
                 {
-                    if (data["_difficultyLabel"].ToString().Count() > MaxChar)
+                    if (data["_difficultyLabel"].ToString().Count() > Plugin.configs.MaxChar)
                     {
-                        ExtendOverallComment("R7E - " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + MaxChar.ToString() + " characters.");
+                        ExtendOverallComment("R7E - " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + Plugin.configs.MaxChar.ToString() + " characters.");
                         return Severity.Fail;
                     }
                 }
@@ -624,7 +624,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
             var walls = BeatmapScanner.Walls.OrderBy(w => w.JsonTime).ToList();
 
-            var beatms = bpm.ToBeatTime(FusedElementDuration, false);
+            var beatms = bpm.ToBeatTime(Plugin.configs.FusedElementDuration, false);
 
             foreach (var w in walls)
             {
@@ -813,14 +813,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 var lights = events.Where(e => e.Type >= 0 && e.Type <= 5).OrderBy(e => e.JsonTime).ToList();
                 var average = lights.Count() / end;
-                if (average < AverageLightPerBeat)
+                if (average < Plugin.configs.AverageLightPerBeat)
                 {
                     ExtendOverallComment("R6A - Map doesn't have enough light");
                     issue = Severity.Fail;
                 }
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
-                var fadeTime = bpm.ToBeatTime(LightFadeDuration, false);
-                var reactTime = bpm.ToBeatTime(LightBombReactionTime, false);
+                var fadeTime = bpm.ToBeatTime(Plugin.configs.LightFadeDuration, false);
+                var reactTime = bpm.ToBeatTime(Plugin.configs.LightBombReactionTime, false);
                 var eventState = new List<EventState>();
                 var eventLitTime = new List<List<EventLitTime>>();
                 for (var i = 0; i < 12; i++)
@@ -972,9 +972,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
             }
             
-            var min = bpm.ToBeatTime(MinimumWallDuration);
-            var max = bpm.ToBeatTime(ShortWallTrailDuration);
-            var limit = MaximumDodgeWallPerSecond;
+            var min = bpm.ToBeatTime(Plugin.configs.MinimumWallDuration);
+            var max = bpm.ToBeatTime(Plugin.configs.ShortWallTrailDuration);
+            var limit = Plugin.configs.MaximumDodgeWallPerSecond;
             var last = 0d;
             var dodge = 0;
             var side = 0;
@@ -1099,7 +1099,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     temp,
                     temp2
                 };
-                if (!ScanMethod.IsSameDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1, temp.Direction, true) * (chain.Squish / 2 + 0.5), temp.Direction, MaxChainRotation))
+                if (!ScanMethod.IsSameDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1, temp.Direction, true) * (chain.Squish / 2 + 0.5), temp.Direction, Plugin.configs.MaxChainRotation))
                 {
                     CreateDiffCommentLink("R2D - Chains cannot change in direction by more than 45°", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
@@ -1140,9 +1140,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (i != 0)
                 {
                     float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
-                    if (Math.Abs(difference) >= ParityWarningAngle)
+                    if (Math.Abs(difference) >= Plugin.configs.ParityWarningAngle)
                     {
-                        CreateDiffCommentNotes("Parity Warning - " + ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
+                        CreateDiffCommentNotes("Parity Warning - " + Plugin.configs.ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
                         hadWarning = true;
                     }
                     else if (Math.Abs(rightHandSwings[i].startPos.rotation) > 135 || Math.Abs(rightHandSwings[i].endPos.rotation) > 135)
@@ -1158,9 +1158,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (i != 0)
                 {
                     float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
-                    if (Math.Abs(difference) >= ParityWarningAngle)
+                    if (Math.Abs(difference) >= Plugin.configs.ParityWarningAngle)
                     {
-                        CreateDiffCommentNotes("Parity Warning - " + ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
+                        CreateDiffCommentNotes("Parity Warning - " + Plugin.configs.ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
                         hadWarning = true;
                     }
                     else if (Math.Abs(leftHandSwings[i].startPos.rotation) > 135 || Math.Abs(leftHandSwings[i].endPos.rotation) > 135)
@@ -1199,11 +1199,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
                 List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).OrderBy(n => n.JsonTime).ToList();
 
-                var MinTimeNote = bpm.ToBeatTime(VBMinimumNoteTime);
-                var MaxTimeNote = bpm.ToBeatTime(VBMaximumNoteTime);
-                var MinTimeBomb = bpm.ToBeatTime(VBMinimumBombTime);
-                var MaxTimeBomb = bpm.ToBeatTime(VBMaximumBombTime);
-                var OverallMin = bpm.ToBeatTime(VBAllowedMinimum);
+                var MinTimeNote = bpm.ToBeatTime(Plugin.configs.VBMinimumNoteTime);
+                var MaxTimeNote = bpm.ToBeatTime(Plugin.configs.VBMaximumNoteTime);
+                var MinTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMinimumBombTime);
+                var MaxTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMaximumBombTime);
+                var OverallMin = bpm.ToBeatTime(Plugin.configs.VBAllowedMinimum);
 
                 List<BaseNote> lastMidL = new();
                 List<BaseNote> lastMidR = new();
@@ -1349,7 +1349,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
             foreach (var ch in chains)
             {
-                if (ch.TailJsonTime - ch.JsonTime >= MaxChainBeatLength)
+                if (ch.TailJsonTime - ch.JsonTime >= Plugin.configs.MaxChainBeatLength)
                 {
                     // Slow chains
                     CreateDiffCommentLink("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, ch);

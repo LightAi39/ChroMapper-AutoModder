@@ -17,6 +17,9 @@ using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.BeatmapScanner;
 using UnityEngine.UI;
 using System.Windows.Input;
+using System.Configuration;
+using System.Xml.Linq;
+using System.Runtime.Remoting.Messaging;
 
 namespace ChroMapper_LightModding
 {
@@ -55,6 +58,7 @@ namespace ChroMapper_LightModding
         public DifficultyReview currentReview { get => MapsetDifficultyReviewLoader(); set => MapsetDifficultyReviewUpdater(value); }
         public MapsetReview currentMapsetReview = null;
         public string currentlyLoadedFilePath = null;
+        public static Configs.Configs configs = new();
 
         private EditorUI editorUI;
         private SongInfoUI songInfoUI;
@@ -82,6 +86,40 @@ namespace ChroMapper_LightModding
             songInfoUI = new(this, fileHelper, exporter, autocheckHelper);
 
             SceneManager.sceneLoaded += SceneLoaded;
+
+            // config
+            var path = AppDomain.CurrentDomain.BaseDirectory + "/Plugins/AutoModderConf.json";
+            if(File.Exists(path))
+            {
+                TextReader reader = null;
+                try
+                {
+                    reader = new StreamReader(path);
+                    var fileContents = reader.ReadToEnd();
+                    configs = JsonConvert.DeserializeObject<Configs.Configs>(fileContents);
+                }
+                catch // Error during reading, use default instead
+                {
+                    configs = new();
+                }
+                finally
+                {
+                    reader?.Close();
+                }
+            }
+            else
+            {
+                try
+                {
+                    using StreamWriter file = File.CreateText(@path);
+                    JsonSerializer serializer = new();
+                    serializer.Serialize(file, configs);
+                }
+                catch // Error during writing, use default instead
+                {
+                    configs = new();
+                }
+            }
 
             // register a button in the side tab menu
             ExtensionButton button = ExtensionButtons.AddButton(LoadSprite("ChroMapper_LightModding.Assets.Icon.png"), "AutoModder", editorUI.ShowMainUI);
