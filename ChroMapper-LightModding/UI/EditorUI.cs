@@ -142,8 +142,14 @@ namespace ChroMapper_LightModding.UI
                 {
                     read = " - Marked As Suppressed";
                 }
+                string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
+                if (beats.Length > 64)
+                {
+                    beats = beats.Substring(0, 61);
+                    beats += "...";
+                }
                 dialog.AddComponent<ButtonComponent>()
-                    .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
+                    .WithLabel($"Beats: {beats} | {comment.Type} - {comment.Message}{read}")
                     .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
             }
 
@@ -190,8 +196,14 @@ namespace ChroMapper_LightModding.UI
                 {
                     read = " - Marked As Suppressed";
                 }
+                string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
+                if (beats.Length > 64)
+                {
+                    beats = beats.Substring(0, 61);
+                    beats += "...";
+                }
                 dialog.AddComponent<ButtonComponent>()
-                    .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
+                    .WithLabel($"Beats: {beats} | {comment.Type} - {comment.Message}{read}")
                     .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
             }
 
@@ -253,8 +265,16 @@ namespace ChroMapper_LightModding.UI
             string message = "Comment";
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("Add comment");
+
+            string beats = string.Join(", ", selectedObjects.ConvertAll(p => p.ToString()));
+            if (beats.Length > 64)
+            {
+                beats = beats.Substring(0, 61);
+                beats += "...";
+            }
+
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Beats: " + string.Join(", ", selectedObjects.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Beats: {beats}");
 
             dialog.AddComponent<TextBoxComponent>()
                 .WithLabel("Comment")
@@ -279,8 +299,16 @@ namespace ChroMapper_LightModding.UI
             bool read = comment.MarkAsSuppressed;
 
             DialogBox dialog = PersistentUI.Instance.CreateNewDialogBox().WithTitle("View comment");
+
+            string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
+            if (beats.Length > 64)
+            {
+                beats = beats.Substring(0, 61);
+                beats += "...";
+            }
+
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Beats: {beats}");
 
             dialog.AddComponent<TextComponent>()
                 .WithInitialValue($"Type: {comment.Type}");
@@ -332,9 +360,15 @@ namespace ChroMapper_LightModding.UI
                 {
                     read = " - Marked As Suppressed";
                 }
+                string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
+                if (beats.Length > 64)
+                {
+                    beats = beats.Substring(0, 61);
+                    beats += "...";
+                }
                 dialog.AddComponent<ButtonComponent>()
-                    .WithLabel($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}")
-                    .OnClick(() => { ShowReviewCommentUI(comment.Id); });
+                    .WithLabel($"Beats: {beats} | {comment.Type} - {comment.Message}{read}")
+                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
             }
 
             dialog.AddFooterButton(null, "Close");
@@ -354,8 +388,15 @@ namespace ChroMapper_LightModding.UI
                 .WithInitialValue("A comment with that selection already exists!");
             }
 
+            string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
+            if (beats.Length > 64)
+            {
+                beats = beats.Substring(0, 61);
+                beats += "...";
+            }
+
             dialog.AddComponent<TextComponent>()
-                .WithInitialValue($"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())));
+                .WithInitialValue($"Beats: {beats}");
 
             dialog.AddComponent<TextBoxComponent>()
                 .WithLabel("Comment")
@@ -872,7 +913,14 @@ namespace ChroMapper_LightModding.UI
             image.type = Image.Type.Sliced;
             image.color = new Color(0.35f, 0.35f, 0.35f);
 
-            UIHelper.AddLabel(_commentMenu.transform, "Beats", $"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())), new Vector2(0, -14), new Vector2(313, 24), TextAlignmentOptions.Left);
+            string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
+            if (beats.Length > 64)
+            {
+                beats = beats.Substring(0, 61);
+                beats += "...";
+            }
+
+            UIHelper.AddLabel(_commentMenu.transform, "Beats", $"Beats: {beats}", new Vector2(0, -14), new Vector2(313, 24), TextAlignmentOptions.Left);
 
             UIHelper.AddLabel(_commentMenu.transform, "Type", $"Type: {comment.Type}", new Vector2(0, -38), new Vector2(313, 24), TextAlignmentOptions.Left);
 
@@ -942,7 +990,13 @@ namespace ChroMapper_LightModding.UI
                 {
                     read = " - Marked As Suppressed";
                 }
-                UIHelper.AddButton(_commentSelectMenu.transform, $"OpenComment-{comment.Id}", $"Beats: " + string.Join(", ", comment.Objects.ConvertAll(p => p.ToString())) + $" | {comment.Type} - {comment.Message}{read}", new Vector2(0, height), () =>
+                string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
+                if (beats.Length > 64)
+                {
+                    beats = beats.Substring(0, 61);
+                    beats += "...";
+                }
+                UIHelper.AddButton(_commentSelectMenu.transform, $"OpenComment-{comment.Id}", $"Beats: " + beats + $" | {comment.Type} - {comment.Message}{read}", new Vector2(0, height), () =>
                 {
                     OpenCommentMenuFromSelectionMenu(comment);
                 }, 290, 24);
