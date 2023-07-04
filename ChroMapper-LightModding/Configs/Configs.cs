@@ -22,5 +22,6 @@
         public double VBMaximumBombTime { get; set; } = 0.20;
         public double VBAllowedMinimum { get; set; } = 0.05;
         public int ParityWarningAngle { get; set; } = 180;
+        public bool ParityDebug { get; set; } = false;
     }
 }

@@ -9,6 +9,8 @@ using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
 using ChroMapper_LightModding.BeatmapScanner.MapCheck;
 using JoshaParity;
 using Parity = ChroMapper_LightModding.BeatmapScanner.MapCheck.Parity;
+using Newtonsoft.Json;
+using UnityEngine;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -1169,6 +1171,20 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
             }
 
+            if (Plugin.configs.ParityDebug)
+            {
+                foreach (var swing in swings)
+                {
+                    var swingWithoutNotes = swing;
+                    swingWithoutNotes.notes = null;
+                    string message = JsonConvert.SerializeObject(swingWithoutNotes);
+                    CommentTypesEnum commentType = CommentTypesEnum.Suggestion;
+                    if (swing.resetType == ResetType.Rebound) commentType = CommentTypesEnum.Issue;
+                    if (Math.Abs(swing.endPos.rotation) > 135 || Math.Abs(swing.endPos.rotation) > 135) commentType = CommentTypesEnum.Unsure;
+                    CreateDiffCommentNotes(message, commentType, swing.notes);
+                }
+            }
+
             if (hadIssue)
             {
                 return Severity.Fail;
@@ -2158,6 +2174,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         private void CreateDiffCommentNotes(string message, CommentTypesEnum type, List<Note> notes)
         {
+            if (notes.Count == 0) return;
             string id = Guid.NewGuid().ToString();
 
             List<SelectedObject> objects = new();
