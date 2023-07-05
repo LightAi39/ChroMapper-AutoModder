@@ -974,11 +974,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
             
             var min = bpm.ToBeatTime(Plugin.configs.MinimumWallDuration);
             var max = bpm.ToBeatTime(Plugin.configs.ShortWallTrailDuration);
-            var limit = Plugin.configs.MaximumDodgeWallPerSecond;
-            var last = 0d;
-            var dodge = 0;
+            var dodge = 0d;
             var side = 0;
-            var beat = 60 / BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
+            var sec = bpm.ToBeatTime(1, true);
+            bool start = false;
+            BaseObstacle previous = null;
             // Won't work properly in some very specific situation probably, but I did my best..
             foreach (var w in walls)
             {
@@ -1004,27 +1004,53 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentObstacle("R4E - Walls shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
-                if (dodge > 0 && w.JsonTime >= last + beat)
+                if(previous != null)
                 {
-                    dodge--;
+                    if ((dodge > 0 && w.JsonTime > previous.JsonTime + sec) || start) // more than a sec happen
+                    {
+                        start = true;
+                        var amount = (w.JsonTime - previous.JsonTime) / sec;
+                        if(amount < 1)
+                        {
+                            dodge *= amount;
+                        }
+                        else
+                        {
+                            dodge = 0;
+                        }
+                        if(dodge == 0)
+                        {
+                            start = false;
+                        }
+                    }
                 }
                 if (w.PosX + w.Width == 2 && side != 2)
                 {
-                    last = w.JsonTime;
                     side = 2;
                     dodge++;
                 }
                 else if (w.PosX == 2 && side != 1)
                 {
-                    last = w.JsonTime;
                     side = 1;
                     dodge++;
                 }
-                if (dodge > limit)
+                else
                 {
-                    CreateDiffCommentObstacle("R4B - Dodge walls must not force the players head to move more than 2 times per second", CommentTypesEnum.Issue, w);
+                    side = 0;
+                }
+                Debug.Log(w.JsonTime + " - " + dodge);
+                if (dodge >= Plugin.configs.MaximumDodgeWallPerSecond && side != 0)
+                {
+                    CreateDiffCommentObstacle("R4B - Dodge walls must not force the players head to move more than 3.5 times per second", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
+                else if (dodge >= Plugin.configs.SubjectiveDodgeWallPerSecond && side != 0)
+                {
+                    CreateDiffCommentObstacle("Y4A - Dodge walls that force the players head to move more than 2 times per second need justification", CommentTypesEnum.Suggestion, w);
+                    issue = Severity.Warning;
+                }
+
+                previous = w;
             }
 
             return issue;
@@ -1064,9 +1090,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 var chain = (BaseChain)l;
                 var spacing = Math.Round(Math.Max(Math.Max(Math.Abs(l.TailPosX - l.PosX) * chain.Squish, Math.Abs(l.TailPosY - l.PosY) * chain.Squish), 0), 0);
-                if (chain.SliceCount / spacing < Plugin.configs.ChainLinkVsAir)
+                Debug.Log("Spacing is: " + spacing + " calc is: " + (chain.SliceCount / spacing).ToString() + " settings is: " + Plugin.configs.ChainLinkVsAir);
+                if ((chain.SliceCount - 1) / spacing < Plugin.configs.ChainLinkVsAir)
                 {
-                    CreateDiffCommentLink("R2D - Chains must be >25% links versus air/empty-space to improve chain recognition", CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D - Chains must be at least 12.5% links versus air/empty-space", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
                 var horizontal = Math.Abs(l.PosX - l.TailPosX) * (chain.Squish / 2 + 0.5) * (chain.Squish / 2 + 0.5);
@@ -1212,7 +1239,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
                 var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
                 List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).OrderBy(n => n.JsonTime).ToList();
-
+                
+                var MinBottomTimeNote = bpm.ToBeatTime(Plugin.configs.VBMinBottomNoteTime);
                 var MinTimeNote = bpm.ToBeatTime(Plugin.configs.VBMinimumNoteTime);
                 var MaxTimeNote = bpm.ToBeatTime(Plugin.configs.VBMaximumNoteTime);
                 var MinTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMinimumBombTime);
@@ -1233,6 +1261,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             {
                                 // Fine
                             }
+                            else if (note.PosX == 1 && note.PosY == 0 && note.JsonTime - lastMidL.First().JsonTime <= MinBottomTimeNote)
+                            {
+                                // Also fine
+                            }
                             else if ((note.PosX != 1 || note.PosY != 1) && note.JsonTime - lastMidL.First().JsonTime <= OverallMin)
                             {
                                 // Also fine
@@ -1250,6 +1282,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             if (note.PosX == 3 && note.JsonTime - lastMidR.First().JsonTime <= MinTimeNote)
                             {
                                 // Fine
+                            }
+                            else if (note.PosX == 2 && note.PosY == 0 && note.JsonTime - lastMidR.First().JsonTime <= MinBottomTimeNote)
+                            {
+                                // Also fine
                             }
                             else if ((note.PosX != 2 || note.PosY != 1) && note.JsonTime - lastMidR.First().JsonTime <= OverallMin)
                             {

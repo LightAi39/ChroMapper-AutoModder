@@ -12,10 +12,12 @@
         public double LightBombReactionTime { get; set; } = 0.25;
         public double MinimumWallDuration { get; set; } = 0.0138;
         public double ShortWallTrailDuration { get; set; } = 0.25;
-        public double MaximumDodgeWallPerSecond { get; set; } = 2;
+        public double MaximumDodgeWallPerSecond { get; set; } = 3.5;
+        public double SubjectiveDodgeWallPerSecond { get; set; } = 2;
         public int MaxChainRotation { get; set; } = 30;
-        public double MaxChainBeatLength { get; set; } = 0.4;
-        public double ChainLinkVsAir { get; set; } = 1.5;
+        public double MaxChainBeatLength { get; set; } = 0.45;
+        public double ChainLinkVsAir { get; set; } = 0.75;
+        public double VBMinBottomNoteTime { get; set; } = 0.075;
         public double VBMinimumNoteTime { get; set; } = 0.15;
         public double VBMaximumNoteTime { get; set; } = 0.25;
         public double VBMinimumBombTime { get; set; } = 0.15;
