@@ -77,7 +77,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 DifficultyName = DifficultyNameCheck(),
                 Requirement = RequirementsCheck(),
                 NJS = NJSCheck(),
-                FusedElement = FusedElementCheck(),
+                FusedObject = FusedObjectCheck(),
                 Outside = OutsideCheck(),
                 Light = LightCheck(),
                 Wall = WallCheck(),
@@ -594,9 +594,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
             }
 
             var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
-            if (diff.NoteJumpMovementSpeed == 0)
+            if (diff.NoteJumpMovementSpeed <= 0)
             {
-                ExtendOverallComment("R1A - NJS is currently 0");
+                ExtendOverallComment("R1A - NJS is currently " + diff.NoteJumpMovementSpeed);
                 issue = Severity.Fail;
             }
             else
@@ -621,11 +621,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         #endregion
 
-        #region FusedElement
+        #region FusedObject
 
-        // Detect if objects collide within configurable margin (in ms)
+        // Detect if objects are too close. Configurable margin (in ms)
         // TODO: There's probably a way better way to do this, can someone clean this mess
-        public Severity FusedElementCheck()
+        public Severity FusedObjectCheck()
         {
             var issue = Severity.Success;
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();

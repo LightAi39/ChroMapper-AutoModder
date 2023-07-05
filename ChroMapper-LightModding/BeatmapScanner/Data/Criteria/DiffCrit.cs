@@ -12,7 +12,7 @@ namespace ChroMapper_LightModding.BeatmapScanner.Data.Criteria
         public Severity VisionBlock { get; set; } = Severity.Fail;
         public Severity Parity { get; set; } = Severity.Fail;
         public Severity Chain { get; set; } = Severity.Fail;
-        public Severity FusedElement { get; set; } = Severity.Fail;
+        public Severity FusedObject { get; set; } = Severity.Fail;
         public Severity Loloppe { get; set; } = Severity.Fail;
         public Severity HandClap { get; set; } = Severity.Fail;
         public Severity SwingPath { get; set; } = Severity.Fail;
