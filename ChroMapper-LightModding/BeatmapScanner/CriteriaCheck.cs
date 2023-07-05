@@ -633,7 +633,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
             var walls = BeatmapScanner.Walls.OrderBy(w => w.JsonTime).ToList();
 
-            var beatms = bpm.ToBeatTime(Plugin.configs.FusedElementDuration);
+            var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
 
             foreach (var w in walls)
             {
