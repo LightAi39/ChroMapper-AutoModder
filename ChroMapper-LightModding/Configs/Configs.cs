@@ -17,9 +17,9 @@
         public double MaxChainRotation { get; set; } = 30;
         public double MaxChainBeatLength { get; set; } = 0.45;
         public double ChainLinkVsAir { get; set; } = 0.75;
-        public double VBMaxBottomNoteTime { get; set; } = 0.075;
+        public double VBMinBottomNoteTime { get; set; } = 0.075;
         public double VBMaxOuterNoteTime { get; set; } = 0.15;
-        public double VBMaxPatternTime { get; set; } = 0.20;
+        public double VBMinPatternTime { get; set; } = 0.20;
         public double VBMinNoteTime { get; set; } = 0.25;
         public double VBMaxBombTime { get; set; } = 0.15;
         public double VBMinBombTime { get; set; } = 0.20;

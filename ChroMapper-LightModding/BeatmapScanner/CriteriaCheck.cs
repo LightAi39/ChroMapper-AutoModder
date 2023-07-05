@@ -1265,9 +1265,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 List<JoshaParity.SwingData> rightHandSwings = swings.Where(x => x.rightHand).ToList();
                 List<JoshaParity.SwingData> leftHandSwings = swings.Where(x => !x.rightHand).ToList();
 
-                var MaxBottomNoteTime = bpm.ToBeatTime(Plugin.configs.VBMaxBottomNoteTime);
+                var MaxBottomNoteTime = bpm.ToBeatTime(Plugin.configs.VBMinBottomNoteTime);
                 var MaxOuterNoteTime = bpm.ToBeatTime(Plugin.configs.VBMaxOuterNoteTime);
-                var MaxPatternTime = bpm.ToBeatTime(Plugin.configs.VBMaxPatternTime);
+                var MaxPatternTime = bpm.ToBeatTime(Plugin.configs.VBMinPatternTime);
                 var MinTimeNote = bpm.ToBeatTime(Plugin.configs.VBMinNoteTime);
                 var MaxTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMaxBombTime);
                 var MinTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMinBombTime);
