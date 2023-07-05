@@ -22,6 +22,7 @@ namespace ChroMapper_LightModding.BeatmapScanner.Data.Criteria
         public Severity Light { get; set; } = Severity.Fail;
         public Severity DifficultyLabelSize { get; set; } = Severity.Fail;
         public Severity DifficultyName { get; set; } = Severity.Fail;
+        public Severity Requirement { get; set; } = Severity.Fail;
         public Severity NJS { get; set; } = Severity.Fail;
 
         public Severity HighestSeverityCheck()

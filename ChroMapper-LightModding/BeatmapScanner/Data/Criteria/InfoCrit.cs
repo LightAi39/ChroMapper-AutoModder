@@ -9,7 +9,6 @@
         public Severity Offset { get; set; } = Severity.Fail;
         public Severity BPM { get; set; } = Severity.Fail;
         public Severity DifficultyOrdering { get; set; } = Severity.Fail;
-        public Severity Requirement { get; set; } = Severity.Fail;
         public Severity Preview { get; set; } = Severity.Fail;
 
         public enum Severity

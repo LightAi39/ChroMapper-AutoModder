@@ -47,7 +47,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 Offset = OffsetCheck(),
                 BPM = BPMCheck(),
                 DifficultyOrdering = DifficultyOrderingCheck(),
-                Requirement = RequirementsCheck(),
                 Preview = PreviewCheck()
             };
 
@@ -76,6 +75,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 Slider = SliderCheck(),
                 DifficultyLabelSize = DifficultyLabelSizeCheck(),
                 DifficultyName = DifficultyNameCheck(),
+                Requirement = RequirementsCheck(),
                 NJS = NJSCheck(),
                 FusedElement = FusedElementCheck(),
                 Outside = OutsideCheck(),
@@ -251,33 +251,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
             CreateSongInfoComment("R7E - Difficulty Ordering is wrong\nCurrent order: " + string.Join(",", passStandard.ToArray()) + "\nExpected order: " +
                     string.Join(",", order.ToArray()), CommentTypesEnum.Issue);
             return Severity.Fail;
-        }
-
-        #endregion
-
-        #region Requirements
-
-        public Severity RequirementsCheck()
-        {
-            var issue = Severity.Success;
-
-            foreach (var diffset in BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets)
-            {
-                foreach (var diff in diffset.DifficultyBeatmaps)
-                {
-                    var data = diff.GetOrCreateCustomData();
-                    if (data.HasKey("_requirements"))
-                    {
-                        foreach (var req in diff.CustomData["_requirements"].Values)
-                        {
-                            CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue);
-                            issue = Severity.Fail;
-                        }
-                    }
-                }
-            }
-
-            return issue;
         }
 
         #endregion
@@ -566,6 +539,28 @@ namespace ChroMapper_LightModding.BeatmapScanner
             }
 
             return Severity.Success;
+        }
+
+        #endregion
+
+        #region Requirements
+
+        public Severity RequirementsCheck()
+        {
+            var issue = Severity.Success;
+
+            var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
+            var data = diff.GetOrCreateCustomData();
+            if (data.HasKey("_requirements"))
+            {
+                foreach (var req in diff.CustomData["_requirements"].Values)
+                {
+                    CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue);
+                    issue = Severity.Fail;
+                }
+            }
+
+            return issue;
         }
 
         #endregion
