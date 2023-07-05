@@ -770,6 +770,19 @@ namespace ChroMapper_LightModding.UI
                 CreateCriteriaStatusElement(criteria.Hitbox, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
+            posY = startPosY - 26 * 6;
+            name = "Requirements";
+            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.Requirement, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.Requirement = IncrementSeverity(criteria.Requirement);
+                posY = startPosY - 26 * 6;
+                offsetX = 110;
+                name = "Requirements";
+                CreateCriteriaStatusElement(criteria.Requirement, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
             // next column
             offsetX = 300;
             posY = startPosY;

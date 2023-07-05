@@ -329,26 +329,13 @@ namespace ChroMapper_LightModding.UI
             }, 50, 20, 10);
 
             posY = startPosY - 26 * 3;
-            name = "Requirements";
-            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
-            CreateCriteriaStatusElement(criteria.Requirement, name, new Vector2(-90 + offsetX, posY));
-            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
-            {
-                criteria.Requirement = IncrementSeverity(criteria.Requirement);
-                posY = startPosY - 26 * 3;
-                offsetX = 200;
-                name = "Requirements";
-                CreateCriteriaStatusElement(criteria.Requirement, name, new Vector2(-90 + offsetX, posY));
-            }, 50, 20, 10);
-
-            posY = startPosY - 26 * 4;
             name = "Preview Time";
             UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.Preview, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
             {
                 criteria.Preview = IncrementSeverity(criteria.Preview);
-                posY = startPosY - 26 * 4;
+                posY = startPosY - 26 * 3;
                 offsetX = 200;
                 name = "Preview Time";
                 CreateCriteriaStatusElement(criteria.Preview, name, new Vector2(-90 + offsetX, posY));
