@@ -1,11 +1,13 @@
-# LightModding (better name pending)
+<p align="center"><img src="https://github.com/LightAi39/ChroMapper-LightModding/blob/main/Assets/AutoModderGraphic.png"></p>
+
+---
 
 A Plugin for ChroMapper to assist in modding and in general giving feedback to a mapper.
 
 ## How to Install:
-Download the `LightModding(version).zip` zip. Drop the files inside the zip into Chromappers `Plugins` folder.
+Download the `LightModding{version}.zip` zip from releases. Drop the files inside the zip into Chromappers `Plugins` folder.
 
-> :warning: This plugin only supports CM versions after V3 support was added! Currently you need the dev branch version for this.
+> :warning: This plugin only supports CM versions after V3 support was added! Currently you need to be on the dev branch for this.
 
 ## How to use as a modder/reviewer
 
@@ -67,14 +69,4 @@ The plugin will only read files with the .lreview extension and checks for a fil
 * Adding an overall/global comment to the review
 
 ## Currently working on:
-* fixing the weird text input bug
-
-## Planned features:
-* Autosaving in intervals
-* Save warning when quitting without saving instead of always creating a backup file
-* loading review files from a file selector dialog instead of automatically from the map folder
-
-## Wishful thinking:
-* markers in the scrollbar (like bookmarks)
-* Better UI
-* walking through all the comments step by step
+* Big additions to the plugin like auto checking and new UI.

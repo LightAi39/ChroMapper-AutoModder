@@ -868,8 +868,8 @@ namespace ChroMapper_LightModding.UI
             image.type = Image.Type.Sliced;
             image.color = new Color(0.35f, 0.35f, 0.35f);
 
-            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues", $"Difficulty: {stats.diff}☆ | Tech: {stats.tech}☆ | eBPM: {stats.ebpm} | Slider: {stats.slider}%", new Vector2(-44, -12), new Vector2(292, 24), TextAlignmentOptions.Left);
-            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Resets: {stats.reset}% | Crouch: {stats.crouch} | Linear: {stats.linear}%", new Vector2(-44, -36), new Vector2(292, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues", $"Difficulty: {stats.diff}☆ | Tech: {stats.tech}☆ | eBPM: {stats.ebpm} | Slider: {stats.slider}%", new Vector2(0, -12), new Vector2(392, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Resets: {stats.reset}% | Crouch: {stats.crouch} | Linear: {stats.linear}%", new Vector2(0, -36), new Vector2(392, 24), TextAlignmentOptions.Left);
 
             
         }
