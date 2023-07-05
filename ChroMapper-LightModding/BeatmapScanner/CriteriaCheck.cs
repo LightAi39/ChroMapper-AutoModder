@@ -638,7 +638,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
             var walls = BeatmapScanner.Walls.OrderBy(w => w.JsonTime).ToList();
 
-            var beatms = bpm.ToBeatTime(Plugin.configs.FusedElementDuration, false);
+            var beatms = bpm.ToBeatTime(Plugin.configs.FusedElementDuration);
 
             foreach (var w in walls)
             {
@@ -1535,7 +1535,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var blue = cubes.Where(c => c.Type == 1).ToList();
             for (int i = 1; i < red.Count; i++)
             {
-                if (red[i].CutDirection == 8)
+                if (red[i].CutDirection == 8 || red[i - 1].CutDirection == 8)
                 {
                     continue;
                 }
@@ -1549,7 +1549,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         red[i - 1] = temp;
                     }
                     var sliderAngle2 = ScanMethod.Mod(ScanMethod.ConvertRadiansToDegrees(Math.Atan2(red[i].Layer - red[i - 1].Layer, red[i].Line - red[i - 1].Line)), 360);
-                    if (Math.Abs(sliderAngle2 - red[i].Direction) >= 45)
+                    if (Math.Abs(sliderAngle2 - red[i].Direction) >= 45 && Math.Abs(sliderAngle2 - red[i].Direction) < 90)
                     {
                         CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue, red[i - 1]);
                         CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue, red[i]);
@@ -1559,7 +1559,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             }
             for (int i = 1; i < blue.Count; i++)
             {
-                if (blue[i].CutDirection == 8)
+                if (blue[i].CutDirection == 8 || blue[i - 1].CutDirection == 8)
                 {
                     continue;
                 }
@@ -1573,7 +1573,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         blue[i - 1] = temp;
                     }
                     var sliderAngle2 = ScanMethod.Mod(ScanMethod.ConvertRadiansToDegrees(Math.Atan2(blue[i].Layer - blue[i - 1].Layer, blue[i].Line - blue[i - 1].Line)), 360);
-                    if (Math.Abs(sliderAngle2 - blue[i].Direction) >= 45)
+                    if (Math.Abs(sliderAngle2 - blue[i].Direction) >= 45 && Math.Abs(sliderAngle2 - blue[i].Direction) < 90)
                     {
                         CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue, blue[i - 1]);
                         CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue, blue[i]);
