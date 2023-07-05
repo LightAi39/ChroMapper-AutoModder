@@ -361,5 +361,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/ChroMapper-LightModding/ChroMapper-LightModding.csproj
-/ChroMapper-LightModding/ChroMapper-LightModding.csproj
+/ChroMapper-LightModding.sln
