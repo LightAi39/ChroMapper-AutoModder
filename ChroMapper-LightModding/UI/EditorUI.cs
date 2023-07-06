@@ -80,7 +80,7 @@ namespace ChroMapper_LightModding.UI
                     .OnClick(ShowAllCommentsMainUI);
 
                 dialog.AddComponent<ButtonComponent>()
-                    .WithLabel("Edit file information")
+                    .WithLabel("Edit overall comment")
                     .OnClick(EditFileInformationUI);
 
                 dialog.AddComponent<ToggleComponent>()
@@ -94,7 +94,7 @@ namespace ChroMapper_LightModding.UI
                         }
                     });
                 dialog.AddComponent<ToggleComponent>()
-                    .WithLabel("Show timeline markers (Experimental)")
+                    .WithLabel("Show timeline markers")
                     .WithInitialValue(showTimelineMarkers)
                     .OnChanged((bool o) => {
                         if (o != showTimelineMarkers)
