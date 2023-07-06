@@ -4,7 +4,7 @@
 
 A Plugin for ChroMapper that assists mappers and modders by implementing auto-checking features as well as comments and replies, with a seamless in-editor experience.
 
-This plugin is primarily aimed at improving the [BeatLeader](https://www.beatleader.xyz/) ranking process by providing mappers with easy-to-use tooling to quickly screen their map for problems with a seamless in-editor experience. In addition, this plugin can ease communication after modding through the comments and reactions features.
+This plugin is primarily aimed at improving the [BeatLeader](https://www.beatleader.xyz/) ranking process by providing mappers with easy-to-use tooling to quickly screen their map for problems with a seamless in-editor experience. In addition, this plugin can ease communication after modding through the comments and reactions features. Auto-checking features are also useful for other applications such as Curation, as many of the values are configurable.
 
 # Installation
 Download the ZIP from the latest [release](https://github.com/LightAi39/ChroMapper-AutoModder/releases/latest), then put the contents of the zip into your Chromapper plugins folder.
