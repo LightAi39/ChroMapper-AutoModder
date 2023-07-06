@@ -1635,6 +1635,42 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             IsDiagonal = true;
                         }
+                        var a = swings.Where(x => x.notes.Any(y => y.b == currentNote.JsonTime && y.c == currentNote.Type && y.d == currentNote.CutDirection && y.x == currentNote.PosX && y.y == currentNote.PosY)).FirstOrDefault();
+                        var b = swings.Where(x => x.notes.Any(y => y.b == compareTo.JsonTime && y.c == compareTo.Type && y.d == compareTo.CutDirection && y.x == compareTo.PosX && y.y == compareTo.PosY)).FirstOrDefault();
+                        if (a.swingStartBeat != 0) // Check if default
+                        {
+                            if (a.notes.Count == 2) // Only two notes
+                            {
+                                var spacing = Math.Max(Math.Max(Math.Abs(a.notes[1].x - a.notes[0].x), Math.Abs(a.notes[1].y - a.notes[0].y)) - 1, 0);
+                                if (a.notes[0].d == a.notes[1].d && spacing >= 1) // Same direction and window
+                                {
+                                    var newAngle = ScanMethod.Mod(ScanMethod.ConvertRadiansToDegrees(Math.Atan2(a.notes[1].y - a.notes[0].y, a.notes[1].x - a.notes[0].x)), 360);
+                                    if (Swing.IsIntersect(currentNote, compareTo, angle, 2, -1, newAngle))
+                                    {
+                                        arr.Add(currentNote);
+                                        lastTime = (currentNote.JsonTime / bpm * 60);
+                                    }
+                                    continue;
+                                }
+                            }
+                        }
+                        if (b.swingStartBeat != 0) // Check if default
+                        {
+                            if (b.notes.Count == 2) // Only two notes
+                            {
+                                var spacing = Math.Max(Math.Max(Math.Abs(b.notes[1].x - b.notes[0].x), Math.Abs(b.notes[1].y - b.notes[0].y)) - 1, 0);
+                                if (b.notes[0].d == b.notes[1].d && spacing >= 1) // Same direction and window
+                                {
+                                    var newAngle = ScanMethod.Mod(ScanMethod.ConvertRadiansToDegrees(Math.Atan2(b.notes[1].y - b.notes[0].y, b.notes[1].x - b.notes[0].x)), 360);
+                                    if (Swing.IsIntersect(currentNote, compareTo, angle, 2, -1, newAngle))
+                                    {
+                                        arr.Add(currentNote);
+                                        lastTime = (currentNote.JsonTime / bpm * 60);
+                                    }
+                                    continue;
+                                }
+                            }
+                        }
                         if (((currentNote.PosY == compareTo.PosY || currentNote.PosX == compareTo.PosX) && Swing.IsIntersect(currentNote, compareTo, angle, 2)) ||
                                 (IsDiagonal && Swing.IsIntersect(currentNote, compareTo, angle2, 2)))
                         {

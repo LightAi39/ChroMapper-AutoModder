@@ -248,17 +248,21 @@ namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
             return speed;
         }
 
-        public static int[] NoteDirectionAngle = { 180, 0, 270, 90, 225, 135, 315, 45, 0 };
+        public static int[] NoteDirectionAngle = { 90, 270, 180, 0, 115, 45, 225, 335, 0 };
 
-        public static bool IsIntersect(BaseNote currNote, BaseNote compareTo, double[,] angleDistances, int index)
+        public static bool IsIntersect(BaseNote currNote, BaseNote compareTo, double[,] angleDistances, int index, double a1 = -1, double a2 = -1)
         {
             (var nX1, var nY1) = (currNote.PosX, currNote.PosY);
             (var nX2, var nY2) = (compareTo.PosX, compareTo.PosY);
             var resultN1 = false;
             if (currNote.CutDirection != 8 && currNote.Type != 3)
-            {
-                var nA1 = NoteDirectionAngle[currNote.CutDirection];
-                var a = (ScanMethod.ConvertRadiansToDegrees(Math.Atan2(nY1 - nY2, nX1 - nX2)) + 450) % 360;
+            { 
+                double nA1 = NoteDirectionAngle[currNote.CutDirection];
+                if (a1 != -1)
+                {
+                    nA1 = a1;
+                }
+                var a = (ScanMethod.ConvertRadiansToDegrees(Math.Atan2(nY1 - nY2, nX1 - nX2)) + 360) % 360;
                 for (int i = 0; i < index; i++)
                 {
                     var aS = (nA1 + 360 - angleDistances[i, 0]) % 360;
@@ -266,7 +270,7 @@ namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
                     resultN1 = (angleDistances[i, 1] >= Math.Sqrt(Math.Pow(nX1 - nX2, 2) + Math.Pow(nY1 - nY2, 2)) &&
                     ((aS < aE && aS <= a && a <= aE) || (aS >= aE && (a <= aE || a >= aS)))) ||
                     resultN1;
-                    if(resultN1)
+                    if (resultN1)
                     {
                         break;
                     }
@@ -275,8 +279,12 @@ namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
             var resultN2 = false;
             if (compareTo.CutDirection != 8 && compareTo.Type != 3)
             {
-                var nA2 = NoteDirectionAngle[compareTo.CutDirection];
-                var a = (ScanMethod.ConvertRadiansToDegrees(Math.Atan2(nY2 - nY1, nX2 - nX1)) + 450) % 360;
+                double nA2 = NoteDirectionAngle[compareTo.CutDirection];
+                if (a2 != -1)
+                {
+                    nA2 = a2;
+                }
+                var a = (ScanMethod.ConvertRadiansToDegrees(Math.Atan2(nY2 - nY1, nX2 - nX1)) + 360) % 360;
                 for (int i = 0; i < index; i++)
                 {
                     var aS = (nA2 + 360 - angleDistances[i, 0]) % 360;
