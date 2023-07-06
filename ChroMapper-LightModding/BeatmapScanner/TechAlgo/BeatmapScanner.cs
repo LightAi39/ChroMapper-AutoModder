@@ -16,7 +16,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         #region Analyzer
 
-        public static (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear) Analyzer(List<BaseNote> notes, List<BaseSlider> chains, List<BaseNote> bombs, List<BaseObstacle> obstacles, float bpm)
+        public static (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) Analyzer(List<BaseNote> notes, List<BaseSlider> chains, List<BaseNote> bombs, List<BaseObstacle> obstacles, float bpm)
         {
             #region Prep
 
@@ -95,13 +95,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             if (red.Count() > 0)
             {
-                ebpm = ScanMethod.GetEBPM(red, bpm);
+                // ebpm = ScanMethod.GetEBPM(red, bpm);
                 ScanMethod.CalculateLinear(red);
             }
 
             if (blue.Count() > 0)
             {
-                ebpm = Math.Max(ScanMethod.GetEBPM(blue, bpm), ebpm);
+                // ebpm = Math.Max(ScanMethod.GetEBPM(blue, bpm), ebpm);
                 ScanMethod.CalculateLinear(blue);
             }
 
@@ -214,7 +214,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             Walls = obstacles;
             Bombs = bombs;
             Datas = data;
-            return (Math.Round(pass, 3), Math.Round(tech, 3), Math.Round(ebpm, 3), Math.Round(slider, 3), Math.Round(reset, 3), crouch, Math.Round(linear, 3));
+            return (Math.Round(pass, 3), Math.Round(tech, 3), Math.Round(ebpm, 3), Math.Round(slider, 3), Math.Round(reset, 3), crouch, Math.Round(linear, 3), -1, "-1");
         }
 
         #endregion

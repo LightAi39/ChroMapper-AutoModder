@@ -1,11 +1,9 @@
 ﻿using Beatmap.Base;
 using ChroMapper_LightModding.BeatmapScanner;
+using JoshaParity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.UI;
 
 namespace ChroMapper_LightModding.Helpers
 {
@@ -34,14 +32,14 @@ namespace ChroMapper_LightModding.Helpers
 
             var result = RunBeatmapScanner(characteristic, difficultyRank, difficulty);
 
-            if (result != (-1, -1, -1, -1, -1, -1, -1))
+            if (result != (-1, -1, -1, -1, -1, -1, -1, -1, "-1"))
             {
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                 plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = criteriaCheck.AutoDiffCheck(characteristic, difficultyRank, difficulty);
             }
         }
 
-        public (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
+        public (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
         {
             var song = plugin.BeatSaberSongContainer.Song;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
@@ -64,11 +62,18 @@ namespace ChroMapper_LightModding.Helpers
                     List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
                     obstacles = obstacles.OrderBy(o => o.JsonTime).ToList();
 
-                    
-                    return BeatmapScanner.BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute); ;
+                    var data = BeatmapScanner.BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+                    var analysedMap = new MapAnalyser(song.Directory);
+                    var swings = analysedMap.GetSwingData((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower());
+                    data.sps = Math.Round(analysedMap.GetSPS((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower()), 2);
+                    var temp = analysedMap.GetHandedness((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower());
+                    data.handness = Math.Round(temp.Y, 2).ToString() + "/" + Math.Round(temp.X, 2).ToString();
+                    data.reset = Math.Round((double)analysedMap.GetResetCount((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower(), ResetType.Bomb) / swings.Count() * 100, 2);
+                    data.ebpm = Math.Round(analysedMap.GetAverageEBPM((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower()), 2);
+                    return data;
                 }
             }
-            return (-1, -1, -1, -1, -1, -1, -1);
+            return (-1, -1, -1, -1, -1, -1, -1, -1, "-1");
         }
 
         public void RemovePastAutoCheckCommentsSongInfo()

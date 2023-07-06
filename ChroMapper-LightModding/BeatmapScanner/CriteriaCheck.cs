@@ -1179,6 +1179,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 CreateDiffCommentNotes("R2 - Parity Error", CommentTypesEnum.Issue, swing.notes);
                 hadIssue = true;
             }
+            foreach (var swing in swings.Where(x => x.swingEBPM == float.PositiveInfinity).ToList())
+            {
+                CreateDiffCommentNotes("R2 - Parity Mismatch on same beat", CommentTypesEnum.Issue, swing.notes);
+                hadIssue = true;
+            }
 
             List<JoshaParity.SwingData> rightHandSwings = swings.Where(x => x.rightHand).ToList();
             List<JoshaParity.SwingData> leftHandSwings = swings.Where(x => !x.rightHand).ToList();
