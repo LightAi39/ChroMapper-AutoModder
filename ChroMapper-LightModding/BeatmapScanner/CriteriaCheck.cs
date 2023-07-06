@@ -26,7 +26,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         private BeatPerMinute bpm;
         private MapAnalyser analysedMap;
         private List<JoshaParity.SwingData> swings;
-        private double averageSliderDuration = 0.0625;
+        private double averageSliderDuration;
         #endregion
 
         #region Constructors
@@ -396,7 +396,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault();
             }
-            Debug.Log(averageSliderDuration.ToString());
+            if(averageSliderDuration < 0.03125)
+            {
+                averageSliderDuration = 0.0625;
+            }
             foreach (var c in cube)
             {
                 if (c.Slider && !c.Head)
@@ -724,6 +727,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
             var njs = diff.NoteJumpMovementSpeed;
+            var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedBombDistance, 3);
 
             for (int i = 0; i < bombs.Count; i++)
             {
@@ -731,15 +735,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (int j = i + 1; j < bombs.Count; j++)
                 {
                     var b2 = bombs[j];
-                    var distance = (b2.JsonTime - b.JsonTime) / bpm.ToBeatTime(1) * njs;
-                    if (distance >= Plugin.configs.FusedBombDistance)
+                    if (b2.JsonTime - b.JsonTime >= max)
                     {
                         break;
                     }
                     if (b.PosX == b2.PosX && b.PosY == b2.PosY)
                     {
-                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
-                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, b2);
+                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + max + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + max + " in the same line", CommentTypesEnum.Issue, b2);
                         issue = Severity.Fail;
                     }
                 }
