@@ -26,6 +26,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         private BeatPerMinute bpm;
         private MapAnalyser analysedMap;
         private List<JoshaParity.SwingData> swings;
+        private double averageSliderDuration = 0.0625;
         #endregion
 
         #region Constructors
@@ -367,7 +368,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
         public Severity SliderCheck()
         {
             var issue = Severity.Success;
-            var precision = 0d;
             var cube = BeatmapScanner.Cubes.Where(c => c.Slider && !c.Head);
             cube = cube.OrderBy(c => c.Time).ToList();
             var temp = cube.Where(c => c.Spacing == 0).Select(c => c.Precision).ToList();
@@ -380,31 +380,31 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     if (temp.Count() == 0)
                     {
                         temp = cube.Where(c => c.Spacing == 3).Select(c => c.Precision).ToList();
-                        precision = ScanMethod.Mode(temp).FirstOrDefault() / 4;
+                        averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault() / 4;
                     }
                     else
                     {
-                        precision = ScanMethod.Mode(temp).FirstOrDefault() / 3;
+                        averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault() / 3;
                     }
                 }
                 else
                 {
-                    precision = ScanMethod.Mode(temp).FirstOrDefault() / 2;
+                    averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault() / 2;
                 }
             }
             else
             {
-                precision = ScanMethod.Mode(temp).FirstOrDefault();
+                averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault();
             }
-
+            Debug.Log(averageSliderDuration.ToString());
             foreach (var c in cube)
             {
                 if (c.Slider && !c.Head)
                 {
-                    if (!(c.Precision <= ((c.Spacing + 1) * precision) + 0.001 && c.Precision >= ((c.Spacing + 1) * precision) - 0.001))
+                    if (!(c.Precision <= ((c.Spacing + 1) * averageSliderDuration) + 0.001 && c.Precision >= ((c.Spacing + 1) * averageSliderDuration) - 0.001))
                     {
                         var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
-                        var expected = ScanMethod.RealToFraction(((c.Spacing + 1) * precision), 0.01);
+                        var expected = ScanMethod.RealToFraction(((c.Spacing + 1) * averageSliderDuration), 0.01);
                         CreateDiffCommentNote("R2A - " + c.Time + " is " + reality.N.ToString() + "/" + reality.D.ToString() + ". Expected precision is " + expected.N.ToString() + "/" + expected.D.ToString() + ".", CommentTypesEnum.Unsure, c);
                         issue = Severity.Warning;
                     }
@@ -1290,7 +1290,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var note = notes[i];
                     if (lastMidL.Count > 0)
                     {
-                        if (note.b - lastMidL.First().b <= MinTimeNote) // Closer than 0.25
+                        if (note.b - lastMidL.First().b <= MinTimeNote && note.b - lastMidL.First().b >= Overall) // Closer than 0.25
                         {
                             var n = swings.Where(x => x.notes.Any(n => n.b == note.b)).FirstOrDefault();
                             if (note.x == 0 && note.b - lastMidL.First().b <= MaxOuterNoteTime) // Closer than 0.15 in outer lane
@@ -1298,10 +1298,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                 // Fine
                             }
                             else if (note.x == 1 && note.y == 0 && note.b - lastMidL.First().b <= MaxBottomNoteTime) // Closer than 0.075 at bottom layer
-                            {
-                                // Also fine
-                            }
-                            else if ((note.x != 1 || note.y != 1) && note.b - lastMidL.First().b <= Overall) // Closer than 0.025
                             {
                                 // Also fine
                             }
@@ -1320,17 +1316,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (lastMidR.Count > 0)
                     {
-                        if (note.b - lastMidR.First().b <= MinTimeNote)
+                        if (note.b - lastMidR.First().b <= MinTimeNote && note.b - lastMidR.First().b >= Overall)
                         {
                             if (note.x == 3 && note.b - lastMidR.First().b <= MaxOuterNoteTime)
                             {
                                 // Fine
                             }
                             else if (note.x == 2 && note.y == 0 && note.b - lastMidR.First().b <= MaxBottomNoteTime)
-                            {
-                                // Also fine
-                            }
-                            else if ((note.x != 2 || note.y != 1) && note.b - lastMidR.First().b <= Overall) // Closer than 0.025
                             {
                                 // Also fine
                             }
@@ -1450,7 +1442,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
             foreach (var ch in chains)
             {
-                if (ch.TailJsonTime - ch.JsonTime >= Plugin.configs.MaxChainBeatLength)
+                if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 4.2)
                 {
                     // Slow chains
                     CreateDiffCommentLink("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, ch);
