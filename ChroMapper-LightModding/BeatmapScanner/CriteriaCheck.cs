@@ -722,17 +722,21 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
             }
 
+            var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
+            var njs = diff.NoteJumpMovementSpeed;
+
             for (int i = 0; i < bombs.Count; i++)
             {
                 var b = bombs[i];
                 for (int j = i + 1; j < bombs.Count; j++)
                 {
                     var b2 = bombs[j];
-                    if (b2.JsonTime > b.JsonTime + beatms)
+                    var distance = (b2.JsonTime - b.JsonTime) / bpm.ToBeatTime(1) * njs;
+                    if (distance >= Plugin.configs.FusedObjectBombDistance)
                     {
                         break;
                     }
-                    if (b.JsonTime >= b2.JsonTime - beatms && b.JsonTime <= b2.JsonTime + beatms && b.PosX == b2.PosX && b.PosY == b2.PosY)
+                    if (b.PosX == b2.PosX && b.PosY == b2.PosY)
                     {
                         CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
                         CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, b2);
@@ -1842,7 +1846,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3G - Staircase - Hitbox abusive patterns are not allowed", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3G - Staircase - Hitbox abusive patterns are not allowed", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Warning;
                 }
@@ -1900,7 +1904,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3G - Reverse Staircase - Hitbox abusive patterns are not allowed", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3G - Reverse Staircase - Hitbox abusive patterns are not allowed", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Warning;
                 }
