@@ -2,71 +2,64 @@
 
 ---
 
-A Plugin for ChroMapper to assist in modding and in general giving feedback to a mapper.
+A Plugin for ChroMapper that assists mappers and modders by implementing auto-checking features as well as comments and replies, with a seamless in-editor experience.
 
-## How to Install:
-Download the `LightModding{version}.zip` zip from releases. Drop the files inside the zip into Chromappers `Plugins` folder.
+This plugin is primarily aimed at improving the [BeatLeader](https://www.beatleader.xyz/) ranking process by providing mappers with easy-to-use tooling to quickly screen their map for problems with a seamless in-editor experience. In addition, this plugin can ease communication after modding through the comments and reactions features.
 
-> :warning: This plugin only supports CM versions after V3 support was added! Currently you need to be on the dev branch for this.
+# Installation
+Download the ZIP from the latest [release](https://github.com/LightAi39/ChroMapper-AutoModder/releases/latest), then put the contents of the zip into your Chromapper plugins folder.
 
-## How to use as a modder/reviewer
+> :warning: This plugin only supports CM versions after V3 support was added! Currently, you need to be on the dev branch for this.
 
-First step is to create a review file for the map, which prepares you for adding notes. You can do so by pressing `tab` or the shortcut to open up the window on the right and selecting the icon with the text `LightModding` to open the main UI.
+# Usage
+> For any information you might need, check the [wiki](https://github.com/LightAi39/ChroMapper-AutoModder/wiki)!
 
-Currently you can select notes and press `ctrl + g` (not changeable) to create a comment on them. If there already exists a comment with these specific note
- positions selected then it will go to edit mode. Either way you can now specify the comment and the type/severity. Click `create` when you are done.
+The features of this plugin are behind two main buttons, which are both marked with the [BeatLeader icon](https://github.com/LightAi39/ChroMapper-AutoModder/blob/main/ChroMapper-LightModding/Assets/Icon.png).
+One is in the song select menu next to the contributor and revert button. This button will let you create and open a review file, and view details and functions.
+The other is located in the map editor in the plugins (`tab`) menu. This one will let you access some editor settings.
 
-Afterwards this opens up the view comment dialog, here you can type a response (useful for the person receiving the mod, dont fill this in as a modder) and mark it as read which will grey out the outline.
-From this screen you can also edit the comment information again and you can also delete it there. Click `close` when you are done or `update reply` if you typed in a reply.
+In addition to these buttons, there are some keybinds which are used for creating and responding to comments.
 
-When you have put down all the comments you wanted, you can head back to the main UI where you also created the file and you can save it, remove it or copy the comment data to your clipboard. This last option will give you a formatted review that you can paste straight into discord.
+More information about these keybinds and buttons can be found on the [wiki page.](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons)
+A general usage flow can be found below and on the [wiki](https://github.com/LightAi39/ChroMapper-AutoModder/wiki).
 
-To edit a comment, you can select the exact same notes again and press the comment `ctrl + g` keybind again. You can tell there is a comment on a note when it has an outline.
+## How to use as a mapper
+coming soon
 
-You can edit file information in the main ui by pressing `edit file information`, you can add an overall comment to the review here too.
 
-## How to use as a mapper recieving a review file
+## How to use as a modder
+coming soon
 
-Until dialog selection is implemented, you have to create a folder called `reviews` in your map folder. You can easily get here by pressing `open explorer` on the song info screen. Place the `.lreview` file inside the folder you created.
-Make sure there are no newer review files in the folder as those would be loaded instead.
 
-Now you can open the map. You can check if the file loaded by pressing `tab` or the shortcut to open up the window on the right and selecting the icon with the text `LightModding` to open the main UI.
-Check if the menu that pops up says `Existing review file loaded!` and the path is what you expected. Now close out of that menu.
+# Contributors and Referenced/used projects
 
-Try selecting a single highlighted note and pressing `alt + g` (not changeable). You should see a menu pop up. If you see a menu asking you to choose a comment, then there are multiple comments which include that note and you have to choose one.
-If you see a menu called `View comment` there was only one comment for the note.
+## Contributors
+* [Light Ai](https://github.com/LightAi39) - CM plugin side (UI/UX, original comments plugin, basically anything you interact with)
+* [Loloppe](https://github.com/Loloppe) - Backend logic/auto-check (BeatmapScanner, Implementing Auto-checking features)
 
-You should now be on the `View Comment` screen either way. Here you can type in a response to the comment and you can mark it as read. Press `update reply` if you want to save any changes you made.
-Note that some comment data will be hard to access inside the plugin when the map data gets changed, as it can only know the note positions when the comment was created. You can always look at all the comments inside the main UI, click `show all comments` there.
+## Referenced/used projects
+* [JoshaParity](https://github.com/Joshabi/JoshaParity) by [Joshabi](https://github.com/Joshabi) - Directly integrated fancy parity checker. We love joashabot ♡
+* [MapCheck](https://github.com/KivalEvan/BeatSaber-MapCheck) by [KivalEvan](https://github.com/KivalEvan) - Code heavily referenced when writing logic for auto-check.
+* [Newtonsoft.Json](https://github.com/jamesnk/newtonsoft.json) by [JamesNK](https://github.com/JamesNK) - Used for object (de)serialization for saving/loading.
 
-As someone receiving the file, you should ignore the `edit comment` button as this will show you a menu to change the comment itself. Press `close` to exit the menu.
+# Features
 
-If you want to re-export or save with your responses you can simply open up the side menu with `tab` or your shortcut and press the mod icon. Inside the Main UI there is a button called copy comments to clipboard.
-You can simply paste the text into discord after that. You can save the map by pressing `save review file`.
-
-## Advanced use and backup usage
-
-If you want to access the review files yourself, they are saved and searched for in a map called `revies` inside the map folder. The file with the latest `FinalizationDate` will always be loaded. Backups are saved ending with `AUTOMATIC_BACKUP.lreview` and will never be automatically loaded. To restore a backup, simply remove `AUTOMATIC_BACKUP` from the file name and make sure you do not have any newer files in the folder.
-The plugin will only read files with the .lreview extension and checks for a file structure version. The format is just json.
+## Current Features:
+* Creating comments and responding to those comments
+* Highlighting notes with comments
+* Timeline markers for comments
+* Seeing a list of all comments
+* Comment preview when on the same beat as a comment
+* Auto-checking map for issues like vision blocks, parity errors, and other [BeatLeader Criteria](https://beatleader.wiki/en/criteria) points.
+* Status indicators for Criteria points
+* Exporting comments to text
 
 ## Known issues:
-* Any text inputs that are 2 menus deep will not properly disable keybinds, making it nearly impossible to type. The workaround is to copy paste your text in instead. There seems to be a bug that is probably caused by me doing something wrong when i create a new dialog box when one is active.
-* drop down menus don't show their initial value when set. This is only visual and does not affect the data.
+* Some text inputs might not disable keybinds. If this is the case, copy-paste text in. (CMUI)
+* Drop-down menus don't show their current value when loaded. This is only visual and does not affect the data. (CMUI)
 
-## Currently done:
-* Main file creation features
-* Main commenting features
-* Main review features
-* Autosaving a backup when unloading the editor
-* Automatically loading review files when found
-* Editing & deleting comments/file information
-* Exporting a review file to clipboard in (discord compatible) markdown
-* Exporting a review file to clipboard in a compact way (beatleader comments)
-* Note highlighting
-* Highlight toggle in main ui
-* UI for choosing between multiple comments on a note
-* A menu that lists all comments
-* Adding an overall/global comment to the review
+## Coming next:
+* Improvements and additions to the auto-checker.
 
-## Currently working on:
-* Big additions to the plugin like auto checking and new UI.
+# Suggestions, questions or issues
+Please feel free to create a post in the [BeatLeader Discord](https://discord.gg/2RG5YVqtG6) under the AutoModder forum if you have any suggestions, questions, or if you encountered an issue. You are also welcome to open an Issue or PR, but using Discord will likely get a faster response.
