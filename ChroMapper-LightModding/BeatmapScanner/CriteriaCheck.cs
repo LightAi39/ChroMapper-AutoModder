@@ -732,7 +732,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     var b2 = bombs[j];
                     var distance = (b2.JsonTime - b.JsonTime) / bpm.ToBeatTime(1) * njs;
-                    if (distance >= Plugin.configs.FusedObjectBombDistance)
+                    if (distance >= Plugin.configs.FusedBombDistance)
                     {
                         break;
                     }

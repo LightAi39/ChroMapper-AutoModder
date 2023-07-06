@@ -7,7 +7,7 @@
         public double ColdEndDuration { get; set; } = 2;
         public double MinSongDuration { get; set; } = 45;
         public double FusedObjectDuration { get; set; } = 0.03;
-        public double FusedObjectBombDistance { get; set; } = 0.5;
+        public double FusedBombDistance { get; set; } = 0.5;
         public double AverageLightPerBeat { get; set; } = 1;
         public double LightFadeDuration { get; set; } = 1;
         public double LightBombReactionTime { get; set; } = 0.25;
