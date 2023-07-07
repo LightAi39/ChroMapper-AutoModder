@@ -24,7 +24,7 @@ using System.Runtime.Remoting.Messaging;
 namespace ChroMapper_LightModding
 {
 
-    [Plugin("LightModding")]
+    [Plugin("AutoModder")]
     public class Plugin
     {
         static public int backupLimit = 3;
