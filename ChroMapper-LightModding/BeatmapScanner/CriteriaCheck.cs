@@ -1179,6 +1179,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentLink("R2D - Chains must not have a reverse direction", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
+                var note = notes.Find(x => x.Time >= l.TailJsonTime && x.Type == l.Color);
+                if(note != null)
+                {
+                    if (l.TailJsonTime + (l.TailJsonTime - l.JsonTime) > note.Time)
+                {
+                    CreateDiffCommentLink("R2D - The beat duration between the last link and the next note/chain of the same hand must be at least the previous chain beat duration", CommentTypesEnum.Issue, l);
+                    issue = Severity.Fail;
+                }
+                }
+                
                 var temp = new Cube(notes.First())
                 {
                     Direction = ScanMethod.Mod(ScanMethod.DirectionToDegree[l.CutDirection] + l.AngleOffset, 360),
@@ -1486,7 +1496,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 4.2)
                 {
                     // Slow chains
-                    CreateDiffCommentLink("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, ch);
+                    CreateDiffCommentLink("R2D - Maximum chains duration must be similar to the average window sliders duration * 2", CommentTypesEnum.Issue, ch);
+                    issue = true;
+                }
+                else if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 3.15)
+                {
+                    // Slow chains
+                    CreateDiffCommentLink("Y2A - Recommended maximum chains duration should be similar to the average window sliders duration * 1.5", CommentTypesEnum.Suggestion, ch);
                     issue = true;
                 }
                 if (!cubes.Exists(c => c.Time == ch.JsonTime && c.Type == ch.Color && c.Line == ch.PosX && c.Layer == ch.PosY))

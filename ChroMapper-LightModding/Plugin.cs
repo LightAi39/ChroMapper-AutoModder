@@ -97,6 +97,9 @@ namespace ChroMapper_LightModding
                     reader = new StreamReader(path);
                     var fileContents = reader.ReadToEnd();
                     configs = JsonConvert.DeserializeObject<Configs.Configs>(fileContents);
+                    using StreamWriter file = File.CreateText(@path);
+                    JsonSerializer serializer = new();
+                    serializer.Serialize(file, configs);
                 }
                 catch // Error during reading, use default instead
                 {
