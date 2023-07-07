@@ -209,15 +209,15 @@ namespace ChroMapper_LightModding.UI
                 RefreshInfoMenu();
             }, 64, 25, 10);
 
-            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordBeatOrder", "Export (Beat Ordered)", new Vector2(100, -18), () =>
+            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordBeatOrder", "Copy to clipboard (Beat Ordered)", new Vector2(100, -18), () =>
             {
                 exporter.ExportToDiscordMDByBeats(plugin.currentMapsetReview);
-            }, 64, 25, 10);
+            }, 64, 25, 9);
 
-            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordSeverityOrder", "Export (Severity Ordered)", new Vector2(164, -18), () =>
+            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordSeverityOrder", "Copy to clipboard (Severity Ordered)", new Vector2(164, -18), () =>
             {
                 exporter.ExportToDiscordMDByImportance(plugin.currentMapsetReview);
-            }, 64, 25, 10);
+            }, 64, 25, 9);
 
             UIHelper.AddButton(_infoMenu.transform, "ViewSongInfoComments", "View Song Info Comments", new Vector2(164, -45), () =>
             {
@@ -535,7 +535,7 @@ namespace ChroMapper_LightModding.UI
                 .OnChanged((string s) => { message = s; });
 
             dialog.AddComponent<ToggleComponent>()
-                .WithLabel("Mark as suppressed")
+                .WithLabel("Mark as Suppressed")
                 .WithInitialValue(read)
                 .OnChanged((bool o) => { read = o; });
 
