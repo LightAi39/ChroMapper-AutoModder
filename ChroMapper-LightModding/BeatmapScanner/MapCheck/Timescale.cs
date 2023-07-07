@@ -196,6 +196,26 @@ namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
             }
             return OffsetBegone(beat);
         }
+
+        public void SetCurrentBPM(double beat)
+        {
+            for (int i = 0; i < _bpmChange.Count; i++)
+            {
+                if (beat > _bpmChange[i].b)
+                {
+                    _bpm = _bpmChange[i].m;
+                }
+            }
+        }
+
+        public void ResetCurrentBPM()
+        {
+            if (_bpmChange.Count > 0)
+            {
+                _bpm = _bpmChange[0].m;
+                return;
+            }
+        }
     }
 
     internal class IBPMTimeScale
