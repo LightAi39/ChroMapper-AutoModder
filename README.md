@@ -72,7 +72,7 @@ Always make sure to [save your file](https://github.com/LightAi39/ChroMapper-Aut
 ## Referenced/used projects
 * [JoshaParity](https://github.com/Joshabi/JoshaParity) by [Joshabi](https://github.com/Joshabi) - Directly integrated fancy parity checker. We love joashabot ♡
 * [MapCheck](https://github.com/KivalEvan/BeatSaber-MapCheck) by [KivalEvan](https://github.com/KivalEvan) - Code heavily referenced when writing logic for auto-check.
-* [ppCurve](https://github.com/LackWiz/ppCurve/) by [LackWiz](https://github.com/LackWiz) - Code used in the original BeatmapScanner plugin which was implemented in this plugin by loloppe.
+* [ppCurve](https://github.com/LackWiz/ppCurve/) by [LackWiz](https://github.com/LackWiz) - Code used in the original BeatmapScanner plugin which was implemented in this plugin.
 * [ProfanityDetector](https://github.com/stephenhaunts/ProfanityDetector) by [stephenhaunts](https://github.com/stephenhaunts) - Profanity checker used.
 * [Newtonsoft.Json](https://github.com/jamesnk/newtonsoft.json) by [JamesNK](https://github.com/JamesNK) - Used for object (de)serialization for saving/loading.
 
