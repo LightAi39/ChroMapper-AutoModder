@@ -321,7 +321,7 @@ namespace ChroMapper_LightModding.UI
                 .OnChanged((string s) => { message = s; });
 
             dialog.AddComponent<ToggleComponent>()
-                .WithLabel("Mark as read")
+                .WithLabel("Mark as Suppressed")
                 .WithInitialValue(read)
                 .OnChanged((bool o) => { read = o; });
 
