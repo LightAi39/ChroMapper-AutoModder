@@ -288,6 +288,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return currentAngle;
         }
 
+        public static double FindAngleViaPosition(List<Cube> cubes, int index, int h)
+        {
+            (double x, double y) previousPosition = (cubes[h].Line, cubes[h].Layer);
+            (double x, double y) = (cubes[index].Line, cubes[index].Layer);
+
+            var currentAngle = ReverseCutDirection(Mod(ConvertRadiansToDegrees(Math.Atan2(previousPosition.y - y, previousPosition.x - x)), 360));
+
+            return currentAngle;
+        }
+
         public static bool IsSameDirection(double before, double after, double degree)
         {
             Mod(before, 360);

@@ -423,10 +423,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
             for (int i = 0; i < red.Count(); i++)
             {
                 List<double> dir = new();
-
                 if (red[i].Head)
                 {
-                    dir.Add(red[i].Direction);
+                    if (red[i].CutDirection != 8)
+                    {
+                        dir.Add(red[i].Direction);
+                    }
+                    else
+                    {
+                        dir.Add(ScanMethod.FindAngleViaPosition(red, i + 1, i));
+                    }
 
                     do
                     {
@@ -440,12 +446,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             break;
                         }
 
-                        dir.Add(ScanMethod.FindAngleViaPosition(red, i - 1, i, red[i - 1].Direction, true));
+                        dir.Add(ScanMethod.FindAngleViaPosition(red, i, i - 1));
                     } while (!red[i].Head);
                     var degree = dir.FirstOrDefault();
                     for (int j = 1; j < dir.Count(); j++)
                     {
-                        if (!ScanMethod.IsSameDirection(dir[j], degree, 45) || !ScanMethod.IsSameDirection(dir[j - 1], dir[j], 45))
+                        if (!ScanMethod.IsSameDirection(degree, dir[j], 45))
                         {
                             CreateDiffCommentNote("R3F - Multiple notes of the same color on the same swing must not differ by more than 45°", CommentTypesEnum.Issue, red[i - dir.Count() + j]);
                             issue = Severity.Fail;
@@ -462,7 +468,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 if (blue[i].Head)
                 {
-                    dir.Add(blue[i].Direction);
+                    if (blue[i].CutDirection != 8)
+                    {
+                        dir.Add(blue[i].Direction);
+                    }
+                    else
+                    {
+                        dir.Add(ScanMethod.FindAngleViaPosition(blue, i + 1, i));
+                    }
 
                     do
                     {
@@ -476,12 +489,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             break;
                         }
 
-                        dir.Add(ScanMethod.FindAngleViaPosition(blue, i - 1, i, blue[i - 1].Direction, true));
+                        dir.Add(ScanMethod.FindAngleViaPosition(blue, i, i - 1));
                     } while (!blue[i].Head);
                     var degree = dir.FirstOrDefault();
                     for (int j = 1; j < dir.Count(); j++)
                     {
-                        if (!ScanMethod.IsSameDirection(dir[j], degree, 45) || !ScanMethod.IsSameDirection(dir[j - 1], dir[j], 45))
+                        if (!ScanMethod.IsSameDirection(degree, dir[j], 45))
                         {
                             CreateDiffCommentNote("R3F - Multiple notes of the same color on the same swing must not differ by more than 45°", CommentTypesEnum.Issue, blue[i - dir.Count() + j]);
                             issue = Severity.Fail;
@@ -839,7 +852,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var events = baseDifficulty.Events.OrderBy(e => e.JsonTime).ToList();
             var end = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength, true);
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
-
             if (!events.Any() || !events.Exists(e => e.Type >= 0 && e.Type <= 5))
             {
                 ExtendOverallComment("R6A - Map has no light");
