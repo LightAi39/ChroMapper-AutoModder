@@ -849,6 +849,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var issue = Severity.Success;
             var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
             BaseDifficulty baseDifficulty = BeatSaberSongContainer.Instance.Song.GetMapFromDifficultyBeatmap(diff);
+            var v3events = baseDifficulty.LightColorEventBoxGroups.OrderBy(e => e.JsonTime).ToList();
             var events = baseDifficulty.Events.OrderBy(e => e.JsonTime).ToList();
             var end = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength, true);
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
@@ -861,6 +862,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 var lights = events.Where(e => e.Type >= 0 && e.Type <= 5).OrderBy(e => e.JsonTime).ToList();
                 var average = lights.Count() / end;
+                if (v3events.Count > 0)
+                {
+                    average = v3events.Count() / end;
+                }
+                Debug.Log(average + " and " + Plugin.configs.AverageLightPerBeat);
                 if (average < Plugin.configs.AverageLightPerBeat)
                 {
                     ExtendOverallComment("R6A - Map doesn't have enough light");
@@ -869,79 +875,87 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 var eventState = new List<EventState>();
                 var eventLitTime = new List<List<EventLitTime>>();
-                for (var i = 0; i < 12; i++)
+                if(v3events.Count > 0)
                 {
-                    EventState es = new(false, 0, 0);
-                    eventState.Add(es);
-                    eventLitTime.Add(new());
+                    ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked.");
+                    issue = Severity.Warning;
                 }
-                for (int i = 0; i < lights.Count; i++)
+                else
                 {
-                    var ev = lights[i];
-                    bpm.SetCurrentBPM(ev.JsonTime);
-                    var fadeTime = bpm.ToBeatTime(Plugin.configs.LightFadeDuration);
-                    var reactTime = bpm.ToBeatTime(Plugin.configs.LightBombReactionTime);
-                    if ((ev.IsOn || ev.IsFlash) && eventState[ev.Type].State == false)
+                    for (var i = 0; i < 12; i++)
                     {
-                        eventState[ev.Type].State = true;
-                        eventState[ev.Type].Time = ev.JsonTime;
-                        eventState[ev.Type].FadeTime = 0;
-                        var elt = eventLitTime[ev.Type].Find(e => e.Time >= ev.JsonTime);
-                        if (elt != null)
+                        EventState es = new(false, 0, 0);
+                        eventState.Add(es);
+                        eventLitTime.Add(new());
+                    }
+                    for (int i = 0; i < lights.Count; i++)
+                    {
+                        var ev = lights[i];
+                        bpm.SetCurrentBPM(ev.JsonTime);
+                        var fadeTime = bpm.ToBeatTime(Plugin.configs.LightFadeDuration);
+                        var reactTime = bpm.ToBeatTime(Plugin.configs.LightBombReactionTime);
+                        if ((ev.IsOn || ev.IsFlash) && eventState[ev.Type].State == false)
                         {
-                            elt.Time = ev.JsonTime;
-                            elt.State = true;
+                            eventState[ev.Type].State = true;
+                            eventState[ev.Type].Time = ev.JsonTime;
+                            eventState[ev.Type].FadeTime = 0;
+                            var elt = eventLitTime[ev.Type].Find(e => e.Time >= ev.JsonTime);
+                            if (elt != null)
+                            {
+                                elt.Time = ev.JsonTime;
+                                elt.State = true;
+                            }
+                            else
+                            {
+                                eventLitTime[ev.Type].Add(new(ev.JsonTime, true));
+                            }
                         }
-                        else
+                        if (ev.IsFade)
                         {
-                            eventLitTime[ev.Type].Add(new(ev.JsonTime, true));
+                            eventState[ev.Type].State = false;
+                            eventState[ev.Type].Time = ev.JsonTime;
+                            eventState[ev.Type].FadeTime = fadeTime;
+                            var elt = eventLitTime[ev.Type].Find(e => e.Time >= ev.JsonTime);
+                            if (elt != null)
+                            {
+                                elt.Time = ev.JsonTime;
+                                elt.State = true;
+                            }
+                            else
+                            {
+                                eventLitTime[ev.Type].Add(new(ev.JsonTime, true));
+                            }
+                            eventLitTime[ev.Type].Add(new(ev.JsonTime + fadeTime, false));
+                        }
+                        if ((ev.FloatValue < 0.25 || ev.IsOff) && eventState[ev.Type].State != false)
+                        {
+                            eventState[ev.Type].FadeTime = eventState[ev.Type].State == true ? reactTime : Math.Min(reactTime, eventState[ev.Type].FadeTime);
+                            eventState[ev.Type].State = false;
+                            eventState[ev.Type].Time = ev.JsonTime;
+                            eventLitTime[ev.Type].Add(new(ev.JsonTime + (eventState[ev.Type].State == true ? reactTime : Math.Min(reactTime, eventState[ev.Type].FadeTime)), false));
                         }
                     }
-                    if (ev.IsFade)
+                    foreach (var elt in eventLitTime)
                     {
-                        eventState[ev.Type].State = false;
-                        eventState[ev.Type].Time = ev.JsonTime;
-                        eventState[ev.Type].FadeTime = fadeTime;
-                        var elt = eventLitTime[ev.Type].Find(e => e.Time >= ev.JsonTime);
-                        if (elt != null)
-                        {
-                            elt.Time = ev.JsonTime;
-                            elt.State = true;
-                        }
-                        else
-                        {
-                            eventLitTime[ev.Type].Add(new(ev.JsonTime, true));
-                        }
-                        eventLitTime[ev.Type].Add(new(ev.JsonTime + fadeTime, false));
+                        elt.Reverse();
                     }
-                    if ((ev.FloatValue < 0.25 || ev.IsOff) && eventState[ev.Type].State != false)
+                    for (int i = 0; i < bombs.Count; i++)
                     {
-                        eventState[ev.Type].FadeTime = eventState[ev.Type].State == true ? reactTime : Math.Min(reactTime, eventState[ev.Type].FadeTime);
-                        eventState[ev.Type].State = false;
-                        eventState[ev.Type].Time = ev.JsonTime;
-                        eventLitTime[ev.Type].Add(new(ev.JsonTime + (eventState[ev.Type].State == true ? reactTime : Math.Min(reactTime, eventState[ev.Type].FadeTime)), false));
-                    }
-                }
-                foreach (var elt in eventLitTime)
-                {
-                    elt.Reverse();
-                }
-                for (int i = 0; i < bombs.Count; i++)
-                {
-                    var bomb = bombs[i];
-                    var isLit = false;
-                    foreach (var el in eventLitTime)
-                    {
-                        var t = el.Find(e => e.Time <= bomb.JsonTime);
-                        if (t != null)
+                        var bomb = bombs[i];
+                        var isLit = false;
+                        foreach (var el in eventLitTime)
                         {
-                            isLit = isLit || t.State;
+                            var t = el.Find(e => e.Time <= bomb.JsonTime);
+                            if (t != null)
+                            {
+                                isLit = isLit || t.State;
+                            }
                         }
-                    }
-                    if (!isLit)
-                    {
-                        CreateDiffCommentBomb("R5B - There must be sufficient lighting whenever bombs are present", CommentTypesEnum.Issue, bomb);
-                        issue = Severity.Fail;
+                        if (!isLit)
+                        {
+                            CreateDiffCommentBomb("R5B - There must be sufficient lighting whenever bombs are present", CommentTypesEnum.Issue, bomb);
+                            issue = Severity.Fail;
+                        }
                     }
                 }
             }
