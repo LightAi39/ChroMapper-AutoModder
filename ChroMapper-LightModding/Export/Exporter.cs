@@ -81,7 +81,7 @@ namespace ChroMapper_LightModding.Export
 
                 if (comment.MarkAsSuppressed)
                 {
-                    text += " - *Comment was marked as suppressed*";
+                    text += " - *Comment was marked as Solved*";
                 }
 
                 text += "\n \n";
@@ -110,7 +110,7 @@ namespace ChroMapper_LightModding.Export
 
                     if (comment.MarkAsSuppressed)
                     {
-                        text += "\n*Comment was marked as read*";
+                        text += "\n*Comment was marked as Solved*";
                     }
 
                     text += "\n \n";
@@ -142,7 +142,7 @@ namespace ChroMapper_LightModding.Export
 
                 if (comment.MarkAsSuppressed)
                 {
-                    text += " *read*";
+                    text += " *Solved*";
                 }
 
                 text += "\n";

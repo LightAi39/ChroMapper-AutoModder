@@ -139,7 +139,7 @@ namespace ChroMapper_LightModding.UI
                 string read = "";
                 if (comment.MarkAsSuppressed)
                 {
-                    read = " - Marked As Suppressed";
+                    read = " - Marked As Solved";
                 }
                 string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
                 if (beats.Length > 64)
@@ -193,7 +193,7 @@ namespace ChroMapper_LightModding.UI
                 string read = "";
                 if (comment.MarkAsSuppressed)
                 {
-                    read = " - Marked As Suppressed";
+                    read = " - Marked As Solved";
                 }
                 string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
                 if (beats.Length > 64)
@@ -321,7 +321,7 @@ namespace ChroMapper_LightModding.UI
                 .OnChanged((string s) => { message = s; });
 
             dialog.AddComponent<ToggleComponent>()
-                .WithLabel("Mark as Suppressed")
+                .WithLabel("Mark as Solved")
                 .WithInitialValue(read)
                 .OnChanged((bool o) => { read = o; });
 
@@ -357,7 +357,7 @@ namespace ChroMapper_LightModding.UI
                 string read = "";
                 if (comment.MarkAsSuppressed)
                 {
-                    read = " - Marked As Suppressed";
+                    read = " - Marked As Solved";
                 }
                 string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
                 if (beats.Length > 64)
@@ -942,7 +942,7 @@ namespace ChroMapper_LightModding.UI
             if (comment.Response != "") { UIHelper.AddLabel(_commentMenu.transform, "Response", $"Response: {comment.Response}", new Vector2(0, -108), new Vector2(313, 24), TextAlignmentOptions.Left); }
             else UIHelper.AddLabel(_commentMenu.transform, "Response", $"No Response", new Vector2(0, -108), new Vector2(313, 24), TextAlignmentOptions.Left);
 
-            if (comment.MarkAsSuppressed) UIHelper.AddLabel(_commentMenu.transform, "Suppressed", $"Marked as Suppressed", new Vector2(0, -159), new Vector2(313, 24), TextAlignmentOptions.Right);
+            if (comment.MarkAsSuppressed) UIHelper.AddLabel(_commentMenu.transform, "Solved", $"Marked as Solved", new Vector2(0, -159), new Vector2(313, 24), TextAlignmentOptions.Right);
 
             UIHelper.AddButton(_commentMenu.transform, "OpenComment", "Open Comment", new Vector2(-128.5f, -159), () =>
             {
@@ -954,7 +954,7 @@ namespace ChroMapper_LightModding.UI
                 ShowEditCommentUI(comment);
             });
 
-            UIHelper.AddButton(_commentMenu.transform, "SuppressComment", "Toggle Suppress", new Vector2(-4.5f, -159), () =>
+            UIHelper.AddButton(_commentMenu.transform, "SuppressComment", "Toggle Solved", new Vector2(-4.5f, -159), () =>
             {
                 comment.MarkAsSuppressed = !comment.MarkAsSuppressed;
                 RefreshCommentMenu(comment);
@@ -1001,7 +1001,7 @@ namespace ChroMapper_LightModding.UI
                 string read = "";
                 if (comment.MarkAsSuppressed)
                 {
-                    read = " - Marked As Suppressed";
+                    read = " - Marked As Solved";
                 }
                 string beats = string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()));
                 if (beats.Length > 64)

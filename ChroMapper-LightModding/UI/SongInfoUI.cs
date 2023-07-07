@@ -432,7 +432,7 @@ namespace ChroMapper_LightModding.UI
                 string read = "";
                 if (comment.MarkAsSuppressed)
                 {
-                    read = " - Marked As Suppressed";
+                    read = " - Marked As Solved";
                 }
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"{comment.Type}: {comment.Message}{read}")
@@ -480,7 +480,7 @@ namespace ChroMapper_LightModding.UI
                 string read = "";
                 if (comment.MarkAsSuppressed)
                 {
-                    read = " - Marked As Suppressed";
+                    read = " - Marked As Solved";
                 }
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"{comment.Type}: {comment.Message}{read}")
@@ -535,7 +535,7 @@ namespace ChroMapper_LightModding.UI
                 .OnChanged((string s) => { message = s; });
 
             dialog.AddComponent<ToggleComponent>()
-                .WithLabel("Mark as Suppressed")
+                .WithLabel("Mark as Solved")
                 .WithInitialValue(read)
                 .OnChanged((bool o) => { read = o; });
 
