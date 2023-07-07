@@ -9,7 +9,7 @@ This plugin is primarily aimed at improving the [BeatLeader](https://www.beatlea
 # Installation
 Download the ZIP from the latest [release](https://github.com/LightAi39/ChroMapper-AutoModder/releases/latest), then put the contents of the zip into your Chromapper plugins folder.
 
-> :warning: This plugin only supports CM versions after V3 support was added! Currently, you need to be on the dev branch for this.
+> :warning: This plugin only supports CM versions after V3 support was added! Currently, you need to be on the dev branch for this. (Open CM -> Options -> Experimental Tab -> Release Channel -> Dev -> Close CM -> Relaunch via CML.exe)
 
 # Usage
 > For any information you might need, check the [wiki](https://github.com/LightAi39/ChroMapper-AutoModder/wiki)!
