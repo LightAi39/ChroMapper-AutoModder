@@ -24,12 +24,44 @@ More information about these keybinds and buttons can be found on the [wiki page
 A general usage flow can be found below and on the [wiki](https://github.com/LightAi39/ChroMapper-AutoModder/wiki).
 
 ## How to use as a mapper
-coming soon
+> This is a quickstart guide. Any other information you might want to know is likely documented [in the wiki](https://github.com/LightAi39/ChroMapper-AutoModder/wiki)
 
+First, get familiar with the [keybinds](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons)
+
+Then load a review file by clicking the AutoModder button on the Song Info screen. There you can choose to create a new file. (or automatically load your previously saved file)  
+
+You will now see a menu with some buttons and criteria indicators. Here you can auto-check your song info and each (standard) difficulty. After pressing these buttons the criteria indicators will change colour. Red indicators alert you of issues with that criteria point, and any of these being yellow alerts you to a possible issue.
+
+Inside a difficulty, you will see notes with comments marked in the timeline and outlined.  
+Comments will be automatically opened in the top right corner when the grid cursor is on the same beat as a note inside the comment. This overview has buttons for opening and editing a comment.
+
+In addition, you can select a singular note and press the open comment [keybind](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds). Currently, this is `Alt G`. You will then directly go to the view comment menu. For detailed information, refer to the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
+
+To create a comment, first select one or more notes. Then, press [one of the keybinds](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds) for comment creation. Currently, these are `Ctrl G` and `Ctrl Space`. More information is on the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
+
+On the pause menu, you will see criteria indicators like before. You can also rerun the auto-checker from here.
+
+Always make sure to [save your file](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Files#saving-a-file) either in the pause menu or in the song info menu.
 
 ## How to use as a modder
-coming soon
+> This is a quickstart guide. Any other information you might want to know is likely documented [in the wiki](https://github.com/LightAi39/ChroMapper-AutoModder/wiki)
 
+First, get familiar with the [keybinds](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons)
+
+Then load a review file by clicking the AutoModder button on the Song Info screen. There you can choose to open a file. This will open the file picker. With this, you can select the `.lreview` file you were sent. (or automatically load a previously saved file)  
+
+You will now see a menu with some buttons and criteria indicators. Any of these indicators being red alerts you to an issue with that criteria point, and any of these being yellow alerts you to a possible issue.
+
+Inside a difficulty, you will see notes with comments marked in the timeline and outlined.  
+Comments will be automatically opened in the top right corner when the grid cursor is on the same beat as a note inside the comment. This overview has buttons for opening and editing a comment.
+
+In addition, you can select a singular note and press the open comment [keybind](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds). Currently, this is `Alt G`. You will then directly go to the view comment menu. For detailed information, refer to the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
+
+To create a comment, first select one or more notes. Then, press [one of the keybinds](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds) for comment creation. Currently, these are `Ctrl G` and `Ctrl Space`. More information is on the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
+
+On the pause menu, you will see criteria indicators like before.
+
+Always make sure to [save your file](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Files#saving-a-file) either in the pause menu or in the song info menu.
 
 # Contributors and Referenced/used projects
 
