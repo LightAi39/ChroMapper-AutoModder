@@ -866,7 +866,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     average = v3events.Count() / end;
                 }
-                Debug.Log(average + " and " + Plugin.configs.AverageLightPerBeat);
                 if (average < Plugin.configs.AverageLightPerBeat)
                 {
                     ExtendOverallComment("R6A - Map doesn't have enough light");
