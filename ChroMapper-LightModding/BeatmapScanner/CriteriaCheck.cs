@@ -1178,8 +1178,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentLink("R2D - Chains must be at least 12.5% links versus air/empty-space", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
-                var horizontal = Math.Abs(l.PosX - l.TailPosX) * (chain.Squish / 2 + 0.5) * (chain.Squish / 2 + 0.5);
-                var vertical = Math.Abs(l.PosY - l.TailPosY) * chain.Squish * chain.Squish;
+                var horizontal = Math.Abs(l.PosX - l.TailPosX);
+                var vertical = Math.Abs(l.PosY - l.TailPosY);
                 var newX = l.PosX + (horizontal * Math.Cos(ScanMethod.ConvertDegreesToRadians(ScanMethod.DirectionToDegree[l.CutDirection] + chain.AngleOffset)));
                 var newY = l.PosY + (vertical * Math.Sin(ScanMethod.ConvertDegreesToRadians(ScanMethod.DirectionToDegree[l.CutDirection] + chain.AngleOffset)));
                 if (newX > 4 || newX < -1 || newY > 2 || newY < 0)
@@ -1218,7 +1218,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     temp,
                     temp2
                 };
-                if (!ScanMethod.IsSameDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1, temp.Direction, true) * (chain.Squish / 2 + 0.5), temp.Direction, Plugin.configs.MaxChainRotation))
+                if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, Plugin.configs.MaxChainRotation))
                 {
                     CreateDiffCommentLink("R2D - Chains cannot change in direction by more than 45°", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
