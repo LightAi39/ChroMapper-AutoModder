@@ -2316,18 +2316,21 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         else if (d >= 2 && d <= 2.99) // 1-2 wide
                         {
-                            if ((note.Type == 0 && note.PosX > note.PosY) || (note.Type == 1 && note.PosX < note.PosY)) // Crossover
+                            if(NoteDirection.Move(note) == NoteDirection.Move(other))
                             {
-                                arr.Add(other);
-                                arr.Add(note);
-                                break;
-                            }
-                            else if (NoteDirection.Move(note) == NoteDirection.Move(other) && !(note.PosX == other.PosX + 2 && note.PosY == other.PosY) && !(other.PosX == note.PosX + 2 && other.PosY == note.PosY)
-                            && !(note.PosX == other.PosX && note.PosY == other.PosY + 2) && !(other.PosX == note.PosX && other.PosY == note.PosY + 2))
-                            {
-                                arr.Add(other);
-                                arr.Add(note);
-                                break;
+                                if ((note.Type == 0 && note.PosX > note.PosY) || (note.Type == 1 && note.PosX < note.PosY)) // Crossover
+                                {
+                                    arr.Add(other);
+                                    arr.Add(note);
+                                    break;
+                                }
+                                else if (!(note.PosX == other.PosX + 2 && note.PosY == other.PosY) && !(other.PosX == note.PosX + 2 && other.PosY == note.PosY)
+                                && !(note.PosX == other.PosX && note.PosY == other.PosY + 2) && !(other.PosX == note.PosX && other.PosY == note.PosY + 2))
+                                {
+                                    arr.Add(other);
+                                    arr.Add(note);
+                                    break;
+                                }
                             }
                         }
                         else if (d > 2.99 && ((note.Type == 0 && note.PosX > 2) || (note.Type == 1 && note.PosX < 1))) // 3-wide
