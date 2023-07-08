@@ -398,11 +398,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 Debug.Log(averageSliderDuration);
                 Debug.Log("test");
             }
-            if(averageSliderDuration >= 0.03)
+            if(averageSliderDuration <= 0.033)
             {
                 averageSliderDuration = 0.03125; // 1/32
             }
-            else if(averageSliderDuration >= 0.04)
+            else if(averageSliderDuration <= 0.042)
             {
                 averageSliderDuration = 0.0416666667; // 1/24
             }
@@ -1015,7 +1015,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             foreach (var w in leftWall)
             {
-                var note = notes.Where(n => n.Line == 0 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration).ToList();
+                var note = notes.Where(n => n.Line == 0 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
                 foreach (var n in note)
                 {
                     CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
@@ -1031,7 +1031,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             foreach (var w in rightWall)
             {
-                var note = notes.Where(n => n.Line == 3 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration).ToList();
+                var note = notes.Where(n => n.Line == 3 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
                 foreach (var n in note)
                 {
                     CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
