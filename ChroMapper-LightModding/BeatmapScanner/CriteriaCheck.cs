@@ -1591,19 +1591,38 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var unsure = false;
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
+            var slider = false;
+            if(cubes.Exists(x => x.Slider))
+            {
+                slider = true;
+            }
             foreach (var ch in chains)
             {
                 if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 4.2)
                 {
-                    // Slow chains
-                    CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch);
-                    issue = true;
+                    if(slider)
+                    {
+                        CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch);
+                        issue = true;
+                    }
+                    else
+                    {
+                        CreateDiffCommentLink("R2D - No slider detected, duration might be too high", CommentTypesEnum.Unsure, ch);
+                        unsure = true;
+                    }
                 }
                 else if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 3.15)
                 {
-                    // Slow chains
-                    CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch);
-                    issue = true;
+                    if (slider)
+                    {
+                        CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch);
+                        issue = true;
+                    }
+                    else
+                    {
+                        CreateDiffCommentLink("Y2A - No slider detected, duration might be too high", CommentTypesEnum.Unsure, ch);
+                        unsure = true;
+                    }
                 }
                 if (!cubes.Exists(c => c.Time == ch.JsonTime && c.Type == ch.Color && c.Line == ch.PosX && c.Layer == ch.PosY))
                 {
@@ -2296,7 +2315,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         else if (d >= 2 && d <= 2.99) // 1-2 wide
                         {
-                            if (NoteDirection.Move(note) == NoteDirection.Move(other))
+                            if (NoteDirection.Move(note) == NoteDirection.Move(other) && !(note.PosX == other.PosX + 2 && note.PosY == other.PosY) && !(other.PosX == note.PosX + 2 && other.PosY == note.PosY)
+                                && !(note.PosX == other.PosX && note.PosY == other.PosY + 2) && !(other.PosX == note.PosX && other.PosY == note.PosY + 2))
                             {
                                 arr.Add(other);
                                 arr.Add(note);
