@@ -406,9 +406,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (!(c.Precision <= ((c.Spacing + 1) * averageSliderDuration) + 0.01 && c.Precision >= ((c.Spacing + 1) * averageSliderDuration) - 0.01))
                     {
-                        var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
+                        // var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
                         var expected = ScanMethod.RealToFraction(((c.Spacing + 1) * averageSliderDuration), 0.01);
-                        CreateDiffCommentNote("R2A - " + c.Time + " is " + reality.N.ToString() + "/" + reality.D.ToString() + ". Expected precision is " + expected.N.ToString() + "/" + expected.D.ToString() + ".", CommentTypesEnum.Unsure, c);
+                        CreateDiffCommentNote("R2A - Expected " + expected.N.ToString() + "/" + expected.D.ToString(), CommentTypesEnum.Unsure, c);
                         issue = Severity.Warning;
                     }
                 }
@@ -453,7 +453,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (!ScanMethod.IsSameDirection(degree, dir[j], 45))
                         {
-                            CreateDiffCommentNote("R3F - Multiple notes of the same color on the same swing must not differ by more than 45°", CommentTypesEnum.Issue, red[i - dir.Count() + j]);
+                            CreateDiffCommentNote("R3F - Slider over 45°", CommentTypesEnum.Issue, red[i - dir.Count() + j]);
                             issue = Severity.Fail;
                         }
                     }
@@ -496,7 +496,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (!ScanMethod.IsSameDirection(degree, dir[j], 45))
                         {
-                            CreateDiffCommentNote("R3F - Multiple notes of the same color on the same swing must not differ by more than 45°", CommentTypesEnum.Issue, blue[i - dir.Count() + j]);
+                            CreateDiffCommentNote("R3F - Slider over 45°", CommentTypesEnum.Issue, blue[i - dir.Count() + j]);
                             issue = Severity.Fail;
                         }
                     }
@@ -661,7 +661,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (c.Time >= w.JsonTime - beatms && c.Time <= w.JsonTime + w.Duration + beatms && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer <= w.PosY + w.Height && c.Layer >= w.PosY - 1)
                     {
-                        CreateDiffCommentNote("R3FA-B - Notes cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
                         issue = Severity.Fail;
                     }
                 }
@@ -675,7 +675,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (b.JsonTime >= w.JsonTime - beatms && b.JsonTime <= w.JsonTime + w.Duration + beatms && b.PosX <= w.PosX + w.Width - 1 && b.PosX >= w.PosX && b.PosY <= w.PosY + w.Height && b.PosY >= w.PosY - 1)
                     {
-                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
                         issue = Severity.Fail;
                     }
                 }
@@ -689,7 +689,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (c.JsonTime >= w.JsonTime - beatms && c.JsonTime <= w.JsonTime + w.Duration + beatms && c.TailPosX <= w.PosX + w.Width - 1 && c.TailPosX >= w.PosX && c.TailPosY <= w.PosY + w.Height && c.TailPosY >= w.PosY - 1)
                     {
-                        CreateDiffCommentLink("R2D - Links cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
                         issue = Severity.Fail;
                     }
                 }
@@ -709,8 +709,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (c.Time >= c2.Time - beatms && c.Time <= c2.Time + beatms && c.Line == c2.Line && c.Layer == c2.Layer)
                     {
-                        CreateDiffCommentNote("R3FA-B - Notes cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentNote("R3FA-B - Notes cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
@@ -725,8 +725,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (b.JsonTime >= c.Time - beatms && b.JsonTime <= c.Time + beatms && c.Line == b.PosX && c.Layer == b.PosY)
                     {
-                        CreateDiffCommentNote("R3FA-B - Notes cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
                         issue = Severity.Fail;
                     }
                 }
@@ -741,8 +741,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (c.Time >= c2.JsonTime - beatms && c.Time <= c2.JsonTime + beatms && c.Line == c2.TailPosX && c.Layer == c2.TailPosY)
                     {
-                        CreateDiffCommentNote("R3FA-B - Notes cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentLink("R2D - Links cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
@@ -766,8 +766,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (b.PosX == b2.PosX && b.PosY == b2.PosY)
                     {
-                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + max + " in the same line", CommentTypesEnum.Issue, b);
-                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + max + " in the same line", CommentTypesEnum.Issue, b2);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b2);
                         issue = Severity.Fail;
                     }
                 }
@@ -782,8 +782,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (b.JsonTime >= c2.JsonTime - beatms && b.JsonTime <= c2.JsonTime + beatms && b.PosX == c2.TailPosX && b.PosY == c2.TailPosY)
                     {
-                        CreateDiffCommentBomb("R5D - Bombs cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
-                        CreateDiffCommentLink("R2D - Links cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
@@ -803,8 +803,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (c.JsonTime >= c2.JsonTime - beatms && c.JsonTime <= c2.JsonTime + beatms && c.TailPosX == c2.TailPosX && c.TailPosY == c2.TailPosY)
                     {
-                        CreateDiffCommentLink("R2D - Links cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentLink("R2D - Links cannot collide with notes, walls, or bombs within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
@@ -831,7 +831,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             if (cubes.Exists(c => c.Time < 0 || c.Time > end) || chains.Exists(c => c.JsonTime < 0 || c.JsonTime > end)
                 || bombs.Exists(b => b.JsonTime < 0 || b.JsonTime > end) || walls.Exists(w => w.JsonTime < 0 || w.JsonTime + w.Duration > end))
             {
-                ExtendOverallComment("R1B - Object detected outside of playable timeframe");
+                ExtendOverallComment("R1B - Object outside of playable length");
                 issue = Severity.Fail;
             }
 
@@ -952,7 +952,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         if (!isLit)
                         {
-                            CreateDiffCommentBomb("R5B - There must be sufficient lighting whenever bombs are present", CommentTypesEnum.Issue, bomb);
+                            CreateDiffCommentBomb("R5B - Light missing for bomb", CommentTypesEnum.Issue, bomb);
                             issue = Severity.Fail;
                         }
                     }
@@ -1010,13 +1010,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var note = notes.Where(n => n.Line == 0 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration).ToList();
                 foreach (var n in note)
                 {
-                    CreateDiffCommentNote("R3B - Notes cannot be hidden behind walls", CommentTypesEnum.Issue, n);
+                    CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
                     issue = Severity.Fail;
                 }
                 var bomb = bombs.Where(b => b.PosX == 0 && (b.PosY >= 1 || (b.PosY >= 0 && w.PosY == 0)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
                 foreach (var b in bomb)
                 {
-                    CreateDiffCommentBomb("R5E - Bombs cannot be hidden behind walls", CommentTypesEnum.Issue, b);
+                    CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b);
                     issue = Severity.Fail;
                 }
             }
@@ -1026,13 +1026,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var note = notes.Where(n => n.Line == 3 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration).ToList();
                 foreach (var n in note)
                 {
-                    CreateDiffCommentNote("R3B - Notes cannot be hidden behind walls", CommentTypesEnum.Issue, n);
+                    CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
                     issue = Severity.Fail;
                 }
                 var bomb = bombs.Where(b => b.PosX == 3 && (b.PosY >= 1 || (b.PosY >= 0 && w.PosY == 0)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
                 foreach (var b in bomb)
                 {
-                    CreateDiffCommentBomb("R5E - Bombs cannot be hidden behind walls", CommentTypesEnum.Issue, b);
+                    CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b);
                     issue = Severity.Fail;
                 }
             }
@@ -1042,7 +1042,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var first = 0d;
             bool start = false;
             BaseObstacle previous = null;
-            // Won't work properly in some very specific situation probably, but I did my best..
             foreach (var w in walls)
             {
                 bpm.SetCurrentBPM(w.JsonTime);
@@ -1052,23 +1051,23 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (w.PosY <= 0 && w.Height > 1 && ((w.PosX + w.Width == 2 && walls.Exists(wa => wa != w && wa.PosY == 0 && wa.Height > 0 && wa.PosX + wa.Width == 3 && wa.JsonTime <= w.JsonTime + w.Duration && wa.JsonTime >= w.JsonTime)) ||
                     (w.PosX + w.Width == 3 && walls.Exists(wa => wa != w && wa.PosY == 0 && wa.Height > 0 && wa.PosX + wa.Width == 2 && wa.JsonTime <= w.JsonTime + w.Duration && wa.JsonTime >= w.JsonTime))))
                 {
-                    CreateDiffCommentObstacle("R4C - Walls cannot be placed to force the player to move into the outer lanes", CommentTypesEnum.Issue, w);
+                    CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
                 else if (w.PosY <= 0 && w.Height > 1 && (w.Width >= 3 && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3 || w.PosX == 1)) || (w.Width >= 2 && w.PosX == 1 && w.PosY == 0 && w.Height > 0) || (w.Width >= 4 && w.PosX + w.Width >= 4 && w.PosX <= 0 && w.PosY == 0))
                 {
-                    CreateDiffCommentObstacle("R4C - Walls cannot be placed to force the player to move into the outer lanes", CommentTypesEnum.Issue, w);
+                    CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
                 if (w.Width <= 0 || w.Duration <= 0 || (w.Height <= 0 && w.PosX >= 0 && w.PosX <= 3 && ((w.PosY > 0 && w.PosY <= 2) || (w.PosY + w.Height >= 0 && w.PosY + w.Height <= 2))))
                 {
-                    CreateDiffCommentObstacle("R4D - Walls must have a positive width, height and duration", CommentTypesEnum.Issue, w);
+                    CreateDiffCommentObstacle("R4D - Must have positive width, height and duration", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
                 if (w.Duration < min && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3) &&
                     !walls.Exists(wa => wa != w && wa.PosX + wa.Width >= w.PosX + w.Width && wa.PosX <= w.PosX + w.Width && wa.Duration >= min && w.JsonTime >= wa.JsonTime && w.JsonTime <= wa.JsonTime + wa.Duration + max))
                 {
-                    CreateDiffCommentObstacle("R4E - Walls shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w);
+                    CreateDiffCommentObstacle("R4E - Shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
                 if(previous != null)
@@ -1122,12 +1121,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
                 if (dodge > Plugin.configs.MaximumDodgeWallPerSecond && side != 0)
                 {
-                    CreateDiffCommentObstacle("R4B - Dodge walls must not force the players head to move more than 3.5 times per second", CommentTypesEnum.Issue, w);
+                    CreateDiffCommentObstacle("R4B - Over the " + Plugin.configs.MaximumDodgeWallPerSecond + " dodge per second limit", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
                 else if (dodge > Plugin.configs.SubjectiveDodgeWallPerSecond && side != 0)
                 {
-                    CreateDiffCommentObstacle("Y4A - Dodge walls that force the players head to move more than 2 times per second need justification", CommentTypesEnum.Suggestion, w);
+                    CreateDiffCommentObstacle("Y4A - " + Plugin.configs.SubjectiveDodgeWallPerSecond + "+ dodge per second need justification", CommentTypesEnum.Suggestion, w);
                     issue = Severity.Warning;
                 }
 
@@ -1154,7 +1153,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var link = links.Where(l => l.JsonTime <= notes[15].Time).ToList();
                 foreach (var l in link)
                 {
-                    CreateDiffCommentLink("R2D - Chains and their links cannot be part of the first 16 notes of the map", CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
             }
@@ -1163,7 +1162,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var link = links.Where(l => l.JsonTime >= notes.Last().Time).Take(16 - notes.Count).ToList();
                 foreach (var l in link)
                 {
-                    CreateDiffCommentLink("R2D - Chains and their links cannot be part of the first 16 notes of the map", CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
             }
@@ -1175,7 +1174,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var spacing = Math.Round(Math.Max(Math.Max(Math.Abs(l.TailPosX - l.PosX) * chain.Squish, Math.Abs(l.TailPosY - l.PosY) * chain.Squish), 0), 0);
                 if ((chain.SliceCount - 1) / spacing < Plugin.configs.ChainLinkVsAir)
                 {
-                    CreateDiffCommentLink("R2D - Chains must be at least 12.5% links versus air/empty-space", CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D -  Must be at least 12.5% links versus air/empty-space", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
                 var horizontal = Math.Abs(l.PosX - l.TailPosX);
@@ -1184,12 +1183,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var newY = l.PosY + (vertical * Math.Sin(ScanMethod.ConvertDegreesToRadians(ScanMethod.DirectionToDegree[l.CutDirection] + chain.AngleOffset)));
                 if (newX > 4 || newX < -1 || newY > 2 || newY < 0)
                 {
-                    CreateDiffCommentLink("R2D - Chains links can lead outside of the grid, but not further than an extra lane", CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
                 if (l.TailJsonTime < l.JsonTime)
                 {
-                    CreateDiffCommentLink("R2D - Chains must not have a reverse direction", CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D - Reverse Direction", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
                 var note = notes.Find(x => x.Time >= l.TailJsonTime && x.Type == l.Color);
@@ -1197,7 +1196,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (l.TailJsonTime + (l.TailJsonTime - l.JsonTime) > note.Time)
                 {
-                    CreateDiffCommentLink("R2D - The beat duration between the last link and the next note/chain of the same hand must be at least the previous chain beat duration", CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D - Duration between tail and next note is too short", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
                 }
@@ -1220,7 +1219,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 };
                 if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, Plugin.configs.MaxChainRotation))
                 {
-                    CreateDiffCommentLink("R2D - Chains cannot change in direction by more than 45°", CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D - Over 45°", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
             }
@@ -1414,7 +1413,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (n.c == 0 || n.c == 1)
                     {
-                        CreateDiffCommentNote("R2B - Notes must be placed to give the player acceptable time to react", CommentTypesEnum.Issue,
+                        CreateDiffCommentNote("R2B - Is vision blocked", CommentTypesEnum.Issue,
                             cubes.Find(c => c.Time == n.b && c.Type == n.c && n.x == c.Line && n.y == c.Layer));
                         issue = Severity.Fail;
                     }
@@ -1482,7 +1481,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (n.Type == 3)
                     {
-                        CreateDiffCommentBomb("R5E - Bombs must be placed to give the player acceptable time to react", CommentTypesEnum.Issue,
+                        CreateDiffCommentBomb("R5E - Is vision blocked", CommentTypesEnum.Issue,
                             bombs.Find(b => b.JsonTime == n.JsonTime && b.Type == n.Type && b.PosX == n.PosX && b.PosY == n.PosY));
                         issue = Severity.Fail;
                     }
@@ -1509,19 +1508,19 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 4.2)
                 {
                     // Slow chains
-                    CreateDiffCommentLink("R2D - Maximum chains duration must be similar to the average window sliders duration * 2", CommentTypesEnum.Issue, ch);
+                    CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch);
                     issue = true;
                 }
                 else if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 3.15)
                 {
                     // Slow chains
-                    CreateDiffCommentLink("Y2A - Recommended maximum chains duration should be similar to the average window sliders duration * 1.5", CommentTypesEnum.Suggestion, ch);
+                    CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch);
                     issue = true;
                 }
                 if (!cubes.Exists(c => c.Time == ch.JsonTime && c.Type == ch.Color && c.Line == ch.PosX && c.Layer == ch.PosY))
                 {
                     // Link spam maybe idk
-                    CreateDiffCommentLink("R2D - Chain links must have a head note", CommentTypesEnum.Issue, ch);
+                    CreateDiffCommentLink("R2D - No head note", CommentTypesEnum.Issue, ch);
                     issue = true;
                 }
             }
@@ -1537,12 +1536,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if(left.CutDirection == 8)
                         {
-                            CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Unsure, left);
+                            CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Unsure, left);
                             unsure = true;
                         }
                         else
                         {
-                            CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, left);
+                            CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Issue, left);
                             issue = true;
                         }
                     }
@@ -1560,12 +1559,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (right.CutDirection == 8)
                         {
-                            CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Unsure, right);
+                            CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Unsure, right);
                             unsure = true;
                         }
                         else
                         {
-                            CreateDiffCommentNote("R2A - Swing speed should be consistent throughout the map", CommentTypesEnum.Issue, right);
+                            CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Issue, right);
                             issue = true;
                         }
                     }
@@ -1617,8 +1616,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var sliderAngle2 = ScanMethod.Mod(ScanMethod.ConvertRadiansToDegrees(Math.Atan2(red[i].Layer - red[i - 1].Layer, red[i].Line - red[i - 1].Line)), 360);
                     if (Math.Abs(sliderAngle2 - red[i].Direction) >= 45 && Math.Abs(sliderAngle2 - red[i].Direction) < 90)
                     {
-                        CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue, red[i - 1]);
-                        CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue, red[i]);
+                        CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i - 1]);
+                        CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i]);
                         issue = Severity.Fail;
                     }
                 }
@@ -1641,8 +1640,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var sliderAngle2 = ScanMethod.Mod(ScanMethod.ConvertRadiansToDegrees(Math.Atan2(blue[i].Layer - blue[i - 1].Layer, blue[i].Line - blue[i - 1].Line)), 360);
                     if (Math.Abs(sliderAngle2 - blue[i].Direction) >= 45 && Math.Abs(sliderAngle2 - blue[i].Direction) < 90)
                     {
-                        CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue, blue[i - 1]);
-                        CreateDiffCommentNote("R3C - Multiple notes of the same color on the same swing must not be parallel", CommentTypesEnum.Issue, blue[i]);
+                        CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i - 1]);
+                        CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i]);
                         issue = Severity.Fail;
                     }
                 }
@@ -1671,6 +1670,69 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).ToList();
                 notes = notes.OrderBy(o => o.JsonTime).ToList();
                 BaseNote previous = notes[0];
+
+                for (int i = 0; i < notes.Count; i++)
+                {
+                    var note = notes[i];
+                    var note2 = notes.Where(n => n.JsonTime == note.JsonTime && n != note && ((n.Type == 0 && note.Type == 1) || (n.Type == 1 && note.Type == 0))).FirstOrDefault();
+                    if (note2 != null)
+                    {
+                        if (note.PosX == note2.PosX - 1)
+                        {
+                            if (note.PosY == 0 && note.CutDirection == 6 && note2.PosY == 2)
+                            {
+                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                issue = Severity.Warning;
+                            }
+                            else if (note.PosY == 2 && note.CutDirection == 4 && note2.PosY == 0)
+                            {
+                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                issue = Severity.Warning;
+                            }
+                            else if (note2.PosY == 0 && note2.CutDirection == 7 && note.PosY == 2)
+                            {
+                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                issue = Severity.Warning;
+                            }
+                            else if (note2.PosY == 2 && note2.CutDirection == 5 && note.PosY == 0)
+                            {
+                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                issue = Severity.Warning;
+                            }
+                        }
+                        if (note.PosX == note2.PosX + 1)
+                        {
+                            if (note2.PosY == 0 && note2.CutDirection == 6 && note.PosY == 2)
+                            {
+                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                issue = Severity.Warning;
+                            }
+                            else if (note2.PosY == 2 && note2.CutDirection == 4 && note.PosY == 0)
+                            {
+                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                issue = Severity.Warning;
+                            }
+                            else if (note.PosY == 0 && note.CutDirection == 7 && note2.PosY == 2)
+                            {
+                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                issue = Severity.Warning;
+                            }
+                            else if (note.PosY == 2 && note.CutDirection == 5 && note2.PosY == 0)
+                            {
+                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                issue = Severity.Warning;
+                            }
+                        }
+                    }
+                }
 
                 List<BaseNote> arr = new();
                 var lastTime = 0d;
@@ -1747,7 +1809,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3E - Notes cannot be placed in the path of a bomb or another note", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3E - Swing Path", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Fail;
                 }
@@ -1820,7 +1882,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3G - Inline - Hitbox abusive patterns are not allowed", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3G - Low NJS Inline", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Warning;
                 }
@@ -1908,7 +1970,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3G - Staircase - Hitbox abusive patterns are not allowed", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3G - Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Warning;
                 }
@@ -1966,7 +2028,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3G - Reverse Staircase - Hitbox abusive patterns are not allowed", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3G - Reverse Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Warning;
                 }
@@ -2104,14 +2166,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr2)
                 {
-                    CreateDiffCommentNote("R3D - Patterns must not encourage hand clapping", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3D - HandClap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Warning;
                 }
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3D - Patterns must not encourage hand clapping", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3D - HandClap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Fail;
                 }
