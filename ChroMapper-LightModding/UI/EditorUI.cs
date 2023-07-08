@@ -527,12 +527,20 @@ namespace ChroMapper_LightModding.UI
 
             var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
 
+            var comments = plugin.currentReview.Comments.ToList();
+            comments.Sort((x, y) => y.Type.CompareTo(x.Type));
+
             foreach (var comment in plugin.currentReview.Comments)
             {
                 double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat));
+                Color color = Color.gray;
+                if (!comment.MarkAsSuppressed)
+                {
+                    color = outlineHelper.ChooseOutlineColor(comment.Type);
+                }
 
                 float position = (float)(cmbeat / totalBeats * width - (width / 2));
-                UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -14), new Vector2(0, 0), null, outlineHelper.ChooseOutlineColor(comment.Type));
+                UIHelper.AddLabel(_timelineMarkers.transform, $"CommentMarker-{comment.Id}", "|", new Vector2(position, -14), new Vector2(0, 0), null, color);
             }
         }
 
