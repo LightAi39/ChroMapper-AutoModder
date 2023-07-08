@@ -2324,8 +2324,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     arr.Add(note);
                                     break;
                                 }
-                                else if (!(note.PosX == other.PosX + 2 && note.PosY == other.PosY) && !(other.PosX == note.PosX + 2 && other.PosY == note.PosY)
-                                && !(note.PosX == other.PosX && note.PosY == other.PosY + 2) && !(other.PosX == note.PosX && other.PosY == note.PosY + 2))
+                                else if ((note.PosX == other.PosX + 2 && note.PosY == other.PosY + 2)  || (other.PosX == note.PosX + 2 && other.PosY == note.PosY + 2) // Facing directly
+                                || (note.PosX == other.PosX + 2 && note.PosY == other.PosY - 2)  || (other.PosX == note.PosX + 2 && other.PosY == note.PosY - 2)
+                                || (note.PosX == other.PosX && note.PosY == other.PosY + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) || 
+                                (note.PosX == other.PosX && note.PosY == other.PosY - 2 && Reverse.Get(note.CutDirection) == other.CutDirection) || 
+                                (other.PosY == note.PosY && other.PosX == note.PosX + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) || 
+                                (other.PosY == note.PosY && other.PosX == note.PosX - 2 && Reverse.Get(note.CutDirection) == other.CutDirection)) 
                                 {
                                     arr.Add(other);
                                     arr.Add(note);
