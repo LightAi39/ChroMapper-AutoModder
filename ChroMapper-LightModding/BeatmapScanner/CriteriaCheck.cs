@@ -404,7 +404,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (c.Slider && !c.Head)
                 {
-                    if (!(c.Precision <= ((c.Spacing + 1) * averageSliderDuration) + 0.001 && c.Precision >= ((c.Spacing + 1) * averageSliderDuration) - 0.001))
+                    if (!(c.Precision <= ((c.Spacing + 1) * averageSliderDuration) + 0.01 && c.Precision >= ((c.Spacing + 1) * averageSliderDuration) - 0.01))
                     {
                         var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
                         var expected = ScanMethod.RealToFraction(((c.Spacing + 1) * averageSliderDuration), 0.01);
