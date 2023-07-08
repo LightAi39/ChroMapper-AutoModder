@@ -395,10 +395,20 @@ namespace ChroMapper_LightModding.BeatmapScanner
             else
             {
                 averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault();
+                Debug.Log(averageSliderDuration);
+                Debug.Log("test");
             }
-            if(averageSliderDuration < 0.03125)
+            if(averageSliderDuration >= 0.03)
             {
-                averageSliderDuration = 0.0625;
+                averageSliderDuration = 0.03125; // 1/32
+            }
+            else if(averageSliderDuration >= 0.04)
+            {
+                averageSliderDuration = 0.0416666667; // 1/24
+            }
+            else
+            {
+                averageSliderDuration = 0.0625; // 1/16
             }
             foreach (var c in cube)
             {
