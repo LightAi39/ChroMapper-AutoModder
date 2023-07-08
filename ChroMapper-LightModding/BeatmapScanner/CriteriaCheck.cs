@@ -11,6 +11,7 @@ using JoshaParity;
 using Parity = ChroMapper_LightModding.BeatmapScanner.MapCheck.Parity;
 using Newtonsoft.Json;
 using UnityEngine;
+using Beatmap.Enums;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -2315,8 +2316,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         else if (d >= 2 && d <= 2.99) // 1-2 wide
                         {
-                            if (NoteDirection.Move(note) == NoteDirection.Move(other) && !(note.PosX == other.PosX + 2 && note.PosY == other.PosY) && !(other.PosX == note.PosX + 2 && other.PosY == note.PosY)
-                                && !(note.PosX == other.PosX && note.PosY == other.PosY + 2) && !(other.PosX == note.PosX && other.PosY == note.PosY + 2))
+                            if ((note.Type == 0 && note.PosX > note.PosY) || (note.Type == 1 && note.PosX < note.PosY)) // Crossover
+                            {
+                                arr.Add(other);
+                                arr.Add(note);
+                                break;
+                            }
+                            else if (NoteDirection.Move(note) == NoteDirection.Move(other) && !(note.PosX == other.PosX + 2 && note.PosY == other.PosY) && !(other.PosX == note.PosX + 2 && other.PosY == note.PosY)
+                            && !(note.PosX == other.PosX && note.PosY == other.PosY + 2) && !(other.PosX == note.PosX && other.PosY == note.PosY + 2))
                             {
                                 arr.Add(other);
                                 arr.Add(note);
@@ -2352,14 +2359,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr2)
                 {
-                    CreateDiffCommentNote("R3D - HandClap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Warning;
                 }
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3D - HandClap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Fail;
                 }
