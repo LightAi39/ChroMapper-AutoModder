@@ -658,48 +658,50 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
             var walls = BeatmapScanner.Walls.OrderBy(w => w.JsonTime).ToList();
+            var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
+            var njs = diff.NoteJumpMovementSpeed;
 
             foreach (var w in walls)
             {
                 foreach (var c in cubes)
                 {
                     bpm.SetCurrentBPM(c.Time);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
-                    if (c.Time > w.JsonTime + w.Duration + beatms)
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    if (c.Time - (w.JsonTime + w.Duration) >= max)
                     {
                         break;
                     }
-                    if (c.Time >= w.JsonTime - beatms && c.Time <= w.JsonTime + w.Duration + beatms && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer <= w.PosY + w.Height && c.Layer >= w.PosY - 1)
+                    if (c.Time >= w.JsonTime - max && c.Time <= w.JsonTime + w.Duration + max && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer <= w.PosY + w.Height && c.Layer >= w.PosY - 1)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
                         issue = Severity.Fail;
                     }
                 }
                 foreach (var b in bombs)
                 {
                     bpm.SetCurrentBPM(b.JsonTime);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
-                    if (b.JsonTime > w.JsonTime + w.Duration + beatms)
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    if (b.JsonTime - (w.JsonTime + w.Duration) >= max)
                     {
                         break;
                     }
-                    if (b.JsonTime >= w.JsonTime - beatms && b.JsonTime <= w.JsonTime + w.Duration + beatms && b.PosX <= w.PosX + w.Width - 1 && b.PosX >= w.PosX && b.PosY <= w.PosY + w.Height && b.PosY >= w.PosY - 1)
+                    if (b.JsonTime >= w.JsonTime - max && b.JsonTime <= w.JsonTime + w.Duration + max && b.PosX <= w.PosX + w.Width - 1 && b.PosX >= w.PosX && b.PosY <= w.PosY + w.Height && b.PosY >= w.PosY - 1)
                     {
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
                         issue = Severity.Fail;
                     }
                 }
                 foreach (var c in chains)
                 {
                     bpm.SetCurrentBPM(c.JsonTime);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
-                    if (c.JsonTime > w.JsonTime + w.Duration + beatms)
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    if (c.JsonTime - (w.JsonTime + w.Duration) >= max)
                     {
                         break;
                     }
-                    if (c.JsonTime >= w.JsonTime - beatms && c.JsonTime <= w.JsonTime + w.Duration + beatms && c.TailPosX <= w.PosX + w.Width - 1 && c.TailPosX >= w.PosX && c.TailPosY <= w.PosY + w.Height && c.TailPosY >= w.PosY - 1)
+                    if (c.JsonTime >= w.JsonTime - max && c.JsonTime <= w.JsonTime + w.Duration + max && c.TailPosX <= w.PosX + w.Width - 1 && c.TailPosX >= w.PosX && c.TailPosY <= w.PosY + w.Height && c.TailPosY >= w.PosY - 1)
                     {
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
                         issue = Severity.Fail;
                     }
                 }
@@ -711,56 +713,52 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (int j = i + 1; j < cubes.Count; j++)
                 {
                     bpm.SetCurrentBPM(c.Time);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = cubes[j];
-                    if (c2.Time > c.Time + beatms)
+                    if (c2.Time - c.Time >= max)
                     {
                         break;
                     }
-                    if (c.Time >= c2.Time - beatms && c.Time <= c2.Time + beatms && c.Line == c2.Line && c.Layer == c2.Layer)
+                    if (c.Time >= c2.Time - max && c.Time <= c2.Time + max && c.Line == c2.Line && c.Layer == c2.Layer)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
                 for (int j = 0; j < bombs.Count; j++)
                 {
                     bpm.SetCurrentBPM(c.Time);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var b = bombs[j];
-                    if (b.JsonTime > c.Time + beatms)
+                    if (b.JsonTime - c.Time >= max)
                     {
                         break;
                     }
-                    if (b.JsonTime >= c.Time - beatms && b.JsonTime <= c.Time + beatms && c.Line == b.PosX && c.Layer == b.PosY)
+                    if (c.Time >= b.JsonTime - max && c.Time <= b.JsonTime + max && c.Line == b.PosX && c.Layer == b.PosY)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
                         issue = Severity.Fail;
                     }
                 }
                 for (int j = i + 1; j < chains.Count; j++)
                 {
                     bpm.SetCurrentBPM(c.Time);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = chains[j];
-                    if (c2.JsonTime > c.Time + beatms)
+                    if (c2.JsonTime - c.Time >= max)
                     {
                         break;
                     }
-                    if (c.Time >= c2.JsonTime - beatms && c.Time <= c2.JsonTime + beatms && c.Line == c2.TailPosX && c.Layer == c2.TailPosY)
+                    if (c.Time >= c2.JsonTime - max && c.Time <= c2.JsonTime + max && c.Line == c2.TailPosX && c.Layer == c2.TailPosY)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
             }
-
-            var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
-            var njs = diff.NoteJumpMovementSpeed;
-            
 
             for (int i = 0; i < bombs.Count; i++)
             {
@@ -768,13 +766,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (int j = i + 1; j < bombs.Count; j++)
                 {
                     bpm.SetCurrentBPM(b.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedBombDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var b2 = bombs[j];
                     if (b2.JsonTime - b.JsonTime >= max)
                     {
                         break;
                     }
-                    if (b.PosX == b2.PosX && b.PosY == b2.PosY)
+                    if (b.JsonTime >= b2.JsonTime - max && b.JsonTime <= b2.JsonTime + max && b.PosX == b2.PosX && b.PosY == b2.PosY)
                     {
                         CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
                         CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b2);
@@ -784,16 +782,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (int j = i + 1; j < chains.Count; j++)
                 {
                     bpm.SetCurrentBPM(b.JsonTime);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = chains[j];
-                    if (c2.JsonTime > b.JsonTime + beatms)
+                    if (c2.JsonTime - b.JsonTime >= max)
                     {
                         break;
                     }
-                    if (b.JsonTime >= c2.JsonTime - beatms && b.JsonTime <= c2.JsonTime + beatms && b.PosX == c2.TailPosX && b.PosY == c2.TailPosY)
+                    if (b.JsonTime >= c2.JsonTime - max && b.JsonTime <= c2.JsonTime + max && b.PosX == c2.TailPosX && b.PosY == c2.TailPosY)
                     {
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
@@ -805,16 +803,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (int j = i + 1; j < chains.Count; j++)
                 {
                     bpm.SetCurrentBPM(c.JsonTime);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = chains[j];
-                    if (c2.JsonTime > c.JsonTime + beatms)
+                    if (c2.JsonTime - c.JsonTime >= max)
                     {
                         break;
                     }
-                    if (c.JsonTime >= c2.JsonTime - beatms && c.JsonTime <= c2.JsonTime + beatms && c.TailPosX == c2.TailPosX && c.TailPosY == c2.TailPosY)
+                    if (c.JsonTime >= c2.JsonTime - max && c.JsonTime <= c2.JsonTime + max && c.TailPosX == c2.TailPosX && c.TailPosY == c2.TailPosY)
                     {
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
