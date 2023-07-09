@@ -100,10 +100,10 @@ namespace ChroMapper_LightModding.Helpers
 
             try
             {
-                Comment comment = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat == spawnedObject.Beat && o.PosX == spawnedObject.PosX && o.PosY == spawnedObject.PosY && o.Color == spawnedObject.Color && o.ObjectType == spawnedObject.ObjectType)).FirstOrDefault();
+                Comment comment = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat <= spawnedObject.Beat + 0.01 && o.Beat >= spawnedObject.Beat - 0.01 && o.PosX == spawnedObject.PosX && o.PosY == spawnedObject.PosY && o.Color == spawnedObject.Color && o.ObjectType == spawnedObject.ObjectType)).FirstOrDefault();
                 if (comment != null)
                 {
-                    SelectedObject selectedObject = comment.Objects.Where(o => o.Beat == spawnedObject.Beat && o.PosX == spawnedObject.PosX && o.PosY == spawnedObject.PosY && o.Color == spawnedObject.Color && o.ObjectType == spawnedObject.ObjectType).FirstOrDefault();
+                    SelectedObject selectedObject = comment.Objects.Where(o => o.Beat <= spawnedObject.Beat + 0.01 && o.Beat >= spawnedObject.Beat - 0.01 && o.PosX == spawnedObject.PosX && o.PosY == spawnedObject.PosY && o.Color == spawnedObject.Color && o.ObjectType == spawnedObject.ObjectType).FirstOrDefault();
 
                     if (comment.MarkAsSuppressed)
                     {
@@ -150,7 +150,7 @@ namespace ChroMapper_LightModding.Helpers
                     {
                         if (item.Key is BaseNote note)
                         {
-                            if (note.JsonTime == mapObject.Beat && note.PosX == mapObject.PosX && note.PosY == mapObject.PosY && note.Color == mapObject.Color)
+                            if (note.JsonTime <= mapObject.Beat + 0.01 && note.JsonTime >= mapObject.Beat - 0.01 && note.PosX == mapObject.PosX && note.PosY == mapObject.PosY && note.Color == mapObject.Color)
                             {
                                 return true;
                             }
@@ -165,7 +165,7 @@ namespace ChroMapper_LightModding.Helpers
                     {
                         if (item.Key is BaseGrid gridItem)
                         {
-                            if (gridItem.JsonTime == mapObject.Beat && gridItem.PosX == mapObject.PosX && gridItem.PosY == mapObject.PosY)
+                            if (gridItem.JsonTime <= mapObject.Beat + 0.01 && gridItem.JsonTime >= mapObject.Beat - 0.01 && gridItem.PosX == mapObject.PosX && gridItem.PosY == mapObject.PosY)
                             {
                                 return true;
                             }
@@ -180,7 +180,7 @@ namespace ChroMapper_LightModding.Helpers
                     {
                         if (item.Key is BaseSlider slider)
                         {
-                            if (slider.JsonTime == mapObject.Beat && slider.PosX == mapObject.PosX && slider.PosY == mapObject.PosY && slider.Color == mapObject.Color)
+                            if (slider.JsonTime <= mapObject.Beat + 0.01 && slider.JsonTime >= mapObject.Beat - 0.01 && slider.PosX == mapObject.PosX && slider.PosY == mapObject.PosY && slider.Color == mapObject.Color)
                             {
                                 return true;
                             }
@@ -195,7 +195,7 @@ namespace ChroMapper_LightModding.Helpers
                     {
                         if (item.Key is BaseBpmEvent bpmEvent)
                         {
-                            if (bpmEvent.JsonTime == mapObject.Beat)
+                            if (bpmEvent.JsonTime <= mapObject.Beat + 0.01 && bpmEvent.JsonTime >= mapObject.Beat - 0.01)
                             {
                                 return true;
                             }

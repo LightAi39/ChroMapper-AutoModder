@@ -1088,9 +1088,9 @@ namespace ChroMapper_LightModding.UI
 
         public void CheckBeatForComment()
         {
-            float beat = plugin.AudoTimeSyncController.CurrentJsonTime;
+            (float min, float max) beat = (plugin.AudoTimeSyncController.CurrentJsonTime - 0.01f, plugin.AudoTimeSyncController.CurrentJsonTime + 0.01f);
 
-            List<Comment> comments = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat == beat)).ToList();
+            List<Comment> comments = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat >= beat.min && o.Beat <= beat.max)).ToList();
 
             if (comments.Count == 0)
             {
