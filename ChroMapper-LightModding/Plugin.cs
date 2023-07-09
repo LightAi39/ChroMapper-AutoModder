@@ -67,11 +67,14 @@ namespace ChroMapper_LightModding
         private Exporter exporter;
         private AutocheckHelper autocheckHelper;
         private CriteriaCheck criteriaCheck;
+        private GridMarkerHelper gridMarkerHelper;
 
         InputAction addCommentAction;
         InputAction openCommentAction;
         InputAction quickMarkUnsureAction;
         InputAction quickMarkIssueAction;
+
+        public Action CommentsUpdated;
 
 
         [Init]
@@ -212,10 +215,11 @@ namespace ChroMapper_LightModding
             {
                 SubscribeToEditorEvents();
                 outlineHelper.selectionCache = new();
+                gridMarkerHelper = new(this);
 
                 MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
                 editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"), mapEditorUI.transform.Find("Pause Menu Canvas").transform.Find("Extras Menu"), mapEditorUI.transform.Find("Right Bar Canvas"));
-                
+                CommentsUpdated.Invoke();
             }
         }
 
@@ -424,6 +428,7 @@ namespace ChroMapper_LightModding
                 outlineHelper.SetOutlineColor(comment.Objects, outlineHelper.ChooseOutlineColor(comment.Type));
             }
             editorUI.RefreshTimelineMarkers();
+            CommentsUpdated.Invoke();
         }
 
         public string HandleCreateComment(CommentTypesEnum type, string message, List<SelectedObject> selectedNotes)
@@ -444,6 +449,7 @@ namespace ChroMapper_LightModding
 
             outlineHelper.SetOutlineColor(selectedNotes, outlineHelper.ChooseOutlineColor(type));
             editorUI.RefreshTimelineMarkers();
+            CommentsUpdated.Invoke();
             return id;
         }
 
@@ -452,6 +458,7 @@ namespace ChroMapper_LightModding
             outlineHelper.ClearOutlineColor(currentReview.Comments.First(x => x.Id == commentId).Objects);
             currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == commentId));
             editorUI.RefreshTimelineMarkers();
+            CommentsUpdated.Invoke();
         }
         
 
@@ -526,6 +533,7 @@ namespace ChroMapper_LightModding
             quickMarkUnsureAction.Disable();
             quickMarkIssueAction.Disable();
             outlineHelper.selectionCache = null;
+            gridMarkerHelper = null;
             if (subscribedToEvents)
             {
                 UnsubscribeFromEditorEvents();

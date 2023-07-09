@@ -1,0 +1,189 @@
+﻿using Beatmap.Base.Customs;
+using ChroMapper_LightModding.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using TMPro;
+using UnityEngine;
+
+namespace ChroMapper_LightModding.Helpers
+{
+    // a lot of the code from here is taken straight from CM BookmarkRenderingController.cs
+    internal class GridMarkerHelper
+    {
+        private Plugin plugin;
+        private Transform gridBookmarksParent;
+
+        private List<CachedComment> renderedComments = new List<CachedComment>();
+
+        private class CachedComment
+        {
+            public readonly Comment Comment;
+            public readonly TextMeshProUGUI Text;
+            public string Name;
+            public Color Color;
+
+            public CachedComment(Comment comment, TextMeshProUGUI text)
+            {
+                Comment = comment;
+                Text = text;
+                Name = comment.Message;
+                Color = ChooseColor(comment.Type);
+            }
+        }
+
+        public GridMarkerHelper(Plugin plugin)
+        {
+            this.plugin = plugin;
+            gridBookmarksParent = GameObject.Find("Measure Lines Canvas").transform;
+            plugin.CommentsUpdated += UpdateRenderedBookmarks;
+            EditorScaleController.EditorScaleChangedEvent += OnEditorScaleChange;
+            Settings.NotifyBySettingName(nameof(Settings.DisplayGridBookmarks), DisplayRenderedBookmarks);
+            Settings.NotifyBySettingName(nameof(Settings.GridBookmarksHasLine), RefreshBookmarkGridLine);
+        }
+
+        private void DisplayRenderedBookmarks(object _) => UpdateRenderedBookmarks();
+
+        private void UpdateRenderedBookmarks()
+        {
+            var currentComments = plugin.currentReview.Comments;
+            if (currentComments.Count < renderedComments.Count) // Removed bookmark
+            {
+                for (int i = renderedComments.Count - 1; i >= 0; i--)
+                {
+                    CachedComment comment = renderedComments[i];
+                    if (!currentComments.Contains(comment.Comment))
+                    {
+                        GameObject.Destroy(comment.Text.gameObject);
+                        renderedComments.Remove(comment);
+                        return;
+                    }
+                }
+            }
+            else if (currentComments.Count > renderedComments.Count) // Added bookmark
+            {
+                foreach (var comment in currentComments)
+                {
+                    if (renderedComments.All(x => x.Comment != comment))
+                    {
+                        TextMeshProUGUI text = CreateGridBookmark(comment);
+                        renderedComments.Add(new CachedComment(comment, text));
+                    }
+                }
+            }
+            else // Edited bookmark
+            {
+                foreach (CachedComment cachedComment in renderedComments)
+                {
+                    string mapCommentName = cachedComment.Comment.Message;
+                    Color mapCommentColor = ChooseColor(cachedComment.Comment.Type);
+
+                    if (cachedComment.Name != mapCommentName || cachedComment.Color != mapCommentColor)
+                    {
+                        SetGridBookmarkNameColor(cachedComment.Text, mapCommentColor, mapCommentName);
+
+                        cachedComment.Name = mapCommentName;
+                        cachedComment.Color = mapCommentColor;
+                    }
+                }
+            }
+        }
+
+        private void OnEditorScaleChange(float newScale)
+        {
+            foreach (CachedComment bookmarkDisplay in renderedComments)
+                SetBookmarkPos(bookmarkDisplay.Text.rectTransform, bookmarkDisplay.Comment.StartBeat);
+        }
+
+        private void SetBookmarkPos(RectTransform rect, float time)
+        {
+            //Need anchoredPosition3D, so Z gets precisely set, otherwise text might get under lighting grid
+            rect.anchoredPosition3D = new Vector3(-4.5f, time * EditorScaleController.EditorScale, 0);
+        }
+
+        private TextMeshProUGUI CreateGridBookmark(Comment comment)
+        {
+            GameObject obj = new GameObject("GridBookmark", typeof(TextMeshProUGUI));
+            RectTransform rect = (RectTransform)obj.transform;
+            rect.SetParent(gridBookmarksParent);
+            SetBookmarkPos(rect, comment.StartBeat);
+            rect.sizeDelta = Vector2.one;
+            rect.localRotation = Quaternion.identity;
+
+            TextMeshProUGUI text = obj.GetComponent<TextMeshProUGUI>();
+            text.font = PersistentUI.Instance.ButtonPrefab.Text.font;
+            text.alignment = TextAlignmentOptions.Left;
+            text.fontSize = 0.4f;
+            text.enableWordWrapping = false;
+            text.raycastTarget = false;
+            text.fontMaterial.renderQueue = 3150; // Above grid and measure numbers - Below grid interface
+            SetGridBookmarkNameColor(text, ChooseColor(comment.Type), comment.Message);
+
+            return text;
+        }
+
+        private void RefreshBookmarkGridLine(object _)
+        {
+            foreach (CachedComment cachedBookmark in renderedComments)
+                SetGridBookmarkNameColor(cachedBookmark.Text, cachedBookmark.Color, cachedBookmark.Name);
+        }
+
+
+        private void SetGridBookmarkNameColor(TextMeshProUGUI text, Color color, string name)
+        {
+            string hex = HEXFromColor(color, false);
+
+            SetText();
+            text.ForceMeshUpdate();
+
+            //Here making so bookmarks with short name have still long colored rectangle on the right to the grid
+            if (text.textBounds.size.x < 2) //2 is distance between notes and lighting grid
+            {
+                SetText((int)((2 - text.textBounds.size.x) / 0.0642f)); //Divided by 'space' character width for chosen fontSize
+            }
+
+            void SetText(int spaceNumber = 0)
+            {
+                string spaces = spaceNumber <= 0 ? null : new string(' ', spaceNumber);
+                //<voffset> to align the bumped up text to grid, <s> to draw a line across the grid, in the end putting transparent dot, so trailing spaces don't get trimmed, 
+                text.text = (Settings.Instance.GridBookmarksHasLine)
+                    ? $"<mark={hex}50><voffset=0.06><s> <indent=3.92> </s></voffset> {name}{spaces}<color=#00000000>.</color>"
+                    : $"<mark={hex}50><voffset=0.06> <indent=3.92> </voffset> {name}{spaces}<color=#00000000>.</color>";
+            }
+        }
+
+        /// <summary> Returned string starts with # </summary>
+        private string HEXFromColor(Color color, bool inclAlpha = true) => inclAlpha
+            ? $"#{ColorUtility.ToHtmlStringRGBA(color)}"
+            : $"#{ColorUtility.ToHtmlStringRGB(color)}";
+
+        public void RefreshVisibility(float currentBeat, float beatsAhead, float beatsBehind)
+        {
+            foreach (var bookmarkDisplay in renderedComments)
+            {
+                var time = bookmarkDisplay.Comment.StartBeat;
+                var text = bookmarkDisplay.Text;
+                var enabled = time >= currentBeat - beatsBehind && time <= currentBeat + beatsAhead;
+                text.gameObject.SetActive(enabled);
+            }
+        }
+
+        public static Color ChooseColor(CommentTypesEnum type)
+        {
+            switch (type)
+            {
+                case CommentTypesEnum.Suggestion:
+                    return Color.green;
+                case CommentTypesEnum.Unsure:
+                    return Color.yellow;
+                case CommentTypesEnum.Issue:
+                    return Color.red;
+                default:
+                    return Color.clear;
+            }
+        }
+    }
+}
