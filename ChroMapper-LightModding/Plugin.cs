@@ -135,6 +135,9 @@ namespace ChroMapper_LightModding
             addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/ctrl")
                 .With("button", "<Keyboard>/e");
+            addCommentAction.AddCompositeBinding("ButtonWithOneModifier") // keeping this assigned for a bit so people arent confused
+                .With("modifier", "<Keyboard>/ctrl")
+                .With("button", "<Keyboard>/g");
             addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/ctrl")
                 .With("button", "<Keyboard>/space");
@@ -144,6 +147,9 @@ namespace ChroMapper_LightModding
             openCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/alt")
                 .With("button", "<Keyboard>/e");
+            openCommentAction.AddCompositeBinding("ButtonWithOneModifier") // keeping this assigned for a bit so people arent confused
+                .With("modifier", "<Keyboard>/alt")
+                .With("button", "<Keyboard>/g");
             openCommentAction.performed += _ => { OpenCommentKeyEvent(); };
 
             quickMarkUnsureAction = new InputAction("Quick mark unsure", type: InputActionType.Button);
