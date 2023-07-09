@@ -35,9 +35,9 @@ You will now see a menu with some buttons and criteria indicators. Here you can 
 Inside a difficulty, you will see notes with comments marked in the timeline and outlined.  
 Comments will be automatically opened in the top right corner when the grid cursor is on the same beat as a note inside the comment. This overview has buttons for opening and editing a comment.
 
-In addition, you can select a singular note and press the open comment [keybind](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds). Currently, this is `Alt+G`. You will then directly go to the view comment menu. For detailed information, refer to the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
+In addition, you can select a singular note and press the open comment [keybind](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds). Currently, this is `Alt+E`. You will then directly go to the view comment menu. For detailed information, refer to the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
 
-To create a comment, first select one or more notes. Then, press [one of the keybinds](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds) for comment creation. Currently, these are `Ctrl+G` and `Ctrl+Space`. More information is on the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
+To create a comment, first select one or more notes. Then, press [one of the keybinds](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds) for comment creation. Currently, these are `Ctrl+E` and `Ctrl+Space`. More information is on the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
 
 On the pause menu, you will see criteria indicators like before. You can also rerun the auto-checker from here.
 
@@ -55,9 +55,9 @@ You will now see a menu with some buttons and criteria indicators. Any of these 
 Inside a difficulty, you will see notes with comments marked in the timeline and outlined.  
 Comments will be automatically opened in the top right corner when the grid cursor is on the same beat as a note inside the comment. This overview has buttons for opening and editing a comment.
 
-In addition, you can select a singular note and press the open comment [keybind](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds). Currently, this is `Alt+G`. You will then directly go to the view comment menu. For detailed information, refer to the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
+In addition, you can select a singular note and press the open comment [keybind](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds). Currently, this is `Alt+E`. You will then directly go to the view comment menu. For detailed information, refer to the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
 
-To create a comment, first select one or more notes. Then, press [one of the keybinds](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds) for comment creation. Currently, these are `Ctrl+G` and `Ctrl+Space`. More information is on the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
+To create a comment, first select one or more notes. Then, press [one of the keybinds](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Keybinds-&-Buttons#keybinds) for comment creation. Currently, these are `Ctrl+E` and `Ctrl+Space`. More information is on the [wiki page](https://github.com/LightAi39/ChroMapper-AutoModder/wiki/Comments).
 
 On the pause menu, you will see criteria indicators like before.
 
