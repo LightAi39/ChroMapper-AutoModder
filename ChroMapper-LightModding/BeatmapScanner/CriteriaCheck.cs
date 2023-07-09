@@ -1338,8 +1338,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();;
                 List<BaseNote> bombs = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).ToList();
                 List<Note> notes = swings.SelectMany(x => x.notes).ToList();
-                List<JoshaParity.SwingData> rightHandSwings = swings.Where(x => x.rightHand).ToList();
-                List<JoshaParity.SwingData> leftHandSwings = swings.Where(x => !x.rightHand).ToList();
 
                 List<Note> lastMidL = new();
                 List<Note> lastMidR = new();
@@ -1458,6 +1456,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                 {
                                     if (left != null)
                                     {
+                                        if(left.CutDirection == 8)
+                                        {
+                                            var di = Math.Sqrt(Math.Pow(note.PosX - left.PosX, 2) + Math.Pow(note.PosY - left.PosY, 2));
+                                            if (di >= 0 && di < 1.001)
+                                            {
+                                                arrB.Add(note);
+                                            }
+                                            continue;
+                                        }
+
                                         var pos = (left.PosX, left.PosY);
                                         int index = 1;
                                         while (!NoteDirection.IsLimit(pos, left.CutDirection))
@@ -1475,6 +1483,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     }
                                     if (right != null)
                                     {
+                                        if (right.CutDirection == 8)
+                                        {
+                                            var di = Math.Sqrt(Math.Pow(note.PosX - right.PosX, 2) + Math.Pow(note.PosY - right.PosY, 2));
+                                            if (di >= 0 && di < 1.001)
+                                            {
+                                                arrB.Add(note);
+                                            }
+                                            continue;
+                                        }
+
                                         var pos = (right.PosX, right.PosY);
                                         int index = 1;
                                         while (!NoteDirection.IsLimit(pos, right.CutDirection))
@@ -1509,6 +1527,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                 {
                                     if (left != null)
                                     {
+                                        if (left.CutDirection == 8)
+                                        {
+                                            var di = Math.Sqrt(Math.Pow(note.PosX - left.PosX, 2) + Math.Pow(note.PosY - left.PosY, 2));
+                                            if (di >= 0 && di < 1.001)
+                                            {
+                                                arrB.Add(note);
+                                            }
+                                            continue;
+                                        }
+
                                         var pos = (left.PosX, left.PosY);
                                         int index = 1;
                                         while (!NoteDirection.IsLimit(pos, left.CutDirection))
@@ -1526,6 +1554,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     }
                                     if (right != null)
                                     {
+                                        if (right.CutDirection == 8)
+                                        {
+                                            var di = Math.Sqrt(Math.Pow(note.PosX - right.PosX, 2) + Math.Pow(note.PosY - right.PosY, 2));
+                                            if (di >= 0 && di < 1.001)
+                                            {
+                                                arrB.Add(note);
+                                            }
+                                            continue;
+                                        }
+
                                         var pos = (right.PosX, right.PosY);
                                         int index = 1;
                                         while (!NoteDirection.IsLimit(pos, right.CutDirection))
