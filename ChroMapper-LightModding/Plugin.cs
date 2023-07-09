@@ -134,17 +134,16 @@ namespace ChroMapper_LightModding
             addCommentAction = new InputAction("Add Comment", type: InputActionType.Button);
             addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/ctrl")
-                .With("button", "<Keyboard>/g");
+                .With("button", "<Keyboard>/e");
             addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/ctrl")
                 .With("button", "<Keyboard>/space");
             addCommentAction.performed += _ => { AddCommentKeyEvent(); };
-            addCommentAction.Enable();
 
             openCommentAction = new InputAction("Open Comment", type: InputActionType.Button);
             openCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/alt")
-                .With("button", "<Keyboard>/g");
+                .With("button", "<Keyboard>/e");
             openCommentAction.performed += _ => { OpenCommentKeyEvent(); };
 
             quickMarkUnsureAction = new InputAction("Quick mark unsure", type: InputActionType.Button);
