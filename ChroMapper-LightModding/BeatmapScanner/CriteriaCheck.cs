@@ -11,6 +11,7 @@ using JoshaParity;
 using Parity = ChroMapper_LightModding.BeatmapScanner.MapCheck.Parity;
 using Newtonsoft.Json;
 using UnityEngine;
+using Beatmap.Enums;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -395,10 +396,20 @@ namespace ChroMapper_LightModding.BeatmapScanner
             else
             {
                 averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault();
+                Debug.Log(averageSliderDuration);
+                Debug.Log("test");
             }
-            if(averageSliderDuration < 0.03125)
+            if(averageSliderDuration <= 0.033)
             {
-                averageSliderDuration = 0.0625;
+                averageSliderDuration = 0.03125; // 1/32
+            }
+            else if(averageSliderDuration <= 0.042)
+            {
+                averageSliderDuration = 0.0416666667; // 1/24
+            }
+            else
+            {
+                averageSliderDuration = 0.0625; // 1/16
             }
             foreach (var c in cube)
             {
@@ -648,48 +659,50 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
             var walls = BeatmapScanner.Walls.OrderBy(w => w.JsonTime).ToList();
+            var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
+            var njs = diff.NoteJumpMovementSpeed;
 
             foreach (var w in walls)
             {
                 foreach (var c in cubes)
                 {
                     bpm.SetCurrentBPM(c.Time);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
-                    if (c.Time > w.JsonTime + w.Duration + beatms)
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    if (c.Time - (w.JsonTime + w.Duration) >= max)
                     {
                         break;
                     }
-                    if (c.Time >= w.JsonTime - beatms && c.Time <= w.JsonTime + w.Duration + beatms && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer <= w.PosY + w.Height && c.Layer >= w.PosY - 1)
+                    if (c.Time >= w.JsonTime - max && c.Time <= w.JsonTime + w.Duration + max && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer <= w.PosY + w.Height && c.Layer >= w.PosY - 1)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
                         issue = Severity.Fail;
                     }
                 }
                 foreach (var b in bombs)
                 {
                     bpm.SetCurrentBPM(b.JsonTime);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
-                    if (b.JsonTime > w.JsonTime + w.Duration + beatms)
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    if (b.JsonTime - (w.JsonTime + w.Duration) >= max)
                     {
                         break;
                     }
-                    if (b.JsonTime >= w.JsonTime - beatms && b.JsonTime <= w.JsonTime + w.Duration + beatms && b.PosX <= w.PosX + w.Width - 1 && b.PosX >= w.PosX && b.PosY <= w.PosY + w.Height && b.PosY >= w.PosY - 1)
+                    if (b.JsonTime >= w.JsonTime - max && b.JsonTime <= w.JsonTime + w.Duration + max && b.PosX <= w.PosX + w.Width - 1 && b.PosX >= w.PosX && b.PosY <= w.PosY + w.Height && b.PosY >= w.PosY - 1)
                     {
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
                         issue = Severity.Fail;
                     }
                 }
                 foreach (var c in chains)
                 {
                     bpm.SetCurrentBPM(c.JsonTime);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
-                    if (c.JsonTime > w.JsonTime + w.Duration + beatms)
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    if (c.JsonTime - (w.JsonTime + w.Duration) >= max)
                     {
                         break;
                     }
-                    if (c.JsonTime >= w.JsonTime - beatms && c.JsonTime <= w.JsonTime + w.Duration + beatms && c.TailPosX <= w.PosX + w.Width - 1 && c.TailPosX >= w.PosX && c.TailPosY <= w.PosY + w.Height && c.TailPosY >= w.PosY - 1)
+                    if (c.JsonTime >= w.JsonTime - max && c.JsonTime <= w.JsonTime + w.Duration + max && c.TailPosX <= w.PosX + w.Width - 1 && c.TailPosX >= w.PosX && c.TailPosY <= w.PosY + w.Height && c.TailPosY >= w.PosY - 1)
                     {
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
                         issue = Severity.Fail;
                     }
                 }
@@ -701,56 +714,52 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (int j = i + 1; j < cubes.Count; j++)
                 {
                     bpm.SetCurrentBPM(c.Time);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = cubes[j];
-                    if (c2.Time > c.Time + beatms)
+                    if (c2.Time - c.Time >= max)
                     {
                         break;
                     }
-                    if (c.Time >= c2.Time - beatms && c.Time <= c2.Time + beatms && c.Line == c2.Line && c.Layer == c2.Layer)
+                    if (c.Time >= c2.Time - max && c.Time <= c2.Time + max && c.Line == c2.Line && c.Layer == c2.Layer)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
                 for (int j = 0; j < bombs.Count; j++)
                 {
                     bpm.SetCurrentBPM(c.Time);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var b = bombs[j];
-                    if (b.JsonTime > c.Time + beatms)
+                    if (b.JsonTime - c.Time >= max)
                     {
                         break;
                     }
-                    if (b.JsonTime >= c.Time - beatms && b.JsonTime <= c.Time + beatms && c.Line == b.PosX && c.Layer == b.PosY)
+                    if (c.Time >= b.JsonTime - max && c.Time <= b.JsonTime + max && c.Line == b.PosX && c.Layer == b.PosY)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
                         issue = Severity.Fail;
                     }
                 }
                 for (int j = i + 1; j < chains.Count; j++)
                 {
                     bpm.SetCurrentBPM(c.Time);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = chains[j];
-                    if (c2.JsonTime > c.Time + beatms)
+                    if (c2.JsonTime - c.Time >= max)
                     {
                         break;
                     }
-                    if (c.Time >= c2.JsonTime - beatms && c.Time <= c2.JsonTime + beatms && c.Line == c2.TailPosX && c.Layer == c2.TailPosY)
+                    if (c.Time >= c2.JsonTime - max && c.Time <= c2.JsonTime + max && c.Line == c2.TailPosX && c.Layer == c2.TailPosY)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
             }
-
-            var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
-            var njs = diff.NoteJumpMovementSpeed;
-            
 
             for (int i = 0; i < bombs.Count; i++)
             {
@@ -758,13 +767,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (int j = i + 1; j < bombs.Count; j++)
                 {
                     bpm.SetCurrentBPM(b.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedBombDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var b2 = bombs[j];
                     if (b2.JsonTime - b.JsonTime >= max)
                     {
                         break;
                     }
-                    if (b.PosX == b2.PosX && b.PosY == b2.PosY)
+                    if (b.JsonTime >= b2.JsonTime - max && b.JsonTime <= b2.JsonTime + max && b.PosX == b2.PosX && b.PosY == b2.PosY)
                     {
                         CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
                         CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b2);
@@ -774,16 +783,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (int j = i + 1; j < chains.Count; j++)
                 {
                     bpm.SetCurrentBPM(b.JsonTime);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = chains[j];
-                    if (c2.JsonTime > b.JsonTime + beatms)
+                    if (c2.JsonTime - b.JsonTime >= max)
                     {
                         break;
                     }
-                    if (b.JsonTime >= c2.JsonTime - beatms && b.JsonTime <= c2.JsonTime + beatms && b.PosX == c2.TailPosX && b.PosY == c2.TailPosY)
+                    if (b.JsonTime >= c2.JsonTime - max && b.JsonTime <= c2.JsonTime + max && b.PosX == c2.TailPosX && b.PosY == c2.TailPosY)
                     {
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, b);
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
@@ -795,16 +804,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (int j = i + 1; j < chains.Count; j++)
                 {
                     bpm.SetCurrentBPM(c.JsonTime);
-                    var beatms = bpm.ToBeatTime(Plugin.configs.FusedObjectDuration);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = chains[j];
-                    if (c2.JsonTime > c.JsonTime + beatms)
+                    if (c2.JsonTime - c.JsonTime >= max)
                     {
                         break;
                     }
-                    if (c.JsonTime >= c2.JsonTime - beatms && c.JsonTime <= c2.JsonTime + beatms && c.TailPosX == c2.TailPosX && c.TailPosY == c2.TailPosY)
+                    if (c.JsonTime >= c2.JsonTime - max && c.JsonTime <= c2.JsonTime + max && c.TailPosX == c2.TailPosX && c.TailPosY == c2.TailPosY)
                     {
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentLink("R2D - Cannot collide within " + beatms + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
@@ -1007,7 +1016,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             foreach (var w in leftWall)
             {
-                var note = notes.Where(n => n.Line == 0 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration).ToList();
+                var note = notes.Where(n => n.Line == 0 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
                 foreach (var n in note)
                 {
                     CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
@@ -1023,7 +1032,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             foreach (var w in rightWall)
             {
-                var note = notes.Where(n => n.Line == 3 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration).ToList();
+                var note = notes.Where(n => n.Line == 3 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
                 foreach (var n in note)
                 {
                     CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
@@ -1361,7 +1370,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                             else 
                             {
-                                if (swings.Any(x => x.notes.Contains(notes[i]) && x.notes.IndexOf(notes[i]) > 0 && !arr.Contains(x.notes.First())) && note.b - lastMidL.First().b >= MaxPatternTime) // Closer than 0.020 and pattern head visible
+                                if (swings.Any(x => x.notes.Contains(notes[i]) && x.notes.IndexOf(notes[i]) > 0 && !arr.Contains(x.notes.First())) && note.b - lastMidL.First().b >= MaxPatternTime) // Further than 0.020 and pattern head visible
                                 {
                                     // Also fine
                                 }
@@ -1429,6 +1438,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var MaxTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMaxBombTime);
                     var MinTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMinBombTime);
                     var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
+                    var left = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 0).OrderBy(x => x.JsonTime).LastOrDefault();
+                    var right = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 1).OrderBy(x => x.JsonTime).LastOrDefault();
                     if (lastMidLB.Count > 0)
                     {
                         if (note.JsonTime - lastMidLB.First().JsonTime <= MinTimeBomb) // Closer than 0.20
@@ -1443,7 +1454,46 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                             else if (note.PosX < 2)
                             {
-                                arrB.Add(note);
+                                if (left != null)
+                                {
+                                    var pos = (left.PosX, left.PosY);
+                                    int index = 1;
+                                    if (NoteDirection.IsInverted(left))
+                                    {
+                                        pos = NoteDirection.Move(left, index);
+                                    }
+                                    while ((pos.PosX == 1 || pos.PosX == 2) && pos.PosY == 1)
+                                    {
+                                        pos = NoteDirection.Move(left, index);
+                                        index++;
+                                    }
+
+                                    var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
+                                    if (d >= 0 && d < 1.001)
+                                    {
+                                        arrB.Add(note);
+                                    }
+                                }
+                                if (right != null)
+                                {
+                                    var pos = (right.PosX, right.PosY);
+                                    int index = 1;
+                                    if (NoteDirection.IsInverted(right))
+                                    {
+                                        pos = NoteDirection.Move(right, index);
+                                    }
+                                    while ((pos.PosX == 1 || pos.PosX == 2) && pos.PosY == 1)
+                                    {
+                                        pos = NoteDirection.Move(right, index);
+                                        index++;
+                                    }
+
+                                    var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
+                                    if (d >= 0 && d < 1.001)
+                                    {
+                                        arrB.Add(note);
+                                    }
+                                }
                             }
                         }
                     }
@@ -1461,7 +1511,46 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                             else if (note.PosX > 1)
                             {
-                                arrB.Add(note);
+                                if(left != null)
+                                {
+                                    var pos = (left.PosX, left.PosY);
+                                    int index = 1;
+                                    if (NoteDirection.IsInverted(left))
+                                    {
+                                        pos = NoteDirection.Move(left, index);
+                                    }
+                                    while ((pos.PosX == 1 || pos.PosX == 2) && pos.PosY == 1)
+                                    {
+                                        pos = NoteDirection.Move(left, index);
+                                        index++;
+                                    }
+
+                                    var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
+                                    if (d >= 0 && d < 1.001)
+                                    {
+                                        arrB.Add(note);
+                                    }
+                                }
+                                if (right != null)
+                                {
+                                    var pos = (right.PosX, right.PosY);
+                                    int index = 1;
+                                    if(NoteDirection.IsInverted(right))
+                                    {
+                                        pos = NoteDirection.Move(right, index);
+                                    }
+                                    while ((pos.PosX == 1 || pos.PosX == 2) && pos.PosY == 1)
+                                    {
+                                        pos = NoteDirection.Move(right, index);
+                                        index++;
+                                    }
+                                    
+                                    var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
+                                    if (d >= 0 && d < 1.001)
+                                    {
+                                        arrB.Add(note);
+                                    }
+                                }
                             }
                         }
                     }
@@ -1503,19 +1592,38 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var unsure = false;
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
+            var slider = false;
+            if(cubes.Exists(x => x.Slider))
+            {
+                slider = true;
+            }
             foreach (var ch in chains)
             {
                 if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 4.2)
                 {
-                    // Slow chains
-                    CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch);
-                    issue = true;
+                    if(slider)
+                    {
+                        CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch);
+                        issue = true;
+                    }
+                    else
+                    {
+                        CreateDiffCommentLink("R2D - No slider detected, duration might be too high", CommentTypesEnum.Unsure, ch);
+                        unsure = true;
+                    }
                 }
                 else if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 3.15)
                 {
-                    // Slow chains
-                    CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch);
-                    issue = true;
+                    if (slider)
+                    {
+                        CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch);
+                        issue = true;
+                    }
+                    else
+                    {
+                        CreateDiffCommentLink("Y2A - No slider detected, duration might be too high", CommentTypesEnum.Unsure, ch);
+                        unsure = true;
+                    }
                 }
                 if (!cubes.Exists(c => c.Time == ch.JsonTime && c.Type == ch.Color && c.Line == ch.PosX && c.Layer == ch.PosY))
                 {
@@ -2208,11 +2316,25 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         else if (d >= 2 && d <= 2.99) // 1-2 wide
                         {
-                            if (NoteDirection.Move(note) == NoteDirection.Move(other))
+                            if(NoteDirection.Move(note) == NoteDirection.Move(other))
                             {
-                                arr.Add(other);
-                                arr.Add(note);
-                                break;
+                                if ((note.Type == 0 && note.PosX > note.PosY) || (note.Type == 1 && note.PosX < note.PosY)) // Crossover
+                                {
+                                    arr.Add(other);
+                                    arr.Add(note);
+                                    break;
+                                }
+                                else if ((note.PosX == other.PosX + 2 && note.PosY == other.PosY + 2)  || (other.PosX == note.PosX + 2 && other.PosY == note.PosY + 2) // Facing directly
+                                || (note.PosX == other.PosX + 2 && note.PosY == other.PosY - 2)  || (other.PosX == note.PosX + 2 && other.PosY == note.PosY - 2)
+                                || (note.PosX == other.PosX && note.PosY == other.PosY + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) || 
+                                (note.PosX == other.PosX && note.PosY == other.PosY - 2 && Reverse.Get(note.CutDirection) == other.CutDirection) || 
+                                (other.PosY == note.PosY && other.PosX == note.PosX + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) || 
+                                (other.PosY == note.PosY && other.PosX == note.PosX - 2 && Reverse.Get(note.CutDirection) == other.CutDirection)) 
+                                {
+                                    arr.Add(other);
+                                    arr.Add(note);
+                                    break;
+                                }
                             }
                         }
                         else if (d > 2.99 && ((note.Type == 0 && note.PosX > 2) || (note.Type == 1 && note.PosX < 1))) // 3-wide
@@ -2244,14 +2366,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr2)
                 {
-                    CreateDiffCommentNote("R3D - HandClap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Warning;
                 }
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3D - HandClap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Fail;
                 }
