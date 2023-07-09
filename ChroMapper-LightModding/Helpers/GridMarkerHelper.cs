@@ -1,4 +1,6 @@
-﻿using Beatmap.Base.Customs;
+﻿using Beatmap.Base;
+using Beatmap.Base.Customs;
+using ChroMapper_LightModding.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Models;
 using System;
 using System.Collections.Generic;
@@ -96,8 +98,18 @@ namespace ChroMapper_LightModding.Helpers
 
         private void OnEditorScaleChange(float newScale)
         {
-            foreach (CachedComment bookmarkDisplay in renderedComments)
-                SetBookmarkPos(bookmarkDisplay.Text.rectTransform, bookmarkDisplay.Comment.StartBeat);
+            var bpmChanges = plugin.BPMChangeGridContainer.LoadedObjects.Cast<BaseBpmEvent>().ToList();
+            if (bpmChanges.Count == 0) // apparently on intial load we are getting no bpm changes, so doing this for now to try and get them from the saved file anyway
+            {
+                BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
+                BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
+                bpmChanges = baseDifficulty.BpmEvents;
+            }
+
+            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+
+            foreach (CachedComment commentDisplay in renderedComments)
+                SetBookmarkPos(commentDisplay.Text.rectTransform, (float)bpm.ToBeatTime(bpm.ToRealTime(commentDisplay.Comment.StartBeat)));
         }
 
         private void SetBookmarkPos(RectTransform rect, float time)
@@ -108,10 +120,20 @@ namespace ChroMapper_LightModding.Helpers
 
         private TextMeshProUGUI CreateGridBookmark(Comment comment)
         {
+            var bpmChanges = plugin.BPMChangeGridContainer.LoadedObjects.Cast<BaseBpmEvent>().ToList();
+            if (bpmChanges.Count == 0) // apparently on intial load we are getting no bpm changes, so doing this for now to try and get them from the saved file anyway
+            {
+                BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
+                BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
+                bpmChanges = baseDifficulty.BpmEvents;
+            }
+
+            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+
             GameObject obj = new GameObject("GridBookmark", typeof(TextMeshProUGUI));
             RectTransform rect = (RectTransform)obj.transform;
             rect.SetParent(gridBookmarksParent);
-            SetBookmarkPos(rect, comment.StartBeat);
+            SetBookmarkPos(rect, (float)bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat)));
             rect.sizeDelta = Vector2.one;
             rect.localRotation = Quaternion.identity;
 
@@ -197,7 +219,15 @@ namespace ChroMapper_LightModding.Helpers
 
             foreach (var comment in renderedComments)
             {
-                GameObject.Destroy(comment.Text.gameObject);
+                try
+                {
+                    GameObject.Destroy(comment.Text.gameObject);
+                }
+                catch (NullReferenceException)
+                {
+                    // yo thats cool bro but if it doesnt exist i just dont care
+                }
+                
             }
         }
     }
