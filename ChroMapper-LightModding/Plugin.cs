@@ -206,7 +206,7 @@ namespace ChroMapper_LightModding
             {
                 SubscribeToEditorEvents();
                 outlineHelper.selectionCache = new();
-                gridMarkerHelper = new(this);
+                
 
                 MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
                 editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"), mapEditorUI.transform.Find("Pause Menu Canvas").transform.Find("Extras Menu"), mapEditorUI.transform.Find("Right Bar Canvas"));

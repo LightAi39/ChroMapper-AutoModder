@@ -466,7 +466,7 @@ namespace ChroMapper_LightModding.UI
             if (plugin.currentReview != null) RunBeatmapScannerOnThisDiff();
             CreateTimelineMarkers();
             CreateCriteriaMenu();
-            
+            if (showGridMarkers) plugin.gridMarkerHelper = new(plugin);
         }
 
         public void Disable()
