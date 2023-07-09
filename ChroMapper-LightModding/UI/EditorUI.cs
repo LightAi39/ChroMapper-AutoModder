@@ -534,16 +534,16 @@ namespace ChroMapper_LightModding.UI
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
-            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges.Where(x => x.Bpm != 100000).ToList(), BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
 
-            var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength, true);
+            var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
 
             var comments = plugin.currentReview.Comments.ToList();
             comments.Sort((x, y) => y.Type.CompareTo(x.Type));
 
             foreach (var comment in plugin.currentReview.Comments)
             {
-                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat), true);
+                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat));
                 Color color = Color.gray;
                 if (!comment.MarkAsSuppressed)
                 {
