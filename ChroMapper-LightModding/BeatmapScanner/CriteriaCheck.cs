@@ -396,8 +396,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
             else
             {
                 averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault();
-                Debug.Log(averageSliderDuration);
-                Debug.Log("test");
             }
             if(averageSliderDuration <= 0.033)
             {
@@ -1442,7 +1440,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
                         var left = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 0).OrderBy(o => o.JsonTime).LastOrDefault();
                         var right = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 1).OrderBy(o => o.JsonTime).LastOrDefault();
-                        Debug.Log(i + " is " + left);
                         lastMidLB.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
                         lastMidRB.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
                         if (lastMidLB.Count > 0)
@@ -1500,7 +1497,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             if (note.JsonTime - lastMidRB.First().JsonTime <= MinTimeBomb) // Closer than 0.20
                             {
-                                Debug.Log(i + " is here");
                                 if (note.PosX == 3 && note.JsonTime - lastMidRB.First().JsonTime <= MaxTimeBomb) // Closer than 0.15
                                 {
                                     // Fine
@@ -1511,7 +1507,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                 }
                                 else if (note.PosX > 1)
                                 {
-                                    Debug.Log(i + " is yep");
                                     if (left != null)
                                     {
                                         var pos = (left.PosX, left.PosY);
@@ -1531,7 +1526,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     }
                                     if (right != null)
                                     {
-                                        Debug.Log(i + " is yap");
                                         var pos = (right.PosX, right.PosY);
                                         int index = 1;
                                         while (!NoteDirection.IsLimit(pos, right.CutDirection))
@@ -1543,7 +1537,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            Debug.Log(i + " is a");
                                             arrB.Add(note);
                                             continue;
                                         }
@@ -2424,7 +2417,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 PosX = cube.Line,
                 PosY = cube.Layer,
                 Color = cube.Type,
-                ObjectType = Beatmap.Enums.ObjectType.Note
+                ObjectType = ObjectType.Note
             };
 
             Comment comment = new()
@@ -2461,7 +2454,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 PosX = chainLink.PosX,
                 PosY = chainLink.PosY,
                 Color = chainLink.Color,
-                ObjectType = Beatmap.Enums.ObjectType.Chain
+                ObjectType = ObjectType.Chain
             };
 
             Comment comment = new()
@@ -2603,7 +2596,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     PosX = note.x,
                     PosY = note.y,
                     Color = note.c,
-                    ObjectType = Beatmap.Enums.ObjectType.Note
+                    ObjectType = ObjectType.Note
                 });
             }
 
