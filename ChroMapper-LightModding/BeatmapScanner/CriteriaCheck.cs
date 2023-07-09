@@ -672,7 +672,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (c.Time >= w.JsonTime - max && c.Time <= w.JsonTime + w.Duration + max && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer <= w.PosY + w.Height && c.Layer >= w.PosY - 1)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
                         issue = Severity.Fail;
                     }
                 }
@@ -720,8 +720,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (c.Time >= c2.Time - max && c.Time <= c2.Time + max && c.Line == c2.Line && c.Layer == c2.Layer)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
+                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
                 }
@@ -736,7 +736,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (c.Time >= b.JsonTime - max && c.Time <= b.JsonTime + max && c.Line == b.PosX && c.Layer == b.PosY)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
                         CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
                         issue = Severity.Fail;
                     }
@@ -752,7 +752,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (c.Time >= c2.JsonTime - max && c.Time <= c2.JsonTime + max && c.Line == c2.TailPosX && c.Layer == c2.TailPosY)
                     {
-                        CreateDiffCommentNote("R3FA-B - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
                         CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
                         issue = Severity.Fail;
                     }
