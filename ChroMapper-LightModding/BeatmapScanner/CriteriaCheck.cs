@@ -1336,43 +1336,57 @@ namespace ChroMapper_LightModding.BeatmapScanner
             if (baseDifficulty.Notes.Any())
             {
                 var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();;
-                List<BaseNote> bombs = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).ToList();
-                List<Note> notes = swings.SelectMany(x => x.notes).ToList();
-
-                List<Note> lastMidL = new();
-                List<Note> lastMidR = new();
-                List<Note> arr = new();
+                List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).ToList();
+                List<BaseNote> lastMidL = new();
+                List<BaseNote> lastMidR = new();
+                List<BaseNote> arr = new();
                 for (var i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
-                    bpm.SetCurrentBPM(note.b);
+                    bpm.SetCurrentBPM(note.JsonTime);
                     var MaxBottomNoteTime = bpm.ToBeatTime(Plugin.configs.VBMinBottomNoteTime);
                     var MaxOuterNoteTime = bpm.ToBeatTime(Plugin.configs.VBMaxOuterNoteTime);
                     var MaxPatternTime = bpm.ToBeatTime(Plugin.configs.VBMinPatternTime);
                     var MinTimeNote = bpm.ToBeatTime(Plugin.configs.VBMinNoteTime);
                     var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
-                    lastMidL.RemoveAll(l => note.b - l.b > MinTimeNote);
-                    lastMidR.RemoveAll(l => note.b - l.b > MinTimeNote);
+                    lastMidL.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeNote);
+                    lastMidR.RemoveAll(l => note.JsonTime - l.SongBpmTime > MinTimeNote);
                     if (lastMidL.Count > 0)
                     {
-                        if (note.b - lastMidL.First().b <= MinTimeNote && note.b - lastMidL.First().b >= Overall) // Closer than 0.25
+                        if (note.JsonTime - lastMidL.First().JsonTime <= MinTimeNote && note.JsonTime - lastMidL.First().JsonTime >= Overall) // Closer than 0.25
                         {
-                            var n = swings.Where(x => x.notes.Any(n => n.b == note.b)).FirstOrDefault();
-                            if (note.x == 0 && note.b - lastMidL.First().b <= MaxOuterNoteTime) // Closer than 0.15 in outer lane
+                            if (note.PosX == 0 && note.JsonTime - lastMidL.First().JsonTime <= MaxOuterNoteTime) // Closer than 0.15 in outer lane
                             {
                                 // Fine
                             }
-                            else if (note.x == 1 && note.y == 0 && note.b - lastMidL.First().b <= MaxBottomNoteTime) // Closer than 0.075 at bottom layer
+                            else if (note.PosX == 1 && note.PosY == 0 && note.JsonTime - lastMidL.First().JsonTime <= MaxBottomNoteTime) // Closer than 0.075 at bottom layer
                             {
                                 // Also fine
                             }
                             else 
                             {
-                                if (swings.Any(x => x.notes.Contains(notes[i]) && x.notes.IndexOf(notes[i]) > 0 && !arr.Contains(x.notes.First())) && note.b - lastMidL.First().b >= MaxPatternTime) // Further than 0.020 and pattern head visible
+                                var s = swings.Where(x => x.notes.Exists(y => y.b == notes[i].JsonTime && y.d == notes[i].CutDirection && y.c == notes[i].Type && y.x == notes[i].PosX && y.y == notes[i].PosY)).ToList();
+                                if (s.Count > 0)
                                 {
-                                    // Also fine
+                                    var n = s.FirstOrDefault().notes.Where(y => y.b == notes[i].JsonTime && y.d == notes[i].CutDirection && y.c == notes[i].Type && y != s.FirstOrDefault().notes.FirstOrDefault()).FirstOrDefault();
+                                    if (n != null)
+                                    {
+                                        if (!arr.Exists(x => x.JsonTime == n.b && x.CutDirection == n.d && x.Type == n.c && x.PosX == n.x && x.PosY == n.y)
+                                        && note.JsonTime - lastMidL.First().JsonTime >= MaxPatternTime) // Further than 0.020 and pattern head visible
+                                        {
+                                            // Also fine
+                                        }
+                                        else if (note.PosX < 2)
+                                        {
+                                            arr.Add(note);
+                                        }
+                                    }
+                                    else if (note.PosX < 2)
+                                    {
+                                        arr.Add(note);
+                                    }
                                 }
-                                else if (note.x < 2)
+                                else if (note.PosX < 2)
                                 {
                                     arr.Add(note);
                                 }
@@ -1381,34 +1395,51 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (lastMidR.Count > 0)
                     {
-                        if (note.b - lastMidR.First().b <= MinTimeNote && note.b - lastMidR.First().b >= Overall)
+                        if (note.JsonTime - lastMidR.First().JsonTime <= MinTimeNote && note.JsonTime - lastMidR.First().JsonTime >= Overall)
                         {
-                            if (note.x == 3 && note.b - lastMidR.First().b <= MaxOuterNoteTime)
+                            if (note.PosX == 3 && note.JsonTime - lastMidR.First().JsonTime <= MaxOuterNoteTime)
                             {
                                 // Fine
                             }
-                            else if (note.x == 2 && note.y == 0 && note.b - lastMidR.First().b <= MaxBottomNoteTime)
+                            else if (note.PosX == 2 && note.PosY == 0 && note.JsonTime - lastMidR.First().JsonTime <= MaxBottomNoteTime)
                             {
                                 // Also fine
                             }
                             else
                             {
-                                if (swings.Any(x => x.notes.Contains(notes[i]) && x.notes.IndexOf(notes[i]) > 0 && !arr.Contains(x.notes.First())) && note.b - lastMidR.First().b >= MaxPatternTime) // 0.20
+                                var s = swings.Where(x => x.notes.Exists(y => y.b == notes[i].JsonTime && y.d == notes[i].CutDirection && y.c == notes[i].Type && y.x == notes[i].PosX && y.y == notes[i].PosY)).ToList();
+                                if (s.Count > 0)
                                 {
-                                    // Also fine
+                                    var n = s.FirstOrDefault().notes.Where(y => y.b == notes[i].JsonTime && y.d == notes[i].CutDirection && y.c == notes[i].Type && y != s.FirstOrDefault().notes.FirstOrDefault()).FirstOrDefault();
+                                    if (n != null)
+                                    {
+                                        if (!arr.Exists(x => x.JsonTime == n.b && x.CutDirection == n.d && x.Type == n.c && x.PosX == n.x && x.PosY == n.y)
+                                        && note.JsonTime - lastMidR.First().JsonTime >= MaxPatternTime) // Further than 0.020 and pattern head visible
+                                        {
+                                            // Also fine
+                                        }
+                                        else if (note.PosX > 1)
+                                        {
+                                            arr.Add(note);
+                                        }
+                                    }
+                                    else if (note.PosX > 1)
+                                    {
+                                        arr.Add(note);
+                                    }
                                 }
-                                else if (note.x > 1)
+                                else if (note.PosX > 1)
                                 {
                                     arr.Add(note);
                                 }
                             }
                         }
                     }
-                    if (note.y == 1 && note.x == 1)
+                    if (note.PosY == 1 && note.PosX == 1)
                     {
                         lastMidL.Add(note);
                     }
-                    if (note.y == 1 && note.x == 2)
+                    if (note.PosY == 1 && note.PosX == 2)
                     {
                         lastMidR.Add(note);
                     }
@@ -1416,39 +1447,39 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var n in arr)
                 {
-                    if (n.c == 0 || n.c == 1)
+                    if (n.Type == 0 || n.Type == 1)
                     {
                         CreateDiffCommentNote("R2B - Is vision blocked", CommentTypesEnum.Issue,
-                            cubes.Find(c => c.Time == n.b && c.Type == n.c && n.x == c.Line && n.y == c.Layer));
+                            cubes.Find(c => c.Time == n.JsonTime && c.Type == n.Type && n.PosX == c.Line && n.PosY == c.Layer));
                         issue = Severity.Fail;
                     }
                 }
 
-                var lastMidLB = new List<BaseNote>();
-                var lastMidRB = new List<BaseNote>();
-                List<BaseNote> arrB = new();
-                for (var i = 0; i < bombs.Count; i++)
+                lastMidL = new List<BaseNote>();
+                lastMidR = new List<BaseNote>();
+                arr = new();
+                for (var i = 0; i < notes.Count; i++)
                 {
-                    var note = bombs[i];
+                    var note = notes[i];
                     if(note.Type == 3)
                     {
                         bpm.SetCurrentBPM(note.JsonTime);
                         var MaxTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMaxBombTime);
                         var MinTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMinBombTime);
                         var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
-                        var left = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 0).OrderBy(o => o.JsonTime).LastOrDefault();
-                        var right = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 1).OrderBy(o => o.JsonTime).LastOrDefault();
-                        lastMidLB.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
-                        lastMidRB.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
-                        if (lastMidLB.Count > 0)
+                        var left = notes.Where(x => x.JsonTime < note.JsonTime && x.Type == 0).OrderBy(o => o.JsonTime).LastOrDefault();
+                        var right = notes.Where(x => x.JsonTime < note.JsonTime && x.Type == 1).OrderBy(o => o.JsonTime).LastOrDefault();
+                        lastMidL.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
+                        lastMidR.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
+                        if (lastMidL.Count > 0)
                         {
-                            if (note.JsonTime - lastMidLB.First().JsonTime <= MinTimeBomb) // Closer than 0.20
+                            if (note.JsonTime - lastMidL.First().JsonTime <= MinTimeBomb) // Closer than 0.20
                             {
-                                if (note.PosX == 0 && note.JsonTime - lastMidLB.First().JsonTime <= MaxTimeBomb) // Closer than 0.15
+                                if (note.PosX == 0 && note.JsonTime - lastMidL.First().JsonTime <= MaxTimeBomb) // Closer than 0.15
                                 {
                                     // Fine
                                 }
-                                else if ((note.PosX != 1 || note.PosY != 1) && note.JsonTime - lastMidLB.First().JsonTime <= Overall) // Closer than 0.025
+                                else if ((note.PosX != 1 || note.PosY != 1) && note.JsonTime - lastMidL.First().JsonTime <= Overall) // Closer than 0.025
                                 {
                                     // Also fine
                                 }
@@ -1461,7 +1492,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - left.PosX, 2) + Math.Pow(note.PosY - left.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                arrB.Add(note);
+                                                arr.Add(note);
                                             }
                                             continue;
                                         }
@@ -1477,7 +1508,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            arrB.Add(note);
+                                            arr.Add(note);
                                             continue;
                                         }
                                     }
@@ -1488,7 +1519,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - right.PosX, 2) + Math.Pow(note.PosY - right.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                arrB.Add(note);
+                                                arr.Add(note);
                                             }
                                             continue;
                                         }
@@ -1504,22 +1535,22 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            arrB.Add(note);
+                                            arr.Add(note);
                                             continue;
                                         }
                                     }
                                 }
                             }
                         }
-                        if (lastMidRB.Count > 0)
+                        if (lastMidR.Count > 0)
                         {
-                            if (note.JsonTime - lastMidRB.First().JsonTime <= MinTimeBomb) // Closer than 0.20
+                            if (note.JsonTime - lastMidR.First().JsonTime <= MinTimeBomb) // Closer than 0.20
                             {
-                                if (note.PosX == 3 && note.JsonTime - lastMidRB.First().JsonTime <= MaxTimeBomb) // Closer than 0.15
+                                if (note.PosX == 3 && note.JsonTime - lastMidR.First().JsonTime <= MaxTimeBomb) // Closer than 0.15
                                 {
                                     // Fine
                                 }
-                                else if ((note.PosX != 2 || note.PosY != 1) && note.JsonTime - lastMidRB.First().JsonTime <= Overall) // Closer than 0.025
+                                else if ((note.PosX != 2 || note.PosY != 1) && note.JsonTime - lastMidR.First().JsonTime <= Overall) // Closer than 0.025
                                 {
                                     // Also fine
                                 }
@@ -1532,7 +1563,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - left.PosX, 2) + Math.Pow(note.PosY - left.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                arrB.Add(note);
+                                                arr.Add(note);
                                             }
                                             continue;
                                         }
@@ -1548,7 +1579,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            arrB.Add(note);
+                                            arr.Add(note);
                                             continue;
                                         }
                                     }
@@ -1559,7 +1590,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - right.PosX, 2) + Math.Pow(note.PosY - right.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                arrB.Add(note);
+                                                arr.Add(note);
                                             }
                                             continue;
                                         }
@@ -1575,7 +1606,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            arrB.Add(note);
+                                            arr.Add(note);
                                             continue;
                                         }
                                     }
@@ -1586,20 +1617,19 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     
                     if (note.PosY == 1 && note.PosX == 1)
                     {
-                        lastMidLB.Add(note);
+                        lastMidL.Add(note);
                     }
                     if (note.PosY == 1 && note.PosX == 2)
                     {
-                        lastMidRB.Add(note);
+                        lastMidR.Add(note);
                     }
                 }
 
-                foreach (var n in arrB)
+                foreach (var n in arr)
                 {
                     if (n.Type == 3)
                     {
-                        CreateDiffCommentBomb("R5E - Is vision blocked", CommentTypesEnum.Issue,
-                            bombs.Find(b => b.JsonTime == n.JsonTime && b.Type == n.Type && b.PosX == n.PosX && b.PosY == n.PosY));
+                        CreateDiffCommentBomb("R5E - Is vision blocked", CommentTypesEnum.Issue, n);
                         issue = Severity.Fail;
                     }
                 }
