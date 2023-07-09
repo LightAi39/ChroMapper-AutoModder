@@ -2308,7 +2308,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             if(NoteDirection.Move(note) == NoteDirection.Move(other))
                             {
-                                if ((note.Type == 0 && note.PosX > note.PosY) || (note.Type == 1 && note.PosX < note.PosY)) // Crossover
+                                if ((note.Type == 0 && note.PosX > other.PosX) || (note.Type == 1 && note.PosX < other.PosX)) // Crossover
                                 {
                                     arr.Add(other);
                                     arr.Add(note);
