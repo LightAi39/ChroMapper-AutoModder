@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace ChroMapper_LightModding.Helpers
 {
-    // a lot of the code from here is taken straight from CM BookmarkRenderingController.cs
+    // the code from here is taken literally straight from CM BookmarkRenderingController.cs and just modified slightly but i mean its a cm plugin
     internal class GridMarkerHelper
     {
         private Plugin plugin;
