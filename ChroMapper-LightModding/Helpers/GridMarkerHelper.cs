@@ -12,7 +12,7 @@ using UnityEngine;
 namespace ChroMapper_LightModding.Helpers
 {
     // the code from here is taken literally straight from CM BookmarkRenderingController.cs and just modified slightly but i mean its a cm plugin
-    internal class GridMarkerHelper
+    public class GridMarkerHelper : IDisposable
     {
         private Plugin plugin;
         private Transform gridBookmarksParent;
@@ -43,6 +43,8 @@ namespace ChroMapper_LightModding.Helpers
             EditorScaleController.EditorScaleChangedEvent += OnEditorScaleChange;
             Settings.NotifyBySettingName(nameof(Settings.DisplayGridBookmarks), DisplayRenderedBookmarks);
             Settings.NotifyBySettingName(nameof(Settings.GridBookmarksHasLine), RefreshBookmarkGridLine);
+
+            UpdateRenderedBookmarks();
         }
 
         private void DisplayRenderedBookmarks(object _) => UpdateRenderedBookmarks();
@@ -183,6 +185,19 @@ namespace ChroMapper_LightModding.Helpers
                     return Color.red;
                 default:
                     return Color.clear;
+            }
+        }
+
+        public void Dispose()
+        {
+            plugin.CommentsUpdated -= UpdateRenderedBookmarks;
+            EditorScaleController.EditorScaleChangedEvent -= OnEditorScaleChange;
+            Settings.ClearSettingNotifications(nameof(Settings.DisplayGridBookmarks));
+            Settings.ClearSettingNotifications(nameof(Settings.GridBookmarksHasLine));
+
+            foreach (var comment in renderedComments)
+            {
+                GameObject.Destroy(comment.Text.gameObject);
             }
         }
     }

@@ -67,7 +67,7 @@ namespace ChroMapper_LightModding
         private Exporter exporter;
         private AutocheckHelper autocheckHelper;
         private CriteriaCheck criteriaCheck;
-        private GridMarkerHelper gridMarkerHelper;
+        public GridMarkerHelper gridMarkerHelper;
 
         InputAction addCommentAction;
         InputAction openCommentAction;
@@ -533,7 +533,10 @@ namespace ChroMapper_LightModding
             quickMarkUnsureAction.Disable();
             quickMarkIssueAction.Disable();
             outlineHelper.selectionCache = null;
-            gridMarkerHelper = null;
+            if (gridMarkerHelper != null) 
+            {
+                gridMarkerHelper.Dispose();
+            }
             if (subscribedToEvents)
             {
                 UnsubscribeFromEditorEvents();

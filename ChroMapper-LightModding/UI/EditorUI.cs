@@ -37,6 +37,7 @@ namespace ChroMapper_LightModding.UI
         public bool enabled = false;
 
         private bool showTimelineMarkers = true;
+        private bool showGridMarkers = true;
 
         private (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) stats;
 
@@ -101,6 +102,16 @@ namespace ChroMapper_LightModding.UI
                         {
                             showTimelineMarkers = o;
                             ToggleTimelineMarkers();
+                        }
+                    });
+                dialog.AddComponent<ToggleComponent>()
+                    .WithLabel("Show grid markers")
+                    .WithInitialValue(showGridMarkers)
+                    .OnChanged((bool o) => {
+                        if (o != showGridMarkers)
+                        {
+                            showGridMarkers = o;
+                            ToggleGridMarkers();
                         }
                     });
 
@@ -1106,6 +1117,18 @@ namespace ChroMapper_LightModding.UI
                 }
             }
 
+        }
+
+        private void ToggleGridMarkers()
+        {
+            if (showGridMarkers)
+            {
+                plugin.gridMarkerHelper = new(plugin);
+            }
+            else
+            {
+                plugin.gridMarkerHelper.Dispose();
+            }
         }
     }
 }
