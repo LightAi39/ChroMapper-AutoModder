@@ -171,7 +171,15 @@ namespace ChroMapper_LightModding
             {
                 if (currentMapsetReview != null)
                 {
-                    fileHelper.MapsetReviewBackupSaver();
+                    try
+                    {
+                        fileHelper.MapsetReviewBackupSaver();
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        Debug.Log("Tried to save backup but directory was not found.");
+                    }
+                    
                 }
 
                 songInfoUI.Disable();
