@@ -100,7 +100,7 @@ namespace ChroMapper_LightModding.Helpers
 
             try
             {
-                Comment comment = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat <= spawnedObject.Beat + 0.01 && o.Beat >= spawnedObject.Beat - 0.01 && o.PosX == spawnedObject.PosX && o.PosY == spawnedObject.PosY && o.Color == spawnedObject.Color && o.ObjectType == spawnedObject.ObjectType)).FirstOrDefault();
+                Comment comment = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat <= spawnedObject.Beat + 0.01 && o.Beat >= spawnedObject.Beat - 0.01 && o.PosX == spawnedObject.PosX && o.PosY == spawnedObject.PosY && o.Color == spawnedObject.Color && o.ObjectType == spawnedObject.ObjectType)).ToList().OrderByDescending(x => x.Type).FirstOrDefault();
                 if (comment != null)
                 {
                     SelectedObject selectedObject = comment.Objects.Where(o => o.Beat <= spawnedObject.Beat + 0.01 && o.Beat >= spawnedObject.Beat - 0.01 && o.PosX == spawnedObject.PosX && o.PosY == spawnedObject.PosY && o.Color == spawnedObject.Color && o.ObjectType == spawnedObject.ObjectType).FirstOrDefault();
