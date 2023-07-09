@@ -54,20 +54,21 @@ namespace ChroMapper_LightModding.Helpers
         private void UpdateRenderedBookmarks()
         {
             var currentComments = plugin.currentReview.Comments;
-            if (currentComments.Count < renderedComments.Count) // Removed bookmark
+
+            if (currentComments.Count < renderedComments.Count) // Removed comment
             {
-                for (int i = renderedComments.Count - 1; i >= 0; i--)
+                List<CachedComment> toDelete = new();
+                foreach (var renderedComment in renderedComments.ToList())
                 {
-                    CachedComment comment = renderedComments[i];
-                    if (!currentComments.Contains(comment.Comment))
+                    if (currentComments.All(x => x != renderedComment.Comment))
                     {
-                        GameObject.Destroy(comment.Text.gameObject);
-                        renderedComments.Remove(comment);
-                        return;
+                        GameObject.Destroy(renderedComment.Text.gameObject);
+                        renderedComments.Remove(renderedComment);
                     }
                 }
             }
-            else if (currentComments.Count > renderedComments.Count) // Added bookmark
+
+            if (currentComments.Count > renderedComments.Count) // Added comment
             {
                 foreach (var comment in currentComments)
                 {
@@ -78,20 +79,18 @@ namespace ChroMapper_LightModding.Helpers
                     }
                 }
             }
-            else // Edited bookmark
+
+            foreach (CachedComment cachedComment in renderedComments) // Covering for edited comment
             {
-                foreach (CachedComment cachedComment in renderedComments)
+                string mapCommentName = cachedComment.Comment.Message;
+                Color mapCommentColor = ChooseColor(cachedComment.Comment.Type);
+
+                if (cachedComment.Name != mapCommentName || cachedComment.Color != mapCommentColor)
                 {
-                    string mapCommentName = cachedComment.Comment.Message;
-                    Color mapCommentColor = ChooseColor(cachedComment.Comment.Type);
+                    SetGridBookmarkNameColor(cachedComment.Text, mapCommentColor, mapCommentName);
 
-                    if (cachedComment.Name != mapCommentName || cachedComment.Color != mapCommentColor)
-                    {
-                        SetGridBookmarkNameColor(cachedComment.Text, mapCommentColor, mapCommentName);
-
-                        cachedComment.Name = mapCommentName;
-                        cachedComment.Color = mapCommentColor;
-                    }
+                    cachedComment.Name = mapCommentName;
+                    cachedComment.Color = mapCommentColor;
                 }
             }
         }

@@ -20,6 +20,7 @@ using System.Windows.Input;
 using System.Configuration;
 using System.Xml.Linq;
 using System.Runtime.Remoting.Messaging;
+using ChroMapper_LightModding.Configs;
 
 namespace ChroMapper_LightModding
 {
@@ -94,24 +95,7 @@ namespace ChroMapper_LightModding
             var path = AppDomain.CurrentDomain.BaseDirectory + "/Plugins/AutoModderConf.json";
             if(File.Exists(path))
             {
-                TextReader reader = null;
-                try
-                {
-                    reader = new StreamReader(path);
-                    var fileContents = reader.ReadToEnd();
-                    configs = JsonConvert.DeserializeObject<Configs.Configs>(fileContents);
-                    using StreamWriter file = File.CreateText(@path);
-                    JsonSerializer serializer = new();
-                    serializer.Serialize(file, configs);
-                }
-                catch // Error during reading, use default instead
-                {
-                    configs = new();
-                }
-                finally
-                {
-                    reader?.Close();
-                }
+                configs = JsonConvert.DeserializeObject<Configs.Configs>(File.ReadAllText(@path));
             }
             else
             {
@@ -461,8 +445,8 @@ namespace ChroMapper_LightModding
 
         public void HandleDeleteComment(string commentId)
         {
-            outlineHelper.ClearOutlineColor(currentReview.Comments.First(x => x.Id == commentId).Objects);
             currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == commentId));
+            outlineHelper.RefreshOutlines();
             editorUI.RefreshTimelineMarkers();
             CommentsUpdated.Invoke();
         }
@@ -560,6 +544,7 @@ namespace ChroMapper_LightModding
             SelectionController.ObjectWasSelectedEvent += outlineHelper.UpdateSelectionCache;
             SelectionController.SelectionChangedEvent += outlineHelper.ManageSelectionCacheAndOutlines;
             _audioTimeSyncController.TimeChanged += editorUI.CheckBeatForComment;
+            CommentsUpdated += editorUI.CheckBeatForComment;
             subscribedToEvents = true;
         }
 
@@ -574,6 +559,7 @@ namespace ChroMapper_LightModding
             SelectionController.ObjectWasSelectedEvent -= outlineHelper.UpdateSelectionCache;
             SelectionController.SelectionChangedEvent -= outlineHelper.ManageSelectionCacheAndOutlines;
             _audioTimeSyncController.TimeChanged -= editorUI.CheckBeatForComment;
+            CommentsUpdated -= editorUI.CheckBeatForComment;
             subscribedToEvents = false;
         }
 
