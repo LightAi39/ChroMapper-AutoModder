@@ -560,6 +560,7 @@ namespace ChroMapper_LightModding
             SelectionController.ObjectWasSelectedEvent += outlineHelper.UpdateSelectionCache;
             SelectionController.SelectionChangedEvent += outlineHelper.ManageSelectionCacheAndOutlines;
             _audioTimeSyncController.TimeChanged += editorUI.CheckBeatForComment;
+            CommentsUpdated += editorUI.CheckBeatForComment;
             subscribedToEvents = true;
         }
 
@@ -574,6 +575,7 @@ namespace ChroMapper_LightModding
             SelectionController.ObjectWasSelectedEvent -= outlineHelper.UpdateSelectionCache;
             SelectionController.SelectionChangedEvent -= outlineHelper.ManageSelectionCacheAndOutlines;
             _audioTimeSyncController.TimeChanged -= editorUI.CheckBeatForComment;
+            CommentsUpdated -= editorUI.CheckBeatForComment;
             subscribedToEvents = false;
         }
 
