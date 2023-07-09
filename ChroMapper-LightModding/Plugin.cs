@@ -96,19 +96,11 @@ namespace ChroMapper_LightModding
             if(File.Exists(path))
             {
                 configs = JsonConvert.DeserializeObject<Configs.Configs>(File.ReadAllText(@path));
+                File.WriteAllText(@path, JsonConvert.SerializeObject(configs, Formatting.Indented));
             }
             else
             {
-                try
-                {
-                    using StreamWriter file = File.CreateText(@path);
-                    JsonSerializer serializer = new();
-                    serializer.Serialize(file, configs);
-                }
-                catch // Error during writing, use default instead
-                {
-                    configs = new();
-                }
+                File.WriteAllText(@path, JsonConvert.SerializeObject(configs, Formatting.Indented));
             }
 
             // register a button in the side tab menu
