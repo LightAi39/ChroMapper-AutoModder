@@ -534,7 +534,7 @@ namespace ChroMapper_LightModding.UI
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
-            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges.Where(x => x.Bpm != 100000).ToList(), BeatSaberSongContainer.Instance.Song.SongTimeOffset);
 
             var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
 

@@ -65,7 +65,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
             songOffset = BeatSaberSongContainer.Instance.Song.SongTimeOffset;
-            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents, songOffset);
+            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents.Where(x => x.Bpm != 100000).ToList(), songOffset);
             analysedMap = new(song.Directory);
             swings = analysedMap.GetSwingData((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower());
 

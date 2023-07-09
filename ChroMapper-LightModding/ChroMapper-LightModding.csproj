@@ -106,6 +106,7 @@
     <Compile Include="Export\Exporter.cs" />
     <Compile Include="Helpers\AutocheckHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
+    <Compile Include="Helpers\GridMarkerHelper.cs" />
     <Compile Include="Helpers\OutlineHelper.cs" />
     <Compile Include="Models\Comment.cs" />
     <Compile Include="Models\DifficultyReview.cs" />
