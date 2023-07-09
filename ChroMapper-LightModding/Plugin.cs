@@ -461,8 +461,8 @@ namespace ChroMapper_LightModding
 
         public void HandleDeleteComment(string commentId)
         {
-            outlineHelper.ClearOutlineColor(currentReview.Comments.First(x => x.Id == commentId).Objects);
             currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == commentId));
+            outlineHelper.RefreshOutlines();
             editorUI.RefreshTimelineMarkers();
             CommentsUpdated.Invoke();
         }
