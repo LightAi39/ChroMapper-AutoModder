@@ -798,27 +798,29 @@ namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
             }
         }
 
-        public static bool IsInverted(BaseNote note)
+        public static bool IsLimit((int x, int y) position, int direction)
         {
-            (int x, int y) position = (note.PosX, note.PosY);
-            int direction = note.CutDirection;
             switch (direction)
             {
-                case 0: if (position.y == 0) return true; break;
-                case 1: if (position.y == 2) return true; break;
-                case 2: if (position.x == 3) return true; break;
-                case 3: if (position.x == 0) return true; break;
-                case 4: if (position.y == 0) return true;
-                    if (position.x == 3) return true;
-                    break;
-                case 5: if (position.y == 2) return true;
+                case 0: if (position.y == 2) return true; break;
+                case 1: if (position.y == 0) return true; break;
+                case 2: if (position.x == 0) return true; break;
+                case 3: if (position.x == 3) return true; break;
+                case 4:
+                    if (position.y == 2) return true;
                     if (position.x == 0) return true;
                     break;
-                case 6: if (position.x == 3) return true;
+                case 5:
+                    if (position.y == 2) return true;
                     if (position.x == 3) return true;
                     break;
-                case 7: if (position.x == 0) return true;
+                case 6:
+                    if (position.y == 0) return true;
                     if (position.x == 0) return true;
+                    break;
+                case 7:
+                    if (position.y == 0) return true;
+                    if (position.x == 3) return true;
                     break;
                 default: return false;
             }
