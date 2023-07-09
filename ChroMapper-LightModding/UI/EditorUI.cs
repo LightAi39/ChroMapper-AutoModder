@@ -534,16 +534,16 @@ namespace ChroMapper_LightModding.UI
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
-            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges.Where(x => x.Bpm != 100000).ToList(), BeatSaberSongContainer.Instance.Song.SongTimeOffset);
 
-            var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
+            var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength, true);
 
             var comments = plugin.currentReview.Comments.ToList();
             comments.Sort((x, y) => y.Type.CompareTo(x.Type));
 
             foreach (var comment in plugin.currentReview.Comments)
             {
-                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat));
+                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat), true);
                 Color color = Color.gray;
                 if (!comment.MarkAsSuppressed)
                 {
@@ -1089,9 +1089,9 @@ namespace ChroMapper_LightModding.UI
 
         public void CheckBeatForComment()
         {
-            float beat = plugin.AudoTimeSyncController.CurrentJsonTime;
+            (float min, float max) beat = (plugin.AudoTimeSyncController.CurrentJsonTime - 0.01f, plugin.AudoTimeSyncController.CurrentJsonTime + 0.01f);
 
-            List<Comment> comments = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat == beat)).ToList();
+            List<Comment> comments = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat >= beat.min && o.Beat <= beat.max)).ToList();
 
             if (comments.Count == 0)
             {

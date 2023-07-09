@@ -65,7 +65,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
             songOffset = BeatSaberSongContainer.Instance.Song.SongTimeOffset;
-            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents, songOffset);
+            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents.Where(x => x.Bpm != 100000).ToList(), songOffset);
             analysedMap = new(song.Directory);
             swings = analysedMap.GetSwingData((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower());
 
@@ -396,8 +396,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
             else
             {
                 averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault();
-                Debug.Log(averageSliderDuration);
-                Debug.Log("test");
             }
             if(averageSliderDuration <= 0.033)
             {
@@ -1355,6 +1353,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var MaxPatternTime = bpm.ToBeatTime(Plugin.configs.VBMinPatternTime);
                     var MinTimeNote = bpm.ToBeatTime(Plugin.configs.VBMinNoteTime);
                     var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
+                    lastMidL.RemoveAll(l => note.b - l.b > MinTimeNote);
+                    lastMidR.RemoveAll(l => note.b - l.b > MinTimeNote);
                     if (lastMidL.Count > 0)
                     {
                         if (note.b - lastMidL.First().b <= MinTimeNote && note.b - lastMidL.First().b >= Overall) // Closer than 0.25
@@ -1406,8 +1406,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                         }
                     }
-                    lastMidL.RemoveAll(l => note.b - l.b > MinTimeNote);
-                    lastMidR.RemoveAll(l => note.b - l.b > MinTimeNote);
                     if (note.y == 1 && note.x == 1)
                     {
                         lastMidL.Add(note);
@@ -1434,128 +1432,120 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (var i = 0; i < bombs.Count; i++)
                 {
                     var note = bombs[i];
-                    bpm.SetCurrentBPM(note.JsonTime);
-                    var MaxTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMaxBombTime);
-                    var MinTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMinBombTime);
-                    var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
-                    var left = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 0).OrderBy(x => x.JsonTime).LastOrDefault();
-                    var right = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 1).OrderBy(x => x.JsonTime).LastOrDefault();
-                    if (lastMidLB.Count > 0)
+                    if(note.Type == 3)
                     {
-                        if (note.JsonTime - lastMidLB.First().JsonTime <= MinTimeBomb) // Closer than 0.20
+                        bpm.SetCurrentBPM(note.JsonTime);
+                        var MaxTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMaxBombTime);
+                        var MinTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMinBombTime);
+                        var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
+                        var left = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 0).OrderBy(o => o.JsonTime).LastOrDefault();
+                        var right = bombs.Where(x => x.JsonTime < note.JsonTime && x.Type == 1).OrderBy(o => o.JsonTime).LastOrDefault();
+                        lastMidLB.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
+                        lastMidRB.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
+                        if (lastMidLB.Count > 0)
                         {
-                            if (note.PosX == 0 && note.JsonTime - lastMidLB.First().JsonTime <= MaxTimeBomb) // Closer than 0.15
+                            if (note.JsonTime - lastMidLB.First().JsonTime <= MinTimeBomb) // Closer than 0.20
                             {
-                                // Fine
-                            }
-                            else if ((note.PosX != 1 || note.PosY != 1) && note.JsonTime - lastMidLB.First().JsonTime <= Overall) // Closer than 0.025
-                            {
-                                // Also fine
-                            }
-                            else if (note.PosX < 2)
-                            {
-                                if (left != null)
+                                if (note.PosX == 0 && note.JsonTime - lastMidLB.First().JsonTime <= MaxTimeBomb) // Closer than 0.15
                                 {
-                                    var pos = (left.PosX, left.PosY);
-                                    int index = 1;
-                                    if (NoteDirection.IsInverted(left))
+                                    // Fine
+                                }
+                                else if ((note.PosX != 1 || note.PosY != 1) && note.JsonTime - lastMidLB.First().JsonTime <= Overall) // Closer than 0.025
+                                {
+                                    // Also fine
+                                }
+                                else if (note.PosX < 2)
+                                {
+                                    if (left != null)
                                     {
-                                        pos = NoteDirection.Move(left, index);
-                                    }
-                                    while ((pos.PosX == 1 || pos.PosX == 2) && pos.PosY == 1)
-                                    {
-                                        pos = NoteDirection.Move(left, index);
-                                        index++;
-                                    }
+                                        var pos = (left.PosX, left.PosY);
+                                        int index = 1;
+                                        while (!NoteDirection.IsLimit(pos, left.CutDirection))
+                                        {
+                                            pos = NoteDirection.Move(left, index);
+                                            index++;
+                                        }
 
-                                    var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
-                                    if (d >= 0 && d < 1.001)
+                                        var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
+                                        if (d >= 0 && d < 1.001)
+                                        {
+                                            arrB.Add(note);
+                                            continue;
+                                        }
+                                    }
+                                    if (right != null)
                                     {
-                                        arrB.Add(note);
+                                        var pos = (right.PosX, right.PosY);
+                                        int index = 1;
+                                        while (!NoteDirection.IsLimit(pos, right.CutDirection))
+                                        {
+                                            pos = NoteDirection.Move(right, index);
+                                            index++;
+                                        }
+
+                                        var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
+                                        if (d >= 0 && d < 1.001)
+                                        {
+                                            arrB.Add(note);
+                                            continue;
+                                        }
                                     }
                                 }
-                                if (right != null)
+                            }
+                        }
+                        if (lastMidRB.Count > 0)
+                        {
+                            if (note.JsonTime - lastMidRB.First().JsonTime <= MinTimeBomb) // Closer than 0.20
+                            {
+                                if (note.PosX == 3 && note.JsonTime - lastMidRB.First().JsonTime <= MaxTimeBomb) // Closer than 0.15
                                 {
-                                    var pos = (right.PosX, right.PosY);
-                                    int index = 1;
-                                    if (NoteDirection.IsInverted(right))
+                                    // Fine
+                                }
+                                else if ((note.PosX != 2 || note.PosY != 1) && note.JsonTime - lastMidRB.First().JsonTime <= Overall) // Closer than 0.025
+                                {
+                                    // Also fine
+                                }
+                                else if (note.PosX > 1)
+                                {
+                                    if (left != null)
                                     {
-                                        pos = NoteDirection.Move(right, index);
-                                    }
-                                    while ((pos.PosX == 1 || pos.PosX == 2) && pos.PosY == 1)
-                                    {
-                                        pos = NoteDirection.Move(right, index);
-                                        index++;
-                                    }
+                                        var pos = (left.PosX, left.PosY);
+                                        int index = 1;
+                                        while (!NoteDirection.IsLimit(pos, left.CutDirection))
+                                        {
+                                            pos = NoteDirection.Move(left, index);
+                                            index++;
+                                        }
 
-                                    var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
-                                    if (d >= 0 && d < 1.001)
+                                        var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
+                                        if (d >= 0 && d < 1.001)
+                                        {
+                                            arrB.Add(note);
+                                            continue;
+                                        }
+                                    }
+                                    if (right != null)
                                     {
-                                        arrB.Add(note);
+                                        var pos = (right.PosX, right.PosY);
+                                        int index = 1;
+                                        while (!NoteDirection.IsLimit(pos, right.CutDirection))
+                                        {
+                                            pos = NoteDirection.Move(right, index);
+                                            index++;
+                                        }
+
+                                        var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
+                                        if (d >= 0 && d < 1.001)
+                                        {
+                                            arrB.Add(note);
+                                            continue;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    if (lastMidRB.Count > 0)
-                    {
-                        if (note.JsonTime - lastMidRB.First().JsonTime <= MinTimeBomb) // Closer than 0.20
-                        {
-                            if (note.PosX == 3 && note.JsonTime - lastMidRB.First().JsonTime <= MaxTimeBomb) // Closer than 0.15
-                            {
-                                // Fine
-                            }
-                            else if ((note.PosX != 2 || note.PosY != 1) && note.JsonTime - lastMidRB.First().JsonTime <= Overall) // Closer than 0.025
-                            {
-                                // Also fine
-                            }
-                            else if (note.PosX > 1)
-                            {
-                                if(left != null)
-                                {
-                                    var pos = (left.PosX, left.PosY);
-                                    int index = 1;
-                                    if (NoteDirection.IsInverted(left))
-                                    {
-                                        pos = NoteDirection.Move(left, index);
-                                    }
-                                    while ((pos.PosX == 1 || pos.PosX == 2) && pos.PosY == 1)
-                                    {
-                                        pos = NoteDirection.Move(left, index);
-                                        index++;
-                                    }
-
-                                    var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
-                                    if (d >= 0 && d < 1.001)
-                                    {
-                                        arrB.Add(note);
-                                    }
-                                }
-                                if (right != null)
-                                {
-                                    var pos = (right.PosX, right.PosY);
-                                    int index = 1;
-                                    if(NoteDirection.IsInverted(right))
-                                    {
-                                        pos = NoteDirection.Move(right, index);
-                                    }
-                                    while ((pos.PosX == 1 || pos.PosX == 2) && pos.PosY == 1)
-                                    {
-                                        pos = NoteDirection.Move(right, index);
-                                        index++;
-                                    }
-                                    
-                                    var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
-                                    if (d >= 0 && d < 1.001)
-                                    {
-                                        arrB.Add(note);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    lastMidLB.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
-                    lastMidRB.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
+                    
                     if (note.PosY == 1 && note.PosX == 1)
                     {
                         lastMidLB.Add(note);
@@ -2427,7 +2417,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 PosX = cube.Line,
                 PosY = cube.Layer,
                 Color = cube.Type,
-                ObjectType = Beatmap.Enums.ObjectType.Note
+                ObjectType = ObjectType.Note
             };
 
             Comment comment = new()
@@ -2464,7 +2454,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 PosX = chainLink.PosX,
                 PosY = chainLink.PosY,
                 Color = chainLink.Color,
-                ObjectType = Beatmap.Enums.ObjectType.Chain
+                ObjectType = ObjectType.Chain
             };
 
             Comment comment = new()
@@ -2606,7 +2596,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     PosX = note.x,
                     PosY = note.y,
                     Color = note.c,
-                    ObjectType = Beatmap.Enums.ObjectType.Note
+                    ObjectType = ObjectType.Note
                 });
             }
 
