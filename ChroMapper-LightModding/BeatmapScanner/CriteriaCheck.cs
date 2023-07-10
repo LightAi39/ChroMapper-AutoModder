@@ -332,7 +332,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             }
             foreach (var w in wall)
             {
-                if ((w.JsonTime > limit || w.JsonTime + w.Duration >= end) && (w.PosX == 1 || w.PosX == 2))
+                if ((w.JsonTime > limit || w.JsonTime + w.Duration > end) && (w.PosX == 1 || w.PosX == 2))
                 {
                     CreateDiffCommentObstacle("R1E - Cold End", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
