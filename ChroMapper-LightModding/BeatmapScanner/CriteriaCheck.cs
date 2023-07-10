@@ -1025,13 +1025,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             foreach (var w in leftWall)
             {
-                var note = notes.Where(n => n.Line == 0 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
+                var note = notes.Where(n => n.Line == 0 && !(n.Layer == 0 && w.PosY == 0 && w.Height == 1) && ((n.Layer >= w.PosY && n.Layer < w.PosY + w.Height) || (n.Layer >= 0 && w.PosY == 0 && w.Height > 1)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
                 foreach (var n in note)
                 {
                     CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
                     issue = Severity.Fail;
                 }
-                var bomb = bombs.Where(b => b.PosX == 0 && (b.PosY >= 1 || (b.PosY >= 0 && w.PosY == 0)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
+                var bomb = bombs.Where(b => b.PosX == 0 && !(b.PosY == 0 && w.PosY == 0 && w.Height == 1) && ((b.PosY >= w.PosY && b.PosY < w.PosY + w.Height) || (b.PosY >= 0 && w.PosY == 0 && w.Height > 1)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
                 foreach (var b in bomb)
                 {
                     CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b);
@@ -1041,13 +1041,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             foreach (var w in rightWall)
             {
-                var note = notes.Where(n => n.Line == 3 && (n.Layer >= 1 || (n.Layer >= 0 && w.PosY == 0)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
+                var note = notes.Where(n => n.Line == 3 && !(n.Layer == 0 && w.PosY == 0 && w.Height == 1) && ((n.Layer >= w.PosY && n.Layer < w.PosY + w.Height) || (n.Layer >= 0 && w.PosY == 0 && w.Height > 1)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
                 foreach (var n in note)
                 {
                     CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
                     issue = Severity.Fail;
                 }
-                var bomb = bombs.Where(b => b.PosX == 3 && (b.PosY >= 1 || (b.PosY >= 0 && w.PosY == 0)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
+                var bomb = bombs.Where(b => b.PosX == 3 && !(b.PosY == 0 && w.PosY == 0 && w.Height == 1) && ((b.PosY >= w.PosY && b.PosY < w.PosY + w.Height) || (b.PosY >= 0 && w.PosY == 0 && w.Height > 1)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
                 foreach (var b in bomb)
                 {
                     CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b);
