@@ -1077,7 +1077,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
-                if (w.Width <= 0 || w.Duration <= 0 || (w.Height <= 0 && w.PosX >= 0 && w.PosX <= 3 && ((w.PosY > 0 && w.PosY <= 2) || (w.PosY + w.Height >= 0 && w.PosY + w.Height <= 2))))
+                if (w.Width <= 0 || w.Duration <= 0 || (w.Height <= 0 && w.PosX >= 0 && w.PosX <= 3 && (w.PosY > 0 || w.PosY + w.Height >= 0)) ||
+                    ((w.PosX == 1 || w.PosX == 2 || (w.PosX + w.Width >= 2 && w.PosX <= 3)) && w.Height < 0) || (w.PosX + w.Width >= 1 && w.PosX <= 4) && w.PosY + w.Height >= 0 && w.Height < 0)
                 {
                     CreateDiffCommentObstacle("R4D - Must have positive width, height and duration", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
