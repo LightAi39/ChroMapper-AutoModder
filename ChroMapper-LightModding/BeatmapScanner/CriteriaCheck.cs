@@ -319,7 +319,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
             cube = cube.OrderByDescending(c => c.Time).ToList();
             var wall = BeatmapScanner.Walls;
             wall = wall.OrderByDescending(w => w.JsonTime).ToList();
-            var end = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength, true);
             var limit = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength - Plugin.configs.ColdEndDuration, true);
             foreach (var c in cube)
             {
@@ -332,7 +331,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             }
             foreach (var w in wall)
             {
-                if ((w.JsonTime > limit || w.JsonTime + w.Duration > end) && (w.PosX == 1 || w.PosX == 2))
+                if (w.JsonTime + w.Duration > limit && (w.PosX == 1 || w.PosX == 2))
                 {
                     CreateDiffCommentObstacle("R1E - Cold End", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
