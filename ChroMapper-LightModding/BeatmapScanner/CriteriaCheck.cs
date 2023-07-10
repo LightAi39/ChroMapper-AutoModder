@@ -596,12 +596,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
         public Severity NJSCheck()
         {
             var issue = Severity.Success;
-            var swingData = BeatmapScanner.Datas;
+           
+            List<JoshaParity.SwingData> list = swings.ToList();
+
             List<double> sps = new();
-            var secInBeat = BeatSaberSongContainer.Instance.Song.BeatsPerMinute / 60;
+            
             for (int i = 0; i < BeatSaberSongContainer.Instance.LoadedSongLength - 1; i++)
             {
-                sps.Add(swingData.Where(s => s.Time > i * secInBeat && s.Time < (i + 1) * secInBeat).Count());
+                bpm.SetCurrentBPM(bpm.ToRealTime(i, true));
+                var secInBeat = BeatSaberSongContainer.Instance.Song.BeatsPerMinute / 60;
+                sps.Add(list.Where(s => s.swingStartBeat > i * secInBeat && s.swingStartBeat < (i + 1) * secInBeat).Count());
             }
             sps.Sort();
             sps.Reverse();
@@ -641,6 +645,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
             }
 
+            if(issue == Severity.Success)
+            {
+                ExtendOverallComment("R1A - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString());
+                ExtendOverallComment("R1A - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString());
+            }
+
+            bpm.ResetCurrentBPM();
             return issue;
         }
 
