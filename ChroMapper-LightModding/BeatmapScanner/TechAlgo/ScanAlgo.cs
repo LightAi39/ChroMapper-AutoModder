@@ -147,7 +147,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             if (cubes[1].CutDirection == 8)
             {
-                if ((cubes[1].Time - cubes[0].Time <= 0.25 && ScanMethod.IsSlider(cubes[0], cubes[1], cubes[0].Direction, true)) || cubes[1].Time - cubes[0].Time <= 0.1429)
+                if ((cubes[1].Time - cubes[0].Time < 0.25 && ScanMethod.IsSlider(cubes[0], cubes[1], cubes[0].Direction, true)) || cubes[1].Time - cubes[0].Time <= 0.1429)
                 {
                     cubes[1].Direction = ScanMethod.FindAngleViaPosition(cubes, 1, 0, cubes[0].Direction, true);
                     if (cubes[0].CutDirection == 8)
@@ -173,7 +173,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             else
             {
                 cubes[1].Direction = ScanMethod.Mod(ScanMethod.DirectionToDegree[cubes[1].CutDirection] + cubes[1].AngleOffset, 360);
-                if (((cubes[1].Time - cubes[0].Time <= 0.25 && ScanMethod.IsSlider(cubes[0], cubes[1], cubes[0].Direction, true)) || cubes[1].Time - cubes[0].Time <= 0.1429)
+                if (((cubes[1].Time - cubes[0].Time < 0.25 && ScanMethod.IsSlider(cubes[0], cubes[1], cubes[0].Direction, true)) || cubes[1].Time - cubes[0].Time <= 0.1429)
                     && ScanMethod.IsSameDirection(cubes[0].Direction, cubes[1].Direction, 67.5))
                 {
                     if (cubes[0].Time != cubes[1].Time)
@@ -194,7 +194,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (cubes[i].CutDirection == 8)
                 {
                     // Pattern
-                    if ((cubes[i].Time - cubes[i - 1].Time <= 0.25 && ScanMethod.IsSlider(cubes[i - 1], cubes[i], cubes[i - 1].Direction, true))
+                    if ((cubes[i].Time - cubes[i - 1].Time < 0.25 && ScanMethod.IsSlider(cubes[i - 1], cubes[i], cubes[i - 1].Direction, true))
                         || cubes[i].Time - cubes[i - 1].Time <= 0.1429)
                     {
                         cubes[i].Direction = ScanMethod.FindAngleViaPosition(cubes, i, i - 1, cubes[i - 1].Direction, true);
@@ -282,7 +282,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 else
                 {
                     cubes[i].Direction = ScanMethod.Mod(ScanMethod.DirectionToDegree[cubes[i].CutDirection] + cubes[i].AngleOffset, 360);
-                    if (((cubes[i].Time - cubes[i - 1].Time <= 0.25 && ScanMethod.IsSlider(cubes[i - 1], cubes[i], cubes[i - 1].Direction, false))
+                    if (((cubes[i].Time - cubes[i - 1].Time < 0.25 && ScanMethod.IsSlider(cubes[i - 1], cubes[i], cubes[i - 1].Direction, false))
                         || cubes[i].Time - cubes[i - 1].Time <= 0.1429)
                     && ScanMethod.IsSameDirection(cubes[i].Direction, cubes[i - 1].Direction, 67.5))
                     {
@@ -325,7 +325,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             if (cubes.Last().CutDirection == 8)
             {
-                if ((cubes.Last().Time - cubes[cubes.Count() - 2].Time <= 0.25 && ScanMethod.IsSlider(cubes[cubes.Count() - 2], cubes.Last(), cubes[cubes.Count() - 2].Direction, true))
+                if ((cubes.Last().Time - cubes[cubes.Count() - 2].Time < 0.25 && ScanMethod.IsSlider(cubes[cubes.Count() - 2], cubes.Last(), cubes[cubes.Count() - 2].Direction, true))
                     || cubes.Last().Time - cubes[cubes.Count() - 2].Time <= 0.1429)
                 {
                     cubes.Last().Direction = ScanMethod.FindAngleViaPosition(cubes, cubes.Count - 1, cubes.Count - 2, cubes[cubes.Count() - 2].Direction, true);
@@ -355,7 +355,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             else
             {
                 cubes.Last().Direction = ScanMethod.Mod(ScanMethod.DirectionToDegree[cubes.Last().CutDirection] + cubes.Last().AngleOffset, 360);
-                if (((cubes.Last().Time - cubes[cubes.Count() - 2].Time <= 0.25 && ScanMethod.IsSlider(cubes[cubes.Count() - 2], cubes.Last(), cubes[cubes.Count() - 2].Direction, false))
+                if (((cubes.Last().Time - cubes[cubes.Count() - 2].Time < 0.25 && ScanMethod.IsSlider(cubes[cubes.Count() - 2], cubes.Last(), cubes[cubes.Count() - 2].Direction, false))
                     || cubes.Last().Time - cubes[cubes.Count() - 2].Time <= 0.1429) && ScanMethod.IsSameDirection(cubes[cubes.Count() - 2].Direction, cubes.Last().Direction, 67.5))
                 {
                     cubes.Last().Pattern = true;

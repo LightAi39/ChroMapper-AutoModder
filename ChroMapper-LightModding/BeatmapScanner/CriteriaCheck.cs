@@ -1082,7 +1082,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentObstacle("R4D - Must have positive width, height and duration", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
-                if (w.Duration < min && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3) &&
+                if (w.Duration < min && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3) && w.PosY + w.Height > 1 &&
                     !walls.Exists(wa => wa != w && wa.PosX + wa.Width >= w.PosX + w.Width && wa.PosX <= w.PosX + w.Width && wa.Duration >= min && w.JsonTime >= wa.JsonTime && w.JsonTime <= wa.JsonTime + wa.Duration + max))
                 {
                     CreateDiffCommentObstacle("R4E - Shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w);
