@@ -1077,8 +1077,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
-                if (w.Width <= 0 || w.Duration <= 0 || (w.Height <= 0 && w.PosX >= 0 && w.PosX <= 3 && (w.PosY > 0 || w.PosY + w.Height >= 0)) ||
-                    ((w.PosX == 1 || w.PosX == 2 || (w.PosX + w.Width >= 2 && w.PosX <= 3)) && w.Height < 0) || (w.PosX + w.Width >= 1 && w.PosX <= 4) && w.PosY + w.Height >= 0 && w.Height < 0)
+                if (w.Width <= 0 || w.Duration <= 0 || // Negative width or duration
+                    (w.Height <= 0 && w.PosX >= 0 && w.PosX <= 3 && (w.PosY > 0 || w.PosY + w.Height >= 0)) // In or above with negative height
+                    || ((w.PosX == 1 || w.PosX == 2 || (w.PosX + w.Width >= 2 && w.PosX <= 3)) && w.Height < 0)  // Under middle lane with negative height
+                    || (w.PosX + w.Width >= 1 && w.PosX <= 4) && w.PosY + w.Height >= 0 && w.Height < 0) // Stretch above with negative height
                 {
                     CreateDiffCommentObstacle("R4D - Must have positive width, height and duration", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
@@ -1859,25 +1861,25 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             if (note.PosY == 0 && note.CutDirection == 6 && note2.PosY == 2)
                             {
-                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
                                 issue = Severity.Warning;
                             }
                             if (note.PosY == 2 && note.CutDirection == 4 && note2.PosY == 0)
                             {
-                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
                                 issue = Severity.Warning;
                             }
                             if (note2.PosY == 0 && note2.CutDirection == 7 && note.PosY == 2)
                             {
-                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
                                 issue = Severity.Warning;
                             }
                             if (note2.PosY == 2 && note2.CutDirection == 5 && note.PosY == 0)
                             {
-                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
                                 issue = Severity.Warning;
                             }
@@ -1886,41 +1888,41 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             if (note2.PosY == 0 && note2.CutDirection == 6 && note.PosY == 2)
                             {
-                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
                                 issue = Severity.Warning;
                             }
                             if (note2.PosY == 2 && note2.CutDirection == 4 && note.PosY == 0)
                             {
-                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
                                 issue = Severity.Warning;
                             }
                             if (note.PosY == 0 && note.CutDirection == 7 && note2.PosY == 2)
                             {
-                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
                                 issue = Severity.Warning;
                             }
                             if (note.PosY == 2 && note.CutDirection == 5 && note2.PosY == 0)
                             {
-                                CreateDiffCommentNote("R3E - Badcut Double", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
                                 issue = Severity.Warning;
                             }
                         }
                         if (note.PosX == note2.PosX - 2)
                         {
-                            if (note.PosY == 0 && note.CutDirection == 6 && note2.PosY == 2)
+                            if (note.PosY < note2.PosY && note.CutDirection == 6)
                             {
-                                if(notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.CutDirection == 5 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.CutDirection == 5 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
                                     issue = Severity.Warning;
                                 }
                             }
-                            if (note.PosY == 2 && note.CutDirection == 4 && note2.PosY == 0)
+                            if (note.PosY > note2.PosY && note.CutDirection == 4)
                             {
                                 if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.CutDirection == 7 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
@@ -1929,7 +1931,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     issue = Severity.Warning;
                                 }
                             }
-                            if (note2.PosY == 0 && note2.CutDirection == 7 && note.PosY == 2)
+                            if (note.PosY > note2.PosY && note2.CutDirection == 7)
                             {
                                 if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.CutDirection == 4 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
@@ -1938,7 +1940,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     issue = Severity.Warning;
                                 }
                             }
-                            if (note2.PosY == 2 && note2.CutDirection == 5 && note.PosY == 0)
+                            if (note.PosY < note2.PosY && note2.CutDirection == 5)
                             {
                                 if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.CutDirection == 6 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
@@ -1950,7 +1952,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         if (note.PosX == note2.PosX + 2)
                         {
-                            if (note2.PosY == 0 && note2.CutDirection == 6 && note.PosY == 2)
+                            if (note.PosY > note2.PosY && note2.CutDirection == 6)
                             {
                                 if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.CutDirection == 5 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
@@ -1959,7 +1961,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     issue = Severity.Warning;
                                 }
                             }
-                            if (note2.PosY == 2 && note2.CutDirection == 4 && note.PosY == 0)
+                            if (note.PosY < note2.PosY && note2.CutDirection == 4)
                             {
                                 if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.CutDirection == 7 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
@@ -1968,7 +1970,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     issue = Severity.Warning;
                                 }
                             }
-                            if (note.PosY == 0 && note.CutDirection == 7 && note2.PosY == 2)
+                            if (note.PosY < note2.PosY && note.CutDirection == 7)
                             {
                                 if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.CutDirection == 4 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
@@ -1977,7 +1979,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     issue = Severity.Warning;
                                 }
                             }
-                            if (note.PosY == 2 && note.CutDirection == 5 && note2.PosY == 0)
+                            if (note.PosY > note2.PosY && note.CutDirection == 5)
                             {
                                 if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.CutDirection == 6 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
