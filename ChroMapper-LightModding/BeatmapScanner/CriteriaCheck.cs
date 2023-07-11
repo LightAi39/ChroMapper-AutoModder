@@ -1915,7 +1915,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             if (note.PosY < note2.PosY && note.CutDirection == 6)
                             {
-                                if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.CutDirection == 5 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
@@ -1924,7 +1924,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                             if (note.PosY > note2.PosY && note.CutDirection == 4)
                             {
-                                if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.CutDirection == 7 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
@@ -1933,7 +1933,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                             if (note.PosY > note2.PosY && note2.CutDirection == 7)
                             {
-                                if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.CutDirection == 4 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
@@ -1942,7 +1942,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                             if (note.PosY < note2.PosY && note2.CutDirection == 5)
                             {
-                                if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.CutDirection == 6 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
@@ -1954,7 +1954,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         {
                             if (note.PosY > note2.PosY && note2.CutDirection == 6)
                             {
-                                if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.CutDirection == 5 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
@@ -1963,7 +1963,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                             if (note.PosY < note2.PosY && note2.CutDirection == 4)
                             {
-                                if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.CutDirection == 7 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
@@ -1972,7 +1972,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                             if (note.PosY < note2.PosY && note.CutDirection == 7)
                             {
-                                if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.CutDirection == 4 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
@@ -1981,7 +1981,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                             if (note.PosY > note2.PosY && note.CutDirection == 5)
                             {
-                                if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.CutDirection == 6 && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
                                         && note.PosX == c.Line && note.PosY == c.Layer));
