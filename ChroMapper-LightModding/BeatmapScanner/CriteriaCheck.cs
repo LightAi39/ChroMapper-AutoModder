@@ -297,7 +297,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             }
             foreach (var w in wall)
             {
-                if (w.JsonTime < limit && (w.PosX == 1 || w.PosX == 2))
+                if (w.JsonTime < limit && (w.PosX + w.Width >= 2 || w.PosX == 2))
                 {
                     CreateDiffCommentObstacle("R1E - Hot Start", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
@@ -1055,17 +1055,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
             }
 
-            var dodge = 0d;
-            var side = 0;
-            var first = 0d;
-            bool start = false;
             BaseObstacle previous = null;
             foreach (var w in walls)
             {
                 bpm.SetCurrentBPM(w.JsonTime);
                 var min = bpm.ToBeatTime(Plugin.configs.MinimumWallDuration);
                 var max = bpm.ToBeatTime(Plugin.configs.ShortWallTrailDuration);
-                var sec = bpm.ToBeatTime(1);
+
                 if (w.PosY <= 0 && w.Height > 1 && ((w.PosX + w.Width == 2 && walls.Exists(wa => wa != w && wa.PosY == 0 && wa.Height > 0 && wa.PosX + wa.Width == 3 && wa.JsonTime <= w.JsonTime + w.Duration && wa.JsonTime >= w.JsonTime)) ||
                     (w.PosX + w.Width == 3 && walls.Exists(wa => wa != w && wa.PosY == 0 && wa.Height > 0 && wa.PosX + wa.Width == 2 && wa.JsonTime <= w.JsonTime + w.Duration && wa.JsonTime >= w.JsonTime))))
                 {
@@ -1091,67 +1087,57 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentObstacle("R4E - Shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w);
                     issue = Severity.Fail;
                 }
-                if(previous != null)
+
+                previous = w;
+            }
+
+            for (int i = walls.Count - 1; i >= 0; i--)
+            {
+                var dodge = 0d;
+                var side = 0;
+                var w = walls[i];
+                bpm.SetCurrentBPM(w.JsonTime);
+                var sec = bpm.ToBeatTime(1);
+                // All the walls under 1 second
+                var wallinsec = walls.Where(x => x.JsonTime < w.JsonTime && x.JsonTime >= w.JsonTime - sec).ToList();
+                wallinsec.Reverse();
+                if (w.PosX + w.Width == 2)
                 {
-                    if (w.JsonTime > first + sec)
-                    {
-                        start = true;
-                        first = 0;
-                    }
-                    if (start && dodge > 0) // more than a sec happen
-                    {
-                        var amount = (w.JsonTime - previous.JsonTime) / sec;
-                        if(amount < 1)
-                        {
-                            dodge *= amount;
-                        }
-                        else
-                        {
-                            dodge = 0;
-                        }
-                        if(dodge == 0)
-                        {
-                            start = false;
-                        }
-                    }
-                }
-                if (w.PosX + w.Width == 2 && side != 2)
-                {
-                    if(first == 0)
-                    {
-                        first = w.JsonTime;
-                    }
                     side = 2;
                     dodge++;
                 }
-                else if (w.PosX == 2 && side != 1)
+                else if (w.PosX == 2)
                 {
-                    if (first == 0)
-                    {
-                        first = w.JsonTime;
-                    }
                     side = 1;
                     dodge++;
                 }
-                else if(previous != null)
+                if(dodge == 1) // Ignore non-dodge walls
                 {
-                    if(!(w.PosX + w.Width == 2 && side == 2) && !(w.PosX == 2 && side == 1) && w.JsonTime - previous.JsonTime >= 1)
+                    // Count the amount of dodge in the last second
+                    foreach (var wall in wallinsec)
                     {
-                        side = 0;
+                        if (wall.PosX + wall.Width == 2 && side != 2)
+                        {
+                            side = 2;
+                            dodge++;
+                        }
+                        else if (wall.PosX == 2 && side != 1)
+                        {
+                            side = 1;
+                            dodge++;
+                        }
+                    }
+                    if (dodge >= Plugin.configs.MaximumDodgeWallPerSecond)
+                    {
+                        CreateDiffCommentObstacle("R4B - Over the " + Plugin.configs.MaximumDodgeWallPerSecond + " dodge per second limit", CommentTypesEnum.Issue, w);
+                        issue = Severity.Fail;
+                    }
+                    else if (dodge >= Plugin.configs.SubjectiveDodgeWallPerSecond)
+                    {
+                        CreateDiffCommentObstacle("Y4A - " + Plugin.configs.SubjectiveDodgeWallPerSecond + "+ dodge per second need justification", CommentTypesEnum.Suggestion, w);
+                        issue = Severity.Warning;
                     }
                 }
-                if (dodge > Plugin.configs.MaximumDodgeWallPerSecond && side != 0)
-                {
-                    CreateDiffCommentObstacle("R4B - Over the " + Plugin.configs.MaximumDodgeWallPerSecond + " dodge per second limit", CommentTypesEnum.Issue, w);
-                    issue = Severity.Fail;
-                }
-                else if (dodge > Plugin.configs.SubjectiveDodgeWallPerSecond && side != 0)
-                {
-                    CreateDiffCommentObstacle("Y4A - " + Plugin.configs.SubjectiveDodgeWallPerSecond + "+ dodge per second need justification", CommentTypesEnum.Suggestion, w);
-                    issue = Severity.Warning;
-                }
-
-                previous = w;
             }
 
             bpm.ResetCurrentBPM();
