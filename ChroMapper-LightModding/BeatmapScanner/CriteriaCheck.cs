@@ -1101,12 +1101,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 // All the walls under 1 second
                 var wallinsec = walls.Where(x => x.JsonTime < w.JsonTime && x.JsonTime >= w.JsonTime - sec).ToList();
                 wallinsec.Reverse();
-                if (w.PosX + w.Width == 2)
+                if (w.PosX + w.Width == 2 && w.PosY <= 2 && w.PosY + w.Height >= 3)
                 {
                     side = 2;
                     dodge++;
                 }
-                else if (w.PosX == 2)
+                else if (w.PosX == 2 && w.PosY <= 2 && w.PosY + w.Height >= 3)
                 {
                     side = 1;
                     dodge++;
@@ -1116,12 +1116,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     // Count the amount of dodge in the last second
                     foreach (var wall in wallinsec)
                     {
-                        if (wall.PosX + wall.Width == 2 && side != 2)
+                        if (wall.PosX + wall.Width == 2 && side != 2 && wall.PosY <= 2 && wall.PosY + wall.Height >= 3)
                         {
                             side = 2;
                             dodge++;
                         }
-                        else if (wall.PosX == 2 && side != 1)
+                        else if (wall.PosX == 2 && side != 1 && wall.PosY <= 2 && wall.PosY + wall.Height >= 3)
                         {
                             side = 1;
                             dodge++;
