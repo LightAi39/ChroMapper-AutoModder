@@ -890,7 +890,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     issue = Severity.Fail;
                 }
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
-                var eventState = new List<EventState>();
                 var eventLitTime = new List<List<EventLitTime>>();
                 if(v3events.Count > 0)
                 {
@@ -901,55 +900,25 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     for (var i = 0; i < 12; i++)
                     {
-                        EventState es = new(false, 0, 0);
-                        eventState.Add(es);
                         eventLitTime.Add(new());
                     }
                     for (int i = 0; i < lights.Count; i++)
                     {
                         var ev = lights[i];
                         bpm.SetCurrentBPM(ev.JsonTime);
-                        var fadeTime = bpm.ToBeatTime(Plugin.configs.LightFadeDuration);
-                        var reactTime = bpm.ToBeatTime(Plugin.configs.LightBombReactionTime);
-                        if ((ev.IsOn || ev.IsFlash) && eventState[ev.Type].State == false)
+                        var fadeTime = bpm.ToBeatTime(Plugin.configs.LightFadeDuration, true);
+                        var reactTime = bpm.ToBeatTime(Plugin.configs.LightBombReactionTime, true);
+                        if (ev.IsOn || ev.IsFlash || ev.IsFade)
                         {
-                            eventState[ev.Type].State = true;
-                            eventState[ev.Type].Time = ev.JsonTime;
-                            eventState[ev.Type].FadeTime = 0;
-                            var elt = eventLitTime[ev.Type].Find(e => e.Time >= ev.JsonTime);
-                            if (elt != null)
+                            eventLitTime[ev.Type].Add(new(ev.JsonTime, true));
+                            if (ev.IsFade)
                             {
-                                elt.Time = ev.JsonTime;
-                                elt.State = true;
-                            }
-                            else
-                            {
-                                eventLitTime[ev.Type].Add(new(ev.JsonTime, true));
+                                eventLitTime[ev.Type].Add(new(ev.JsonTime + fadeTime, false));
                             }
                         }
-                        if (ev.IsFade)
+                        if (ev.FloatValue < 0.25 || ev.IsOff)
                         {
-                            eventState[ev.Type].State = false;
-                            eventState[ev.Type].Time = ev.JsonTime;
-                            eventState[ev.Type].FadeTime = fadeTime;
-                            var elt = eventLitTime[ev.Type].Find(e => e.Time >= ev.JsonTime);
-                            if (elt != null)
-                            {
-                                elt.Time = ev.JsonTime;
-                                elt.State = true;
-                            }
-                            else
-                            {
-                                eventLitTime[ev.Type].Add(new(ev.JsonTime, true));
-                            }
-                            eventLitTime[ev.Type].Add(new(ev.JsonTime + fadeTime, false));
-                        }
-                        if ((ev.FloatValue < 0.25 || ev.IsOff) && eventState[ev.Type].State != false)
-                        {
-                            eventState[ev.Type].FadeTime = eventState[ev.Type].State == true ? reactTime : Math.Min(reactTime, eventState[ev.Type].FadeTime);
-                            eventState[ev.Type].State = false;
-                            eventState[ev.Type].Time = ev.JsonTime;
-                            eventLitTime[ev.Type].Add(new(ev.JsonTime + (eventState[ev.Type].State == true ? reactTime : Math.Min(reactTime, eventState[ev.Type].FadeTime)), false));
+                            eventLitTime[ev.Type].Add(new(ev.JsonTime + reactTime, false));
                         }
                     }
                     foreach (var elt in eventLitTime)
@@ -962,7 +931,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         var isLit = false;
                         foreach (var el in eventLitTime)
                         {
-                            var t = el.Find(e => e.Time <= bomb.JsonTime);
+                            var t = el.Find(e => e.Time < bomb.JsonTime);
                             if (t != null)
                             {
                                 isLit = isLit || t.State;
