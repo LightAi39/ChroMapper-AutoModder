@@ -681,7 +681,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         break;
                     }
-                    if (c.Time >= w.JsonTime - max && c.Time <= w.JsonTime + w.Duration + max && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer <= w.PosY + w.Height && c.Layer >= w.PosY - 1)
+                    if (c.Time >= w.JsonTime - max && c.Time <= w.JsonTime + w.Duration + max && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer < w.PosY + w.Height && c.Layer >= w.PosY - 1)
                     {
                         CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
                         issue = Severity.Fail;
@@ -695,7 +695,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         break;
                     }
-                    if (b.JsonTime >= w.JsonTime - max && b.JsonTime <= w.JsonTime + w.Duration + max && b.PosX <= w.PosX + w.Width - 1 && b.PosX >= w.PosX && b.PosY <= w.PosY + w.Height && b.PosY >= w.PosY - 1)
+                    if (b.JsonTime >= w.JsonTime - max && b.JsonTime <= w.JsonTime + w.Duration + max && b.PosX <= w.PosX + w.Width - 1 && b.PosX >= w.PosX && b.PosY < w.PosY + w.Height && b.PosY >= w.PosY - 1)
                     {
                         CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
                         issue = Severity.Fail;
@@ -709,7 +709,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         break;
                     }
-                    if (c.JsonTime >= w.JsonTime - max && c.JsonTime <= w.JsonTime + w.Duration + max && c.TailPosX <= w.PosX + w.Width - 1 && c.TailPosX >= w.PosX && c.TailPosY <= w.PosY + w.Height && c.TailPosY >= w.PosY - 1)
+                    if (c.JsonTime >= w.JsonTime - max && c.JsonTime <= w.JsonTime + w.Duration + max && c.TailPosX <= w.PosX + w.Width - 1 && c.TailPosX >= w.PosX && c.TailPosY < w.PosY + w.Height && c.TailPosY >= w.PosY - 1)
                     {
                         CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
                         issue = Severity.Fail;
