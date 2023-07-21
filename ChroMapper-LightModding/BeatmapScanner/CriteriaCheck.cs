@@ -65,7 +65,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
             songOffset = BeatSaberSongContainer.Instance.Song.SongTimeOffset;
-            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents.Where(x => x.Bpm != 100000).ToList(), songOffset);
+            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), songOffset);
             analysedMap = new(song.Directory);
             swings = analysedMap.GetSwingData((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower());
 
@@ -722,9 +722,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var c = cubes[i];
                 for (int j = i + 1; j < cubes.Count; j++)
                 {
-                    bpm.SetCurrentBPM(c.Time);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = cubes[j];
+                    bpm.SetCurrentBPM(c2.Time);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     if (c2.Time - c.Time >= max)
                     {
                         break;
@@ -738,9 +738,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
                 for (int j = 0; j < bombs.Count; j++)
                 {
-                    bpm.SetCurrentBPM(c.Time);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var b = bombs[j];
+                    bpm.SetCurrentBPM(b.JsonTime);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     if (b.JsonTime - c.Time >= max)
                     {
                         break;
@@ -754,9 +754,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
                 for (int j = i + 1; j < chains.Count; j++)
                 {
-                    bpm.SetCurrentBPM(c.Time);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = chains[j];
+                    bpm.SetCurrentBPM(c2.JsonTime);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     if (c2.JsonTime - c.Time >= max)
                     {
                         break;
@@ -775,9 +775,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var b = bombs[i];
                 for (int j = i + 1; j < bombs.Count; j++)
                 {
-                    bpm.SetCurrentBPM(b.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var b2 = bombs[j];
+                    bpm.SetCurrentBPM(b2.JsonTime);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     if (b2.JsonTime - b.JsonTime >= max)
                     {
                         break;
@@ -791,9 +791,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
                 for (int j = i + 1; j < chains.Count; j++)
                 {
-                    bpm.SetCurrentBPM(b.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = chains[j];
+                    bpm.SetCurrentBPM(c2.JsonTime);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     if (c2.JsonTime - b.JsonTime >= max)
                     {
                         break;
@@ -812,9 +812,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var c = chains[i];
                 for (int j = i + 1; j < chains.Count; j++)
                 {
-                    bpm.SetCurrentBPM(c.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     var c2 = chains[j];
+                    bpm.SetCurrentBPM(c2.JsonTime);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
                     if (c2.JsonTime - c.JsonTime >= max)
                     {
                         break;
