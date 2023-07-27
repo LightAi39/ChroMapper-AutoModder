@@ -1633,9 +1633,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch);
                         issue = true;
                     }
-                    else
+                    else if(ch.TailJsonTime - ch.JsonTime > 0.125)
                     {
-                        CreateDiffCommentLink("R2D - No slider detected, duration might be too high", CommentTypesEnum.Unsure, ch);
+                        CreateDiffCommentLink("R2D - Duration might be too high", CommentTypesEnum.Unsure, ch);
                         unsure = true;
                     }
                 }
@@ -1646,9 +1646,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch);
                         issue = true;
                     }
-                    else
+                    else if (ch.TailJsonTime - ch.JsonTime > 0.125)
                     {
-                        CreateDiffCommentLink("Y2A - No slider detected, duration might be too high", CommentTypesEnum.Unsure, ch);
+                        CreateDiffCommentLink("Y2A - Duration might be too high", CommentTypesEnum.Unsure, ch);
                         unsure = true;
                     }
                 }
