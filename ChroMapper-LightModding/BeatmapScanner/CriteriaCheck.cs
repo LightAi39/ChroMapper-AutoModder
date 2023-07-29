@@ -1988,6 +1988,39 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                 continue;
                             }
                         }
+                        if(IsDiagonal)
+                        {
+                            var pos = (currentNote.PosX, currentNote.PosY);
+                            var target = (compareTo.PosX, compareTo.PosY);
+                            var index = 1;
+                            var rev = Reverse.Get(currentNote.CutDirection);
+                            while (!NoteDirection.IsLimit(pos, rev))
+                            {
+                                pos = NoteDirection.Move(currentNote, -index);
+                                index++;
+                                if(pos == target)
+                                {
+                                    arr.Add(currentNote);
+                                    lastTime = (currentNote.JsonTime / bpm * 60);
+                                    continue;
+                                }
+                            }
+                            target = (currentNote.PosX, currentNote.PosY);
+                            pos = (compareTo.PosX, compareTo.PosY);
+                            index = 1;
+                            rev = Reverse.Get(compareTo.CutDirection);
+                            while (!NoteDirection.IsLimit(pos, rev))
+                            {
+                                pos = NoteDirection.Move(compareTo, -index);
+                                index++;
+                                if (pos == target)
+                                {
+                                    arr.Add(currentNote);
+                                    lastTime = (currentNote.JsonTime / bpm * 60);
+                                    continue;
+                                }
+                            }
+                        }
                         if (a.swingStartBeat != 0) // Check if default
                         {
                             if (a.notes.Count == 2) // Only two notes
