@@ -1978,6 +1978,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         var a = swings.Where(x => x.notes.Any(y => y.b == currentNote.JsonTime && y.c == currentNote.Type && y.d == currentNote.CutDirection && y.x == currentNote.PosX && y.y == currentNote.PosY)).FirstOrDefault();
                         var b = swings.Where(x => x.notes.Any(y => y.b == compareTo.JsonTime && y.c == compareTo.Type && y.d == compareTo.CutDirection && y.x == compareTo.PosX && y.y == compareTo.PosY)).FirstOrDefault();
+                        var d = Math.Sqrt(Math.Pow(currentNote.PosX - compareTo.PosX, 2) + Math.Pow(currentNote.PosY - compareTo.PosY, 2));
+                        if (d > 0.499 && d < 1.001) // Adjacent
+                        {
+                            if(currentNote.CutDirection == compareTo.CutDirection && SwingType.Diagonal.Contains(currentNote.CutDirection))
+                            {
+                                arr.Add(currentNote);
+                                lastTime = (currentNote.JsonTime / bpm * 60);
+                                continue;
+                            }
+                        }
                         if (a.swingStartBeat != 0) // Check if default
                         {
                             if (a.notes.Count == 2) // Only two notes
