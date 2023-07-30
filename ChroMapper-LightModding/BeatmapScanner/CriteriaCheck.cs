@@ -1948,7 +1948,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
 
                 List<BaseNote> arr = new();
+                List<BaseNote> arr2 = new();
                 var lastTime = 0d;
+                
                 for (int i = 0; i < notes.Count; i++)
                 {
                     var currentNote = notes[i];
@@ -1994,30 +1996,36 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             var target = (compareTo.PosX, compareTo.PosY);
                             var index = 1;
                             var rev = Reverse.Get(currentNote.CutDirection);
-                            while (!NoteDirection.IsLimit(pos, rev))
+                            if(currentNote.CutDirection != 8)
                             {
-                                pos = NoteDirection.Move(currentNote, -index);
-                                index++;
-                                if(pos == target)
+                                while (!NoteDirection.IsLimit(pos, rev))
                                 {
-                                    arr.Add(currentNote);
-                                    lastTime = (currentNote.JsonTime / bpm * 60);
-                                    continue;
+                                    pos = NoteDirection.Move(currentNote, -index);
+                                    index++;
+                                    if (pos == target)
+                                    {
+                                        arr2.Add(currentNote);
+                                        lastTime = (currentNote.JsonTime / bpm * 60);
+                                        continue;
+                                    }
                                 }
                             }
-                            target = (currentNote.PosX, currentNote.PosY);
-                            pos = (compareTo.PosX, compareTo.PosY);
-                            index = 1;
-                            rev = Reverse.Get(compareTo.CutDirection);
-                            while (!NoteDirection.IsLimit(pos, rev))
+                            if(compareTo.CutDirection != 8)
                             {
-                                pos = NoteDirection.Move(compareTo, -index);
-                                index++;
-                                if (pos == target)
+                                target = (currentNote.PosX, currentNote.PosY);
+                                pos = (compareTo.PosX, compareTo.PosY);
+                                index = 1;
+                                rev = Reverse.Get(compareTo.CutDirection);
+                                while (!NoteDirection.IsLimit(pos, rev))
                                 {
-                                    arr.Add(currentNote);
-                                    lastTime = (currentNote.JsonTime / bpm * 60);
-                                    continue;
+                                    pos = NoteDirection.Move(compareTo, -index);
+                                    index++;
+                                    if (pos == target)
+                                    {
+                                        arr2.Add(currentNote);
+                                        lastTime = (currentNote.JsonTime / bpm * 60);
+                                        continue;
+                                    }
                                 }
                             }
                         }
@@ -2068,6 +2076,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentNote("R3E - Swing Path", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Fail;
+                }
+                foreach (var item in arr2)
+                {
+                    CreateDiffCommentNote("R3E - Swing Path?", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                                        && item.PosX == c.Line && item.PosY == c.Layer));
+                    issue = Severity.Warning;
                 }
             }
 
