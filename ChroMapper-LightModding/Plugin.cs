@@ -51,7 +51,7 @@ namespace ChroMapper_LightModding
         public ChainGridContainer ChainGridContainer { get => _chainGridContainer; }
         public BPMChangeGridContainer BPMChangeGridContainer { get => _bpmChangeGridContainer; }
         public BeatmapObjectContainerCollection BeatmapObjectContainerCollection { get => _beatmapObjectContainerCollection; }
-        public AudioTimeSyncController AudoTimeSyncController { get => _audioTimeSyncController; }
+        public AudioTimeSyncController AudioTimeSyncController { get => _audioTimeSyncController; }
 
         private bool subscribedToEvents = false;
         private bool hasLoadedIntoEditor = false;
