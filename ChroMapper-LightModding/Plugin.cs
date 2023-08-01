@@ -409,7 +409,6 @@ namespace ChroMapper_LightModding
             currentReview.Comments.Remove(currentReview.Comments.First(x => x.Id == comment.Id));
             currentReview.Comments.Add(comment);
             currentReview.Comments = currentReview.Comments.OrderBy(f => f.StartBeat).ToList();
-            editorUI.ShowReviewCommentUI(comment.Id);
             if (comment.MarkAsSuppressed)
             {
                 outlineHelper.SetOutlineColor(comment.Objects, Color.gray);

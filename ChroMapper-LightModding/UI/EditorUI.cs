@@ -297,7 +297,7 @@ namespace ChroMapper_LightModding.UI
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
 
             dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(() => { ShowReviewCommentUI(plugin.HandleCreateComment(type, message, selectedObjects)); }, "Create");
+            dialog.AddFooterButton(() => { plugin.HandleCreateComment(type, message, selectedObjects); }, "Create");
 
             dialog.Open();
         }
