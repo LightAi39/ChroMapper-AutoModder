@@ -72,6 +72,11 @@ namespace ChroMapper_LightModding.Helpers
         /// <param name="overrideExisting">Wether to override the existing file (delete it) or keep it.</param>
         public void MapsetReviewSaver(bool overrideExisting = true)
         {
+            if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews"))
+            {
+                Directory.CreateDirectory($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews");
+            }
+
             if (plugin.currentlyLoadedFilePath == "external") overrideExisting = false;
             var song = plugin.BeatSaberSongContainer.Song;
             var review = plugin.currentMapsetReview;
