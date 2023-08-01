@@ -160,7 +160,7 @@ namespace ChroMapper_LightModding.UI
                 }
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"Beats: {beats} | {comment.Type} - {comment.Message}{read}")
-                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
+                    .OnClick(() => { plugin.AudioTimeSyncController.MoveToJsonTime(comment.StartBeat); });
             }
 
             if (plugin.currentReview.Comments.Count == 0)
@@ -214,7 +214,7 @@ namespace ChroMapper_LightModding.UI
                 }
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"Beats: {beats} | {comment.Type} - {comment.Message}{read}")
-                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
+                    .OnClick(() => { plugin.AudioTimeSyncController.MoveToJsonTime(comment.StartBeat); });
             }
 
             if (startIndex == 5)
@@ -338,7 +338,7 @@ namespace ChroMapper_LightModding.UI
 
             dialog.AddComponent<ButtonComponent>()
                     .WithLabel("Go to beat")
-                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
+                    .OnClick(() => { plugin.AudioTimeSyncController.MoveToJsonTime(comment.StartBeat); });
 
             dialog.AddFooterButton(null, "Close");
             dialog.AddFooterButton(() =>
@@ -378,7 +378,7 @@ namespace ChroMapper_LightModding.UI
                 }
                 dialog.AddComponent<ButtonComponent>()
                     .WithLabel($"Beats: {beats} | {comment.Type} - {comment.Message}{read}")
-                    .OnClick(() => { plugin.AudoTimeSyncController.MoveToJsonTime(comment.StartBeat); });
+                    .OnClick(() => { plugin.AudioTimeSyncController.MoveToJsonTime(comment.StartBeat); });
             }
 
             dialog.AddFooterButton(null, "Close");
@@ -1089,7 +1089,7 @@ namespace ChroMapper_LightModding.UI
 
         public void CheckBeatForComment()
         {
-            (float min, float max) beat = (plugin.AudoTimeSyncController.CurrentJsonTime - 0.01f, plugin.AudoTimeSyncController.CurrentJsonTime + 0.01f);
+            (float min, float max) beat = (plugin.AudioTimeSyncController.CurrentJsonTime - 0.01f, plugin.AudioTimeSyncController.CurrentJsonTime + 0.01f);
 
             List<Comment> comments = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat >= beat.min && o.Beat <= beat.max)).ToList();
 
