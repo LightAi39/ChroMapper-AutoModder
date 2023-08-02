@@ -121,6 +121,7 @@
     <EmbeddedResource Include="Assets\Icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="manifest.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
