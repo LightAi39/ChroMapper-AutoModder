@@ -1749,7 +1749,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         red[i - 1] = temp;
                     }
                     var sliderAngle2 = ScanMethod.Mod(ScanMethod.ConvertRadiansToDegrees(Math.Atan2(red[i].Layer - red[i - 1].Layer, red[i].Line - red[i - 1].Line)), 360);
-                    if (Math.Abs(sliderAngle2 - red[i].Direction) >= 45 && Math.Abs(sliderAngle2 - red[i].Direction) < 90)
+                    if (Math.Abs(sliderAngle2 - red[i].Direction) >= 45 && Math.Abs(sliderAngle2 - red[i].Direction) <= 90)
                     {
                         CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i - 1]);
                         CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i]);
