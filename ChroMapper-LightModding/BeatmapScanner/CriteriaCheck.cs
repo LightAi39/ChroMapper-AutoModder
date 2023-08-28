@@ -1644,7 +1644,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     if (slider)
                     {
                         CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch);
-                        issue = true;
+                        unsure = true;
                     }
                     else if (ch.TailJsonTime - ch.JsonTime > 0.125)
                     {
