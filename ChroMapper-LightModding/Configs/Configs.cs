@@ -13,7 +13,7 @@
         public double MinimumWallDuration { get; set; } = 0.0138;
         public double ShortWallTrailDuration { get; set; } = 0.25;
         public double MaximumDodgeWallPerSecond { get; set; } = 3.5;
-        public double SubjectiveDodgeWallPerSecond { get; set; } = 2;
+        public double SubjectiveDodgeWallPerSecond { get; set; } = 2.5;
         public double MaxChainRotation { get; set; } = 30;
         public double ChainLinkVsAir { get; set; } = 0.75;
         public double VBMinBottomNoteTime { get; set; } = 0.075;
@@ -24,6 +24,7 @@
         public double VBMinBombTime { get; set; } = 0.20;
         public double VBMinimum { get; set; } = 0.025;
         public double ParityWarningAngle { get; set; } = 180;
+        public bool DisplayBadcut { get; set; } = true;
         public bool ParityDebug { get; set; } = false;
     }
 }

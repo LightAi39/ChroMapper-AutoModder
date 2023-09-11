@@ -1806,141 +1806,144 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 notes = notes.OrderBy(o => o.JsonTime).ToList();
                 BaseNote previous = notes[0];
 
-                for (int i = 0; i < notes.Count; i++)
+                if(Plugin.configs.DisplayBadcut)
                 {
-                    var note = notes[i];
-                    var note2 = notes.Where(n => n.JsonTime == note.JsonTime && n != note && ((n.Type == 0 && note.Type == 1) || (n.Type == 1 && note.Type == 0))).FirstOrDefault();
-                    if (note2 != null)
+                    for (int i = 0; i < notes.Count; i++)
                     {
-                        if (note.PosX == note2.PosX - 1)
+                        var note = notes[i];
+                        var note2 = notes.Where(n => n.JsonTime == note.JsonTime && n != note && ((n.Type == 0 && note.Type == 1) || (n.Type == 1 && note.Type == 0))).FirstOrDefault();
+                        if (note2 != null)
                         {
-                            if (note.PosY == 0 && note.CutDirection == 6 && note2.PosY == 2)
+                            if (note.PosX == note2.PosX - 1)
                             {
-                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                issue = Severity.Warning;
-                            }
-                            if (note.PosY == 2 && note.CutDirection == 4 && note2.PosY == 0)
-                            {
-                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                issue = Severity.Warning;
-                            }
-                            if (note2.PosY == 0 && note2.CutDirection == 7 && note.PosY == 2)
-                            {
-                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                issue = Severity.Warning;
-                            }
-                            if (note2.PosY == 2 && note2.CutDirection == 5 && note.PosY == 0)
-                            {
-                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                issue = Severity.Warning;
-                            }
-                        }
-                        if (note.PosX == note2.PosX + 1)
-                        {
-                            if (note2.PosY == 0 && note2.CutDirection == 6 && note.PosY == 2)
-                            {
-                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                issue = Severity.Warning;
-                            }
-                            if (note2.PosY == 2 && note2.CutDirection == 4 && note.PosY == 0)
-                            {
-                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                issue = Severity.Warning;
-                            }
-                            if (note.PosY == 0 && note.CutDirection == 7 && note2.PosY == 2)
-                            {
-                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                issue = Severity.Warning;
-                            }
-                            if (note.PosY == 2 && note.CutDirection == 5 && note2.PosY == 0)
-                            {
-                                CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                issue = Severity.Warning;
-                            }
-                        }
-                        if (note.PosX == note2.PosX - 2)
-                        {
-                            if (note.PosY < note2.PosY && note.CutDirection == 6)
-                            {
-                                if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (note.PosY == 0 && note.CutDirection == 6 && note2.PosY == 2)
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                    issue = Severity.Warning;
+                                }
+                                if (note.PosY == 2 && note.CutDirection == 4 && note2.PosY == 0)
+                                {
+                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                    issue = Severity.Warning;
+                                }
+                                if (note2.PosY == 0 && note2.CutDirection == 7 && note.PosY == 2)
+                                {
+                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                    issue = Severity.Warning;
+                                }
+                                if (note2.PosY == 2 && note2.CutDirection == 5 && note.PosY == 0)
+                                {
+                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
                                     issue = Severity.Warning;
                                 }
                             }
-                            if (note.PosY > note2.PosY && note.CutDirection == 4)
+                            if (note.PosX == note2.PosX + 1)
                             {
-                                if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (note2.PosY == 0 && note2.CutDirection == 6 && note.PosY == 2)
                                 {
                                     CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                    issue = Severity.Warning;
+                                }
+                                if (note2.PosY == 2 && note2.CutDirection == 4 && note.PosY == 0)
+                                {
+                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                    issue = Severity.Warning;
+                                }
+                                if (note.PosY == 0 && note.CutDirection == 7 && note2.PosY == 2)
+                                {
+                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                    issue = Severity.Warning;
+                                }
+                                if (note.PosY == 2 && note.CutDirection == 5 && note2.PosY == 0)
+                                {
+                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
                                     issue = Severity.Warning;
                                 }
                             }
-                            if (note.PosY > note2.PosY && note2.CutDirection == 7)
+                            if (note.PosX == note2.PosX - 2)
                             {
-                                if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (note.PosY < note2.PosY && note.CutDirection == 6)
                                 {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                    issue = Severity.Warning;
+                                    if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                    {
+                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Warning;
+                                    }
+                                }
+                                if (note.PosY > note2.PosY && note.CutDirection == 4)
+                                {
+                                    if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                    {
+                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Warning;
+                                    }
+                                }
+                                if (note.PosY > note2.PosY && note2.CutDirection == 7)
+                                {
+                                    if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                    {
+                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Warning;
+                                    }
+                                }
+                                if (note.PosY < note2.PosY && note2.CutDirection == 5)
+                                {
+                                    if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                    {
+                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Warning;
+                                    }
                                 }
                             }
-                            if (note.PosY < note2.PosY && note2.CutDirection == 5)
+                            if (note.PosX == note2.PosX + 2)
                             {
-                                if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (note.PosY > note2.PosY && note2.CutDirection == 6)
                                 {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                    issue = Severity.Warning;
+                                    if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                    {
+                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Warning;
+                                    }
                                 }
-                            }
-                        }
-                        if (note.PosX == note2.PosX + 2)
-                        {
-                            if (note.PosY > note2.PosY && note2.CutDirection == 6)
-                            {
-                                if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (note.PosY < note2.PosY && note2.CutDirection == 4)
                                 {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                    issue = Severity.Warning;
+                                    if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                    {
+                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Warning;
+                                    }
                                 }
-                            }
-                            if (note.PosY < note2.PosY && note2.CutDirection == 4)
-                            {
-                                if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (note.PosY < note2.PosY && note.CutDirection == 7)
                                 {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                    issue = Severity.Warning;
+                                    if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                    {
+                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Warning;
+                                    }
                                 }
-                            }
-                            if (note.PosY < note2.PosY && note.CutDirection == 7)
-                            {
-                                if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                if (note.PosY > note2.PosY && note.CutDirection == 5)
                                 {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                    issue = Severity.Warning;
-                                }
-                            }
-                            if (note.PosY > note2.PosY && note.CutDirection == 5)
-                            {
-                                if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
-                                {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                        && note.PosX == c.Line && note.PosY == c.Layer));
-                                    issue = Severity.Warning;
+                                    if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
+                                    {
+                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Suggestion, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
+                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Warning;
+                                    }
                                 }
                             }
                         }
