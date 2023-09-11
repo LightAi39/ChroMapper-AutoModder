@@ -2392,15 +2392,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             // TODO: This is trash, could easily be done better
                             if (other.PosY == note.PosY)
                             {
-                                if (((SwingType.Up_Left.Contains(note.CutDirection) && SwingType.Up_Right.Contains(other.CutDirection)) ||
-                                    (SwingType.Up_Right.Contains(note.CutDirection) && SwingType.Up_Left.Contains(other.CutDirection))))
+                                if (((SwingType.Up_Left.Contains(note.CutDirection) && SwingType.Up_Right.Contains(other.CutDirection) && note.Type == 1) ||
+                                    (SwingType.Up_Right.Contains(note.CutDirection) && SwingType.Up_Left.Contains(other.CutDirection) && note.Type == 0)))
                                 {
                                     arr2.Add(other);
                                     arr2.Add(note);
                                     break;
                                 }
-                                if ((SwingType.Down_Left.Contains(note.CutDirection) && SwingType.Down_Right.Contains(other.CutDirection)) ||
-                                (SwingType.Down_Right.Contains(note.CutDirection) && SwingType.Down_Left.Contains(other.CutDirection)))
+                                if ((SwingType.Down_Left.Contains(note.CutDirection) && SwingType.Down_Right.Contains(other.CutDirection) && note.Type == 1) ||
+                                (SwingType.Down_Right.Contains(note.CutDirection) && SwingType.Down_Left.Contains(other.CutDirection) && note.Type == 0))
                                 {
                                     arr2.Add(other);
                                     arr2.Add(note);
