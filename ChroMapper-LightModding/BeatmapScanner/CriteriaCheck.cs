@@ -1348,16 +1348,34 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         else if (note.PosX < 2)
                                         {
                                             arr.Add(note);
+                                            if (note.Type == 0 || note.Type == 1)
+                                            {
+                                                CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
+                                                    cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
+                                                issue = Severity.Fail;
+                                            }
                                         }
                                     }
                                     else if (note.PosX < 2)
                                     {
                                         arr.Add(note);
+                                        if (note.Type == 0 || note.Type == 1)
+                                        {
+                                            CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
+                                                cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
+                                            issue = Severity.Fail;
+                                        }
                                     }
                                 }
                                 else if (note.PosX < 2)
                                 {
                                     arr.Add(note);
+                                    if (note.Type == 0 || note.Type == 1)
+                                    {
+                                        CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
+                                            cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Fail;
+                                    }
                                 }
                             }
                         }
@@ -1390,16 +1408,34 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         else if (note.PosX > 1)
                                         {
                                             arr.Add(note);
+                                            if (note.Type == 0 || note.Type == 1)
+                                            {
+                                                CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
+                                                    cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
+                                                issue = Severity.Fail;
+                                            }
                                         }
                                     }
                                     else if (note.PosX > 1)
                                     {
                                         arr.Add(note);
+                                        if (note.Type == 0 || note.Type == 1)
+                                        {
+                                            CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
+                                                cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
+                                            issue = Severity.Fail;
+                                        }
                                     }
                                 }
                                 else if (note.PosX > 1)
                                 {
                                     arr.Add(note);
+                                    if (note.Type == 0 || note.Type == 1)
+                                    {
+                                        CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
+                                            cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Fail;
+                                    }
                                 }
                             }
                         }
@@ -1411,16 +1447,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     if (note.PosY == 1 && note.PosX == 2)
                     {
                         lastMidR.Add(note);
-                    }
-                }
-
-                foreach (var n in arr)
-                {
-                    if (n.Type == 0 || n.Type == 1)
-                    {
-                        CreateDiffCommentNote("R2B - Is vision blocked", CommentTypesEnum.Issue,
-                            cubes.Find(c => c.Time == n.JsonTime && c.Type == n.Type && n.PosX == c.Line && n.PosY == c.Layer));
-                        issue = Severity.Fail;
                     }
                 }
 
@@ -1461,7 +1487,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - left.PosX, 2) + Math.Pow(note.PosY - left.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                arr.Add(note);
+                                                CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                issue = Severity.Fail;
                                             }
                                             continue;
                                         }
@@ -1477,7 +1504,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            arr.Add(note);
+                                            CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            issue = Severity.Fail;
                                             continue;
                                         }
                                     }
@@ -1488,7 +1516,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - right.PosX, 2) + Math.Pow(note.PosY - right.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                arr.Add(note);
+                                                CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                issue = Severity.Fail;
                                             }
                                             continue;
                                         }
@@ -1504,7 +1533,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            arr.Add(note);
+                                            CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            issue = Severity.Fail;
                                             continue;
                                         }
                                     }
@@ -1532,7 +1562,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - left.PosX, 2) + Math.Pow(note.PosY - left.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                arr.Add(note);
+                                                CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                issue = Severity.Fail;
                                             }
                                             continue;
                                         }
@@ -1548,7 +1579,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            arr.Add(note);
+                                            CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            issue = Severity.Fail;
                                             continue;
                                         }
                                     }
@@ -1559,7 +1591,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - right.PosX, 2) + Math.Pow(note.PosY - right.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                arr.Add(note);
+                                                CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                issue = Severity.Fail;
                                             }
                                             continue;
                                         }
@@ -1575,7 +1608,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            arr.Add(note);
+                                            CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            issue = Severity.Fail;
                                             continue;
                                         }
                                     }
@@ -1591,15 +1625,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     if (note.PosY == 1 && note.PosX == 2)
                     {
                         lastMidR.Add(note);
-                    }
-                }
-
-                foreach (var n in arr)
-                {
-                    if (n.Type == 3)
-                    {
-                        CreateDiffCommentBomb("R5E - Is vision blocked", CommentTypesEnum.Issue, n);
-                        issue = Severity.Fail;
                     }
                 }
             }
