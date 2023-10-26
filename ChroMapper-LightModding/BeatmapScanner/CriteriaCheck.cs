@@ -12,6 +12,9 @@ using Parity = ChroMapper_LightModding.BeatmapScanner.MapCheck.Parity;
 using Newtonsoft.Json;
 using UnityEngine;
 using Beatmap.Enums;
+using static ChroMapper_LightModding.BeatmapScanner.CriteriaCheck;
+using ChroMapper_LightModding.Helpers;
+using static Easing;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -93,6 +96,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 HandClap = HandClapCheck()
             };
 
+            if(Plugin.configs.HighlightOffbeat)
+            {
+                HighlightOffbeat();
+            }
             FuseBombComments();
 
             return diffCrit;
@@ -2460,16 +2467,33 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return issue;
         }
 
-        #endregion
+        public void HighlightOffbeat()
+        {
+            var swings = BeatmapScanner.Datas.OrderBy(c => c.Time).ToList();
+            if (swings.Any())
+            {
+                foreach(var swing in swings)
+                {
+                    var fraction = FractionConverter.Convert((decimal)(swing.Start.Time % 1), false, (decimal)0.015625);
+                    if(fraction.Contains("16") || fraction.Contains("32") || fraction.Contains("64"))
+                    {
+                        CreateDiffCommentNote(fraction, CommentTypesEnum.Unsure, swing.Start);
+                    }
+                }
+            }
 
-        #region Comments
+        }
 
-        /// <summary>
-        /// Create a comment in the mapsetreview file
-        /// </summary>
-        /// <param name="message">the message</param>
-        /// <param name="type">the type</param>
-        private void CreateSongInfoComment(string message, CommentTypesEnum type)
+    #endregion
+
+    #region Comments
+
+    /// <summary>
+    /// Create a comment in the mapsetreview file
+    /// </summary>
+    /// <param name="message">the message</param>
+    /// <param name="type">the type</param>
+    private void CreateSongInfoComment(string message, CommentTypesEnum type)
         {
             string id = Guid.NewGuid().ToString();
 

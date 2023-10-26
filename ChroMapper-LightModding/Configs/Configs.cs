@@ -25,6 +25,7 @@
         public double VBMinimum { get; set; } = 0.025;
         public double ParityWarningAngle { get; set; } = 180;
         public bool DisplayBadcut { get; set; } = true;
+        public bool HighlightOffbeat { get; set; } = false;
         public bool ParityDebug { get; set; } = false;
     }
 }
