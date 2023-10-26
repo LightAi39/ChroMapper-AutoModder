@@ -10,11 +10,9 @@ using ChroMapper_LightModding.BeatmapScanner.MapCheck;
 using JoshaParity;
 using Parity = ChroMapper_LightModding.BeatmapScanner.MapCheck.Parity;
 using Newtonsoft.Json;
-using UnityEngine;
 using Beatmap.Enums;
-using static ChroMapper_LightModding.BeatmapScanner.CriteriaCheck;
 using ChroMapper_LightModding.Helpers;
-using static Easing;
+using System.Diagnostics;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -404,17 +402,25 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault();
             }
-            if(averageSliderDuration <= 0.033)
+            if (averageSliderDuration <= 0.01785714285)
             {
-                averageSliderDuration = 0.03125; // 1/32
+                averageSliderDuration = 0.015625;
             }
-            else if(averageSliderDuration <= 0.042)
+            else if (averageSliderDuration <= 0.025)
             {
-                averageSliderDuration = 0.0416666667; // 1/24
+                averageSliderDuration = 0.02083333333;
+            }
+            else if (averageSliderDuration <= 0.03571428571)
+            {
+                averageSliderDuration = 0.03125;
+            }
+            else if(averageSliderDuration <= 0.05)
+            {
+                averageSliderDuration = 0.04166666666;
             }
             else
             {
-                averageSliderDuration = 0.0625; // 1/16
+                averageSliderDuration = 0.0625;
             }
             foreach (var c in cube)
             {
