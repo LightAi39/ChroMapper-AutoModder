@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using Beatmap.Enums;
 using ChroMapper_LightModding.Helpers;
 using System.Diagnostics;
+using System.Windows.Media.Animation;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -2457,6 +2458,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
             return issue;
         }
 
+        public static readonly float[] AllowedSnap = { 0, 0.125f, 0.167f, 0.25f, 0.333f, 0.375f, 0.5f, 0.625f, 0.667f, 0.75f, 0.833f, 0.875f };
+
         public void HighlightOffbeat()
         {
             var swings = BeatmapScanner.Datas.OrderBy(c => c.Time).ToList();
@@ -2464,14 +2467,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 foreach(var swing in swings)
                 {
-                    var fraction = FractionConverter.Convert((decimal)(swing.Start.Time % 1), false, (decimal)0.015625);
-                    if(fraction.Contains("16") || fraction.Contains("32") || fraction.Contains("64"))
+                    var precision = swing.Start.Time % 1;
+                    if (!AllowedSnap.Contains(precision))
                     {
-                        CreateDiffCommentNote(fraction, CommentTypesEnum.Info, swing.Start);
+                        var reality = ScanMethod.RealToFraction(precision, 0.01);
+                        CreateDiffCommentNote(reality.N.ToString() + "/" + reality.D.ToString(), CommentTypesEnum.Info, swing.Start);
                     }
                 }
             }
-
         }
 
     #endregion
