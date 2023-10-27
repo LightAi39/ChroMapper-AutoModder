@@ -2467,7 +2467,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 foreach(var swing in swings)
                 {
-                    var precision = swing.Start.Time % 1;
+                    var precision = (float)Math.Round(swing.Start.Time % 1, 3);
                     if (!AllowedSnap.Contains(precision))
                     {
                         var reality = ScanMethod.RealToFraction(precision, 0.01);
