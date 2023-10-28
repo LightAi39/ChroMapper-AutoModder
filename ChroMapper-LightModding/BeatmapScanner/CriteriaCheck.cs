@@ -1161,8 +1161,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
             foreach (var l in links)
             {
                 var chain = (BaseChain)l;
-                var spacing = Math.Round(Math.Max(Math.Max(Math.Abs(l.TailPosX - l.PosX) * chain.Squish, Math.Abs(l.TailPosY - l.PosY) * chain.Squish), 0), 0);
-                if ((chain.SliceCount - 1) / spacing < Plugin.configs.ChainLinkVsAir)
+                var spacing = Math.Max(Math.Abs(l.TailPosX - l.PosX) * chain.Squish, Math.Abs(l.TailPosY - l.PosY) * chain.Squish);
+                if ((chain.SliceCount - 1) / spacing < Plugin.configs.ChainLinkVsAir) // 0.75
                 {
                     CreateDiffCommentLink("R2D -  Must be at least 12.5% links versus air/empty-space", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
