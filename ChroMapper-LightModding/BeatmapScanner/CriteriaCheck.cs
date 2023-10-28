@@ -1168,9 +1168,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     spacing = (y + x / 2f) * chain.Squish;
                 }
-                if (spacing / (chain.SliceCount - 1) > Plugin.configs.ChainLinkVsAir)
+                var value = spacing / (chain.SliceCount - 1);
+                if (value > Plugin.configs.ChainLinkVsAir)
                 {
-                    CreateDiffCommentLink("R2D - Link spacing issue. Current: " + Math.Round(spacing / (chain.SliceCount - 1), 3) + " Maximum: " + Plugin.configs.ChainLinkVsAir, CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D - Link spacing issue. Maximum squish for placement: " + Math.Round(chain.Squish / value, 3), CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
                 var horizontal = Math.Abs(l.PosX - l.TailPosX);
