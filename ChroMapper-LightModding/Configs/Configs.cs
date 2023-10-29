@@ -2,6 +2,7 @@
 {
     public class Configs
     {
+        public int Version { get; set; } = 0; // Do not change this
         public int MaxChar { get; set; } = 30;
         public double HotStartDuration { get; set; } = 1.33;
         public double ColdEndDuration { get; set; } = 2;
@@ -25,7 +26,7 @@
         public double VBMinimum { get; set; } = 0.025;
         public double ParityWarningAngle { get; set; } = 180;
         public bool DisplayBadcut { get; set; } = true;
-        public bool HighlightOffbeat { get; set; } = false;
+        public bool HighlightOffbeat { get; set; } = true;
         public bool ParityDebug { get; set; } = false;
     }
 }

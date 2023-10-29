@@ -12,15 +12,9 @@ using UnityEngine.InputSystem;
 using Color = UnityEngine.Color;
 using ChroMapper_LightModding.UI;
 using ChroMapper_LightModding.Helpers;
-using static UnityEngine.InputSystem.InputRemoting;
 using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.BeatmapScanner;
-using UnityEngine.UI;
-using System.Windows.Input;
-using System.Configuration;
-using System.Xml.Linq;
-using System.Runtime.Remoting.Messaging;
-using ChroMapper_LightModding.Configs;
+
 
 namespace ChroMapper_LightModding
 {
@@ -32,6 +26,7 @@ namespace ChroMapper_LightModding
         public bool showOutlines = true;
 
         static public string fileVersion = "0.1.2";
+        static public int configVersion = 1;
 
         private BeatSaberSongContainer _beatSaberSongContainer = null!;
         private NoteGridContainer _noteGridContainer = null!;
@@ -96,10 +91,16 @@ namespace ChroMapper_LightModding
             if(File.Exists(path))
             {
                 configs = JsonConvert.DeserializeObject<Configs.Configs>(File.ReadAllText(@path));
+                if(configs.Version != configVersion) // New version, overwrite default value
+                {
+                    configs = new();
+                }
+                configs.Version = configVersion;
                 File.WriteAllText(@path, JsonConvert.SerializeObject(configs, Formatting.Indented));
             }
             else
             {
+                configs.Version = configVersion;
                 File.WriteAllText(@path, JsonConvert.SerializeObject(configs, Formatting.Indented));
             }
 
