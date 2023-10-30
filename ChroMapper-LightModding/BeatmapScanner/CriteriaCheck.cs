@@ -1172,9 +1172,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentLink("R2D - Link spacing issue. Maximum squish for placement: " + max, CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
-                var newX = l.PosX + (x * Math.Cos(ScanMethod.ConvertDegreesToRadians(ScanMethod.DirectionToDegree[l.CutDirection] + chain.AngleOffset)));
-                var newY = l.PosY + (y * Math.Sin(ScanMethod.ConvertDegreesToRadians(ScanMethod.DirectionToDegree[l.CutDirection] + chain.AngleOffset)));
-                if (newX > 4 || newX < -1 || newY > 2 || newY < 0)
+                var newX = l.PosX + (l.TailPosX - l.PosX) * chain.Squish;
+                var newY = l.PosY + (l.TailPosY - l.PosY) * chain.Squish;
+                if (newX > 4 || newX < -1 || newY > 2.33 || newY < -0.33)
                 {
                     CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
