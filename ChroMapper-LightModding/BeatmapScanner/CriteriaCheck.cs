@@ -1159,23 +1159,21 @@ namespace ChroMapper_LightModding.BeatmapScanner
             foreach (var l in links)
             {
                 var chain = (BaseChain)l;
-                var x = Math.Abs(l.TailPosX - l.PosX);
-                var y = Math.Abs(l.TailPosY - l.PosY);
-                float spacing = (x + y / 2f) * chain.Squish;
-                if (x < y)
+                var x = Math.Abs(l.TailPosX - l.PosX) * chain.Squish;
+                var y = Math.Abs(l.TailPosY - l.PosY) * chain.Squish;
+                var distance = Math.Sqrt(x * x + y * y);
+                var value = distance / (chain.SliceCount - 1);
+                // Difference between expected and current distance, multiplied by current squish to know maximum value
+                double max;
+                if(l.TailPosX == l.PosX) max = Math.Round(Plugin.configs.ChainLinkVsAir / value * chain.Squish, 2);
+                else max = Math.Round(Plugin.configs.ChainLinkVsAir * 1.1 / value * chain.Squish, 2);
+                if (chain.Squish - 0.01 > max)
                 {
-                    spacing = (y + x / 2f) * chain.Squish;
-                }
-                var value = spacing / (chain.SliceCount - 1);
-                if (value > Plugin.configs.ChainLinkVsAir)
-                {
-                    CreateDiffCommentLink("R2D - Link spacing issue. Maximum squish for placement: " + Math.Round(chain.Squish / value, 3), CommentTypesEnum.Issue, l);
+                    CreateDiffCommentLink("R2D - Link spacing issue. Maximum squish for placement: " + max, CommentTypesEnum.Issue, l);
                     issue = Severity.Fail;
                 }
-                var horizontal = Math.Abs(l.PosX - l.TailPosX);
-                var vertical = Math.Abs(l.PosY - l.TailPosY);
-                var newX = l.PosX + (horizontal * Math.Cos(ScanMethod.ConvertDegreesToRadians(ScanMethod.DirectionToDegree[l.CutDirection] + chain.AngleOffset)));
-                var newY = l.PosY + (vertical * Math.Sin(ScanMethod.ConvertDegreesToRadians(ScanMethod.DirectionToDegree[l.CutDirection] + chain.AngleOffset)));
+                var newX = l.PosX + (x * Math.Cos(ScanMethod.ConvertDegreesToRadians(ScanMethod.DirectionToDegree[l.CutDirection] + chain.AngleOffset)));
+                var newY = l.PosY + (y * Math.Sin(ScanMethod.ConvertDegreesToRadians(ScanMethod.DirectionToDegree[l.CutDirection] + chain.AngleOffset)));
                 if (newX > 4 || newX < -1 || newY > 2 || newY < 0)
                 {
                     CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l);
