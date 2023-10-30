@@ -1,19 +1,17 @@
 ﻿using Beatmap.Base;
+using Beatmap.Enums;
 using ChroMapper_LightModding.BeatmapScanner.Data;
 using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
+using ChroMapper_LightModding.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Models;
+using JoshaParity;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
-using ChroMapper_LightModding.BeatmapScanner.MapCheck;
-using JoshaParity;
 using Parity = ChroMapper_LightModding.BeatmapScanner.MapCheck.Parity;
-using Newtonsoft.Json;
-using Beatmap.Enums;
-using ChroMapper_LightModding.Helpers;
-using System.Diagnostics;
-using System.Windows.Media.Animation;
 
 namespace ChroMapper_LightModding.BeatmapScanner
 {
@@ -62,7 +60,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             this.characteristic = characteristic;
             this.difficultyRank = difficultyRank;
             this.difficulty = difficulty;
-            
+
             var song = plugin.BeatSaberSongContainer.Song;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
@@ -95,7 +93,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 HandClap = HandClapCheck()
             };
 
-            if(Plugin.configs.HighlightOffbeat)
+            if (Plugin.configs.HighlightOffbeat)
             {
                 HighlightOffbeat();
             }
@@ -415,7 +413,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 averageSliderDuration = 0.03125;
             }
-            else if(averageSliderDuration <= 0.05)
+            else if (averageSliderDuration <= 0.05)
             {
                 averageSliderDuration = 0.04166666666;
             }
@@ -610,11 +608,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
         public Severity NJSCheck()
         {
             var issue = Severity.Success;
-           
+
             List<JoshaParity.SwingData> list = swings.ToList();
 
             List<double> sps = new();
-            
+
             for (int i = 0; i < BeatSaberSongContainer.Instance.LoadedSongLength - 1; i++)
             {
                 bpm.SetCurrentBPM(bpm.ToRealTime(i, true));
@@ -659,7 +657,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
             }
 
-            if(issue == Severity.Success)
+            if (issue == Severity.Success)
             {
                 ExtendOverallComment("R1A - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString());
                 ExtendOverallComment("R1A - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString());
@@ -905,7 +903,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 var eventLitTime = new List<List<EventLitTime>>();
-                if(v3events.Count > 0)
+                if (v3events.Count > 0)
                 {
                     ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked.");
                     issue = Severity.Warning;
@@ -1094,7 +1092,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     side = 1;
                     dodge++;
                 }
-                if(dodge == 1) // Ignore non-dodge walls
+                if (dodge == 1) // Ignore non-dodge walls
                 {
                     // Count the amount of dodge in the last second
                     foreach (var wall in wallinsec)
@@ -1189,15 +1187,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     issue = Severity.Fail;
                 }
                 var note = notes.Find(x => x.Time >= l.TailJsonTime && x.Type == l.Color);
-                if(note != null)
+                if (note != null)
                 {
                     if (l.TailJsonTime + (l.TailJsonTime - l.JsonTime) > note.Time)
-                {
-                    CreateDiffCommentLink("R2D - Duration between tail and next note is too short", CommentTypesEnum.Issue, l);
-                    issue = Severity.Fail;
+                    {
+                        CreateDiffCommentLink("R2D - Duration between tail and next note is too short", CommentTypesEnum.Issue, l);
+                        issue = Severity.Fail;
+                    }
                 }
-                }
-                
+
                 var temp = new Cube(notes.First())
                 {
                     Direction = ScanMethod.Mod(ScanMethod.DirectionToDegree[l.CutDirection] + l.AngleOffset, 360),
@@ -1302,10 +1300,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
             if (hadIssue)
             {
                 return Severity.Fail;
-            } else if (hadWarning)
+            }
+            else if (hadWarning)
             {
                 return Severity.Warning;
-            } else
+            }
+            else
             {
                 return Severity.Success;
             }
@@ -1325,7 +1325,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             BaseDifficulty baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
             if (baseDifficulty.Notes.Any())
             {
-                var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();;
+                var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList(); ;
                 List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).ToList();
                 List<BaseNote> lastMidL = new();
                 List<BaseNote> lastMidR = new();
@@ -1353,7 +1353,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             {
                                 // Also fine
                             }
-                            else 
+                            else
                             {
                                 var s = swings.Where(x => x.notes.Exists(y => y.b == notes[i].JsonTime && y.d == notes[i].CutDirection && y.c == notes[i].Type && y.x == notes[i].PosX && y.y == notes[i].PosY)).ToList();
                                 if (s.Count > 0)
@@ -1477,7 +1477,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 for (var i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
-                    if(note.Type == 3)
+                    if (note.Type == 3)
                     {
                         bpm.SetCurrentBPM(note.JsonTime);
                         var MaxTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMaxBombTime);
@@ -1503,7 +1503,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                 {
                                     if (left != null)
                                     {
-                                        if(left.CutDirection == 8)
+                                        if (left.CutDirection == 8)
                                         {
                                             var di = Math.Sqrt(Math.Pow(note.PosX - left.PosX, 2) + Math.Pow(note.PosY - left.PosY, 2));
                                             if (di >= 0 && di < 1.001)
@@ -1638,7 +1638,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             }
                         }
                     }
-                    
+
                     if (note.PosY == 1 && note.PosX == 1)
                     {
                         lastMidL.Add(note);
@@ -1666,7 +1666,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
             var chains = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
             var slider = false;
-            if(cubes.Exists(x => x.Slider))
+            if (cubes.Exists(x => x.Slider))
             {
                 slider = true;
             }
@@ -1674,12 +1674,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (ch.TailJsonTime - ch.JsonTime >= averageSliderDuration * 4.2)
                 {
-                    if(slider)
+                    if (slider)
                     {
                         CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch);
                         issue = true;
                     }
-                    else if(ch.TailJsonTime - ch.JsonTime > 0.125)
+                    else if (ch.TailJsonTime - ch.JsonTime > 0.125)
                     {
                         CreateDiffCommentLink("R2D - Duration might be too high", CommentTypesEnum.Unsure, ch);
                         unsure = true;
@@ -1715,7 +1715,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (((left.Time - previous.Time <= 0.25 && ScanMethod.IsSameDirection(left.Direction, previous.Direction, 67.5)) || (left.Time - previous.Time <= 0.142857)) && left.Time != previous.Time && left.Line == previous.Line && left.Layer == previous.Layer)
                     {
-                        if(left.CutDirection == 8)
+                        if (left.CutDirection == 8)
                         {
                             CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Unsure, left);
                             unsure = true;
@@ -1754,11 +1754,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 previous = right;
             }
 
-            if(issue)
+            if (issue)
             {
                 return Severity.Fail;
             }
-            else if(unsure)
+            else if (unsure)
             {
                 return Severity.Warning;
             }
@@ -1835,7 +1835,33 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
         #region SwingPath
 
-        // Implementation of Kivan Eval hitboxPath.ts
+        public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
+        {
+            Vector2 direction = B - A;
+            Vector2 pointAP = P - A;
+
+            float t = Vector2.Dot(pointAP, direction) / Vector2.Dot(direction, direction);
+            if (t < 0)
+            {
+                // Before A
+            }
+            else if (t > 1)
+            {
+                // After B
+                Vector2 closestPoint = B;
+                float distance = Vector2.Distance(P, closestPoint);
+                if (distance < 0.4) return true;
+            }
+            else
+            {
+                // In between
+                Vector2 closestPoint = A + t * direction;
+                float distance = Vector2.Distance(P, closestPoint);
+                if (distance < 0.4) return true;
+            }
+            return false;
+        }
+
         // Check if a note block the swing path of another note of a different color
         public Severity SwingPathCheck()
         {
@@ -1850,136 +1876,66 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
                 List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1 || n.Type == 3).ToList();
                 notes = notes.OrderBy(o => o.JsonTime).ToList();
-                BaseNote previous = notes[0];
-
-                if(Plugin.configs.DisplayBadcut)
+                List<List<Cube>> doubleNotes = new();
+                foreach (var note in cubes) // Find the double and group them together
                 {
-                    for (int i = 0; i < notes.Count; i++)
+                    var n = cubes.Where(n => n.Time == note.Time && n != note && ((n.Type == 0 && note.Type == 1) || (n.Type == 1 && note.Type == 0))).FirstOrDefault();
+                    if (n != null)
                     {
-                        var note = notes[i];
-                        var note2 = notes.Where(n => n.JsonTime == note.JsonTime && n != note && ((n.Type == 0 && note.Type == 1) || (n.Type == 1 && note.Type == 0))).FirstOrDefault();
-                        if (note2 != null)
+                        if(doubleNotes.Count == 0)
                         {
-                            if (note.PosX == note2.PosX - 1)
+                            doubleNotes.Add(new());
+                        }
+                        else if (!doubleNotes.Last().Exists(x => x.Time == n.Time))
+                        {
+                            doubleNotes.Add(new());
+                            doubleNotes[doubleNotes.Count - 1] = new();
+                        }
+                        if (!doubleNotes.Last().Contains(note)) doubleNotes.Last().Add(note);
+                        if (!doubleNotes.Last().Contains(n)) doubleNotes.Last().Add(n);
+                    }
+                }
+
+                foreach (var group in doubleNotes)
+                {
+                    for (int i = 0; i < group.Count; i++)
+                    {
+                        var note = group[i];
+                        for (int j = 0; j < group.Count; j++)
+                        {
+                            if (i == j) continue;
+                            var note2 = group[j];
+                            if (note.Time != note2.Time) break; // Not a double anymore
+                            if (note.Type == note2.Type) continue; // Same color
+                            // Fetch previous note, simulate swing
+                            var previous = cubes.Where(c => c.Time < note2.Time && c.Type == note2.Type).LastOrDefault();
+                            // This is calculating the angle between the previous note + extra swing and the next note
+                            var angleOfAttack = ScanMethod.FindAngleViaPosition(previous, note2, previous.Direction, false, 2);
+                            var a = note2.Direction - angleOfAttack;
+                            a = angleOfAttack + ((a + 180) % 360 - 180) / 2;
+                            if (!ScanMethod.IsSameDirection(note2.Direction, a, 67.5))
                             {
-                                if (note.PosY == 0 && note.CutDirection == 6 && note2.PosY == 2)
-                                {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                }
-                                if (note.PosY == 2 && note.CutDirection == 4 && note2.PosY == 0)
-                                {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                }
-                                if (note2.PosY == 0 && note2.CutDirection == 7 && note.PosY == 2)
-                                {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                }
-                                if (note2.PosY == 2 && note2.CutDirection == 5 && note.PosY == 0)
-                                {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                }
+                                a = ScanMethod.ReverseCutDirection(a);
                             }
-                            if (note.PosX == note2.PosX + 1)
+                            // Simulate the position of the line based on the new angle found
+                            var simulatedLineOfAttack = ScanMethod.SimulateSwingPos(note2.Line, note2.Layer, ScanMethod.ReverseCutDirection(a), 5);
+                            // Check if the other note is close to the line
+                            var InPath = NearestPointOnFiniteLine(new(note2.Line, note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.Line, note.Layer));
+                            if (InPath)
                             {
-                                if (note2.PosY == 0 && note2.CutDirection == 6 && note.PosY == 2)
+                                if(previous.CutDirection == 8 || note2.CutDirection == 8)
                                 {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
+                                    CreateDiffCommentNote("Swing Path?", CommentTypesEnum.Info, note);
                                 }
-                                if (note2.PosY == 2 && note2.CutDirection == 4 && note.PosY == 0)
+                                else
                                 {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                }
-                                if (note.PosY == 0 && note.CutDirection == 7 && note2.PosY == 2)
-                                {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                }
-                                if (note.PosY == 2 && note.CutDirection == 5 && note2.PosY == 0)
-                                {
-                                    CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                }
-                            }
-                            if (note.PosX == note2.PosX - 2)
-                            {
-                                if (note.PosY < note2.PosY && note.CutDirection == 6)
-                                {
-                                    if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
-                                    {
-                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                    }
-                                }
-                                if (note.PosY > note2.PosY && note.CutDirection == 4)
-                                {
-                                    if (notes.Exists(x => x.Type == note.Type && x.PosX >= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
-                                    {
-                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                    }
-                                }
-                                if (note.PosY > note2.PosY && note2.CutDirection == 7)
-                                {
-                                    if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
-                                    {
-                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                    }
-                                }
-                                if (note.PosY < note2.PosY && note2.CutDirection == 5)
-                                {
-                                    if (notes.Exists(x => x.Type == note2.Type && x.PosX <= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
-                                    {
-                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                    }
-                                }
-                            }
-                            if (note.PosX == note2.PosX + 2)
-                            {
-                                if (note.PosY > note2.PosY && note2.CutDirection == 6)
-                                {
-                                    if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
-                                    {
-                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                    }
-                                }
-                                if (note.PosY < note2.PosY && note2.CutDirection == 4)
-                                {
-                                    if (notes.Exists(x => x.Type == note2.Type && x.PosX >= note.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
-                                    {
-                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                    }
-                                }
-                                if (note.PosY < note2.PosY && note.CutDirection == 7)
-                                {
-                                    if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
-                                    {
-                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                    }
-                                }
-                                if (note.PosY > note2.PosY && note.CutDirection == 5)
-                                {
-                                    if (notes.Exists(x => x.Type == note.Type && x.PosX <= note2.PosX && x.JsonTime >= note.JsonTime - 1 && x.JsonTime < note.JsonTime))
-                                    {
-                                        CreateDiffCommentNote("R3E - Badcut Double?", CommentTypesEnum.Info, cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type
-                                            && note.PosX == c.Line && note.PosY == c.Layer));
-                                    }
+                                    CreateDiffCommentNote("Swing Path", CommentTypesEnum.Info, note);
                                 }
                             }
                         }
                     }
                 }
-
+                
                 List<BaseNote> arr = new();
                 List<BaseNote> arr2 = new();
                 var lastTime = 0d;
@@ -2075,12 +2031,6 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     CreateDiffCommentNote("R3E - Swing Path", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                                         && item.PosX == c.Line && item.PosY == c.Layer));
                     issue = Severity.Fail;
-                }
-                foreach (var item in arr2)
-                {
-                    CreateDiffCommentNote("R3E - Swing Path?", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
-                                        && item.PosX == c.Line && item.PosY == c.Layer));
-                    issue = Severity.Warning;
                 }
             }
 
@@ -2399,7 +2349,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         else if (d >= 2 && d <= 2.99) // 1-2 wide
                         {
-                            if(NoteDirection.Move(note) == NoteDirection.Move(other))
+                            if (NoteDirection.Move(note) == NoteDirection.Move(other))
                             {
                                 if ((note.Type == 0 && note.PosX > other.PosX) || (note.Type == 1 && note.PosX < other.PosX)) // Crossover
                                 {
@@ -2407,12 +2357,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     arr.Add(note);
                                     break;
                                 }
-                                else if ((note.PosX == other.PosX + 2 && note.PosY == other.PosY + 2)  || (other.PosX == note.PosX + 2 && other.PosY == note.PosY + 2) // Facing directly
-                                || (note.PosX == other.PosX + 2 && note.PosY == other.PosY - 2)  || (other.PosX == note.PosX + 2 && other.PosY == note.PosY - 2)
-                                || (note.PosX == other.PosX && note.PosY == other.PosY + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) || 
-                                (note.PosX == other.PosX && note.PosY == other.PosY - 2 && Reverse.Get(note.CutDirection) == other.CutDirection) || 
-                                (other.PosY == note.PosY && other.PosX == note.PosX + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) || 
-                                (other.PosY == note.PosY && other.PosX == note.PosX - 2 && Reverse.Get(note.CutDirection) == other.CutDirection)) 
+                                else if ((note.PosX == other.PosX + 2 && note.PosY == other.PosY + 2) || (other.PosX == note.PosX + 2 && other.PosY == note.PosY + 2) // Facing directly
+                                || (note.PosX == other.PosX + 2 && note.PosY == other.PosY - 2) || (other.PosX == note.PosX + 2 && other.PosY == note.PosY - 2)
+                                || (note.PosX == other.PosX && note.PosY == other.PosY + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) ||
+                                (note.PosX == other.PosX && note.PosY == other.PosY - 2 && Reverse.Get(note.CutDirection) == other.CutDirection) ||
+                                (other.PosY == note.PosY && other.PosX == note.PosX + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) ||
+                                (other.PosY == note.PosY && other.PosX == note.PosX - 2 && Reverse.Get(note.CutDirection) == other.CutDirection))
                                 {
                                     arr.Add(other);
                                     arr.Add(note);
@@ -2472,7 +2422,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var swings = BeatmapScanner.Datas.OrderBy(c => c.Time).ToList();
             if (swings.Any())
             {
-                foreach(var swing in swings)
+                foreach (var swing in swings)
                 {
                     var precision = (float)Math.Round(swing.Start.Time % 1, 3);
                     if (!AllowedSnap.Contains(precision))
@@ -2484,16 +2434,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
             }
         }
 
-    #endregion
+        #endregion
 
-    #region Comments
+        #region Comments
 
-    /// <summary>
-    /// Create a comment in the mapsetreview file
-    /// </summary>
-    /// <param name="message">the message</param>
-    /// <param name="type">the type</param>
-    private void CreateSongInfoComment(string message, CommentTypesEnum type)
+        /// <summary>
+        /// Create a comment in the mapsetreview file
+        /// </summary>
+        /// <param name="message">the message</param>
+        /// <param name="type">the type</param>
+        private void CreateSongInfoComment(string message, CommentTypesEnum type)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -2615,7 +2565,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 Message = message,
                 IsAutogenerated = true
             };
-            
+
             if (!CheckIfCommentAlreadyExists(comment))
             {
                 List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
@@ -2683,7 +2633,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         {
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
             var bombComments = comments.Where(c => c.Objects.All(o => o.Color == 3)).ToList(); // Only bombs comments
-            for(int i = bombComments.Count() - 2; i >= 0; i--)
+            for (int i = bombComments.Count() - 2; i >= 0; i--)
             {
                 if (bombComments[i + 1].Message == bombComments[i].Message && bombComments[i + 1].StartBeat >= bombComments[i].StartBeat && bombComments[i + 1].StartBeat <= bombComments[i].StartBeat + 0.25)
                 {

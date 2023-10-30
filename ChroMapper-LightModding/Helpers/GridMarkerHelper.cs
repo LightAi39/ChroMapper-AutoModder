@@ -189,7 +189,7 @@ namespace ChroMapper_LightModding.Helpers
                 case CommentTypesEnum.Issue:
                     return Color.red;
                 case CommentTypesEnum.Info:
-                    return Color.cyan;
+                    return Color.magenta;
                 default:
                     return Color.clear;
             }

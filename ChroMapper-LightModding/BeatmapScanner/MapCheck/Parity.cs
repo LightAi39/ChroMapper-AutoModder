@@ -1,8 +1,8 @@
 ﻿using Beatmap.Base;
+using ChroMapper_LightModding.BeatmapScanner.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
 {
@@ -785,6 +785,24 @@ namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
             (int x, int y) position = (note.PosX, note.PosY);
             int direction = note.CutDirection;
             switch(direction)
+            {
+                case 0: return (position.x, position.y + (1 * amount));
+                case 1: return (position.x, position.y - (1 * amount));
+                case 2: return (position.x - (1 * amount), position.y);
+                case 3: return (position.x + (1 * amount), position.y);
+                case 4: return (position.x - (1 * amount), position.y + (1 * amount));
+                case 5: return (position.x + (1 * amount), position.y + (1 * amount));
+                case 6: return (position.x - (1 * amount), position.y - (1 * amount));
+                case 7: return (position.x + (1 * amount), position.y - (1 * amount));
+                default: return (position.x, position.y);
+            }
+        }
+
+        public static (int x, int y) Move(Cube note, int amount = 1)
+        {
+            (int x, int y) position = (note.Line, note.Layer);
+            int direction = note.CutDirection;
+            switch (direction)
             {
                 case 0: return (position.x, position.y + (1 * amount));
                 case 1: return (position.x, position.y - (1 * amount));

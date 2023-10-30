@@ -174,9 +174,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
             (list[indexB], list[indexA]) = (list[indexA], list[indexB]);
         }
 
-        public static (double x, double y) SimulateSwingPos(double x, double y, double direction)
+        public static (double x, double y) SimulateSwingPos(double x, double y, double direction, double dis = 5)
         {
-            return (x + 5 * Math.Cos(ConvertDegreesToRadians(direction)), y + 5 * Math.Sin(ConvertDegreesToRadians(direction)));
+            return (x + dis * Math.Cos(ConvertDegreesToRadians(direction)), y + dis * Math.Sin(ConvertDegreesToRadians(direction)));
         }
 
         public static void HandlePattern(List<Cube> cubes)
@@ -275,6 +275,30 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var currentAngle = ReverseCutDirection(Mod(ConvertRadiansToDegrees(Math.Atan2(previousPosition.y - y, previousPosition.x - x)), 360));
 
             currentAngle = Math.Round(currentAngle / 45) * 45;
+
+            if (pattern && !IsSameDirection(guideAngle, currentAngle, 67.5))
+            {
+                currentAngle = ReverseCutDirection(currentAngle);
+            }
+            else if (!pattern && IsSameDirection(guideAngle, currentAngle, 67.5))
+            {
+                currentAngle = ReverseCutDirection(currentAngle);
+            }
+
+            return currentAngle;
+        }
+
+        public static double FindAngleViaPosition(Cube prev, Cube next, double guideAngle, bool pattern, double dis = 5)
+        {
+            (double x, double y) previousPosition = SimulateSwingPos(prev.Line, prev.Layer, guideAngle, dis);
+            (double x, double y) = (next.Line, next.Layer);
+
+            if (pattern)
+            {
+                previousPosition = (prev.Line, prev.Layer);
+            }
+
+            var currentAngle = ReverseCutDirection(Mod(ConvertRadiansToDegrees(Math.Atan2(previousPosition.y - y, previousPosition.x - x)), 360));
 
             if (pattern && !IsSameDirection(guideAngle, currentAngle, 67.5))
             {
