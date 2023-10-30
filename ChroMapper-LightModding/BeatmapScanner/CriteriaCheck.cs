@@ -248,7 +248,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
             }
 
-            var order = passStandard.OrderBy(x => x).ToList();
+            var order = passStandard.ToList();
+            order.Sort();
             if (passStandard.SequenceEqual(order))
             {
                 return Severity.Success;
