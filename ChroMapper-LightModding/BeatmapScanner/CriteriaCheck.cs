@@ -1165,7 +1165,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var value = distance / (chain.SliceCount - 1);
                 // Difference between expected and current distance, multiplied by current squish to know maximum value
                 double max;
-                if(l.TailPosX == l.PosX) max = Math.Round(Plugin.configs.ChainLinkVsAir / value * chain.Squish, 2);
+                if(l.TailPosY == l.PosY) max = Math.Round(Plugin.configs.ChainLinkVsAir / value * chain.Squish, 2);
                 else max = Math.Round(Plugin.configs.ChainLinkVsAir * 1.1 / value * chain.Squish, 2);
                 if (chain.Squish - 0.01 > max)
                 {
