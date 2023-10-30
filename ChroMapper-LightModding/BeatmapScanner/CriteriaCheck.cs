@@ -1909,27 +1909,30 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             if (note.Type == note2.Type) continue; // Same color
                             // Fetch previous note, simulate swing
                             var previous = cubes.Where(c => c.Time < note2.Time && c.Type == note2.Type).LastOrDefault();
-                            // This is calculating the angle between the previous note + extra swing and the next note
-                            var angleOfAttack = ScanMethod.FindAngleViaPosition(previous, note2, previous.Direction, false, 2);
-                            var a = note2.Direction - angleOfAttack;
-                            a = angleOfAttack + ((a + 180) % 360 - 180) / 2;
-                            if (!ScanMethod.IsSameDirection(note2.Direction, a, 67.5))
+                            if (previous != null)
                             {
-                                a = ScanMethod.ReverseCutDirection(a);
-                            }
-                            // Simulate the position of the line based on the new angle found
-                            var simulatedLineOfAttack = ScanMethod.SimulateSwingPos(note2.Line, note2.Layer, ScanMethod.ReverseCutDirection(a), 5);
-                            // Check if the other note is close to the line
-                            var InPath = NearestPointOnFiniteLine(new(note2.Line, note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.Line, note.Layer));
-                            if (InPath)
-                            {
-                                if(previous.CutDirection == 8 || note2.CutDirection == 8)
+                                // This is calculating the angle between the previous note + extra swing and the next note
+                                var angleOfAttack = ScanMethod.FindAngleViaPosition(previous, note2, previous.Direction, false, 2);
+                                var a = note2.Direction - angleOfAttack;
+                                a = angleOfAttack + ((a + 180) % 360 - 180) / 2;
+                                if (!ScanMethod.IsSameDirection(note2.Direction, a, 67.5))
                                 {
-                                    CreateDiffCommentNote("Swing Path?", CommentTypesEnum.Info, note);
+                                    a = ScanMethod.ReverseCutDirection(a);
                                 }
-                                else
+                                // Simulate the position of the line based on the new angle found
+                                var simulatedLineOfAttack = ScanMethod.SimulateSwingPos(note2.Line, note2.Layer, ScanMethod.ReverseCutDirection(a), 5);
+                                // Check if the other note is close to the line
+                                var InPath = NearestPointOnFiniteLine(new(note2.Line, note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.Line, note.Layer));
+                                if (InPath)
                                 {
-                                    CreateDiffCommentNote("Swing Path", CommentTypesEnum.Info, note);
+                                    if (previous.CutDirection == 8 || note2.CutDirection == 8)
+                                    {
+                                        CreateDiffCommentNote("Swing Path?", CommentTypesEnum.Info, note);
+                                    }
+                                    else
+                                    {
+                                        CreateDiffCommentNote("Swing Path", CommentTypesEnum.Info, note);
+                                    }
                                 }
                             }
                         }
