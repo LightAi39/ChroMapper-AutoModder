@@ -1257,7 +1257,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     else if (Math.Abs(rightHandSwings[i].startPos.rotation) > 135 || Math.Abs(rightHandSwings[i].endPos.rotation) > 135)
                     {
-                        CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
+                        if(Plugin.configs.ParityInvertedWarning)
+                        {
+                            CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
+                        }
                         hadWarning = true;
                     }
                 }
@@ -1275,7 +1278,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     else if (Math.Abs(leftHandSwings[i].startPos.rotation) > 135 || Math.Abs(leftHandSwings[i].endPos.rotation) > 135)
                     {
-                        CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
+                        if (Plugin.configs.ParityInvertedWarning)
+                        {
+                            CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
+                        }
                         hadWarning = true;
                     }
                 }
