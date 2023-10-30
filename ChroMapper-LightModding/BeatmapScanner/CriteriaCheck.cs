@@ -1900,6 +1900,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                 }
 
+                // No dot support for now
                 foreach (var group in doubleNotes)
                 {
                     for (int i = 0; i < group.Count; i++)
@@ -1911,29 +1912,44 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             var note2 = group[j];
                             if (note.Time != note2.Time) break; // Not a double anymore
                             if (note.Type == note2.Type) continue; // Same color
-                            // Fetch previous note, simulate swing
+                                                                   // Fetch previous note, simulate swing
                             var previous = cubes.Where(c => c.Time < note2.Time && c.Type == note2.Type).LastOrDefault();
                             if (previous != null)
                             {
+                                var angleOfAttack = note2.Direction;
+                                var prevDirection = ScanMethod.ReverseCutDirection(previous.Direction);
                                 // This is calculating the angle between the previous note + extra swing and the next note
-                                var angleOfAttack = ScanMethod.FindAngleViaPosition(previous, note2, previous.Direction, false, 2);
-                                var a = note2.Direction - angleOfAttack;
-                                a = angleOfAttack + ((a + 180) % 360 - 180) / 2;
-                                if (!ScanMethod.IsSameDirection(note2.Direction, a, 67.5))
+                                if (note2.CutDirection != 8 && previous.CutDirection != 8)
                                 {
-                                    a = ScanMethod.ReverseCutDirection(a);
-                                }
-                                // Simulate the position of the line based on the new angle found
-                                var simulatedLineOfAttack = ScanMethod.SimulateSwingPos(note2.Line, note2.Layer, ScanMethod.ReverseCutDirection(a), 5);
-                                // Check if the other note is close to the line
-                                var InPath = NearestPointOnFiniteLine(new(note2.Line, note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.Line, note.Layer));
-                                if (InPath)
-                                {
-                                    if (previous.CutDirection == 8 || note2.CutDirection == 8)
+                                    var di = Math.Abs(prevDirection - angleOfAttack);
+                                    di = Math.Min(di, 360 - di) / 4;
+                                    if (angleOfAttack < prevDirection)
                                     {
-                                        CreateDiffCommentNote("Swing Path?", CommentTypesEnum.Info, note);
+                                        if (prevDirection - angleOfAttack < 180)
+                                        {
+                                            angleOfAttack += di;
+                                        }
+                                        else
+                                        {
+                                            angleOfAttack -= di;
+                                        }
                                     }
                                     else
+                                    {
+                                        if (angleOfAttack - prevDirection < 180)
+                                        {
+                                            angleOfAttack -= di;
+                                        }
+                                        else
+                                        {
+                                            angleOfAttack += di;
+                                        }
+                                    }
+                                    // Simulate the position of the line based on the new angle found
+                                    var simulatedLineOfAttack = ScanMethod.SimulateSwingPos(note2.Line, note2.Layer, ScanMethod.ReverseCutDirection(angleOfAttack), 2);
+                                    // Check if the other note is close to the line
+                                    var InPath = NearestPointOnFiniteLine(new(note2.Line, note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.Line, note.Layer));
+                                    if (InPath)
                                     {
                                         CreateDiffCommentNote("Swing Path", CommentTypesEnum.Info, note);
                                     }
