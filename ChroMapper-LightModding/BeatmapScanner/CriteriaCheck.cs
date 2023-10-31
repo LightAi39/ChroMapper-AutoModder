@@ -28,6 +28,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         private MapAnalyser analysedMap;
         private List<JoshaParity.SwingData> swings;
         private double averageSliderDuration;
+        private (double pass, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) BeatmapScannerData;
         #endregion
 
         #region Constructors
@@ -68,6 +69,26 @@ namespace ChroMapper_LightModding.BeatmapScanner
             bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), songOffset);
             analysedMap = new(song.Directory);
             swings = analysedMap.GetSwingData((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower());
+
+            if (baseDifficulty.Notes.Any())
+            {
+                List<BaseNote> notes = baseDifficulty.Notes.Where(n => n.Type == 0 || n.Type == 1).ToList();
+                notes = notes.OrderBy(o => o.JsonTime).ToList();
+
+                if (notes.Count > 0)
+                {
+                    List<BaseSlider> chains = baseDifficulty.Chains.Cast<BaseSlider>().ToList();
+                    chains = chains.OrderBy(o => o.JsonTime).ToList();
+
+                    List<BaseNote> bombs = baseDifficulty.Notes.Where(n => n.Type == 3).ToList();
+                    bombs = bombs.OrderBy(b => b.JsonTime).ToList();
+
+                    List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
+                    obstacles = obstacles.OrderBy(o => o.JsonTime).ToList();
+
+                    BeatmapScannerData = BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+                }
+            }
 
             DiffCrit diffCrit = new()
             {
@@ -376,52 +397,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var issue = Severity.Success;
             var cube = BeatmapScanner.Cubes.Where(c => c.Slider && !c.Head);
             cube = cube.OrderBy(c => c.Time).ToList();
-            var temp = cube.Where(c => c.Spacing == 0).Select(c => c.Precision).ToList();
-            if (temp.Count() == 0)
-            {
-                temp = cube.Where(c => c.Spacing == 1).Select(c => c.Precision).ToList();
-                if (temp.Count() == 0)
-                {
-                    temp = cube.Where(c => c.Spacing == 2).Select(c => c.Precision).ToList();
-                    if (temp.Count() == 0)
-                    {
-                        temp = cube.Where(c => c.Spacing == 3).Select(c => c.Precision).ToList();
-                        averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault() / 4;
-                    }
-                    else
-                    {
-                        averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault() / 3;
-                    }
-                }
-                else
-                {
-                    averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault() / 2;
-                }
-            }
-            else
-            {
-                averageSliderDuration = ScanMethod.Mode(temp).FirstOrDefault();
-            }
-            if (averageSliderDuration <= 0.01785714285)
-            {
-                averageSliderDuration = 0.015625;
-            }
-            else if (averageSliderDuration <= 0.025)
-            {
-                averageSliderDuration = 0.02083333333;
-            }
-            else if (averageSliderDuration <= 0.03571428571)
-            {
-                averageSliderDuration = 0.03125;
-            }
-            else if (averageSliderDuration <= 0.05)
-            {
-                averageSliderDuration = 0.04166666666;
-            }
-            else
-            {
-                averageSliderDuration = 0.0625;
-            }
+
+            averageSliderDuration = ScanMethod.Mode(cube.Select(c => c.Precision / (c.Spacing + 1))).FirstOrDefault();
+            if (averageSliderDuration == 0) averageSliderDuration = 0.0625;
+
             foreach (var c in cube)
             {
                 if (c.Slider && !c.Head)
@@ -1341,66 +1320,32 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     bpm.SetCurrentBPM(note.JsonTime);
                     var MaxBottomNoteTime = bpm.ToBeatTime(Plugin.configs.VBMinBottomNoteTime);
                     var MaxOuterNoteTime = bpm.ToBeatTime(Plugin.configs.VBMaxOuterNoteTime);
-                    var MaxPatternTime = bpm.ToBeatTime(Plugin.configs.VBMinPatternTime);
-                    var MinTimeNote = bpm.ToBeatTime(Plugin.configs.VBMinNoteTime);
                     var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
-                    lastMidL.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeNote);
-                    lastMidR.RemoveAll(l => note.JsonTime - l.SongBpmTime > MinTimeNote);
+                    var MinTimeWarning = bpm.ToBeatTime(((800 - 300) * Math.Pow(Math.E, -BeatmapScannerData.pass / 7.6 - BeatmapScannerData.tech * 0.04) + 300) / 1000);
+                    lastMidL.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeWarning);
+                    lastMidR.RemoveAll(l => note.JsonTime - l.SongBpmTime > MinTimeWarning);
                     if (lastMidL.Count > 0)
                     {
-                        if (note.JsonTime - lastMidL.First().JsonTime <= MinTimeNote && note.JsonTime - lastMidL.First().JsonTime >= Overall) // Closer than 0.25
+                        if (note.JsonTime - lastMidL.First().JsonTime >= Overall) // Further than 0.025
                         {
-                            if (note.PosX == 0 && note.JsonTime - lastMidL.First().JsonTime <= MaxOuterNoteTime) // Closer than 0.15 in outer lane
+                            if (note.JsonTime - lastMidL.First().JsonTime <= MinTimeWarning) // Warning
                             {
-                                // Fine
-                            }
-                            else if (note.PosX == 1 && note.PosY == 0 && note.JsonTime - lastMidL.First().JsonTime <= MaxBottomNoteTime) // Closer than 0.075 at bottom layer
-                            {
-                                // Also fine
-                            }
-                            else
-                            {
-                                var s = swings.Where(x => x.notes.Exists(y => y.b == notes[i].JsonTime && y.d == notes[i].CutDirection && y.c == notes[i].Type && y.x == notes[i].PosX && y.y == notes[i].PosY)).ToList();
-                                if (s.Count > 0)
+                                if (note.PosX == 0 && note.JsonTime - lastMidL.First().JsonTime <= MaxOuterNoteTime) // Closer than 0.15 in outer lane
                                 {
-                                    var n = s.FirstOrDefault().notes.Where(y => y.b == notes[i].JsonTime && y.d == notes[i].CutDirection && y.c == notes[i].Type && y != s.FirstOrDefault().notes.FirstOrDefault()).FirstOrDefault();
-                                    if (n != null)
-                                    {
-                                        if (!arr.Exists(x => x.JsonTime == n.b && x.CutDirection == n.d && x.Type == n.c && x.PosX == n.x && x.PosY == n.y)
-                                        && note.JsonTime - lastMidL.First().JsonTime >= MaxPatternTime) // Further than 0.020 and pattern head visible
-                                        {
-                                            // Also fine
-                                        }
-                                        else if (note.PosX < 2)
-                                        {
-                                            arr.Add(note);
-                                            if (note.Type == 0 || note.Type == 1)
-                                            {
-                                                CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
-                                                    cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
-                                                issue = Severity.Fail;
-                                            }
-                                        }
-                                    }
-                                    else if (note.PosX < 2)
-                                    {
-                                        arr.Add(note);
-                                        if (note.Type == 0 || note.Type == 1)
-                                        {
-                                            CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
-                                                cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
-                                            issue = Severity.Fail;
-                                        }
-                                    }
+                                    // Fine
                                 }
-                                else if (note.PosX < 2)
+                                else if (note.PosX == 1 && note.PosY == 0 && note.JsonTime - lastMidL.First().JsonTime <= MaxBottomNoteTime) // Closer than 0.075 at bottom layer
+                                {
+                                    // Also fine
+                                }
+                                else if(note.PosX < 2)
                                 {
                                     arr.Add(note);
                                     if (note.Type == 0 || note.Type == 1)
                                     {
-                                        CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
-                                            cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
-                                        issue = Severity.Fail;
+                                        CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Unsure,
+                                        cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
+                                        issue = Severity.Warning;
                                     }
                                 }
                             }
@@ -1408,59 +1353,26 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                     if (lastMidR.Count > 0)
                     {
-                        if (note.JsonTime - lastMidR.First().JsonTime <= MinTimeNote && note.JsonTime - lastMidR.First().JsonTime >= Overall)
+                        if (note.JsonTime - lastMidR.First().JsonTime >= Overall)
                         {
-                            if (note.PosX == 3 && note.JsonTime - lastMidR.First().JsonTime <= MaxOuterNoteTime)
+                            if (note.JsonTime - lastMidR.First().JsonTime <= MinTimeWarning)
                             {
-                                // Fine
-                            }
-                            else if (note.PosX == 2 && note.PosY == 0 && note.JsonTime - lastMidR.First().JsonTime <= MaxBottomNoteTime)
-                            {
-                                // Also fine
-                            }
-                            else
-                            {
-                                var s = swings.Where(x => x.notes.Exists(y => y.b == notes[i].JsonTime && y.d == notes[i].CutDirection && y.c == notes[i].Type && y.x == notes[i].PosX && y.y == notes[i].PosY)).ToList();
-                                if (s.Count > 0)
+                                if (note.PosX == 3 && note.JsonTime - lastMidR.First().JsonTime <= MaxOuterNoteTime)
                                 {
-                                    var n = s.FirstOrDefault().notes.Where(y => y.b == notes[i].JsonTime && y.d == notes[i].CutDirection && y.c == notes[i].Type && y != s.FirstOrDefault().notes.FirstOrDefault()).FirstOrDefault();
-                                    if (n != null)
-                                    {
-                                        if (!arr.Exists(x => x.JsonTime == n.b && x.CutDirection == n.d && x.Type == n.c && x.PosX == n.x && x.PosY == n.y)
-                                        && note.JsonTime - lastMidR.First().JsonTime >= MaxPatternTime) // Further than 0.020 and pattern head visible
-                                        {
-                                            // Also fine
-                                        }
-                                        else if (note.PosX > 1)
-                                        {
-                                            arr.Add(note);
-                                            if (note.Type == 0 || note.Type == 1)
-                                            {
-                                                CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
-                                                    cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
-                                                issue = Severity.Fail;
-                                            }
-                                        }
-                                    }
-                                    else if (note.PosX > 1)
-                                    {
-                                        arr.Add(note);
-                                        if (note.Type == 0 || note.Type == 1)
-                                        {
-                                            CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
-                                                cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
-                                            issue = Severity.Fail;
-                                        }
-                                    }
+                                    // Fine
+                                }
+                                else if (note.PosX == 2 && note.PosY == 0 && note.JsonTime - lastMidR.First().JsonTime <= MaxBottomNoteTime)
+                                {
+                                    // Also fine
                                 }
                                 else if (note.PosX > 1)
                                 {
                                     arr.Add(note);
                                     if (note.Type == 0 || note.Type == 1)
                                     {
-                                        CreateDiffCommentNote("R2B - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue,
+                                        CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Unsure,
                                             cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
-                                        issue = Severity.Fail;
+                                        issue = Severity.Warning;
                                     }
                                 }
                             }
@@ -1476,6 +1388,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     }
                 }
 
+                // Bombs
                 lastMidL = new List<BaseNote>();
                 lastMidR = new List<BaseNote>();
                 arr = new();

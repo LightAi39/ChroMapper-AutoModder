@@ -19,8 +19,6 @@
         public double ChainLinkVsAir { get; set; } = 1.333;
         public double VBMinBottomNoteTime { get; set; } = 0.075;
         public double VBMaxOuterNoteTime { get; set; } = 0.15;
-        public double VBMinPatternTime { get; set; } = 0.20;
-        public double VBMinNoteTime { get; set; } = 0.25;
         public double VBMaxBombTime { get; set; } = 0.15;
         public double VBMinBombTime { get; set; } = 0.20;
         public double VBMinimum { get; set; } = 0.025;
