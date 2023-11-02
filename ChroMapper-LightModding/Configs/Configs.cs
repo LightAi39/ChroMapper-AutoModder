@@ -25,6 +25,7 @@
         public double ParityWarningAngle { get; set; } = 180;
         public bool DisplayBadcut { get; set; } = true;
         public bool HighlightOffbeat { get; set; } = true;
+        public bool DisplayFlick { get; set; } = true;
         public bool ParityInvertedWarning { get; set; } = true;
         public bool ParityDebug { get; set; } = false;
     }

@@ -118,6 +118,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 HighlightOffbeat();
             }
+            if (Plugin.configs.DisplayFlick)
+            {
+                RollingEBPM();
+            }
+
             FuseBombComments();
 
             return diffCrit;
@@ -2367,6 +2372,137 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         var reality = ScanMethod.RealToFraction(precision, 0.01);
                         CreateDiffCommentNote(reality.N.ToString() + "/" + reality.D.ToString(), CommentTypesEnum.Info, swing.Start);
                     }
+                }
+            }
+        }
+
+        public class EbpmData
+        {
+            public JoshaParity.SwingData Swing { get; set; } = new();
+            public float Average { get; set; } = 0f;
+            public bool Flick { get; set; } = false;
+        }
+
+        public void RollingEBPM()
+        {
+            var windowSize = 4f; // beats
+            Queue<JoshaParity.SwingData> dataWindowLeft = new();
+            Queue<JoshaParity.SwingData> dataWindowRight = new();
+            List<EbpmData> rollingAverageLeft = new();
+            List<EbpmData> rollingAverageRight = new();
+            List<EbpmData> ReverseRollingAverageLeft = new();
+            List<EbpmData> ReverseRollingAverageRight = new();
+            var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
+
+            foreach (var swing in swings)
+            {
+                EbpmData data = new();
+                var clean = true;
+                if(!swing.rightHand)
+                {
+                    dataWindowLeft.Enqueue(swing);
+                    do
+                    {
+                        if (dataWindowLeft.Peek().swingStartBeat < swing.swingStartBeat - windowSize) dataWindowLeft.Dequeue();
+                        else clean = false;
+                    } while (clean);
+                    data.Swing = swing;
+                    data.Average = dataWindowLeft.Select(d => d.swingEBPM).Average();
+                    rollingAverageLeft.Add(data);
+                }
+                else
+                {
+                    dataWindowRight.Enqueue(swing);
+                    do
+                    {
+                        if (dataWindowRight.Peek().swingStartBeat < swing.swingStartBeat - windowSize) dataWindowRight.Dequeue();
+                        else clean = false;
+                    } while (clean);
+                    data.Swing = swing;
+                    data.Average = dataWindowRight.Select(d => d.swingEBPM).Average();
+                    rollingAverageRight.Add(data);
+                }
+            }
+            dataWindowLeft.Clear();
+            dataWindowRight.Clear();
+            for (int i = swings.Count - 1; i >= 0; i--)
+            {
+                var swing = swings[i];
+                EbpmData data = new();
+                var clean = true;
+                if (!swing.rightHand)
+                {
+                    dataWindowLeft.Enqueue(swing);
+                    do
+                    {
+                        if (dataWindowLeft.Peek().swingStartBeat > swing.swingStartBeat + windowSize) dataWindowLeft.Dequeue();
+                        else clean = false;
+                    } while (clean);
+                    data.Swing = swing;
+                    data.Average = dataWindowLeft.Select(d => d.swingEBPM).Average();
+                    ReverseRollingAverageLeft.Add(data);
+                }
+                else
+                {
+                    dataWindowRight.Enqueue(swing);
+                    do
+                    {
+                        if (dataWindowRight.Peek().swingStartBeat > swing.swingStartBeat + windowSize) dataWindowRight.Dequeue();
+                        else clean = false;
+                    } while (clean);
+                    data.Swing = swing;
+                    data.Average = dataWindowRight.Select(d => d.swingEBPM).Average();
+                    ReverseRollingAverageRight.Add(data);
+                }
+            }
+
+            foreach (var data in rollingAverageLeft)
+            {
+                if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
+            }
+            foreach (var data in ReverseRollingAverageLeft)
+            {
+                if (data.Average * 2 < data.Swing.swingEBPM ) data.Flick = true;
+            }
+            foreach (var data in rollingAverageRight)
+            {
+                if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
+            }
+            foreach (var data in ReverseRollingAverageRight)
+            {
+                if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
+            }
+            rollingAverageLeft.ForEach(r => r.Flick = r.Flick == true && true == ReverseRollingAverageLeft.Where(a => a.Swing.Equals(r.Swing)).FirstOrDefault().Flick);
+            rollingAverageRight.ForEach(r => r.Flick = r.Flick == true && true == ReverseRollingAverageRight.Where(a => a.Swing.Equals(r.Swing)).FirstOrDefault().Flick);
+            
+            foreach(var data in rollingAverageLeft)
+            {
+                if(data.Flick)
+                {
+                    var note = data.Swing.notes.FirstOrDefault();
+                    var index = cubes.FindIndex(c => c.Time == note.b && c.Type == note.c && note.x == c.Line && note.y == c.Layer);
+                    var cube = cubes[index];
+                    if (index < cubes.Count - 3)
+                    {
+                        if (cubes[index + 1].Time - cube.Time != cubes[index + 2].Time - cubes[index + 1].Time)
+                            CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube);
+                    }
+                    else CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube);
+                }
+            }
+            foreach (var data in rollingAverageRight)
+            {
+                if (data.Flick)
+                {
+                    var note = data.Swing.notes.FirstOrDefault();
+                    var index = cubes.FindIndex(c => c.Time == note.b && c.Type == note.c && note.x == c.Line && note.y == c.Layer);
+                    var cube = cubes[index];
+                    if(index < cubes.Count - 3)
+                    {
+                        if (cubes[index + 1].Time - cube.Time != cubes[index + 2].Time - cubes[index + 1].Time)
+                            CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube);
+                    }
+                    else CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube);
                 }
             }
         }
