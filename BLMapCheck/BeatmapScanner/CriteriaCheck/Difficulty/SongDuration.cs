@@ -8,7 +8,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class SongDuration
     {
         // Detect if the mapped duration is above the minimum required, from first note to last note, configurable setting is available
-        public static Severity Check()
+        public static CritSeverity Check()
         {
             var cube = BeatmapScanner.Cubes;
             cube = cube.OrderBy(c => c.Time).ToList();
@@ -16,10 +16,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             if (duration < MinSongDuration)
             {
                 //ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + config.MinSongDuration.ToString() + "s."); TODO: USE NEW METHOD
-                return Severity.Fail;
+                return CritSeverity.Fail;
             }
 
-            return Severity.Success;
+            return CritSeverity.Success;
         }
     }
 }

@@ -31,5 +31,17 @@ namespace BLMapCheck.Classes.Results
         public List<CheckResult> Results { get; set; } = new();
 
         public bool CheckFinished { get; set; } = false;
+
+
+        public void AddResult(CheckResult result)
+        {
+            Results.Add(result);
+        }
+
+        public void RemoveResult(CheckResult result)
+        {
+            Results.Remove(result);
+        }
+
     }
 }

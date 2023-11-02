@@ -10,9 +10,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Detect if objects are too close. Configurable margin (in ms)
         // TODO: There's probably a way better way to do this, can someone clean this mess
-        public static Severity Check(float NoteJumpSpeed)
+        public static CritSeverity Check(float NoteJumpSpeed)
         {
-            var issue = Severity.Success;
+            var issue = CritSeverity.Success;
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
             var chains = BeatmapScanner.Chains.OrderBy(c => c.b).ToList();
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.b).ToList();
@@ -31,7 +31,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (c.Time >= w.b - max && c.Time <= w.b + w.d + max && c.Line <= w.x + w.w - 1 && c.Line >= w.x && c.Layer < w.y + w.h && c.Layer >= w.y - 1)
                     {
                         //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
-                        issue = Severity.Fail;
+                        issue = CritSeverity.Fail;
                     }
                 }
                 foreach (var b in bombs)
@@ -45,7 +45,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (b.b >= w.b - max && b.b <= w.b + w.d + max && b.x <= w.x + w.w - 1 && b.x >= w.x && b.y < w.y + w.h && b.y >= w.y - 1)
                     {
                         //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
-                        issue = Severity.Fail;
+                        issue = CritSeverity.Fail;
                     }
                 }
                 foreach (var c in chains)
@@ -59,7 +59,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (c.b >= w.b - max && c.b <= w.b + w.d + max && c.tx <= w.x + w.w - 1 && c.tx >= w.x && c.ty < w.y + w.h && c.ty >= w.y - 1)
                     {
                         //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
-                        issue = Severity.Fail;
+                        issue = CritSeverity.Fail;
                     }
                 }
             }
@@ -80,7 +80,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
                         //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2); TODO: USE NEW METHOD
-                        issue = Severity.Fail;
+                        issue = CritSeverity.Fail;
                     }
                 }
                 for (int j = 0; j < bombs.Count; j++)
@@ -96,7 +96,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
                         //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
-                        issue = Severity.Fail;
+                        issue = CritSeverity.Fail;
                     }
                 }
                 for (int j = i + 1; j < chains.Count; j++)
@@ -112,7 +112,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
                         //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2); TODO: USE NEW METHOD
-                        issue = Severity.Fail;
+                        issue = CritSeverity.Fail;
                     }
                 }
             }
@@ -133,7 +133,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
                         //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b2); TODO: USE NEW METHOD
-                        issue = Severity.Fail;
+                        issue = CritSeverity.Fail;
                     }
                 }
                 for (int j = i + 1; j < chains.Count; j++)
@@ -149,7 +149,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD 
                         //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2); TODO: USE NEW METHOD
-                        issue = Severity.Fail;
+                        issue = CritSeverity.Fail;
                     }
                 }
             }
@@ -170,7 +170,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD 
                         //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2); TODO: USE NEW METHOD 
-                        issue = Severity.Fail;
+                        issue = CritSeverity.Fail;
                     }
                 }
             }

@@ -10,9 +10,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class NJS
     {
         // Warn the user if the current NJS and RT set doesn't match BeatLeader recommended value chart.
-        public static Severity Check(List<JoshaParity.SwingData> swings, float LoadedSongLength, float NoteJumpSpeed, float NoteJumpStartBeatOffset)
+        public static CritSeverity Check(List<JoshaParity.SwingData> swings, float LoadedSongLength, float NoteJumpSpeed, float NoteJumpStartBeatOffset)
         {
-            var issue = Severity.Success;
+            var issue = CritSeverity.Success;
             List<double> sps = new();
 
             for (int i = 0; i < LoadedSongLength - 1; i++)
@@ -39,14 +39,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             if (NoteJumpSpeed <= 0)
             {
                 //ExtendOverallComment("R1A - NJS is currently " + diff.NoteJumpMovementSpeed); TODO: USE NEW METHOD
-                issue = Severity.Fail;
+                issue = CritSeverity.Fail;
             }
             else
             {
                 if (NoteJumpSpeed < NJS.min || NoteJumpSpeed > NJS.max)
                 {
                     //ExtendOverallComment("R1A - Warning - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString()); TODO: USE NEW METHOD
-                    issue = Severity.Warning;
+                    issue = CritSeverity.Warning;
                 }
                 var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(NoteJumpSpeed, NoteJumpStartBeatOffset, BeatPerMinute.BPM.GetValue());
                 var beatms = 60000 / BeatPerMinute.BPM.GetValue();
@@ -54,11 +54,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (reactionTime < RT.min || reactionTime > RT.max)
                 {
                     //ExtendOverallComment("R1A - Warning - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString()); TODO: USE NEW METHOD
-                    issue = Severity.Warning;
+                    issue = CritSeverity.Warning;
                 }
             }
 
-            if (issue == Severity.Success)
+            if (issue == CritSeverity.Success)
             {
                 //ExtendOverallComment("R1A - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString()); TODO: USE NEW METHOD
                 //ExtendOverallComment("R1A - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString()); TODO: USE NEW METHOD

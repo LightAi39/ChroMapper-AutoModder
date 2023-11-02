@@ -6,19 +6,19 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
     internal static class Creator
     {
-        public static Severity Check(string LevelAuthorName)
+        public static CritSeverity Check(string LevelAuthorName)
         {
             if (LevelAuthorName.Count() == 0)
             {
                 //CreateSongInfoComment("R7C - Creator field is empty", CommentTypesEnum.Issue); TODO: USE NEW METHOD
-                return Severity.Fail;
+                return CritSeverity.Fail;
             }
             if (LevelAuthorName.Count() > MaxChar)
             {
                 //CreateSongInfoComment("R7C - Creator field is too long. Maybe use a group name instead?", CommentTypesEnum.Suggestion); TODO: USE NEW METHOD
-                return Severity.Warning;
+                return CritSeverity.Warning;
             }
-            return Severity.Success;
+            return CritSeverity.Success;
         }
     }
 }

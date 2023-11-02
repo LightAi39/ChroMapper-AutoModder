@@ -6,14 +6,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Requirements
     {
-        public static Severity Check(List<string> Requirements)
+        public static CritSeverity Check(List<string> Requirements)
         {
-            var issue = Severity.Success;
+            var issue = CritSeverity.Success;
 
             if (Requirements.Any())
             {
                 //CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue); TODO: USE NEW METHOD
-                issue = Severity.Fail;
+                issue = CritSeverity.Fail;
             }
 
             return issue;

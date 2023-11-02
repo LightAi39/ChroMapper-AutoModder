@@ -10,9 +10,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         // Get the average sliders precision and warn if it's not applied to all sliders in the map.
         // Also check if sliders is above 45 degree (that could use some work)
-        public static Severity Check()
+        public static CritSeverity Check()
         {
-            var issue = Severity.Success;
+            var issue = CritSeverity.Success;
             var cube = BeatmapScanner.Cubes.Where(c => c.Slider && !c.Head);
             cube = cube.OrderBy(c => c.Time).ToList();
 
@@ -28,7 +28,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         // var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
                         var expected = ScanMethod.RealToFraction(((c.Spacing + 1) * averageSliderDuration), 0.01);
                         //CreateDiffCommentNote("R2A - Expected " + expected.N.ToString() + "/" + expected.D.ToString(), CommentTypesEnum.Unsure, c); TODO: USE NEW METHOD
-                        issue = Severity.Warning;
+                        issue = CritSeverity.Warning;
                     }
                 }
             }
@@ -73,7 +73,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         if (!ScanMethod.IsSameDirection(degree, dir[j], 45))
                         {
                             //CreateDiffCommentNote("R3F - Slider over 45°", CommentTypesEnum.Issue, red[i - dir.Count() + j]); TODO: USE NEW METHOD
-                            issue = Severity.Fail;
+                            issue = CritSeverity.Fail;
                         }
                     }
 
@@ -116,7 +116,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         if (!ScanMethod.IsSameDirection(degree, dir[j], 45))
                         {
                             //CreateDiffCommentNote("R3F - Slider over 45°", CommentTypesEnum.Issue, blue[i - dir.Count() + j]); TODO: USE NEW METHOD
-                            issue = Severity.Fail;
+                            issue = CritSeverity.Fail;
                         }
                     }
 

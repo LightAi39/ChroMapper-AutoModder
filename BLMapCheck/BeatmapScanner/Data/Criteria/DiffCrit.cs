@@ -4,36 +4,36 @@ namespace BLMapCheck.BeatmapScanner.Data.Criteria
 {
     public class DiffCrit
     {
-        public Severity HotStart { get; set; } = Severity.Fail;
-        public Severity ColdEnd { get; set; } = Severity.Fail;
-        public Severity MinSongDuration { get; set; } = Severity.Fail;
-        public Severity Outside { get; set; } = Severity.Fail;
-        public Severity ProlongedSwing { get; set; } = Severity.Fail;
-        public Severity VisionBlock { get; set; } = Severity.Fail;
-        public Severity Parity { get; set; } = Severity.Fail;
-        public Severity Chain { get; set; } = Severity.Fail;
-        public Severity FusedObject { get; set; } = Severity.Fail;
-        public Severity Loloppe { get; set; } = Severity.Fail;
-        public Severity HandClap { get; set; } = Severity.Fail;
-        public Severity SwingPath { get; set; } = Severity.Fail;
-        public Severity Hitbox { get; set; } = Severity.Fail;
-        public Severity Slider { get; set; } = Severity.Fail;
-        public Severity Wall { get; set; } = Severity.Fail;
-        public Severity Light { get; set; } = Severity.Fail;
-        public Severity DifficultyLabelSize { get; set; } = Severity.Fail;
-        public Severity DifficultyName { get; set; } = Severity.Fail;
-        public Severity Requirement { get; set; } = Severity.Fail;
-        public Severity NJS { get; set; } = Severity.Fail;
+        public CritSeverity HotStart { get; set; } = CritSeverity.Fail;
+        public CritSeverity ColdEnd { get; set; } = CritSeverity.Fail;
+        public CritSeverity MinSongDuration { get; set; } = CritSeverity.Fail;
+        public CritSeverity Outside { get; set; } = CritSeverity.Fail;
+        public CritSeverity ProlongedSwing { get; set; } = CritSeverity.Fail;
+        public CritSeverity VisionBlock { get; set; } = CritSeverity.Fail;
+        public CritSeverity Parity { get; set; } = CritSeverity.Fail;
+        public CritSeverity Chain { get; set; } = CritSeverity.Fail;
+        public CritSeverity FusedObject { get; set; } = CritSeverity.Fail;
+        public CritSeverity Loloppe { get; set; } = CritSeverity.Fail;
+        public CritSeverity HandClap { get; set; } = CritSeverity.Fail;
+        public CritSeverity SwingPath { get; set; } = CritSeverity.Fail;
+        public CritSeverity Hitbox { get; set; } = CritSeverity.Fail;
+        public CritSeverity Slider { get; set; } = CritSeverity.Fail;
+        public CritSeverity Wall { get; set; } = CritSeverity.Fail;
+        public CritSeverity Light { get; set; } = CritSeverity.Fail;
+        public CritSeverity DifficultyLabelSize { get; set; } = CritSeverity.Fail;
+        public CritSeverity DifficultyName { get; set; } = CritSeverity.Fail;
+        public CritSeverity Requirement { get; set; } = CritSeverity.Fail;
+        public CritSeverity NJS { get; set; } = CritSeverity.Fail;
 
-        public Severity HighestSeverityCheck()
+        public CritSeverity HighestSeverityCheck()
         {
             DiffCrit diffCrit = this;
             var properties = typeof(DiffCrit).GetProperties();
-            Severity highestSeverity = Severity.Success;
+            CritSeverity highestSeverity = CritSeverity.Success;
 
             foreach (var property in properties)
             {
-                Severity propertySeverity = (Severity)property.GetValue(diffCrit);
+                CritSeverity propertySeverity = (CritSeverity)property.GetValue(diffCrit);
                 if (propertySeverity > highestSeverity)
                 {
                     highestSeverity = propertySeverity;
