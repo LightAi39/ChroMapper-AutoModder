@@ -7,9 +7,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class ColdEnd
     {
-        public static CritSeverity Check(float LoadedSongLength)
+        public static CritResult Check(float LoadedSongLength)
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var cube = BeatmapScanner.Cubes;
             cube = cube.OrderByDescending(c => c.Time).ToList();
             var wall = BeatmapScanner.Walls;
@@ -20,7 +20,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (c.Time > limit)
                 {
                     //CreateDiffCommentNote("R1E - Cold End", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 else break;
             }
@@ -29,7 +29,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (w.b + w.d > limit && ((w.x + w.w >= 2 && w.x < 2) || w.x == 1 || w.x == 2))
                 {
                     //CreateDiffCommentObstacle("R1E - Cold End", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 else break;
             }

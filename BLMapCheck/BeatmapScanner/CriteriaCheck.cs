@@ -140,9 +140,9 @@ namespace BLMapCheck.BeatmapScanner
         #region Outside
 
         // Detect objects that are outside of the audio boundary
-        public CritSeverity OutsideCheck()
+        public CritResult OutsideCheck()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var cubes = BeatmapScanner.Cubes;
             var chains = BeatmapScanner.Chains;
             var bombs = BeatmapScanner.Bombs;
@@ -153,7 +153,7 @@ namespace BLMapCheck.BeatmapScanner
                 || bombs.Exists(b => b.JsonTime < 0 || b.JsonTime > end) || walls.Exists(w => w.JsonTime < 0 || w.JsonTime + w.Duration > end))
             {
                 //ExtendOverallComment("R1B - Object outside of playable length"); TODO: USE NEW METHOD
-                issue = CritSeverity.Fail;
+                issue = CritResult.Fail;
             }
 
             return issue;
@@ -165,9 +165,9 @@ namespace BLMapCheck.BeatmapScanner
 
         // Fetch the average event per beat, and compare it to a configurable value
         // Also check for well-lit bombs
-        public CritSeverity LightCheck()
+        public CritResult LightCheck()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
             BaseDifficulty baseDifficulty = BeatSaberSongContainer.Instance.Song.GetMapFromDifficultyBeatmap(diff);
             var v3events = baseDifficulty.LightColorEventBoxGroups.OrderBy(e => e.JsonTime).ToList();
@@ -177,7 +177,7 @@ namespace BLMapCheck.BeatmapScanner
             if (!events.Any() || !events.Exists(e => e.Type >= 0 && e.Type <= 5))
             {
                 //ExtendOverallComment("R6A - Map has no light"); TODO: USE NEW METHOD
-                return CritSeverity.Fail;
+                return CritResult.Fail;
             }
             else
             {
@@ -190,14 +190,14 @@ namespace BLMapCheck.BeatmapScanner
                 if (average < config.AverageLightPerBeat)
                 {
                     //ExtendOverallComment("R6A - Map doesn't have enough light"); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 var eventLitTime = new List<List<EventLitTime>>();
                 if (v3events.Count > 0)
                 {
                     //ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked."); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
                 else
                 {
@@ -243,7 +243,7 @@ namespace BLMapCheck.BeatmapScanner
                         if (!isLit)
                         {
                             //CreateDiffCommentBomb("R5B - Light missing for bomb", CommentTypesEnum.Issue, bomb); TODO: USE NEW METHOD
-                            issue = CritSeverity.Fail;
+                            issue = CritResult.Fail;
                         }
                     }
                 }
@@ -284,9 +284,9 @@ namespace BLMapCheck.BeatmapScanner
         // Calculate dodge wall per seconds, objects hidden behind walls, walls that force players outside of boundary, walls that are too short in middle lane and negative walls.
         // Subjective and max dodge wall, min wall duration and trail duration is configurable
         // TODO: I think the dodge wall calc is pretty bad
-        public CritSeverity WallCheck()
+        public CritResult WallCheck()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
 
             var walls = BeatmapScanner.Walls;
             var notes = BeatmapScanner.Cubes;
@@ -301,13 +301,13 @@ namespace BLMapCheck.BeatmapScanner
                 foreach (var n in note)
                 {
                     //CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 var bomb = bombs.Where(b => b.PosX == 0 && !(b.PosY == 0 && w.PosY == 0 && w.Height == 1) && ((b.PosY >= w.PosY && b.PosY < w.PosY + w.Height) || (b.PosY >= 0 && w.PosY == 0 && w.Height > 1)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
                 foreach (var b in bomb)
                 {
                     //CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 
@@ -317,13 +317,13 @@ namespace BLMapCheck.BeatmapScanner
                 foreach (var n in note)
                 {
                     //CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 var bomb = bombs.Where(b => b.PosX == 3 && !(b.PosY == 0 && w.PosY == 0 && w.Height == 1) && ((b.PosY >= w.PosY && b.PosY < w.PosY + w.Height) || (b.PosY >= 0 && w.PosY == 0 && w.Height > 1)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
                 foreach (var b in bomb)
                 {
                     //CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 
@@ -338,12 +338,12 @@ namespace BLMapCheck.BeatmapScanner
                     (w.PosX + w.Width == 3 && walls.Exists(wa => wa != w && wa.PosY == 0 && wa.Height > 0 && wa.PosX + wa.Width == 2 && wa.JsonTime <= w.JsonTime + w.Duration && wa.JsonTime >= w.JsonTime))))
                 {
                     //CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 else if (w.PosY <= 0 && w.Height > 1 && ((w.Width >= 3 && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3 || w.PosX == 1)) || (w.Width >= 2 && w.PosX == 1 && w.PosY == 0 && w.Height > 0) || (w.Width >= 4 && w.PosX + w.Width >= 4 && w.PosX <= 0 && w.PosY == 0)))
                 {
                     //CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 if (w.Width <= 0 || w.Duration <= 0 || // Negative width or duration
                     (w.Height <= 0 && w.PosX >= 0 && w.PosX <= 3 && (w.PosY > 0 || w.PosY + w.Height >= 0)) // In or above with negative height
@@ -351,13 +351,13 @@ namespace BLMapCheck.BeatmapScanner
                     || (w.PosX + w.Width >= 1 && w.PosX <= 4) && w.PosY + w.Height >= 0 && w.Height < 0) // Stretch above with negative height
                 {
                     //CreateDiffCommentObstacle("R4D - Must have positive width, height and duration", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 if (w.Duration < min && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3) && w.PosY + w.Height > 1 &&
                     !walls.Exists(wa => wa != w && wa.PosX + wa.Width >= w.PosX + w.Width && wa.PosX <= w.PosX + w.Width && wa.Duration >= min && w.JsonTime >= wa.JsonTime && w.JsonTime <= wa.JsonTime + wa.Duration + max))
                 {
                     //CreateDiffCommentObstacle("R4E - Shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
 
                 previous = w;
@@ -402,12 +402,12 @@ namespace BLMapCheck.BeatmapScanner
                     if (dodge >= config.MaximumDodgeWallPerSecond)
                     {
                         //CreateDiffCommentObstacle("R4B - Over the " + config.MaximumDodgeWallPerSecond + " dodge per second limit", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                        issue = CritSeverity.Fail;
+                        issue = CritResult.Fail;
                     }
                     else if (dodge >= config.SubjectiveDodgeWallPerSecond)
                     {
                         //CreateDiffCommentObstacle("Y4A - " + Plugin.configs.SubjectiveDodgeWallPerSecond + "+ dodge per second need justification", CommentTypesEnum.Suggestion, w); TODO: USE NEW METHOD
-                        issue = CritSeverity.Warning;
+                        issue = CritResult.Warning;
                     }
                 }
             }
@@ -421,9 +421,9 @@ namespace BLMapCheck.BeatmapScanner
         #region Chain
 
         // Check if chains is part of the first 16 notes, link spacing, reverse direction, max distance, reach, and angle
-        public CritSeverity ChainCheck()
+        public CritResult ChainCheck()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var links = BeatmapScanner.Chains.OrderBy(c => c.JsonTime).ToList();
             var notes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
 
@@ -433,7 +433,7 @@ namespace BLMapCheck.BeatmapScanner
                 foreach (var l in link)
                 {
                     //CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
             else if (links.Any())
@@ -442,7 +442,7 @@ namespace BLMapCheck.BeatmapScanner
                 foreach (var l in link)
                 {
                     //CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 
@@ -461,19 +461,19 @@ namespace BLMapCheck.BeatmapScanner
                 if (chain.Squish - 0.01 > max)
                 {
                     //CreateDiffCommentLink("R2D - Link spacing issue. Maximum squish for placement: " + max, CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 var newX = l.PosX + (l.TailPosX - l.PosX) * chain.Squish;
                 var newY = l.PosY + (l.TailPosY - l.PosY) * chain.Squish;
                 if (newX > 4 || newX < -1 || newY > 2.33 || newY < -0.33)
                 {
                     //CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 if (l.TailJsonTime < l.JsonTime)
                 {
                     //CreateDiffCommentLink("R2D - Reverse Direction", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 var note = notes.Find(x => x.Time >= l.TailJsonTime && x.Type == l.Color);
                 if (note != null)
@@ -481,7 +481,7 @@ namespace BLMapCheck.BeatmapScanner
                     if (l.TailJsonTime + (l.TailJsonTime - l.JsonTime) > note.Time)
                     {
                         //CreateDiffCommentLink("R2D - Duration between tail and next note is too short", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                        issue = CritSeverity.Fail;
+                        issue = CritResult.Fail;
                     }
                 }
 
@@ -504,7 +504,7 @@ namespace BLMapCheck.BeatmapScanner
                 if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, config.MaxChainRotation))
                 {
                     //CreateDiffCommentLink("R2D - Over 45°", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 
@@ -517,7 +517,7 @@ namespace BLMapCheck.BeatmapScanner
 
         // JoshaParity is used to detect reset, high angle parity, and warn while playing inverted.
         // Parity warning angle is configurable
-        public CritSeverity ParityCheck()
+        public CritResult ParityCheck()
         {
             bool hadIssue = false;
             bool hadWarning = false;
@@ -594,15 +594,15 @@ namespace BLMapCheck.BeatmapScanner
 
             if (hadIssue)
             {
-                return CritSeverity.Fail;
+                return CritResult.Fail;
             }
             else if (hadWarning)
             {
-                return CritSeverity.Warning;
+                return CritResult.Warning;
             }
             else
             {
-                return CritSeverity.Success;
+                return CritResult.Success;
             }
         }
 
@@ -612,9 +612,9 @@ namespace BLMapCheck.BeatmapScanner
 
         // Detect notes and bombs VB based on BeatLeader current criteria
         // Most of the minimum and maximum duration are configurable
-        public CritSeverity VisionBlockCheck()
+        public CritResult VisionBlockCheck()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var song = plugin.BeatSaberSongContainer.Song;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             BaseDifficulty baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
@@ -656,7 +656,7 @@ namespace BLMapCheck.BeatmapScanner
                                     {
                                         //CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Unsure,
                                         //  cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer)); TODO: USE NEW METHOD
-                                        issue = CritSeverity.Warning;
+                                        issue = CritResult.Warning;
                                     }
                                 }
                             }
@@ -683,7 +683,7 @@ namespace BLMapCheck.BeatmapScanner
                                     {
                                         //CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Unsure,
                                         //    cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer)); TODO: USE NEW METHOD
-                                        issue = CritSeverity.Warning;
+                                        issue = CritResult.Warning;
                                     }
                                 }
                             }
@@ -739,7 +739,7 @@ namespace BLMapCheck.BeatmapScanner
                                             {
                                                 //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
                                                 //TODO: USE NEW METHOD
-                                                issue = CritSeverity.Fail;
+                                                issue = CritResult.Fail;
                                             }
                                             continue;
                                         }
@@ -757,7 +757,7 @@ namespace BLMapCheck.BeatmapScanner
                                         {
                                             //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
                                             //TODO: USE NEW METHOD
-                                            issue = CritSeverity.Fail;
+                                            issue = CritResult.Fail;
                                             continue;
                                         }
                                     }
@@ -770,7 +770,7 @@ namespace BLMapCheck.BeatmapScanner
                                             {
                                                 //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
                                                 //TODO: USE NEW METHOD
-                                                issue = CritSeverity.Fail;
+                                                issue = CritResult.Fail;
                                             }
                                             continue;
                                         }
@@ -788,7 +788,7 @@ namespace BLMapCheck.BeatmapScanner
                                         {
                                             //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
                                             //TODO: USE NEW METHOD
-                                            issue = CritSeverity.Fail;
+                                            issue = CritResult.Fail;
                                             continue;
                                         }
                                     }
@@ -818,7 +818,7 @@ namespace BLMapCheck.BeatmapScanner
                                             {
                                                 //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
                                                 //TODO: USE NEW METHOD
-                                                issue = CritSeverity.Fail;
+                                                issue = CritResult.Fail;
                                             }
                                             continue;
                                         }
@@ -836,7 +836,7 @@ namespace BLMapCheck.BeatmapScanner
                                         {
                                             //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
                                             //TODO: USE NEW METHOD
-                                            issue = CritSeverity.Fail;
+                                            issue = CritResult.Fail;
                                             continue;
                                         }
                                     }
@@ -849,7 +849,7 @@ namespace BLMapCheck.BeatmapScanner
                                             {
                                                 //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
                                                 //TODO: USE NEW METHOD
-                                                issue = CritSeverity.Fail;
+                                                issue = CritResult.Fail;
                                             }
                                             continue;
                                         }
@@ -867,7 +867,7 @@ namespace BLMapCheck.BeatmapScanner
                                         {
                                             //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
                                             //TODO: USE NEW METHOD
-                                            issue = CritSeverity.Fail;
+                                            issue = CritResult.Fail;
                                             continue;
                                         }
                                     }
@@ -896,7 +896,7 @@ namespace BLMapCheck.BeatmapScanner
         #region ProlongedSwing
 
         // Very basic check for stuff like Pauls, Dotspam, long chain duration, etc.
-        public CritSeverity ProlongedSwingCheck()
+        public CritResult ProlongedSwingCheck()
         {
             var issue = false;
             var unsure = false;
@@ -993,14 +993,14 @@ namespace BLMapCheck.BeatmapScanner
 
             if (issue)
             {
-                return CritSeverity.Fail;
+                return CritResult.Fail;
             }
             else if (unsure)
             {
-                return CritSeverity.Warning;
+                return CritResult.Warning;
             }
 
-            return CritSeverity.Success;
+            return CritResult.Success;
         }
 
         #endregion
@@ -1008,9 +1008,9 @@ namespace BLMapCheck.BeatmapScanner
         #region Loloppe
 
         // Detect parallel notes
-        public CritSeverity LoloppeCheck()
+        public CritResult LoloppeCheck()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
 
 
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
@@ -1036,7 +1036,7 @@ namespace BLMapCheck.BeatmapScanner
                     {
                         //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i - 1]); TODO: USE NEW METHOD 
                         //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i]); TODO: USE NEW METHOD
-                        issue = CritSeverity.Fail;
+                        issue = CritResult.Fail;
                     }
                 }
             }
@@ -1060,7 +1060,7 @@ namespace BLMapCheck.BeatmapScanner
                     {
                         //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i - 1]); TODO: USE NEW METHOD 
                         //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i]); TODO: USE NEW METHOD
-                        issue = CritSeverity.Fail;
+                        issue = CritResult.Fail;
                     }
                 }
             }
@@ -1100,9 +1100,9 @@ namespace BLMapCheck.BeatmapScanner
         }
 
         // Check if a note block the swing path of another note of a different color
-        public CritSeverity SwingPathCheck()
+        public CritResult SwingPathCheck()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
 
             var song = plugin.BeatSaberSongContainer.Song;
             var bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
@@ -1286,7 +1286,7 @@ namespace BLMapCheck.BeatmapScanner
                 {
                     //CreateDiffCommentNote("R3E - Swing Path", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                     //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 
@@ -1298,9 +1298,9 @@ namespace BLMapCheck.BeatmapScanner
         #region Hitbox
 
         // Implementation of Kival Evan hitboxInline.ts, hitboxStair.ts and hitboxReverseStaircase.ts
-        public CritSeverity HitboxCheck()
+        public CritResult HitboxCheck()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
 
             var song = plugin.BeatSaberSongContainer.Song;
             var bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
@@ -1361,7 +1361,7 @@ namespace BLMapCheck.BeatmapScanner
                 {
                     //CreateDiffCommentNote("R3G - Low NJS Inline", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                     //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
 
                 var hitboxTime = (0.15 * bpm) / 60;
@@ -1449,7 +1449,7 @@ namespace BLMapCheck.BeatmapScanner
                 {
                     //CreateDiffCommentNote("R3G - Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                     //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
 
                 var constant = 0.03414823529;
@@ -1507,7 +1507,7 @@ namespace BLMapCheck.BeatmapScanner
                 {
                     //CreateDiffCommentNote("R3G - Reverse Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                     //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
             }
 
@@ -1519,9 +1519,9 @@ namespace BLMapCheck.BeatmapScanner
         #region handclap
 
         // Attempt to detect specific note and angle placement based on BeatLeader criteria
-        public CritSeverity HandClapCheck()
+        public CritResult HandClapCheck()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var song = plugin.BeatSaberSongContainer.Song;
             var bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
@@ -1663,14 +1663,14 @@ namespace BLMapCheck.BeatmapScanner
                 {
                     //CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                     //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
 
                 foreach (var item in arr)
                 {
                     //CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
                     //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 

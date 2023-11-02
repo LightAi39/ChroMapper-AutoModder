@@ -4,14 +4,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
     internal static class Offset
     {
-        public static CritSeverity Check(float SongTimeOffset)
+        public static CritResult Check(float SongTimeOffset)
         {
             if (SongTimeOffset != 0)
             {
                 //CreateSongInfoComment("R7C - Song Time Offset should be 0. This is a deprecated feature", CommentTypesEnum.Issue); TODO: USE NEW METHOD
-                return CritSeverity.Fail;
+                return CritResult.Fail;
             }
-            return CritSeverity.Success;
+            return CritResult.Success;
         }
     }
 }
