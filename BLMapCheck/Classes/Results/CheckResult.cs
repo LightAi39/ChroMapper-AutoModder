@@ -23,6 +23,7 @@ namespace BLMapCheck.Classes.Results
         Info,
         Suggestion,
         Warning,
-        Error
+        Error,
+        Inconclusive
     }
 }
