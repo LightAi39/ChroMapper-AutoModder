@@ -23,7 +23,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
             }
             if (LevelAuthorName.Count() > MaxChar)
             {
-                //CreateSongInfoComment("R7C - Creator field is too long. Maybe use a group name instead?", CommentTypesEnum.Suggestion); TODO: USE NEW METHOD
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
                     Name = "Creator",

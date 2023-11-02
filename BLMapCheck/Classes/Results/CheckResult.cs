@@ -12,6 +12,8 @@ namespace BLMapCheck.Classes.Results
     public class CheckResult
     {
         public string Name { get; set; } = "";
+        public string? Difficulty { get; set; }
+        public string? Characteristic { get; set; }
         public Severity Severity { get; set; }
         public string CheckType { get; set; } = "";
         public string Description { get; set; } = "";
