@@ -1,5 +1,5 @@
 ﻿using Beatmap.Base;
-using ChroMapper_LightModding.BeatmapScanner;
+using BLMapCheck.
 using JoshaParity;
 using System;
 using System.Collections.Generic;

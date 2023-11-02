@@ -1,6 +1,4 @@
-﻿using Discord;
-
-namespace ChroMapper_LightModding.BeatmapScanner.Data
+﻿namespace BLMapCheck.BeatmapScanner.Data
 {
     internal class SwingData
     {

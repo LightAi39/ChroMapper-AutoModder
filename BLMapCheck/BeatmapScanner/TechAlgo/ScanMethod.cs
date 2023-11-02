@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System;
-using UnityEngine;
-using ChroMapper_LightModding.BeatmapScanner.Data;
+using BLMapCheck.BeatmapScanner.Data;
+using BLMapCheck.Classes.Unity;
 
-namespace ChroMapper_LightModding.BeatmapScanner
+namespace BLMapCheck.BeatmapScanner
 {
     internal class ScanMethod
     {

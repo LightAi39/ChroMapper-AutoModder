@@ -1,11 +1,9 @@
-﻿using Beatmap.Base;
+﻿using BLMapCheck.Classes.ChroMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
-using UnityEngine;
 
-namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
+namespace BLMapCheck.BeatmapScanner.MapCheck
 {
     // Based on https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/analyzers/swing/swing.ts
     internal class Swing

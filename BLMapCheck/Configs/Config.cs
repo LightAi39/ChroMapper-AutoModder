@@ -1,6 +1,6 @@
-﻿namespace ChroMapper_LightModding.Configs
+﻿namespace BLMapCheck.Configs
 {
-    public class Configs
+    public class Config
     {
         public int Version { get; set; } = 0; // Do not change this
         public int MaxChar { get; set; } = 30;

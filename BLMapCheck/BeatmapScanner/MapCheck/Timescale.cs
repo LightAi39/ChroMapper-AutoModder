@@ -1,10 +1,9 @@
-﻿using Beatmap.Base;
+﻿using BLMapCheck.Classes.ChroMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
-namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
+namespace BLMapCheck.BeatmapScanner.MapCheck
 {
     // https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/beatmap/shared/bpm.ts
     internal class BeatPerMinute

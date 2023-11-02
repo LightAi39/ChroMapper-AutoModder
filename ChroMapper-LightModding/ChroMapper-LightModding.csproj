@@ -83,25 +83,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BeatmapScanner\CriteriaCheck.cs" />
-    <Compile Include="BeatmapScanner\Data\Criteria\DiffCrit.cs" />
-    <Compile Include="BeatmapScanner\Data\Criteria\InfoCrit.cs" />
-    <Compile Include="BeatmapScanner\Data\Criteria\Recommended.cs" />
-    <Compile Include="BeatmapScanner\Data\Cube.cs" />
-    <Compile Include="BeatmapScanner\Data\SwingData.cs" />
-    <Compile Include="BeatmapScanner\MapCheck\Parity.cs" />
-    <Compile Include="BeatmapScanner\MapCheck\Swing.cs" />
-    <Compile Include="BeatmapScanner\MapCheck\Timescale.cs" />
-    <Compile Include="BeatmapScanner\ProfanityFilter\AllowList.cs" />
-    <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IAllowList.cs" />
-    <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IProfanityFilter.cs" />
-    <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityBase.cs" />
-    <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityFilter.cs" />
-    <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityList.cs" />
-    <Compile Include="BeatmapScanner\TechAlgo\BeatmapScanner.cs" />
-    <Compile Include="BeatmapScanner\TechAlgo\ScanAlgo.cs" />
-    <Compile Include="BeatmapScanner\TechAlgo\ScanMethod.cs" />
-    <Compile Include="Configs\Configs.cs" />
     <Compile Include="Export\Exporter.cs" />
     <Compile Include="Helpers\AutocheckHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
@@ -125,7 +106,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dll\JoshaParity.dll" />
     <Content Include="dll\Newtonsoft.Json.dll" />
     <Content Include="Licenses\LICENSE BeatSaber-MapCheck.txt" />
     <Content Include="Licenses\LICENSE JoshaParity.txt" />

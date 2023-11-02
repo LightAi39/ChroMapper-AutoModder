@@ -1,6 +1,6 @@
-﻿using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
+﻿using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
-namespace ChroMapper_LightModding.BeatmapScanner.Data.Criteria
+namespace BLMapCheck.BeatmapScanner.Data.Criteria
 {
     public class DiffCrit
     {

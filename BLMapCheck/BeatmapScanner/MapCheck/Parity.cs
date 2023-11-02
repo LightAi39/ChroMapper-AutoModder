@@ -1,10 +1,10 @@
-﻿using Beatmap.Base;
-using ChroMapper_LightModding.BeatmapScanner.Data;
+﻿using BLMapCheck.BeatmapScanner.Data;
+using BLMapCheck.Classes.ChroMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ChroMapper_LightModding.BeatmapScanner.MapCheck
+namespace BLMapCheck.BeatmapScanner.MapCheck
 {
     // Based on https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/analyzers/parity/parity.ts
     internal class Parity

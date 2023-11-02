@@ -1,6 +1,6 @@
-﻿using Beatmap.Base;
+﻿using BLMapCheck.Classes.ChroMapper;
 
-namespace ChroMapper_LightModding.BeatmapScanner.Data
+namespace BLMapCheck.BeatmapScanner.Data
 {
     internal class Cube
     {

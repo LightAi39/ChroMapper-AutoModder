@@ -1,28 +1,31 @@
-﻿using Beatmap.Base;
-using Beatmap.Enums;
-using ChroMapper_LightModding.BeatmapScanner.Data;
-using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
-using ChroMapper_LightModding.BeatmapScanner.MapCheck;
-using ChroMapper_LightModding.Models;
+﻿using BLMapCheck.BeatmapScanner.Data;
+using BLMapCheck.BeatmapScanner.Data.Criteria;
+using BLMapCheck.BeatmapScanner.MapCheck;
 using JoshaParity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
-using Parity = ChroMapper_LightModding.BeatmapScanner.MapCheck.Parity;
+using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
+using Parity = BLMapCheck.BeatmapScanner.MapCheck.Parity;
+using Config = BLMapCheck.Configs.Config;
+using BLMapCheck.Classes.ChroMapper;
+using BLMapCheck.Classes.Unity;
 
-namespace ChroMapper_LightModding.BeatmapScanner
+namespace BLMapCheck.BeatmapScanner
 {
     internal class CriteriaCheck
     {
+        #region Variables
+        public static Config config = new();
+        #endregion
+
         #region Properties
-        private Plugin plugin;
+        //private Plugin plugin;
         private string characteristic;
         private int difficultyRank;
         private string difficulty;
-        private BaseDifficulty baseDifficulty;
+        //private BaseDifficulty baseDifficulty;
         private double songOffset;
         private BeatPerMinute bpm;
         private MapAnalyser analysedMap;
@@ -32,9 +35,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
         #endregion
 
         #region Constructors
-        public CriteriaCheck(Plugin plugin)
+        public CriteriaCheck()
         {
-            this.plugin = plugin;
+            //this.plugin = plugin;
         }
         #endregion
 
@@ -62,6 +65,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             this.difficultyRank = difficultyRank;
             this.difficulty = difficulty;
 
+            /* TODO: Rewrite this song loading code
             var song = plugin.BeatSaberSongContainer.Song;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
@@ -89,6 +93,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     BeatmapScannerData = BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
                 }
             }
+            */
 
             DiffCrit diffCrit = new()
             {
@@ -114,11 +119,11 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 HandClap = HandClapCheck()
             };
 
-            if (Plugin.configs.HighlightOffbeat)
+            if (/*Plugin.configs.HighlightOffbeat TODO: fix*/ true)
             {
                 HighlightOffbeat();
             }
-            if (Plugin.configs.DisplayFlick)
+            if (/*Plugin.configs.DisplayFlick TODO: fix */ true)
             {
                 RollingEBPM();
             }
@@ -138,7 +143,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         {
             if (BeatSaberSongContainer.Instance.Song.SongName.Count() == 0)
             {
-                CreateSongInfoComment("R7A - Song Name field is empty", CommentTypesEnum.Issue);
+                //CreateSongInfoComment("R7A - Song Name field is empty", CommentTypesEnum.Issue); TODO: USE NEW METHOD
                 return Severity.Fail;
             }
 
@@ -152,13 +157,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
         public Severity SubNameCheck()
         {
             var issue = Severity.Success;
-            var name = BeatSaberSongContainer.Instance.Song.SongName.ToLower();
-            var author = BeatSaberSongContainer.Instance.Song.SongAuthorName.ToLower();
+            var name = "name";//BeatSaberSongContainer.Instance.Song.SongName.ToLower(); TODO: FIX
+            var author = "author";//BeatSaberSongContainer.Instance.Song.SongAuthorName.ToLower(); TODO: FIX
             if (name.Count() != 0)
             {
                 if (name.Contains("remix") || name.Contains("ver.") || name.Contains("feat.") || name.Contains("ft.") || name.Contains("featuring") || name.Contains("cover"))
                 {
-                    CreateSongInfoComment("R7B - Song Name - Tags should be in the Sub Name field", CommentTypesEnum.Issue);
+                    // CreateSongInfoComment("R7B - Song Name - Tags should be in the Sub Name field", CommentTypesEnum.Issue); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -166,7 +171,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (author.Contains("remix") || author.Contains("ver.") || author.Contains("feat.") || author.Contains("ft.") || author.Contains("featuring") || author.Contains("cover"))
                 {
-                    CreateSongInfoComment("R7B - Song Author - Tags should be in the Sub Name field", CommentTypesEnum.Issue);
+                    //CreateSongInfoComment("R7B - Song Author - Tags should be in the Sub Name field", CommentTypesEnum.Issue); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -182,7 +187,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         {
             if (BeatSaberSongContainer.Instance.Song.SongAuthorName.Count() == 0)
             {
-                CreateSongInfoComment("R7C - Song Author field is empty", CommentTypesEnum.Issue);
+                //CreateSongInfoComment("R7C - Song Author field is empty", CommentTypesEnum.Issue); TODO: USE NEW METHOD
                 return Severity.Fail;
             }
             return Severity.Success;
@@ -196,12 +201,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
         {
             if (BeatSaberSongContainer.Instance.Song.LevelAuthorName.Count() == 0)
             {
-                CreateSongInfoComment("R7C - Creator field is empty", CommentTypesEnum.Issue);
+                //CreateSongInfoComment("R7C - Creator field is empty", CommentTypesEnum.Issue); TODO: USE NEW METHOD
                 return Severity.Fail;
             }
-            if (BeatSaberSongContainer.Instance.Song.LevelAuthorName.Count() > Plugin.configs.MaxChar)
+            if (BeatSaberSongContainer.Instance.Song.LevelAuthorName.Count() > config.MaxChar)
             {
-                CreateSongInfoComment("R7C - Creator field is too long. Maybe use a group name instead?", CommentTypesEnum.Suggestion);
+                //CreateSongInfoComment("R7C - Creator field is too long. Maybe use a group name instead?", CommentTypesEnum.Suggestion); TODO: USE NEW METHOD
                 return Severity.Warning;
             }
             return Severity.Success;
@@ -215,7 +220,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         {
             if (BeatSaberSongContainer.Instance.Song.SongTimeOffset != 0)
             {
-                CreateSongInfoComment("R7C - Song Time Offset should be 0. This is a deprecated feature", CommentTypesEnum.Issue);
+                //CreateSongInfoComment("R7C - Song Time Offset should be 0. This is a deprecated feature", CommentTypesEnum.Issue); TODO: USE NEW METHOD
                 return Severity.Fail;
             }
             return Severity.Success;
@@ -228,7 +233,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         public Severity BPMCheck()
         {
             // TODO: Add automatic BPM detection
-            CreateSongInfoComment("R1A - The map's BPM must be set to one of the song's BPM or a multiple of the song's BPM", CommentTypesEnum.Unsure);
+            //CreateSongInfoComment("R1A - The map's BPM must be set to one of the song's BPM or a multiple of the song's BPM", CommentTypesEnum.Unsure); TODO: USE NEW METHOD
             return Severity.Warning;
         }
 
@@ -281,8 +286,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 return Severity.Success;
             }
 
-            CreateSongInfoComment("R7E - Difficulty Ordering is wrong\nCurrent order: " + string.Join(",", passStandard.ToArray()) + "\nExpected order: " +
-                    string.Join(",", order.ToArray()), CommentTypesEnum.Issue);
+            //CreateSongInfoComment("R7E - Difficulty Ordering is wrong\nCurrent order: " + string.Join(",", passStandard.ToArray()) + "\nExpected order: " +
+            //        string.Join(",", order.ToArray()), CommentTypesEnum.Issue); TODO: USE NEW METHOD
             return Severity.Fail;
         }
 
@@ -294,7 +299,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
         {
             if (BeatSaberSongContainer.Instance.Song.PreviewStartTime == 12 && BeatSaberSongContainer.Instance.Song.PreviewDuration == 10)
             {
-                CreateSongInfoComment("R7C - Modify Default Song Preview", CommentTypesEnum.Suggestion);
+                //CreateSongInfoComment("R7C - Modify Default Song Preview", CommentTypesEnum.Suggestion); TODO: USE NEW METHOD
                 return Severity.Warning;
             }
             return Severity.Success;
@@ -316,12 +321,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
             cube = cube = cube.OrderBy(c => c.Time).ToList();
             var wall = BeatmapScanner.Walls;
             wall = wall.OrderBy(w => w.JsonTime).ToList();
-            var limit = bpm.ToBeatTime(Plugin.configs.HotStartDuration, true);
+            var limit = bpm.ToBeatTime(config.HotStartDuration, true);
             foreach (var c in cube)
             {
                 if (c.Time < limit)
                 {
-                    CreateDiffCommentNote("R1E - Hot Start", CommentTypesEnum.Issue, c);
+                    //CreateDiffCommentNote("R1E - Hot Start", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 else break;
@@ -330,7 +335,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (w.JsonTime < limit && ((w.PosX + w.Width >= 2 && w.PosX < 2) || w.PosX == 1 || w.PosX == 2))
                 {
-                    CreateDiffCommentObstacle("R1E - Hot Start", CommentTypesEnum.Issue, w);
+                    //CreateDiffCommentObstacle("R1E - Hot Start", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 else break;
@@ -350,12 +355,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
             cube = cube.OrderByDescending(c => c.Time).ToList();
             var wall = BeatmapScanner.Walls;
             wall = wall.OrderByDescending(w => w.JsonTime).ToList();
-            var limit = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength - Plugin.configs.ColdEndDuration, true);
+            var limit = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength - config.ColdEndDuration, true);
             foreach (var c in cube)
             {
                 if (c.Time > limit)
                 {
-                    CreateDiffCommentNote("R1E - Cold End", CommentTypesEnum.Issue, c);
+                    //CreateDiffCommentNote("R1E - Cold End", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 else break;
@@ -364,7 +369,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 if (w.JsonTime + w.Duration > limit && ((w.PosX + w.Width >= 2 && w.PosX < 2) || w.PosX == 1 || w.PosX == 2))
                 {
-                    CreateDiffCommentObstacle("R1E - Cold End", CommentTypesEnum.Issue, w);
+                    //CreateDiffCommentObstacle("R1E - Cold End", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 else break;
@@ -382,9 +387,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var cube = BeatmapScanner.Cubes;
             cube = cube.OrderBy(c => c.Time).ToList();
             var duration = bpm.ToRealTime(cube.Last().Time - cube.First().Time, true);
-            if (duration < Plugin.configs.MinSongDuration)
+            if (duration < config.MinSongDuration)
             {
-                ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + Plugin.configs.MinSongDuration.ToString() + "s.");
+                //ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + config.MinSongDuration.ToString() + "s."); TODO: USE NEW METHOD
                 return Severity.Fail;
             }
 
@@ -414,7 +419,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         // var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
                         var expected = ScanMethod.RealToFraction(((c.Spacing + 1) * averageSliderDuration), 0.01);
-                        CreateDiffCommentNote("R2A - Expected " + expected.N.ToString() + "/" + expected.D.ToString(), CommentTypesEnum.Unsure, c);
+                        //CreateDiffCommentNote("R2A - Expected " + expected.N.ToString() + "/" + expected.D.ToString(), CommentTypesEnum.Unsure, c); TODO: USE NEW METHOD
                         issue = Severity.Warning;
                     }
                 }
@@ -459,7 +464,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (!ScanMethod.IsSameDirection(degree, dir[j], 45))
                         {
-                            CreateDiffCommentNote("R3F - Slider over 45°", CommentTypesEnum.Issue, red[i - dir.Count() + j]);
+                            //CreateDiffCommentNote("R3F - Slider over 45°", CommentTypesEnum.Issue, red[i - dir.Count() + j]); TODO: USE NEW METHOD
                             issue = Severity.Fail;
                         }
                     }
@@ -502,7 +507,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (!ScanMethod.IsSameDirection(degree, dir[j], 45))
                         {
-                            CreateDiffCommentNote("R3F - Slider over 45°", CommentTypesEnum.Issue, blue[i - dir.Count() + j]);
+                            //CreateDiffCommentNote("R3F - Slider over 45°", CommentTypesEnum.Issue, blue[i - dir.Count() + j]); TODO: USE NEW METHOD
                             issue = Severity.Fail;
                         }
                     }
@@ -526,9 +531,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var data = diff.GetOrCreateCustomData();
                 if (data.HasKey("_difficultyLabel"))
                 {
-                    if (data["_difficultyLabel"].ToString().Count() > Plugin.configs.MaxChar)
+                    if (data["_difficultyLabel"].ToString().Count() > config.MaxChar)
                     {
-                        ExtendOverallComment("R7E - " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + Plugin.configs.MaxChar.ToString() + " characters.");
+                        // ExtendOverallComment("R7E - " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + Plugin.configs.MaxChar.ToString() + " characters.");
+                        // TODO: USE NEW METHOD
                         return Severity.Fail;
                     }
                 }
@@ -554,7 +560,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var isProfanity = pf.ContainsProfanity(label);
                     if (isProfanity)
                     {
-                        ExtendOverallComment("R7G - Difficulty name must not contain obscene content");
+                        //ExtendOverallComment("R7G - Difficulty name must not contain obscene content"); TODO: USE NEW METHOD
                         return Severity.Fail;
                     }
                 }
@@ -577,7 +583,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             {
                 foreach (var req in diff.CustomData["_requirements"].Values)
                 {
-                    CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue);
+                    //CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -622,14 +628,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
             if (diff.NoteJumpMovementSpeed <= 0)
             {
-                ExtendOverallComment("R1A - NJS is currently " + diff.NoteJumpMovementSpeed);
+                //ExtendOverallComment("R1A - NJS is currently " + diff.NoteJumpMovementSpeed); TODO: USE NEW METHOD
                 issue = Severity.Fail;
             }
             else
             {
                 if (diff.NoteJumpMovementSpeed < NJS.min || diff.NoteJumpMovementSpeed > NJS.max)
                 {
-                    ExtendOverallComment("R1A - Warning - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString());
+                    //ExtendOverallComment("R1A - Warning - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString()); TODO: USE NEW METHOD
                     issue = Severity.Warning;
                 }
                 var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(diff.NoteJumpMovementSpeed, diff.NoteJumpStartBeatOffset, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
@@ -637,15 +643,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var reactionTime = beatms * halfJumpDuration;
                 if (reactionTime < RT.min || reactionTime > RT.max)
                 {
-                    ExtendOverallComment("R1A - Warning - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString());
+                    //ExtendOverallComment("R1A - Warning - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString()); TODO: USE NEW METHOD
                     issue = Severity.Warning;
                 }
             }
 
             if (issue == Severity.Success)
             {
-                ExtendOverallComment("R1A - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString());
-                ExtendOverallComment("R1A - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString());
+                //ExtendOverallComment("R1A - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString()); TODO: USE NEW METHOD
+                //ExtendOverallComment("R1A - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString()); TODO: USE NEW METHOD
             }
 
             bpm.ResetCurrentBPM();
@@ -673,42 +679,42 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 foreach (var c in cubes)
                 {
                     bpm.SetCurrentBPM(c.Time);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * config.FusedDistance, 3);
                     if (c.Time - (w.JsonTime + w.Duration) >= max)
                     {
                         break;
                     }
                     if (c.Time >= w.JsonTime - max && c.Time <= w.JsonTime + w.Duration + max && c.Line <= w.PosX + w.Width - 1 && c.Line >= w.PosX && c.Layer < w.PosY + w.Height && c.Layer >= w.PosY - 1)
                     {
-                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
                 foreach (var b in bombs)
                 {
                     bpm.SetCurrentBPM(b.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * config.FusedDistance, 3);
                     if (b.JsonTime - (w.JsonTime + w.Duration) >= max)
                     {
                         break;
                     }
                     if (b.JsonTime >= w.JsonTime - max && b.JsonTime <= w.JsonTime + w.Duration + max && b.PosX <= w.PosX + w.Width - 1 && b.PosX >= w.PosX && b.PosY < w.PosY + w.Height && b.PosY >= w.PosY - 1)
                     {
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
+                        //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
                 foreach (var c in chains)
                 {
                     bpm.SetCurrentBPM(c.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * config.FusedDistance, 3);
                     if (c.JsonTime - (w.JsonTime + w.Duration) >= max)
                     {
                         break;
                     }
                     if (c.JsonTime >= w.JsonTime - max && c.JsonTime <= w.JsonTime + w.Duration + max && c.TailPosX <= w.PosX + w.Width - 1 && c.TailPosX >= w.PosX && c.TailPosY < w.PosY + w.Height && c.TailPosY >= w.PosY - 1)
                     {
-                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
+                        //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
@@ -721,15 +727,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     var c2 = cubes[j];
                     bpm.SetCurrentBPM(c2.Time);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * config.FusedDistance, 3);
                     if (c2.Time - c.Time >= max)
                     {
                         break;
                     }
                     if (c.Time >= c2.Time - max && c.Time <= c2.Time + max && c.Line == c2.Line && c.Layer == c2.Layer)
                     {
-                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
+                        //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
+                        //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
@@ -737,15 +743,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     var b = bombs[j];
                     bpm.SetCurrentBPM(b.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * config.FusedDistance, 3);
                     if (b.JsonTime - c.Time >= max)
                     {
                         break;
                     }
                     if (c.Time >= b.JsonTime - max && c.Time <= b.JsonTime + max && c.Line == b.PosX && c.Layer == b.PosY)
                     {
-                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
+                        //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
+                        //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
@@ -753,15 +759,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     var c2 = chains[j];
                     bpm.SetCurrentBPM(c2.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * config.FusedDistance, 3);
                     if (c2.JsonTime - c.Time >= max)
                     {
                         break;
                     }
                     if (c.Time >= c2.JsonTime - max && c.Time <= c2.JsonTime + max && c.Line == c2.TailPosX && c.Layer == c2.TailPosY)
                     {
-                        CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
+                        //CreateDiffCommentNote("R3A - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
+                        //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
@@ -774,15 +780,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     var b2 = bombs[j];
                     bpm.SetCurrentBPM(b2.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * config.FusedDistance, 3);
                     if (b2.JsonTime - b.JsonTime >= max)
                     {
                         break;
                     }
                     if (b.JsonTime >= b2.JsonTime - max && b.JsonTime <= b2.JsonTime + max && b.PosX == b2.PosX && b.PosY == b2.PosY)
                     {
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b2);
+                        //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
+                        //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b2); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
@@ -790,15 +796,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     var c2 = chains[j];
                     bpm.SetCurrentBPM(c2.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * config.FusedDistance, 3);
                     if (c2.JsonTime - b.JsonTime >= max)
                     {
                         break;
                     }
                     if (b.JsonTime >= c2.JsonTime - max && b.JsonTime <= c2.JsonTime + max && b.PosX == c2.TailPosX && b.PosY == c2.TailPosY)
                     {
-                        CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b);
-                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
+                        //CreateDiffCommentBomb("R5D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD 
+                        //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
@@ -811,15 +817,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     var c2 = chains[j];
                     bpm.SetCurrentBPM(c2.JsonTime);
-                    var max = Math.Round(bpm.ToBeatTime(1) / njs * Plugin.configs.FusedDistance, 3);
+                    var max = Math.Round(bpm.ToBeatTime(1) / njs * config.FusedDistance, 3);
                     if (c2.JsonTime - c.JsonTime >= max)
                     {
                         break;
                     }
                     if (c.JsonTime >= c2.JsonTime - max && c.JsonTime <= c2.JsonTime + max && c.TailPosX == c2.TailPosX && c.TailPosY == c2.TailPosY)
                     {
-                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c);
-                        CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2);
+                        //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD 
+                        //CreateDiffCommentLink("R2D - Cannot collide within " + max + " in the same line", CommentTypesEnum.Issue, c2); TODO: USE NEW METHOD 
                         issue = Severity.Fail;
                     }
                 }
@@ -846,7 +852,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             if (cubes.Exists(c => c.Time < 0 || c.Time > end) || chains.Exists(c => c.JsonTime < 0 || c.JsonTime > end)
                 || bombs.Exists(b => b.JsonTime < 0 || b.JsonTime > end) || walls.Exists(w => w.JsonTime < 0 || w.JsonTime + w.Duration > end))
             {
-                ExtendOverallComment("R1B - Object outside of playable length");
+                //ExtendOverallComment("R1B - Object outside of playable length"); TODO: USE NEW METHOD
                 issue = Severity.Fail;
             }
 
@@ -870,7 +876,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.JsonTime).ToList();
             if (!events.Any() || !events.Exists(e => e.Type >= 0 && e.Type <= 5))
             {
-                ExtendOverallComment("R6A - Map has no light");
+                //ExtendOverallComment("R6A - Map has no light"); TODO: USE NEW METHOD
                 return Severity.Fail;
             }
             else
@@ -881,16 +887,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     average = v3events.Count() / end;
                 }
-                if (average < Plugin.configs.AverageLightPerBeat)
+                if (average < config.AverageLightPerBeat)
                 {
-                    ExtendOverallComment("R6A - Map doesn't have enough light");
+                    //ExtendOverallComment("R6A - Map doesn't have enough light"); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 var eventLitTime = new List<List<EventLitTime>>();
                 if (v3events.Count > 0)
                 {
-                    ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked.");
+                    //ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked."); TODO: USE NEW METHOD
                     issue = Severity.Warning;
                 }
                 else
@@ -903,8 +909,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         var ev = lights[i];
                         bpm.SetCurrentBPM(ev.JsonTime);
-                        var fadeTime = bpm.ToBeatTime(Plugin.configs.LightFadeDuration, true);
-                        var reactTime = bpm.ToBeatTime(Plugin.configs.LightBombReactionTime, true);
+                        var fadeTime = bpm.ToBeatTime(config.LightFadeDuration, true);
+                        var reactTime = bpm.ToBeatTime(config.LightBombReactionTime, true);
                         if (ev.IsOn || ev.IsFlash || ev.IsFade)
                         {
                             eventLitTime[ev.Type].Add(new(ev.JsonTime, true));
@@ -936,7 +942,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                         }
                         if (!isLit)
                         {
-                            CreateDiffCommentBomb("R5B - Light missing for bomb", CommentTypesEnum.Issue, bomb);
+                            //CreateDiffCommentBomb("R5B - Light missing for bomb", CommentTypesEnum.Issue, bomb); TODO: USE NEW METHOD
                             issue = Severity.Fail;
                         }
                     }
@@ -994,13 +1000,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var note = notes.Where(n => n.Line == 0 && !(n.Layer == 0 && w.PosY == 0 && w.Height == 1) && ((n.Layer >= w.PosY && n.Layer < w.PosY + w.Height) || (n.Layer >= 0 && w.PosY == 0 && w.Height > 1)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
                 foreach (var n in note)
                 {
-                    CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
+                    //CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 var bomb = bombs.Where(b => b.PosX == 0 && !(b.PosY == 0 && w.PosY == 0 && w.Height == 1) && ((b.PosY >= w.PosY && b.PosY < w.PosY + w.Height) || (b.PosY >= 0 && w.PosY == 0 && w.Height > 1)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
                 foreach (var b in bomb)
                 {
-                    CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b);
+                    //CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -1010,13 +1016,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var note = notes.Where(n => n.Line == 3 && !(n.Layer == 0 && w.PosY == 0 && w.Height == 1) && ((n.Layer >= w.PosY && n.Layer < w.PosY + w.Height) || (n.Layer >= 0 && w.PosY == 0 && w.Height > 1)) && n.Time > w.JsonTime && n.Time <= w.JsonTime + w.Duration && (n.Head || !n.Pattern)).ToList();
                 foreach (var n in note)
                 {
-                    CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n);
+                    //CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 var bomb = bombs.Where(b => b.PosX == 3 && !(b.PosY == 0 && w.PosY == 0 && w.Height == 1) && ((b.PosY >= w.PosY && b.PosY < w.PosY + w.Height) || (b.PosY >= 0 && w.PosY == 0 && w.Height > 1)) && b.JsonTime > w.JsonTime && b.JsonTime <= w.JsonTime + w.Duration).ToList();
                 foreach (var b in bomb)
                 {
-                    CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b);
+                    //CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -1025,18 +1031,18 @@ namespace ChroMapper_LightModding.BeatmapScanner
             foreach (var w in walls)
             {
                 bpm.SetCurrentBPM(w.JsonTime);
-                var min = bpm.ToBeatTime(Plugin.configs.MinimumWallDuration);
-                var max = bpm.ToBeatTime(Plugin.configs.ShortWallTrailDuration);
+                var min = bpm.ToBeatTime(config.MinimumWallDuration);
+                var max = bpm.ToBeatTime(config.ShortWallTrailDuration);
 
                 if (w.PosY <= 0 && w.Height > 1 && ((w.PosX + w.Width == 2 && walls.Exists(wa => wa != w && wa.PosY == 0 && wa.Height > 0 && wa.PosX + wa.Width == 3 && wa.JsonTime <= w.JsonTime + w.Duration && wa.JsonTime >= w.JsonTime)) ||
                     (w.PosX + w.Width == 3 && walls.Exists(wa => wa != w && wa.PosY == 0 && wa.Height > 0 && wa.PosX + wa.Width == 2 && wa.JsonTime <= w.JsonTime + w.Duration && wa.JsonTime >= w.JsonTime))))
                 {
-                    CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w);
+                    //CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 else if (w.PosY <= 0 && w.Height > 1 && ((w.Width >= 3 && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3 || w.PosX == 1)) || (w.Width >= 2 && w.PosX == 1 && w.PosY == 0 && w.Height > 0) || (w.Width >= 4 && w.PosX + w.Width >= 4 && w.PosX <= 0 && w.PosY == 0)))
                 {
-                    CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w);
+                    //CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 if (w.Width <= 0 || w.Duration <= 0 || // Negative width or duration
@@ -1044,13 +1050,13 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     || ((w.PosX == 1 || w.PosX == 2 || (w.PosX + w.Width >= 2 && w.PosX <= 3)) && w.Height < 0)  // Under middle lane with negative height
                     || (w.PosX + w.Width >= 1 && w.PosX <= 4) && w.PosY + w.Height >= 0 && w.Height < 0) // Stretch above with negative height
                 {
-                    CreateDiffCommentObstacle("R4D - Must have positive width, height and duration", CommentTypesEnum.Issue, w);
+                    //CreateDiffCommentObstacle("R4D - Must have positive width, height and duration", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 if (w.Duration < min && (w.PosX + w.Width == 2 || w.PosX + w.Width == 3) && w.PosY + w.Height > 1 &&
                     !walls.Exists(wa => wa != w && wa.PosX + wa.Width >= w.PosX + w.Width && wa.PosX <= w.PosX + w.Width && wa.Duration >= min && w.JsonTime >= wa.JsonTime && w.JsonTime <= wa.JsonTime + wa.Duration + max))
                 {
-                    CreateDiffCommentObstacle("R4E - Shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w);
+                    //CreateDiffCommentObstacle("R4E - Shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
 
@@ -1093,14 +1099,14 @@ namespace ChroMapper_LightModding.BeatmapScanner
                             dodge++;
                         }
                     }
-                    if (dodge >= Plugin.configs.MaximumDodgeWallPerSecond)
+                    if (dodge >= config.MaximumDodgeWallPerSecond)
                     {
-                        CreateDiffCommentObstacle("R4B - Over the " + Plugin.configs.MaximumDodgeWallPerSecond + " dodge per second limit", CommentTypesEnum.Issue, w);
+                        //CreateDiffCommentObstacle("R4B - Over the " + config.MaximumDodgeWallPerSecond + " dodge per second limit", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
-                    else if (dodge >= Plugin.configs.SubjectiveDodgeWallPerSecond)
+                    else if (dodge >= config.SubjectiveDodgeWallPerSecond)
                     {
-                        CreateDiffCommentObstacle("Y4A - " + Plugin.configs.SubjectiveDodgeWallPerSecond + "+ dodge per second need justification", CommentTypesEnum.Suggestion, w);
+                        //CreateDiffCommentObstacle("Y4A - " + Plugin.configs.SubjectiveDodgeWallPerSecond + "+ dodge per second need justification", CommentTypesEnum.Suggestion, w); TODO: USE NEW METHOD
                         issue = Severity.Warning;
                     }
                 }
@@ -1126,7 +1132,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var link = links.Where(l => l.JsonTime <= notes[15].Time).ToList();
                 foreach (var l in link)
                 {
-                    CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l);
+                    //CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -1135,7 +1141,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var link = links.Where(l => l.JsonTime >= notes.Last().Time).Take(16 - notes.Count).ToList();
                 foreach (var l in link)
                 {
-                    CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l);
+                    //CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -1150,23 +1156,23 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 var value = distance / (chain.SliceCount - 1);
                 // Difference between expected and current distance, multiplied by current squish to know maximum value
                 double max;
-                if(l.TailPosY == l.PosY) max = Math.Round(Plugin.configs.ChainLinkVsAir / value * chain.Squish, 2);
-                else max = Math.Round(Plugin.configs.ChainLinkVsAir * 1.1 / value * chain.Squish, 2);
+                if(l.TailPosY == l.PosY) max = Math.Round(config.ChainLinkVsAir / value * chain.Squish, 2);
+                else max = Math.Round(config.ChainLinkVsAir * 1.1 / value * chain.Squish, 2);
                 if (chain.Squish - 0.01 > max)
                 {
-                    CreateDiffCommentLink("R2D - Link spacing issue. Maximum squish for placement: " + max, CommentTypesEnum.Issue, l);
+                    //CreateDiffCommentLink("R2D - Link spacing issue. Maximum squish for placement: " + max, CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 var newX = l.PosX + (l.TailPosX - l.PosX) * chain.Squish;
                 var newY = l.PosY + (l.TailPosY - l.PosY) * chain.Squish;
                 if (newX > 4 || newX < -1 || newY > 2.33 || newY < -0.33)
                 {
-                    CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l);
+                    //CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 if (l.TailJsonTime < l.JsonTime)
                 {
-                    CreateDiffCommentLink("R2D - Reverse Direction", CommentTypesEnum.Issue, l);
+                    //CreateDiffCommentLink("R2D - Reverse Direction", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
                 var note = notes.Find(x => x.Time >= l.TailJsonTime && x.Type == l.Color);
@@ -1174,7 +1180,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (l.TailJsonTime + (l.TailJsonTime - l.JsonTime) > note.Time)
                     {
-                        CreateDiffCommentLink("R2D - Duration between tail and next note is too short", CommentTypesEnum.Issue, l);
+                        //CreateDiffCommentLink("R2D - Duration between tail and next note is too short", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
@@ -1195,9 +1201,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     temp,
                     temp2
                 };
-                if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, Plugin.configs.MaxChainRotation))
+                if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, config.MaxChainRotation))
                 {
-                    CreateDiffCommentLink("R2D - Over 45°", CommentTypesEnum.Issue, l);
+                    //CreateDiffCommentLink("R2D - Over 45°", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -1218,12 +1224,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
             foreach (var swing in swings.Where(x => x.resetType == ResetType.Rebound).ToList())
             {
-                CreateDiffCommentNotes("R2 - Parity Error", CommentTypesEnum.Issue, swing.notes);
+                //CreateDiffCommentNotes("R2 - Parity Error", CommentTypesEnum.Issue, swing.notes); TODO: USE NEW METHOD
                 hadIssue = true;
             }
             foreach (var swing in swings.Where(x => x.swingEBPM == float.PositiveInfinity).ToList())
             {
-                CreateDiffCommentNotes("R2 - Parity Mismatch on same beat", CommentTypesEnum.Issue, swing.notes);
+                //CreateDiffCommentNotes("R2 - Parity Mismatch on same beat", CommentTypesEnum.Issue, swing.notes); TODO: USE NEW METHOD
                 hadIssue = true;
             }
 
@@ -1235,16 +1241,16 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (i != 0)
                 {
                     float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
-                    if (Math.Abs(difference) >= Plugin.configs.ParityWarningAngle)
+                    if (Math.Abs(difference) >= config.ParityWarningAngle)
                     {
-                        CreateDiffCommentNotes("Parity Warning - " + Plugin.configs.ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
+                        //CreateDiffCommentNotes("Parity Warning - " + config.ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, rightHandSwings[i].notes); TODO: USE NEW METHOD
                         hadWarning = true;
                     }
                     else if (Math.Abs(rightHandSwings[i].startPos.rotation) > 135 || Math.Abs(rightHandSwings[i].endPos.rotation) > 135)
                     {
-                        if(Plugin.configs.ParityInvertedWarning)
+                        if(config.ParityInvertedWarning)
                         {
-                            CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, rightHandSwings[i].notes);
+                            //CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, rightHandSwings[i].notes); TODO: USE NEW METHOD
                         }
                         hadWarning = true;
                     }
@@ -1256,23 +1262,23 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 if (i != 0)
                 {
                     float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
-                    if (Math.Abs(difference) >= Plugin.configs.ParityWarningAngle)
+                    if (Math.Abs(difference) >= config.ParityWarningAngle)
                     {
-                        CreateDiffCommentNotes("Parity Warning - " + Plugin.configs.ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
+                        //CreateDiffCommentNotes("Parity Warning - " + config.ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, leftHandSwings[i].notes); TODO: USE NEW METHOD
                         hadWarning = true;
                     }
                     else if (Math.Abs(leftHandSwings[i].startPos.rotation) > 135 || Math.Abs(leftHandSwings[i].endPos.rotation) > 135)
                     {
-                        if (Plugin.configs.ParityInvertedWarning)
+                        if (config.ParityInvertedWarning)
                         {
-                            CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, leftHandSwings[i].notes);
+                            //CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, leftHandSwings[i].notes); TODO: USE NEW METHOD
                         }
                         hadWarning = true;
                     }
                 }
             }
 
-            if (Plugin.configs.ParityDebug)
+            if (config.ParityDebug)
             {
                 foreach (var swing in swings)
                 {
@@ -1323,9 +1329,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     var note = notes[i];
                     bpm.SetCurrentBPM(note.JsonTime);
-                    var MaxBottomNoteTime = bpm.ToBeatTime(Plugin.configs.VBMinBottomNoteTime);
-                    var MaxOuterNoteTime = bpm.ToBeatTime(Plugin.configs.VBMaxOuterNoteTime);
-                    var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
+                    var MaxBottomNoteTime = bpm.ToBeatTime(config.VBMinBottomNoteTime);
+                    var MaxOuterNoteTime = bpm.ToBeatTime(config.VBMaxOuterNoteTime);
+                    var Overall = bpm.ToBeatTime(config.VBMinimum);
                     var MinTimeWarning = bpm.ToBeatTime(((800 - 300) * Math.Pow(Math.E, -BeatmapScannerData.pass / 7.6 - BeatmapScannerData.tech * 0.04) + 300) / 1000);
                     lastMidL.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeWarning);
                     lastMidR.RemoveAll(l => note.JsonTime - l.SongBpmTime > MinTimeWarning);
@@ -1348,8 +1354,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     arr.Add(note);
                                     if (note.Type == 0 || note.Type == 1)
                                     {
-                                        CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Unsure,
-                                        cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
+                                        //CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Unsure,
+                                        //  cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer)); TODO: USE NEW METHOD
                                         issue = Severity.Warning;
                                     }
                                 }
@@ -1375,8 +1381,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     arr.Add(note);
                                     if (note.Type == 0 || note.Type == 1)
                                     {
-                                        CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Unsure,
-                                            cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer));
+                                        //CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Unsure,
+                                        //    cubes.Find(c => c.Time == note.JsonTime && c.Type == note.Type && note.PosX == c.Line && note.PosY == c.Layer)); TODO: USE NEW METHOD
                                         issue = Severity.Warning;
                                     }
                                 }
@@ -1403,9 +1409,9 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     if (note.Type == 3)
                     {
                         bpm.SetCurrentBPM(note.JsonTime);
-                        var MaxTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMaxBombTime);
-                        var MinTimeBomb = bpm.ToBeatTime(Plugin.configs.VBMinBombTime);
-                        var Overall = bpm.ToBeatTime(Plugin.configs.VBMinimum);
+                        var MaxTimeBomb = bpm.ToBeatTime(config.VBMaxBombTime);
+                        var MinTimeBomb = bpm.ToBeatTime(config.VBMinBombTime);
+                        var Overall = bpm.ToBeatTime(config.VBMinimum);
                         var left = notes.Where(x => x.JsonTime < note.JsonTime && x.Type == 0).OrderBy(o => o.JsonTime).LastOrDefault();
                         var right = notes.Where(x => x.JsonTime < note.JsonTime && x.Type == 1).OrderBy(o => o.JsonTime).LastOrDefault();
                         lastMidL.RemoveAll(l => note.JsonTime - l.JsonTime > MinTimeBomb);
@@ -1431,7 +1437,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - left.PosX, 2) + Math.Pow(note.PosY - left.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                //TODO: USE NEW METHOD
                                                 issue = Severity.Fail;
                                             }
                                             continue;
@@ -1448,7 +1455,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            //TODO: USE NEW METHOD
                                             issue = Severity.Fail;
                                             continue;
                                         }
@@ -1460,7 +1468,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - right.PosX, 2) + Math.Pow(note.PosY - right.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                //TODO: USE NEW METHOD
                                                 issue = Severity.Fail;
                                             }
                                             continue;
@@ -1477,7 +1486,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidL.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            //TODO: USE NEW METHOD
                                             issue = Severity.Fail;
                                             continue;
                                         }
@@ -1506,7 +1516,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - left.PosX, 2) + Math.Pow(note.PosY - left.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                //TODO: USE NEW METHOD
                                                 issue = Severity.Fail;
                                             }
                                             continue;
@@ -1523,7 +1534,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            //TODO: USE NEW METHOD
                                             issue = Severity.Fail;
                                             continue;
                                         }
@@ -1535,7 +1547,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                             var di = Math.Sqrt(Math.Pow(note.PosX - right.PosX, 2) + Math.Pow(note.PosY - right.PosY, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                                //TODO: USE NEW METHOD
                                                 issue = Severity.Fail;
                                             }
                                             continue;
@@ -1552,7 +1565,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                         var d = Math.Sqrt(Math.Pow(note.PosX - pos.PosX, 2) + Math.Pow(note.PosY - pos.PosY, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.JsonTime - lastMidR.First().JsonTime) * 1000, 0) + "ms", CommentTypesEnum.Issue, note);
+                                            //TODO: USE NEW METHOD
                                             issue = Severity.Fail;
                                             continue;
                                         }
@@ -1599,12 +1613,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (slider)
                     {
-                        CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch);
+                        //CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch); TODO: USE NEW METHOD
                         issue = true;
                     }
                     else if (ch.TailJsonTime - ch.JsonTime > 0.125)
                     {
-                        CreateDiffCommentLink("R2D - Duration might be too high", CommentTypesEnum.Unsure, ch);
+                        //CreateDiffCommentLink("R2D - Duration might be too high", CommentTypesEnum.Unsure, ch); TODO: USE NEW METHOD
                         unsure = true;
                     }
                 }
@@ -1612,19 +1626,19 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 {
                     if (slider)
                     {
-                        CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch);
+                        //CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch); TODO: USE NEW METHOD
                         unsure = true;
                     }
                     else if (ch.TailJsonTime - ch.JsonTime > 0.125)
                     {
-                        CreateDiffCommentLink("Y2A - Duration might be too high", CommentTypesEnum.Unsure, ch);
+                        //CreateDiffCommentLink("Y2A - Duration might be too high", CommentTypesEnum.Unsure, ch); TODO: USE NEW METHOD
                         unsure = true;
                     }
                 }
                 if (!cubes.Exists(c => c.Time == ch.JsonTime && c.Type == ch.Color && c.Line == ch.PosX && c.Layer == ch.PosY))
                 {
                     // Link spam maybe idk
-                    CreateDiffCommentLink("R2D - No head note", CommentTypesEnum.Issue, ch);
+                    //CreateDiffCommentLink("R2D - No head note", CommentTypesEnum.Issue, ch); TODO: USE NEW METHOD
                     issue = true;
                 }
             }
@@ -1640,12 +1654,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (left.CutDirection == 8)
                         {
-                            CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Unsure, left);
+                            //CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Unsure, left); TODO: USE NEW METHOD
                             unsure = true;
                         }
                         else
                         {
-                            CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Issue, left);
+                            //CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Issue, left); TODO: USE NEW METHOD
                             issue = true;
                         }
                     }
@@ -1663,12 +1677,12 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     {
                         if (right.CutDirection == 8)
                         {
-                            CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Unsure, right);
+                            //CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Unsure, right); TODO: USE NEW METHOD
                             unsure = true;
                         }
                         else
                         {
-                            CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Issue, right);
+                            //CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Issue, right); TODO: USE NEW METHOD
                             issue = true;
                         }
                     }
@@ -1720,8 +1734,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var sliderAngle2 = ScanMethod.Mod(ScanMethod.ConvertRadiansToDegrees(Math.Atan2(red[i].Layer - red[i - 1].Layer, red[i].Line - red[i - 1].Line)), 360);
                     if (Math.Abs(sliderAngle2 - red[i].Direction) >= 45 && Math.Abs(sliderAngle2 - red[i].Direction) <= 90)
                     {
-                        CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i - 1]);
-                        CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i]);
+                        //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i - 1]); TODO: USE NEW METHOD 
+                        //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i]); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
@@ -1744,8 +1758,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var sliderAngle2 = ScanMethod.Mod(ScanMethod.ConvertRadiansToDegrees(Math.Atan2(blue[i].Layer - blue[i - 1].Layer, blue[i].Line - blue[i - 1].Line)), 360);
                     if (Math.Abs(sliderAngle2 - blue[i].Direction) >= 45 && Math.Abs(sliderAngle2 - blue[i].Direction) <= 90)
                     {
-                        CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i - 1]);
-                        CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i]);
+                        //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i - 1]); TODO: USE NEW METHOD 
+                        //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i]); TODO: USE NEW METHOD
                         issue = Severity.Fail;
                     }
                 }
@@ -1870,7 +1884,7 @@ namespace ChroMapper_LightModding.BeatmapScanner
                                     var InPath = NearestPointOnFiniteLine(new(note2.Line, note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.Line, note.Layer));
                                     if (InPath)
                                     {
-                                        CreateDiffCommentNote("Swing Path", CommentTypesEnum.Info, note);
+                                        //CreateDiffCommentNote("Swing Path", CommentTypesEnum.Info, note); TODO: USE NEW METHOD
                                     }
                                 }
                             }
@@ -1970,8 +1984,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
                 }
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3E - Swing Path", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
-                                        && item.PosX == c.Line && item.PosY == c.Layer));
+                    //CreateDiffCommentNote("R3E - Swing Path", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -2043,8 +2057,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3G - Low NJS Inline", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
-                                        && item.PosX == c.Line && item.PosY == c.Layer));
+                    //CreateDiffCommentNote("R3G - Low NJS Inline", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
                     issue = Severity.Warning;
                 }
 
@@ -2131,8 +2145,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3G - Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
-                                        && item.PosX == c.Line && item.PosY == c.Layer));
+                    //CreateDiffCommentNote("R3G - Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
                     issue = Severity.Warning;
                 }
 
@@ -2189,8 +2203,8 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3G - Reverse Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
-                                        && item.PosX == c.Line && item.PosY == c.Layer));
+                    //CreateDiffCommentNote("R3G - Reverse Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
                     issue = Severity.Warning;
                 }
             }
@@ -2341,15 +2355,15 @@ namespace ChroMapper_LightModding.BeatmapScanner
 
                 foreach (var item in arr2)
                 {
-                    CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
-                                        && item.PosX == c.Line && item.PosY == c.Layer));
+                    //CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
                     issue = Severity.Warning;
                 }
 
                 foreach (var item in arr)
                 {
-                    CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
-                                        && item.PosX == c.Line && item.PosY == c.Layer));
+                    //CreateDiffCommentNote("R3D - Hand clap", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
+                    //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
                     issue = Severity.Fail;
                 }
             }
@@ -2484,10 +2498,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var cube = cubes[index];
                     if (index < cubes.Count - 3)
                     {
-                        if (cubes[index + 1].Time - cube.Time != cubes[index + 2].Time - cubes[index + 1].Time)
-                            CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube);
+                        if (cubes[index + 1].Time - cube.Time != cubes[index + 2].Time - cubes[index + 1].Time) continue;
+                            //CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube); TODO: USE NEW METHOD
                     }
-                    else CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube);
+                    else continue; //CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube); TODO: USE NEW METHOD
                 }
             }
             foreach (var data in rollingAverageRight)
@@ -2499,10 +2513,10 @@ namespace ChroMapper_LightModding.BeatmapScanner
                     var cube = cubes[index];
                     if(index < cubes.Count - 3)
                     {
-                        if (cubes[index + 1].Time - cube.Time != cubes[index + 2].Time - cubes[index + 1].Time)
-                            CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube);
+                        if (cubes[index + 1].Time - cube.Time != cubes[index + 2].Time - cubes[index + 1].Time) continue;
+                        //CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube); TODO: USE NEW METHOD
                     }
-                    else CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube);
+                    else continue; //CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube); TODO: USE NEW METHOD
                 }
             }
         }
@@ -2510,249 +2524,250 @@ namespace ChroMapper_LightModding.BeatmapScanner
         #endregion
 
         #region Comments
+        // THIS IS ALL OLD TODO: USE NEW METHOD
 
         /// <summary>
         /// Create a comment in the mapsetreview file
         /// </summary>
         /// <param name="message">the message</param>
         /// <param name="type">the type</param>
-        private void CreateSongInfoComment(string message, CommentTypesEnum type)
-        {
-            string id = Guid.NewGuid().ToString();
+        //private void CreateSongInfoComment(string message, CommentTypesEnum type)
+        //{
+        //    string id = Guid.NewGuid().ToString();
 
 
-            Comment comment = new()
-            {
-                Id = id,
-                StartBeat = 0,
-                Objects = new(),
-                Type = type,
-                Message = message,
-                IsAutogenerated = true
-            };
-            List<Comment> comments = plugin.currentMapsetReview.Comments;
-            comments.Add(comment);
-            comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
-        }
+        //    Comment comment = new()
+        //    {
+        //        Id = id,
+        //        StartBeat = 0,
+        //        Objects = new(),
+        //        Type = type,
+        //        Message = message,
+        //        IsAutogenerated = true
+        //    };
+        //    List<Comment> comments = plugin.currentMapsetReview.Comments;
+        //    comments.Add(comment);
+        //    comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+        //}
 
 
-        /// <summary>
-        /// Create a comment in a difficultyreview for a note
-        /// </summary>
-        /// <param name="message">the mesasge</param>
-        /// <param name="type">the severity</param>
-        /// <param name="cube">the cube</param>
-        private void CreateDiffCommentNote(string message, CommentTypesEnum type, Cube cube)
-        {
-            string id = Guid.NewGuid().ToString();
+        ///// <summary>
+        ///// Create a comment in a difficultyreview for a note
+        ///// </summary>
+        ///// <param name="message">the mesasge</param>
+        ///// <param name="type">the severity</param>
+        ///// <param name="cube">the cube</param>
+        //private void CreateDiffCommentNote(string message, CommentTypesEnum type, Cube cube)
+        //{
+        //    string id = Guid.NewGuid().ToString();
 
-            SelectedObject note = new()
-            {
-                Beat = cube.Time,
-                PosX = cube.Line,
-                PosY = cube.Layer,
-                Color = cube.Type,
-                ObjectType = ObjectType.Note
-            };
+        //    SelectedObject note = new()
+        //    {
+        //        Beat = cube.Time,
+        //        PosX = cube.Line,
+        //        PosY = cube.Layer,
+        //        Color = cube.Type,
+        //        ObjectType = ObjectType.Note
+        //    };
 
-            Comment comment = new()
-            {
-                Id = id,
-                StartBeat = cube.Time,
-                Objects = new() { note },
-                Type = type,
-                Message = message,
-                IsAutogenerated = true
-            };
+        //    Comment comment = new()
+        //    {
+        //        Id = id,
+        //        StartBeat = cube.Time,
+        //        Objects = new() { note },
+        //        Type = type,
+        //        Message = message,
+        //        IsAutogenerated = true
+        //    };
 
-            if (!CheckIfCommentAlreadyExists(comment))
-            {
-                List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
-            }
-        }
+        //    if (!CheckIfCommentAlreadyExists(comment))
+        //    {
+        //        List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+        //        comments.Add(comment);
+        //        comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+        //    }
+        //}
 
-        /// <summary>
-        /// Create a comment in a difficultyreview for a note
-        /// </summary>
-        /// <param name="message">the mesasge</param>
-        /// <param name="type">the severity</param>
-        /// <param name="cube">the cube</param>
-        private void CreateDiffCommentLink(string message, CommentTypesEnum type, BaseSlider chainLink)
-        {
-            string id = Guid.NewGuid().ToString();
+        ///// <summary>
+        ///// Create a comment in a difficultyreview for a note
+        ///// </summary>
+        ///// <param name="message">the mesasge</param>
+        ///// <param name="type">the severity</param>
+        ///// <param name="cube">the cube</param>
+        //private void CreateDiffCommentLink(string message, CommentTypesEnum type, BaseSlider chainLink)
+        //{
+        //    string id = Guid.NewGuid().ToString();
 
-            SelectedObject note = new()
-            {
-                Beat = chainLink.JsonTime,
-                PosX = chainLink.PosX,
-                PosY = chainLink.PosY,
-                Color = chainLink.Color,
-                ObjectType = ObjectType.Chain
-            };
+        //    SelectedObject note = new()
+        //    {
+        //        Beat = chainLink.JsonTime,
+        //        PosX = chainLink.PosX,
+        //        PosY = chainLink.PosY,
+        //        Color = chainLink.Color,
+        //        ObjectType = ObjectType.Chain
+        //    };
 
-            Comment comment = new()
-            {
-                Id = id,
-                StartBeat = chainLink.JsonTime,
-                Objects = new() { note },
-                Type = type,
-                Message = message,
-                IsAutogenerated = true
-            };
+        //    Comment comment = new()
+        //    {
+        //        Id = id,
+        //        StartBeat = chainLink.JsonTime,
+        //        Objects = new() { note },
+        //        Type = type,
+        //        Message = message,
+        //        IsAutogenerated = true
+        //    };
 
-            if (!CheckIfCommentAlreadyExists(comment))
-            {
-                List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
-            }
-        }
+        //    if (!CheckIfCommentAlreadyExists(comment))
+        //    {
+        //        List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+        //        comments.Add(comment);
+        //        comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+        //    }
+        //}
 
-        /// <summary>
-        /// Create a comment in a difficultyreview for a bomb
-        /// </summary>
-        /// <param name="message">the mesasge</param>
-        /// <param name="type">the severity</param>
-        /// <param name="bomb">the bomb</param>
-        private void CreateDiffCommentBomb(string message, CommentTypesEnum type, BaseNote bomb)
-        {
-            string id = Guid.NewGuid().ToString();
+        ///// <summary>
+        ///// Create a comment in a difficultyreview for a bomb
+        ///// </summary>
+        ///// <param name="message">the mesasge</param>
+        ///// <param name="type">the severity</param>
+        ///// <param name="bomb">the bomb</param>
+        //private void CreateDiffCommentBomb(string message, CommentTypesEnum type, BaseNote bomb)
+        //{
+        //    string id = Guid.NewGuid().ToString();
 
-            SelectedObject note = new()
-            {
-                Beat = bomb.JsonTime,
-                PosX = bomb.PosX,
-                PosY = bomb.PosY,
-                Color = 3,
-                ObjectType = bomb.ObjectType
-            };
+        //    SelectedObject note = new()
+        //    {
+        //        Beat = bomb.JsonTime,
+        //        PosX = bomb.PosX,
+        //        PosY = bomb.PosY,
+        //        Color = 3,
+        //        ObjectType = bomb.ObjectType
+        //    };
 
-            Comment comment = new()
-            {
-                Id = id,
-                StartBeat = bomb.JsonTime,
-                Objects = new() { note },
-                Type = type,
-                Message = message,
-                IsAutogenerated = true
-            };
+        //    Comment comment = new()
+        //    {
+        //        Id = id,
+        //        StartBeat = bomb.JsonTime,
+        //        Objects = new() { note },
+        //        Type = type,
+        //        Message = message,
+        //        IsAutogenerated = true
+        //    };
 
-            if (!CheckIfCommentAlreadyExists(comment))
-            {
-                List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
-            }
-        }
+        //    if (!CheckIfCommentAlreadyExists(comment))
+        //    {
+        //        List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+        //        comments.Add(comment);
+        //        comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+        //    }
+        //}
 
-        /// <summary>
-        /// Create a comment in a difficultyreview for a wall
-        /// </summary>
-        /// <param name="message">the mesasge</param>
-        /// <param name="type">the severity</param>
-        /// <param name="wall">the wall</param>
-        private void CreateDiffCommentObstacle(string message, CommentTypesEnum type, BaseObstacle wall)
-        {
-            string id = Guid.NewGuid().ToString();
+        ///// <summary>
+        ///// Create a comment in a difficultyreview for a wall
+        ///// </summary>
+        ///// <param name="message">the mesasge</param>
+        ///// <param name="type">the severity</param>
+        ///// <param name="wall">the wall</param>
+        //private void CreateDiffCommentObstacle(string message, CommentTypesEnum type, BaseObstacle wall)
+        //{
+        //    string id = Guid.NewGuid().ToString();
 
-            SelectedObject note = new()
-            {
-                Beat = wall.JsonTime,
-                PosX = wall.PosX,
-                PosY = wall.PosY,
-                Color = 0,
-                ObjectType = wall.ObjectType
-            };
+        //    SelectedObject note = new()
+        //    {
+        //        Beat = wall.JsonTime,
+        //        PosX = wall.PosX,
+        //        PosY = wall.PosY,
+        //        Color = 0,
+        //        ObjectType = wall.ObjectType
+        //    };
 
-            Comment comment = new()
-            {
-                Id = id,
-                StartBeat = wall.JsonTime,
-                Objects = new() { note },
-                Type = type,
-                Message = message,
-                IsAutogenerated = true
-            };
+        //    Comment comment = new()
+        //    {
+        //        Id = id,
+        //        StartBeat = wall.JsonTime,
+        //        Objects = new() { note },
+        //        Type = type,
+        //        Message = message,
+        //        IsAutogenerated = true
+        //    };
 
-            if (!CheckIfCommentAlreadyExists(comment))
-            {
-                List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
-            }
-        }
+        //    if (!CheckIfCommentAlreadyExists(comment))
+        //    {
+        //        List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+        //        comments.Add(comment);
+        //        comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+        //    }
+        //}
 
-        /// <summary>
-        /// Add another line to the OverallComment in the difficultyreview
-        /// </summary>
-        /// <param name="message">the message</param>
-        private void ExtendOverallComment(string message)
-        {
-            DifficultyReview review = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault();
+        ///// <summary>
+        ///// Add another line to the OverallComment in the difficultyreview
+        ///// </summary>
+        ///// <param name="message">the message</param>
+        //private void ExtendOverallComment(string message)
+        //{
+        //    DifficultyReview review = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault();
 
-            review.OverallComment += $" \n{message}";
-        }
+        //    review.OverallComment += $" \n{message}";
+        //}
 
-        private bool CheckIfCommentAlreadyExists(Comment comment)
-        {
-            List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+        //private bool CheckIfCommentAlreadyExists(Comment comment)
+        //{
+        //    List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
-            return comments.Any(c => comment.Message == c.Message && c.Objects.Any(o => String.Equals(o.ToStringFull().ToLower(), comment.Objects.FirstOrDefault().ToStringFull().ToLower(), StringComparison.InvariantCulture)));
-        }
+        //    return comments.Any(c => comment.Message == c.Message && c.Objects.Any(o => String.Equals(o.ToStringFull().ToLower(), comment.Objects.FirstOrDefault().ToStringFull().ToLower(), StringComparison.InvariantCulture)));
+        //}
 
-        private void FuseBombComments()
-        {
-            List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-            var bombComments = comments.Where(c => c.Objects.All(o => o.Color == 3)).ToList(); // Only bombs comments
-            for (int i = bombComments.Count() - 2; i >= 0; i--)
-            {
-                if (bombComments[i + 1].Message == bombComments[i].Message && bombComments[i + 1].StartBeat >= bombComments[i].StartBeat && bombComments[i + 1].StartBeat <= bombComments[i].StartBeat + 0.25)
-                {
-                    bombComments[i + 1].Objects.ForEach(o => bombComments[i].Objects.Add(o));
-                    comments.Remove(bombComments[i + 1]);
-                }
-            }
-        }
+        //private void FuseBombComments()
+        //{
+        //    List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+        //    var bombComments = comments.Where(c => c.Objects.All(o => o.Color == 3)).ToList(); // Only bombs comments
+        //    for (int i = bombComments.Count() - 2; i >= 0; i--)
+        //    {
+        //        if (bombComments[i + 1].Message == bombComments[i].Message && bombComments[i + 1].StartBeat >= bombComments[i].StartBeat && bombComments[i + 1].StartBeat <= bombComments[i].StartBeat + 0.25)
+        //        {
+        //            bombComments[i + 1].Objects.ForEach(o => bombComments[i].Objects.Add(o));
+        //            comments.Remove(bombComments[i + 1]);
+        //        }
+        //    }
+        //}
 
-        private void CreateDiffCommentNotes(string message, CommentTypesEnum type, List<Note> notes)
-        {
-            if (notes.Count == 0) return;
-            string id = Guid.NewGuid().ToString();
+        //private void CreateDiffCommentNotes(string message, CommentTypesEnum type, List<Note> notes)
+        //{
+        //    if (notes.Count == 0) return;
+        //    string id = Guid.NewGuid().ToString();
 
-            List<SelectedObject> objects = new();
+        //    List<SelectedObject> objects = new();
 
-            foreach (var note in notes)
-            {
-                objects.Add(new()
-                {
-                    Beat = note.b,
-                    PosX = note.x,
-                    PosY = note.y,
-                    Color = note.c,
-                    ObjectType = ObjectType.Note
-                });
-            }
+        //    foreach (var note in notes)
+        //    {
+        //        objects.Add(new()
+        //        {
+        //            Beat = note.b,
+        //            PosX = note.x,
+        //            PosY = note.y,
+        //            Color = note.c,
+        //            ObjectType = ObjectType.Note
+        //        });
+        //    }
 
-            Comment comment = new()
-            {
-                Id = id,
-                StartBeat = objects.FirstOrDefault().Beat,
-                Objects = objects,
-                Type = type,
-                Message = message,
-                IsAutogenerated = true
-            };
+        //    Comment comment = new()
+        //    {
+        //        Id = id,
+        //        StartBeat = objects.FirstOrDefault().Beat,
+        //        Objects = objects,
+        //        Type = type,
+        //        Message = message,
+        //        IsAutogenerated = true
+        //    };
 
-            List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+        //    List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
-            if (!CheckIfCommentAlreadyExists(comment))
-            {
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
-            }
-        }
+        //    if (!CheckIfCommentAlreadyExists(comment))
+        //    {
+        //        comments.Add(comment);
+        //        comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+        //    }
+        //}
 
         #endregion
     }

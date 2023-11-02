@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ChroMapper_LightModding.BeatmapScanner.Data.Criteria
+namespace BLMapCheck.BeatmapScanner.Data.Criteria
 {
     internal class Recommended
     {
