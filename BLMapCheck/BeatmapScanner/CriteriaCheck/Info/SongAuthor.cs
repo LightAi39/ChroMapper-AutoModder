@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using BLMapCheck.Classes.Results;
+using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
@@ -9,9 +10,25 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
         {
             if (SongAuthorName.Count() == 0)
             {
-                //CreateSongInfoComment("R7C - Song Author field is empty", CommentTypesEnum.Issue); TODO: USE NEW METHOD
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Name = "Song Author",
+                    Severity = Severity.Error,
+                    CheckType = "SongInfo",
+                    Description = "The song author field is empty.",
+                    ResultData = new() { new("SongAuthorLength", "0") }
+                });
                 return CritResult.Fail;
             }
+
+            CheckResults.Instance.AddResult(new CheckResult()
+            {
+                Name = "Song Author",
+                Severity = Severity.Passed,
+                CheckType = "SongInfo",
+                Description = "The song author field is not empty.",
+                ResultData = new() { new("SongAuthorLength", SongAuthorName.Count().ToString()) }
+            });
             return CritResult.Success;
         }
     }

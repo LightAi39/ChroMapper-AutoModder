@@ -8,18 +8,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
         public static CritResult Check()
         {
             // TODO: Add automatic BPM detection
-            //CreateSongInfoComment("R1A - The map's BPM must be set to one of the song's BPM or a multiple of the song's BPM", CommentTypesEnum.Unsure); TODO: USE NEW METHOD
             CheckResults.Instance.AddResult(new CheckResult()
             {
                 Name = "BPM",
                 Severity = Severity.Inconclusive,
-                CheckType = "Info",
-                Description = "The map's BPM must be set to the song's BPM or a multiple, but could not be autodetected.",
-                BeatmapObjects = null,
-                ResultData = null
+                CheckType = "SongInfo",
+                Description = "The maps BPM must be set to the songs BPM or a multiple, but could not be autodetected.",
+                ResultData = new() { new("BPM", "Could not be found") }
             });
 
-            return CritResult.Success;
+            return CritResult.Warning;
         }
     }
 }
