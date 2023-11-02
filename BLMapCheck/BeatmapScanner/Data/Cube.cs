@@ -1,4 +1,4 @@
-﻿using BLMapCheck.Classes.ChroMapper;
+﻿using BLMapCheck.Classes.MapVersion.Difficulty;
 
 namespace BLMapCheck.BeatmapScanner.Data
 {
@@ -33,15 +33,16 @@ namespace BLMapCheck.BeatmapScanner.Data
             Direction = cube.Direction;
         }
 
-        public Cube(BaseNote note)
+
+        public Cube(Colornote note)
         {
-            AngleOffset = note.AngleOffset;
-            CutDirection = note.CutDirection;
-            Type = note.Type;
-            Time = note.JsonTime;
-            Line = note.PosX;
-            Layer = note.PosY;
-            Direction = note.CutDirection;
+            AngleOffset = note.a;
+            CutDirection = note.d;
+            Type = note.c;
+            Time = note.b;
+            Line = note.x;
+            Layer = note.y;
+            Direction = note.d;
         }
     }
 }

@@ -2,8 +2,8 @@
 using System.Linq;
 using System;
 using BLMapCheck.BeatmapScanner.Data;
-using BLMapCheck.Classes.ChroMapper;
 using BLMapCheck.Classes.Unity;
+using BLMapCheck.Classes.MapVersion.Difficulty;
 
 namespace BLMapCheck.BeatmapScanner
 {
@@ -11,7 +11,7 @@ namespace BLMapCheck.BeatmapScanner
     {
         #region Main
 
-        public static (double diff, double tech, List<SwingData> data) UseLackWizAlgorithm(List<Cube> red, List<Cube> blue, double bpm, List<BaseNote> bombs)
+        public static (double diff, double tech, List<SwingData> data) UseLackWizAlgorithm(List<Cube> red, List<Cube> blue, double bpm, List<Bombnote> bombs)
         {
             double leftDiff = 0;
             double rightDiff = 0;

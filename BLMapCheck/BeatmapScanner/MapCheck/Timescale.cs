@@ -8,20 +8,22 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
     // https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/beatmap/shared/bpm.ts
     internal class BeatPerMinute
     {
-        private double _bpm { get; set; }
+        public static BeatPerMinute BPM { get; set; }
+        private float _bpm { get; set; }
         private List<IBPMChange> _bpmChange { get; set; }
         private List<IBPMTimeScale> _timeScale { get; set; }
-        private double _offset { get; set; }
+        private float _offset { get; set; }
 
-        public BeatPerMinute(double bpm, List<IBPMChange> bpmChange, double offset)
+        public BeatPerMinute(float bpm, List<IBPMChange> bpmChange, float offset)
         {
+            BPM = this;
             _bpm = bpm;
             _offset = offset;
             _timeScale = GetTimeScale(bpmChange);
             _bpmChange = GetBpmChangeTime(bpmChange);
         }
 
-        public static BeatPerMinute Create(double bpm, List<BaseBpmEvent> bpmChange, double offset)
+        public static BeatPerMinute Create(float bpm, List<BaseBpmEvent> bpmChange, float offset)
         {
             List<IBPMChange> change = new();
             foreach (var bpmEvent in bpmChange)
@@ -31,12 +33,12 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return new BeatPerMinute(bpm, change, offset);
         }
 
-        public double GetValue()
+        public float GetValue()
         {
             return _bpm;
         }
 
-        public void SetValue(double bpm)
+        public void SetValue(float bpm)
         {
             _bpm = bpm;
         }
@@ -61,12 +63,12 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             _timeScale = timescale;
         }
 
-        public double GetOffset()
+        public float GetOffset()
         {
             return _offset * 1000;
         }
 
-        public void SetOffset(double offset)
+        public void SetOffset(float offset)
         {
             _offset = offset / 1000;
         }
@@ -81,11 +83,11 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 var curBPMC = bpmc[i];
                 if (temp != null)
                 {
-                    curBPMC.newTime = Math.Ceiling(((curBPMC.b - temp.b) / _bpm) * temp.m + temp.newTime - 0.01);
+                    curBPMC.newTime = (float)Math.Ceiling(((curBPMC.b - temp.b) / _bpm) * temp.m + temp.newTime - 0.01);
                 }
                 else
                 {
-                    curBPMC.newTime = Math.Ceiling(curBPMC.b - (_offset * _bpm) / 60 - 0.01);
+                    curBPMC.newTime = (float)Math.Ceiling(curBPMC.b - (_offset * _bpm) / 60 - 0.01);
                 }
                 bpmChange.Add(curBPMC);
                 temp = curBPMC;
@@ -130,18 +132,18 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return timeScale;
         }
 
-        public double OffsetBegone(double beat)
+        public float OffsetBegone(float beat)
         {
             return ToBeatTime(ToRealTime(beat, false) - _offset);
         }
 
-        public double ToRealTime(double beat, bool timescale = true)
+        public float ToRealTime(float beat, bool timescale = true)
         {
             if (!timescale)
             {
                 return (beat / _bpm) * 60;
             }
-            double calculatedBeat = 0;
+            float calculatedBeat = 0;
             for (int i = _timeScale.Count - 1; i >= 0; i--)
             {
                 if (beat > _timeScale[i].time)
@@ -153,13 +155,13 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return ((beat + calculatedBeat) / _bpm) * 60;
         }
 
-        public double ToBeatTime(double seconds, bool timescale = false)
+        public float ToBeatTime(float seconds, bool timescale = false)
         {
             if (!timescale)
             {
                 return (seconds * _bpm) / 60;
             }
-            double calculatedSecond = 0;
+            float calculatedSecond = 0;
             for (int i = _timeScale.Count - 1; i >= 0; i--)
             {
                 var currentSeconds = ToRealTime(_timeScale[i].time);
@@ -172,7 +174,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return ToBeatTime(seconds + calculatedSecond);
         }
 
-        public double ToJsonTime(double beat)
+        public float ToJsonTime(float beat)
         {
             for (int i = _bpmChange.Count - 1; i >= 0; i--)
             {
@@ -184,7 +186,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return ToBeatTime(ToRealTime(beat, false) + _offset);
         }
 
-        public double AdjustTime(double beat)
+        public float AdjustTime(float beat)
         {
             for (int i = _bpmChange.Count - 1; i >= 0; i--)
             {
@@ -196,7 +198,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return OffsetBegone(beat);
         }
 
-        public void SetCurrentBPM(double beat)
+        public void SetCurrentBPM(float beat)
         {
             for (int i = 0; i < _bpmChange.Count; i++)
             {
@@ -219,17 +221,17 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
 
     internal class IBPMTimeScale
     {
-        public double time { get; set; }
-        public double scale { get; set; }
+        public float time { get; set; }
+        public float scale { get; set; }
     }
 
     internal class IBPMChange
     {
-        public double b { get; set; }
-        public double m { get; set; }
-        public double p { get; set; }
-        public double o { get; set; }
-        public double newTime { get; set; }
+        public float b { get; set; }
+        public float m { get; set; }
+        public float p { get; set; }
+        public float o { get; set; }
+        public float newTime { get; set; }
 
         public IBPMChange(BaseBpmEvent ev)
         {

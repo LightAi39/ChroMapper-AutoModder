@@ -3,20 +3,21 @@ using System.Linq;
 using System;
 using BLMapCheck.BeatmapScanner.Data;
 using BLMapCheck.Classes.ChroMapper;
+using BLMapCheck.Classes.MapVersion.Difficulty;
 
 namespace BLMapCheck.BeatmapScanner
 {
     internal class BeatmapScanner
     {
         static public List<Cube> Cubes = new();
-        static public List<BaseNote> Bombs = new();
-        static public List<BaseObstacle> Walls = new();
-        static public List<BaseSlider> Chains = new();
+        static public List<Bombnote> Bombs = new();
+        static public List<Obstacle> Walls = new();
+        static public List<Burstslider> Chains = new();
         static public List<SwingData> Datas = new();
 
         #region Analyzer
 
-        public static (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) Analyzer(List<BaseNote> notes, List<BaseSlider> chains, List<BaseNote> bombs, List<BaseObstacle> obstacles, float bpm)
+        public static (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) Analyzer(List<Colornote> notes, List<Burstslider> chains, List<Bombnote> bombs, List<Obstacle> obstacles, float bpm)
         {
             #region Prep
 
@@ -114,9 +115,9 @@ namespace BLMapCheck.BeatmapScanner
             reset = Math.Round((double)data.Where(c => c.Reset).Count() / data.Count() * 100, 2);
 
             // Find group of walls and list them together
-            List<List<BaseObstacle>> wallsGroup = new()
+            List<List<Obstacle>> wallsGroup = new()
             {
-                new List<BaseObstacle>()
+                new List<Obstacle>()
             };
 
             for (int i = 0; i < obstacles.Count(); i++)
@@ -125,14 +126,14 @@ namespace BLMapCheck.BeatmapScanner
 
                 for (int j = i; j < obstacles.Count() - 1; j++)
                 {
-                    if (obstacles[j + 1].JsonTime >= obstacles[j].JsonTime && obstacles[j + 1].JsonTime <= obstacles[j].JsonTime + obstacles[j].Duration)
+                    if (obstacles[j + 1].b >= obstacles[j].b && obstacles[j + 1].b <= obstacles[j].b + obstacles[j].d)
                     {
                         wallsGroup.Last().Add(obstacles[j + 1]);
                     }
                     else
                     {
                         i = j;
-                        wallsGroup.Add(new List<BaseObstacle>());
+                        wallsGroup.Add(new List<Obstacle>());
                         break;
                     }
                 }
@@ -151,7 +152,7 @@ namespace BLMapCheck.BeatmapScanner
                 {
                     var wall = group[j];
 
-                    if (found != 0f && wall.JsonTime - found < 1.5) // Skip too close
+                    if (found != 0f && wall.b - found < 1.5) // Skip too close
                     {
                         continue;
                     }
@@ -161,15 +162,15 @@ namespace BLMapCheck.BeatmapScanner
                     }
 
                     // Individual
-                    if (wall.PosY >= 2 && wall.Width >= 3)
+                    if (wall.y >= 2 && wall.w >= 3)
                     {
                         count++;
-                        found = wall.JsonTime + wall.Duration;
+                        found = wall.b + wall.d;
                     }
-                    else if (wall.PosY >= 2 && wall.Width >= 2 && wall.PosX == 1)
+                    else if (wall.y >= 2 && wall.w >= 2 && wall.x == 1)
                     {
                         count++;
-                        found = wall.JsonTime + wall.Duration;
+                        found = wall.b + wall.d;
                     }
                     else if (group.Count() > 1) // Multiple
                     {
@@ -182,22 +183,22 @@ namespace BLMapCheck.BeatmapScanner
 
                             var other = group[k];
 
-                            if ((wall.PosY >= 2 || other.PosY >= 2) && wall.Width >= 2 && wall.PosX == 0 && other.PosX == 2)
+                            if ((wall.y >= 2 || other.y >= 2) && wall.w >= 2 && wall.x == 0 && other.x == 2)
                             {
                                 count++;
-                                found = wall.JsonTime + wall.Duration;
+                                found = wall.b + wall.d;
                                 break;
                             }
-                            else if ((wall.PosY >= 2 || other.PosY >= 2) && other.Width >= 2 && wall.PosX == 2 && other.PosX == 0)
+                            else if ((wall.y >= 2 || other.y >= 2) && other.w >= 2 && wall.x == 2 && other.x == 0)
                             {
                                 count++;
-                                found = wall.JsonTime + wall.Duration;
+                                found = wall.b + wall.d;
                                 break;
                             }
-                            else if ((wall.PosY >= 2 || other.PosY >= 2) && wall.PosX == 1 && other.PosX == 2)
+                            else if ((wall.y >= 2 || other.y >= 2) && wall.x == 1 && other.x == 2)
                             {
                                 count++;
-                                found = wall.JsonTime + wall.Duration;
+                                found = wall.b + wall.d;
                                 break;
                             }
                         }
