@@ -8,7 +8,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
     internal static class DiffOrdering
     {
         // Run this per characteristic
-        public static Severity Check(List<V3> difficulties, float BeatsPerMinute)
+        public static Severity Check(List<DifficultyV3> difficulties, float BeatsPerMinute)
         {
             var passStandard = new List<double>();
 

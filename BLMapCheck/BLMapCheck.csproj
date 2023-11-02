@@ -105,8 +105,11 @@
     <Compile Include="Classes\ChroMapper\BaseObstacle.cs" />
     <Compile Include="Classes\ChroMapper\BaseSlider.cs" />
     <Compile Include="Classes\ChroMapper\SpawnParameterHelper.cs" />
-    <Compile Include="Classes\MapVersion\Difficulty\V3.cs" />
-    <Compile Include="Classes\MapVersion\Info\V3.cs" />
+    <Compile Include="Classes\MapVersion\BeatmapV3.cs" />
+    <Compile Include="Classes\MapVersion\Difficulty\DifficultyV3.cs" />
+    <Compile Include="Classes\MapVersion\Info\InfoV3.cs" />
+    <Compile Include="Classes\Results\CheckResult.cs" />
+    <Compile Include="Classes\Results\CheckResults.cs" />
     <Compile Include="Classes\Unity\Vector2.cs" />
     <Compile Include="Config\Config.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

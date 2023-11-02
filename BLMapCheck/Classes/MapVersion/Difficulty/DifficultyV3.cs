@@ -1,19 +1,20 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace BLMapCheck.Classes.MapVersion.Difficulty
 {
-    public class V3
+    public class DifficultyV3
     {
         public string version { get; set; }
-        public Bpmevent[] bpmEvents { get; set; }
+        public List<Bpmevent> bpmEvents { get; set; }
         public object[] rotationEvents { get; set; }
-        public Colornote[] colorNotes { get; set; }
-        public Bombnote[] bombNotes { get; set; }
-        public Obstacle[] obstacles { get; set; }
-        public Slider[] sliders { get; set; }
-        public Burstslider[] burstSliders { get; set; }
+        public List<Colornote> colorNotes { get; set; }
+        public List<Bombnote> bombNotes { get; set; }
+        public List<Obstacle> obstacles { get; set; }
+        public List<Slider> sliders { get; set; }
+        public List<Burstslider> burstSliders { get; set; }
         public object[] waypoints { get; set; }
-        public Basicbeatmapevent[] basicBeatmapEvents { get; set; }
+        public List<Basicbeatmapevent> basicBeatmapEvents { get; set; }
         public object[] colorBoostBeatmapEvents { get; set; }
         public object[] lightColorEventBoxGroups { get; set; }
         public object[] lightRotationEventBoxGroups { get; set; }
@@ -33,9 +34,9 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
     public class Customdata
     {
         public float time { get; set; }
-        public Bookmark[] bookmarks { get; set; }
+        public List<Bookmark> bookmarks { get; set; }
         public bool bookmarksUseOfficialBpmEvents { get; set; }
-        public Environment[] environment { get; set; }
+        public List<Environment> environment { get; set; }
     }
 
     public class Bookmark
@@ -89,45 +90,33 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public object[] _fl { get; set; }
     }
 
-    public class Bpmevent
+    public class Bpmevent : BeatmapObject
     {
-        public int b { get; set; }
         public int m { get; set; }
     }
 
-    public class Colornote
+    public class Colornote : BeatmapGridObject
     {
-        public float b { get; set; }
-        public int x { get; set; }
-        public int y { get; set; }
         public int a { get; set; }
         public int c { get; set; }
         public int d { get; set; }
     }
 
-    public class Bombnote
+    public class Bombnote : BeatmapGridObject
     {
-        public float b { get; set; }
-        public int x { get; set; }
-        public int y { get; set; }
     }
 
-    public class Obstacle
+    public class Obstacle : BeatmapGridObject
     {
-        public float b { get; set; }
-        public int x { get; set; }
-        public int y { get; set; }
         public float d { get; set; }
         public int w { get; set; }
         public int h { get; set; }
     }
 
-    public class Slider
+    public class Slider : BeatmapGridObject
     {
-        public float b { get; set; }
+        
         public int c { get; set; }
-        public int x { get; set; }
-        public int y { get; set; }
         public int d { get; set; }
         public float mu { get; set; }
         public float tb { get; set; }
@@ -138,12 +127,10 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public int m { get; set; }
     }
 
-    public class Burstslider
+    public class Burstslider : BeatmapGridObject
     {
-        public float b { get; set; }
+        
         public int c { get; set; }
-        public int x { get; set; }
-        public int y { get; set; }
         public int d { get; set; }
         public float tb { get; set; }
         public int tx { get; set; }
@@ -152,9 +139,8 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public int s { get; set; }
     }
 
-    public class Basicbeatmapevent
+    public class Basicbeatmapevent : BeatmapObject
     {
-        public float b { get; set; }
         public int et { get; set; }
         public int i { get; set; }
         public int f { get; set; }
@@ -173,5 +159,16 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public bool lockRotation { get; set; }
         public string lerpType { get; set; }
         public string easing { get; set; }
+    }
+
+    public class BeatmapObject
+    {
+        public float b { get; set; }
+    }
+
+    public class BeatmapGridObject : BeatmapObject
+    {
+        public int x { get; set; }
+        public int y { get; set; }
     }
 }

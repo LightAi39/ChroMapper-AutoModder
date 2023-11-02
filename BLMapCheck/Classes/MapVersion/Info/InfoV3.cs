@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BLMapCheck.Classes.MapVersion.Info
 {
-    public class V3
+    public class InfoV3
     {
         public string _version { get; set; }
         public string _songName { get; set; }
@@ -26,12 +26,12 @@ namespace BLMapCheck.Classes.MapVersion.Info
         public object[] _environmentNames { get; set; }
         public object[] _colorSchemes { get; set; }
         public _Customdata _customData { get; set; }
-        public _Difficultybeatmapsets[] _difficultyBeatmapSets { get; set; }
+        public List<_Difficultybeatmapsets> _difficultyBeatmapSets { get; set; }
     }
 
     public class _Customdata
     {
-        public _Contributors[] _contributors { get; set; }
+        public List<_Contributors> _contributors { get; set; }
         public _Editors _editors { get; set; }
     }
 
@@ -56,7 +56,7 @@ namespace BLMapCheck.Classes.MapVersion.Info
     public class _Difficultybeatmapsets
     {
         public string _beatmapCharacteristicName { get; set; }
-        public _Difficultybeatmaps[] _difficultyBeatmaps { get; set; }
+        public List<_Difficultybeatmaps> _difficultyBeatmaps { get; set; }
     }
 
     public class _Difficultybeatmaps
