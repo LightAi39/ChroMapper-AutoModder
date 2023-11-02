@@ -20,7 +20,7 @@ namespace BLMapCheck
         {
             BeatmapV3.Instance.Info = JsonConvert.DeserializeObject<InfoV3>(File.ReadAllText($"{folderPath}/Info.dat"));
 
-            List<string> difficultyFiles = new();
+            List<(string path, string difficulty, string characteristic)> difficultyFiles = new();
 
             foreach (var characteristic in BeatmapV3.Instance.Info._difficultyBeatmapSets)
             {
@@ -29,13 +29,13 @@ namespace BLMapCheck
                 foreach (var difficultyBeatmap in characteristic._difficultyBeatmaps)
                 {
                     string difficultyName = difficultyBeatmap._difficulty;
-                    difficultyFiles.Add($"{difficultyName + characteristicName}.dat");
+                    difficultyFiles.Add(new($"{difficultyName + characteristicName}.dat", difficultyName, characteristicName));
                 }
             }
 
-            foreach (string difficultyFile in difficultyFiles)
+            foreach (var difficulty in difficultyFiles)
             {
-                BeatmapV3.Instance.Difficulties.Add(JsonConvert.DeserializeObject<DifficultyV3>(File.ReadAllText($"{folderPath}/{difficultyFile}")));
+                BeatmapV3.Instance.Difficulties.Add(new(difficulty.difficulty, difficulty.characteristic, JsonConvert.DeserializeObject<DifficultyV3>(File.ReadAllText($"{folderPath}/{difficulty.path}"))));
             }
         }
 
