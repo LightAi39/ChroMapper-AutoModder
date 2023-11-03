@@ -33,7 +33,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Difficulty = diff.difficulty;
                 Characteristic = diff.characteristic;
 
-                CheckResults.Instance.DifficultyCriteriaResults.Add(AutoDiffCheck(diff.characteristic, diff.difficulty));
+                CheckResults.Instance.DifficultyCriteriaResults.Add(new(diff.difficulty, diff.characteristic, AutoDiffCheck(diff.characteristic, diff.difficulty)));
             }
 
             CheckResults.Instance.CheckFinished = true;

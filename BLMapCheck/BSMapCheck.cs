@@ -1,6 +1,8 @@
-﻿using BLMapCheck.Classes.MapVersion;
+﻿using BLMapCheck.BeatmapScanner.CriteriaCheck;
+using BLMapCheck.Classes.MapVersion;
 using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.MapVersion.Info;
+using BLMapCheck.Classes.Results;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,7 +16,7 @@ namespace BLMapCheck
     public class BSMapCheck
     {
         // this should be the entry point for the program
-
+        private bool mapLoaded = false;
 
         public void LoadMap(string folderPath)
         {
@@ -37,12 +39,34 @@ namespace BLMapCheck
             {
                 BeatmapV3.Instance.Difficulties.Add(new(difficulty.difficulty, difficulty.characteristic, JsonConvert.DeserializeObject<DifficultyV3>(File.ReadAllText($"{folderPath}/{difficulty.path}"))));
             }
+
+            mapLoaded = true;
         }
 
         public void LoadMap(BeatmapV3 beatmapV3)
         {
             BeatmapV3.Instance.Info = beatmapV3.Info;
             BeatmapV3.Instance.Difficulties = beatmapV3.Difficulties;
+
+            mapLoaded = true;
         }
+
+        public CheckResults CheckAllCriteria()
+        {
+            if (!mapLoaded)
+            {
+                throw new Exception("Map not loaded");
+            }
+
+            CriteriaCheckManager manager = new();
+            manager.CheckAllCriteria();
+
+            if (CheckResults.Instance.CheckFinished)
+            {
+                return CheckResults.Instance;
+            }
+            throw new Exception("Check was not finished correctly");
+        }
+
     }
 }

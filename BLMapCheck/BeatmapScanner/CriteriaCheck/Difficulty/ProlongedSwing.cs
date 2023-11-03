@@ -14,7 +14,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         {
             if(Slider.AverageSliderDuration == -1)
             {
-                Slider.Check();
+                Slider.Check(Notes);
             }
 
             var issue = false;
