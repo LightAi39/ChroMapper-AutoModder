@@ -117,4 +117,7 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /y /d  $(TargetPath) "$(ChroMapperDir)\Plugins"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

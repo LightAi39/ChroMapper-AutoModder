@@ -82,14 +82,14 @@ namespace BLMapCheck.Classes.MapVersion.Info
 
     public class _Colorleft
     {
-        public int r { get; set; }
+        public float r { get; set; }
         public float g { get; set; }
-        public int b { get; set; }
+        public float b { get; set; }
     }
 
     public class _Colorright
     {
-        public int r { get; set; }
+        public float r { get; set; }
         public float g { get; set; }
         public float b { get; set; }
     }

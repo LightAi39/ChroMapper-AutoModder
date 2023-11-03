@@ -53,6 +53,7 @@ namespace ChroMapper_LightModding
         public DifficultyReview currentReview { get => MapsetDifficultyReviewLoader(); set => MapsetDifficultyReviewUpdater(value); }
         public MapsetReview currentMapsetReview = null;
         public string currentlyLoadedFilePath = null;
+        public string currentlyLoadedFolderPath = null;
 
         private EditorUI editorUI;
         private SongInfoUI songInfoUI;
@@ -173,6 +174,7 @@ namespace ChroMapper_LightModding
 
                 songInfoUI.Disable();
                 currentlyLoadedFilePath = null;
+                currentlyLoadedFolderPath = null;
                 currentMapsetReview = null;
                 ResetAfterLeavingEditor();
             }
@@ -208,6 +210,7 @@ namespace ChroMapper_LightModding
                 MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
                 editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"), mapEditorUI.transform.Find("Pause Menu Canvas").transform.Find("Extras Menu"), mapEditorUI.transform.Find("Right Bar Canvas"));
             }
+            currentlyLoadedFolderPath = BeatSaberSongContainer.Song.Directory;
         }
 
         public void LoadedIntoSongInfo()
@@ -217,6 +220,7 @@ namespace ChroMapper_LightModding
             GameObject songInfoPanel = GameObject.Find("SongInfoPanel");
             GameObject difficultyPanel = GameObject.Find("DifficultyPanel");
             songInfoUI.Enable(songInfoPanel.transform.Find("Header"), songInfoPanel.transform.Find("Save"), difficultyPanel.transform.Find("Save"));
+            currentlyLoadedFolderPath = BeatSaberSongContainer.Song.Directory;
 
             ResetAfterLeavingEditor();
         }

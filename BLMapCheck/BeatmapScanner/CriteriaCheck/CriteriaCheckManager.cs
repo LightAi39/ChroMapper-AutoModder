@@ -68,6 +68,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.difficulty == difficulty && x.characteristic == characteristic).FirstOrDefault().data;
 
+            Console.WriteLine("hello");
+
             BeatPerMinute bpm = BeatPerMinute.Create(BeatmapV3.Instance.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.m < 10000 && x.m > 0).ToList(), BeatmapV3.Instance.Info._songTimeOffset);
 
             MapAnalyser analysedMap = new(BLMapChecker.tempFolderPath);// TODO: load the map using our classes instead of the song directory
