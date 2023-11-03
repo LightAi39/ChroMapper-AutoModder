@@ -55,7 +55,7 @@ namespace ChroMapper_LightModding.Helpers
                     Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "EBPM").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "Slider").FirstOrDefault().Value),
-                    Convert.ToDouble(resultData.Where(x => x.Key == "Reset").FirstOrDefault().Value),
+                    Convert.ToDouble(resultData.Where(x => x.Key == "BombReset").FirstOrDefault().Value),
                     Convert.ToInt32(resultData.Where(x => x.Key == "Crouch").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "Linear").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "SPS").FirstOrDefault().Value),

@@ -18,7 +18,6 @@ namespace BLMapCheck
     {
         // this should be the entry point for the program
         private bool mapLoaded = false;
-        public static string tempFolderPath;
 
         public BLMapChecker(Config config = null)
         {
@@ -30,7 +29,6 @@ namespace BLMapCheck
 
         public void LoadMap(string folderPath, float songLength)
         {
-            tempFolderPath = folderPath; // TODO: remove
             BeatmapV3.Reset();
             BeatmapV3.Instance.Info = JsonConvert.DeserializeObject<InfoV3>(File.ReadAllText($"{folderPath}/Info.dat"));
 
