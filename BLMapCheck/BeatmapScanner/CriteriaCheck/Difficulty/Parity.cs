@@ -169,9 +169,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         new("notes", JsonConvert.SerializeObject(swing.notes, Formatting.Indented)),
                         new("startPos", JsonConvert.SerializeObject(swing.startPos, Formatting.Indented)),
                         new("endPos", JsonConvert.SerializeObject(swing.endPos, Formatting.Indented)),
-                        new("rightHand", swing.rightHand.ToString()),
-                        new("playerHorizontalOffset", swing.playerHorizontalOffset.ToString()),
-                        new("playerVerticalOffset", swing.playerVerticalOffset.ToString()),
+                        new("rightHand", swing.rightHand.ToString())
                     };
                     
                     List<Colornote> colornotes = new();
