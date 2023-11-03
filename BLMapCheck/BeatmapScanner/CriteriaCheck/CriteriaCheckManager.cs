@@ -40,6 +40,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             }
 
             CheckResults.Instance.CheckFinished = true;
+            //Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
         }
 
 
@@ -51,7 +52,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             InfoCrit infoCrit = new()
             {
                 SongName = SongName.Check(BeatmapV3.Instance.Info._songName),
-                SubName = SubName.Check(BeatmapV3.Instance.Info._songSubName, BeatmapV3.Instance.Info._songAuthorName),
+                SubName = SubName.Check(BeatmapV3.Instance.Info._songName, BeatmapV3.Instance.Info._songAuthorName),
                 SongAuthor = SongAuthor.Check(BeatmapV3.Instance.Info._songAuthorName),
                 Creator = Creator.Check(BeatmapV3.Instance.Info._levelAuthorName),
                 Offset = Offset.Check(BeatmapV3.Instance.Info._songTimeOffset),
@@ -67,6 +68,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
         {
             Characteristic = characteristic;
             Difficulty = difficulty;
+
+            Debug.Log("current folder: " + BLMapChecker.tempFolderPath + " - Current diff: " + Difficulty + Characteristic);
 
             DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.difficulty == difficulty && x.characteristic == characteristic).FirstOrDefault().data;
 
@@ -108,7 +111,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             _Difficultybeatmaps difficultyBeatmap = BeatmapV3.Instance.Info._difficultyBeatmapSets.Where(x => x._beatmapCharacteristicName == Characteristic).FirstOrDefault()._difficultyBeatmaps.Where(x => x._difficulty == Difficulty).FirstOrDefault();
 
             Debug.Log(JsonConvert.SerializeObject(difficultyBeatmap, Formatting.Indented));
-            Debug.Log("current folder: " + BLMapChecker.tempFolderPath);
 
             DiffCrit diffCrit = new()
             {

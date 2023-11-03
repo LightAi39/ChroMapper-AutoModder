@@ -31,6 +31,7 @@ namespace BLMapCheck
         public void LoadMap(string folderPath)
         {
             tempFolderPath = folderPath; // TODO: remove
+            BeatmapV3.Reset();
             BeatmapV3.Instance.Info = JsonConvert.DeserializeObject<InfoV3>(File.ReadAllText($"{folderPath}/Info.dat"));
 
             List<(string path, string difficulty, string characteristic)> difficultyFiles = new();
@@ -58,6 +59,7 @@ namespace BLMapCheck
 
         public void LoadMap(BeatmapV3 beatmapV3)
         {
+            BeatmapV3.Reset();
             BeatmapV3.Instance.Info = beatmapV3.Info;
             BeatmapV3.Instance.Difficulties = beatmapV3.Difficulties;
 

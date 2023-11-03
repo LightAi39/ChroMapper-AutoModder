@@ -30,5 +30,11 @@ namespace BLMapCheck.Classes.MapVersion
         public List<(string difficulty, string characteristic, DifficultyV3 data)> Difficulties { get; set; } = new();
 
         public float SongLength { get; set; }
+
+        public static BeatmapV3 Reset()
+        {
+            _instance = new();
+            return _instance;
+        }
     }
 }
