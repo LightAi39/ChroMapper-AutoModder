@@ -1,7 +1,7 @@
 ﻿using BLMapCheck.Classes.Results;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Config.Config;
+using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
@@ -21,7 +21,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
                 });
                 return CritResult.Fail;
             }
-            if (LevelAuthorName.Count() > MaxChar)
+            if (LevelAuthorName.Count() > Instance.MaxChar)
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {

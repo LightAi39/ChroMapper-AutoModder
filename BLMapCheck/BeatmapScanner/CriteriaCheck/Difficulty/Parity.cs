@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net.NetworkInformation;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Config.Config;
+using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -65,7 +65,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (i != 0)
                 {
                     float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
-                    if (Math.Abs(difference) >= ParityWarningAngle)
+                    if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
                         List<Colornote> colornotes = new();
                         rightHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
@@ -84,7 +84,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     else if (Math.Abs(rightHandSwings[i].startPos.rotation) > 135 || Math.Abs(rightHandSwings[i].endPos.rotation) > 135)
                     {
-                        if (ParityInvertedWarning)
+                        if (Instance.ParityInvertedWarning)
                         {
                             List<Colornote> colornotes = new();
                             rightHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
@@ -110,7 +110,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (i != 0)
                 {
                     float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
-                    if (Math.Abs(difference) >= ParityWarningAngle)
+                    if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
                         List<Colornote> colornotes = new();
                         leftHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
@@ -129,7 +129,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     else if (Math.Abs(leftHandSwings[i].startPos.rotation) > 135 || Math.Abs(leftHandSwings[i].endPos.rotation) > 135)
                     {
-                        if (ParityInvertedWarning)
+                        if (Instance.ParityInvertedWarning)
                         {
                             List<Colornote> colornotes = new();
                             leftHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
@@ -150,7 +150,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            if (ParityDebug)
+            if (Instance.ParityDebug)
             {
                 foreach (var swing in Swings)
                 {

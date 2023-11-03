@@ -27,7 +27,7 @@ namespace BLMapCheck.Classes.Results
         }
 
         public InfoCrit InfoCriteriaResult { get; set; }
-        public List<(string difficulty, string criteria, DiffCrit crit)> DifficultyCriteriaResults { get; set; } = new();
+        public List<(string difficulty, string characteristic, DiffCrit crit)> DifficultyCriteriaResults { get; set; } = new();
         public List<CheckResult> Results { get; set; } = new();
 
         public bool CheckFinished { get; set; } = false;

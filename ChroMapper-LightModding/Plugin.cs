@@ -13,8 +13,7 @@ using Color = UnityEngine.Color;
 using ChroMapper_LightModding.UI;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Export;
-using ChroMapper_LightModding.BeatmapScanner;
-
+using BLMapCheck.Configs;
 
 namespace ChroMapper_LightModding
 {
@@ -54,7 +53,6 @@ namespace ChroMapper_LightModding
         public DifficultyReview currentReview { get => MapsetDifficultyReviewLoader(); set => MapsetDifficultyReviewUpdater(value); }
         public MapsetReview currentMapsetReview = null;
         public string currentlyLoadedFilePath = null;
-        public static Configs.Configs configs = new();
 
         private EditorUI editorUI;
         private SongInfoUI songInfoUI;
@@ -62,7 +60,6 @@ namespace ChroMapper_LightModding
         private FileHelper fileHelper;
         private Exporter exporter;
         private AutocheckHelper autocheckHelper;
-        private CriteriaCheck criteriaCheck;
         public GridMarkerHelper gridMarkerHelper;
 
         InputAction addCommentAction;
@@ -77,9 +74,8 @@ namespace ChroMapper_LightModding
         private void Init()
         {
             exporter = new();
-            criteriaCheck = new(this);
             fileHelper = new(this);
-            autocheckHelper = new(this, criteriaCheck, fileHelper);
+            autocheckHelper = new(this, fileHelper);
             outlineHelper = new(this);
             editorUI = new(this, outlineHelper, fileHelper, exporter, autocheckHelper);
             songInfoUI = new(this, fileHelper, exporter, autocheckHelper);
@@ -90,18 +86,18 @@ namespace ChroMapper_LightModding
             var path = AppDomain.CurrentDomain.BaseDirectory + "/Plugins/AutoModderConf.json";
             if(File.Exists(path))
             {
-                configs = JsonConvert.DeserializeObject<Configs.Configs>(File.ReadAllText(@path));
-                if(configs.Version != configVersion) // New version, overwrite default value
+                Config.Instance = JsonConvert.DeserializeObject<Config>(File.ReadAllText(@path));
+                if(Config.Instance.Version != configVersion) // New version, overwrite default value
                 {
-                    configs = new();
+                    Config.Instance.Reset();
                 }
-                configs.Version = configVersion;
-                File.WriteAllText(@path, JsonConvert.SerializeObject(configs, Formatting.Indented));
+                Config.Instance.Version = configVersion;
+                File.WriteAllText(@path, JsonConvert.SerializeObject(Config.Instance, Formatting.Indented));
             }
             else
             {
-                configs.Version = configVersion;
-                File.WriteAllText(@path, JsonConvert.SerializeObject(configs, Formatting.Indented));
+                Config.Instance.Version = configVersion;
+                File.WriteAllText(@path, JsonConvert.SerializeObject(Config.Instance, Formatting.Indented));
             }
 
             // register a button in the side tab menu

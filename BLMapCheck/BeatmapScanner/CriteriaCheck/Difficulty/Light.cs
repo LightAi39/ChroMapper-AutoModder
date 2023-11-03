@@ -4,7 +4,7 @@ using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Config.Config;
+using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -64,7 +64,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     average = V3Events.Count() / end;
                 }
-                if (average < AverageLightPerBeat)
+                if (average < Instance.AverageLightPerBeat)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -74,7 +74,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Light",
                         Description = "The map must have sufficient lighting throughout.",
-                        ResultData = new() { new("AverageLight", "Current average per beat: " + average.ToString() + " Required: " + AverageLightPerBeat.ToString()) }
+                        ResultData = new() { new("AverageLight", "Current average per beat: " + average.ToString() + " Required: " + Instance.AverageLightPerBeat.ToString()) }
                     });
                     issue = CritResult.Fail;
                 }
@@ -106,8 +106,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         var ev = lights[i];
                         BeatPerMinute.BPM.SetCurrentBPM(ev.b);
-                        var fadeTime = BeatPerMinute.BPM.ToBeatTime((float)LightFadeDuration, true);
-                        var reactTime = BeatPerMinute.BPM.ToBeatTime((float)LightBombReactionTime, true);
+                        var fadeTime = BeatPerMinute.BPM.ToBeatTime((float)Instance.LightFadeDuration, true);
+                        var reactTime = BeatPerMinute.BPM.ToBeatTime((float)Instance.LightBombReactionTime, true);
                         if (ev.IsOn || ev.IsFlash || ev.IsFade)
                         {
                             eventLitTime[ev.et].Add(new(ev.b, true));

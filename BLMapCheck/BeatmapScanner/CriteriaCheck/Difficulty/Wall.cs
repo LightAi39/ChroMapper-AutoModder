@@ -5,7 +5,7 @@ using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Config.Config;
+using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -102,8 +102,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             foreach (var w in walls)
             {
                 BeatPerMinute.BPM.SetCurrentBPM(w.b);
-                var min = BeatPerMinute.BPM.ToBeatTime((float)MinimumWallDuration);
-                var max = BeatPerMinute.BPM.ToBeatTime((float)ShortWallTrailDuration);
+                var min = BeatPerMinute.BPM.ToBeatTime((float)Instance.MinimumWallDuration);
+                var max = BeatPerMinute.BPM.ToBeatTime((float)Instance.ShortWallTrailDuration);
 
                 if (w.y <= 0 && w.h > 1 && ((w.x + w.w == 2 && walls.Exists(wa => wa != w && wa.y == 0 && wa.h > 0 && wa.x + wa.w == 3 && wa.b <= w.b + w.d && wa.b >= w.b)) ||
                     (w.x + w.w == 3 && walls.Exists(wa => wa != w && wa.y == 0 && wa.h > 0 && wa.x + wa.w == 2 && wa.b <= w.b + w.d && wa.b >= w.b))))
@@ -211,7 +211,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             dodge++;
                         }
                     }
-                    if (dodge >= MaximumDodgeWallPerSecond)
+                    if (dodge >= Instance.MaximumDodgeWallPerSecond)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -220,13 +220,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Wall Dodge",
                             Severity = Severity.Error,
                             CheckType = "Wall",
-                            Description = "Dodge walls must not force the players head to move more than " + MaximumDodgeWallPerSecond.ToString() + " times per second.",
-                            ResultData = new() { new("WallDodge", dodge.ToString() + " is over the " + MaximumDodgeWallPerSecond.ToString() + " limit.") },
+                            Description = "Dodge walls must not force the players head to move more than " + Instance.MaximumDodgeWallPerSecond.ToString() + " times per second.",
+                            ResultData = new() { new("WallDodge", dodge.ToString() + " is over the " + Instance.MaximumDodgeWallPerSecond.ToString() + " limit.") },
                             BeatmapObjects = new() { w }
                         });
                         issue = CritResult.Fail;
                     }
-                    else if (dodge >= SubjectiveDodgeWallPerSecond)
+                    else if (dodge >= Instance.SubjectiveDodgeWallPerSecond)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -235,8 +235,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Wall Dodge",
                             Severity = Severity.Warning,
                             CheckType = "Wall",
-                            Description = "Dodge walls that force the players head to move more than " + SubjectiveDodgeWallPerSecond.ToString() + " per second need justification.",
-                            ResultData = new() { new("WallDodge", dodge.ToString() + " is over " + SubjectiveDodgeWallPerSecond.ToString()) },
+                            Description = "Dodge walls that force the players head to move more than " + Instance.SubjectiveDodgeWallPerSecond.ToString() + " per second need justification.",
+                            ResultData = new() { new("WallDodge", dodge.ToString() + " is over " + Instance.SubjectiveDodgeWallPerSecond.ToString()) },
                             BeatmapObjects = new() { w }
                         });
                         issue = CritResult.Warning;

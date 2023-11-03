@@ -6,7 +6,7 @@ using System.Linq;
 namespace BLMapCheck.BeatmapScanner.MapCheck
 {
     // https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/beatmap/shared/bpm.ts
-    internal class BeatPerMinute
+    public class BeatPerMinute
     {
         public static BeatPerMinute BPM { get; set; }
         private float _bpm { get; set; }
@@ -219,13 +219,13 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
         }
     }
 
-    internal class IBPMTimeScale
+    public class IBPMTimeScale
     {
         public float time { get; set; }
         public float scale { get; set; }
     }
 
-    internal class IBPMChange
+    public class IBPMChange
     {
         public float b { get; set; }
         public float m { get; set; }

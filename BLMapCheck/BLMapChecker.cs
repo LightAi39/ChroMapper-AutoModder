@@ -3,6 +3,7 @@ using BLMapCheck.Classes.MapVersion;
 using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.MapVersion.Info;
 using BLMapCheck.Classes.Results;
+using BLMapCheck.Configs;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,13 +14,23 @@ using System.Threading.Tasks;
 
 namespace BLMapCheck
 {
-    public class BSMapCheck
+    public class BLMapChecker
     {
         // this should be the entry point for the program
         private bool mapLoaded = false;
+        public static string tempFolderPath;
+
+        public BLMapChecker(Config config = null)
+        {
+            if (config != null)
+            {
+                Config.Instance = config;
+            }
+        }
 
         public void LoadMap(string folderPath)
         {
+            tempFolderPath = folderPath; // TODO: remove
             BeatmapV3.Instance.Info = JsonConvert.DeserializeObject<InfoV3>(File.ReadAllText($"{folderPath}/Info.dat"));
 
             List<(string path, string difficulty, string characteristic)> difficultyFiles = new();

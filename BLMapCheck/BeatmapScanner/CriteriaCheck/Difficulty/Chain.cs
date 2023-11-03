@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Config.Config;
+using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -63,8 +63,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 var value = distance / (chain.sc - 1);
                 // Difference between expected and current distance, multiplied by current squish to know maximum value
                 double max;
-                if (l.ty == l.y) max = Math.Round(ChainLinkVsAir / value * chain.s, 2);
-                else max = Math.Round(ChainLinkVsAir * 1.1 / value * chain.s, 2);
+                if (l.ty == l.y) max = Math.Round(Instance.ChainLinkVsAir / value * chain.s, 2);
+                else max = Math.Round(Instance.ChainLinkVsAir * 1.1 / value * chain.s, 2);
                 if (chain.s - 0.01 > max)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -149,7 +149,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     temp,
                     temp2
                 };
-                if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, MaxChainRotation))
+                if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, Instance.MaxChainRotation))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {

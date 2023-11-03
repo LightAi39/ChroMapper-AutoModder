@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Config.Config;
+using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -25,9 +25,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     var note = beatmapGridObjects[i];
                     BeatPerMinute.BPM.SetCurrentBPM(note.b);
-                    var MaxBottomNoteTime = BeatPerMinute.BPM.ToBeatTime((float)VBMinBottomNoteTime);
-                    var MaxOuterNoteTime = BeatPerMinute.BPM.ToBeatTime((float)VBMaxOuterNoteTime);
-                    var Overall = BeatPerMinute.BPM.ToBeatTime((float)VBMinimum);
+                    var MaxBottomNoteTime = BeatPerMinute.BPM.ToBeatTime((float)Instance.VBMinBottomNoteTime);
+                    var MaxOuterNoteTime = BeatPerMinute.BPM.ToBeatTime((float)Instance.VBMaxOuterNoteTime);
+                    var Overall = BeatPerMinute.BPM.ToBeatTime((float)Instance.VBMinimum);
                     var MinTimeWarning = BeatPerMinute.BPM.ToBeatTime((float)((800 - 300) * Math.Pow(Math.E, -PassRating / 7.6 - TechRating * 0.04) + 300) / 1000);
                     lastMidL.RemoveAll(l => note.b - l.b > MinTimeWarning);
                     lastMidR.RemoveAll(l => note.b - l.b > MinTimeWarning);
@@ -123,9 +123,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (note is Bombnote)
                     {
                         BeatPerMinute.BPM.SetCurrentBPM(note.b);
-                        var MaxTimeBomb = BeatPerMinute.BPM.ToBeatTime((float)VBMaxBombTime);
-                        var MinTimeBomb = BeatPerMinute.BPM.ToBeatTime((float)VBMinBombTime);
-                        var Overall = BeatPerMinute.BPM.ToBeatTime((float)VBMinimum);
+                        var MaxTimeBomb = BeatPerMinute.BPM.ToBeatTime((float)Instance.VBMaxBombTime);
+                        var MinTimeBomb = BeatPerMinute.BPM.ToBeatTime((float)Instance.VBMinBombTime);
+                        var Overall = BeatPerMinute.BPM.ToBeatTime((float)Instance.VBMinimum);
                         var left = (Colornote)beatmapGridObjects.Where(x => x.b < note.b && x is Colornote no && no.c == 0).OrderBy(o => o.b).LastOrDefault();
                         var right = (Colornote)beatmapGridObjects.Where(x => x.b < note.b && x is Colornote no && no.c == 1).OrderBy(o => o.b).LastOrDefault();
                         lastMidL.RemoveAll(l => note.b - l.b > MinTimeBomb);

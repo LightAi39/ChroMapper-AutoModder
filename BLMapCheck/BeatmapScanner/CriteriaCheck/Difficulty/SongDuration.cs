@@ -2,7 +2,7 @@
 using BLMapCheck.Classes.Results;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Config.Config;
+using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -14,7 +14,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var cube = BeatmapScanner.Cubes;
             cube = cube.OrderBy(c => c.Time).ToList();
             var duration = BeatPerMinute.BPM.ToRealTime(cube.Last().Time - cube.First().Time, true);
-            if (duration < MinSongDuration)
+            if (duration < Instance.MinSongDuration)
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -24,7 +24,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "Duration",
                     Description = "The map from first note to last note must be at least 45 seconds in length.",
-                    ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + MinSongDuration.ToString() + "s.") },
+                    ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + Instance.MinSongDuration.ToString() + "s.") },
                 });
                 return CritResult.Fail;
             }
@@ -37,7 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 Severity = Severity.Passed,
                 CheckType = "Duration",
                 Description = "The map from first note to last note must be at least 45 seconds in length.",
-                ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + MinSongDuration.ToString() + "s.") },
+                ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + Instance.MinSongDuration.ToString() + "s.") },
             });
 
             return CritResult.Success;

@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using DifficultyV3 = BLMapCheck.Classes.MapVersion.Difficulty.DifficultyV3;
 using Parity = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Parity;
 using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
+using Config = BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -69,7 +70,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             BeatPerMinute bpm = BeatPerMinute.Create(BeatmapV3.Instance.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.m < 10000 && x.m > 0).ToList(), BeatmapV3.Instance.Info._songTimeOffset);
 
-            MapAnalyser analysedMap;// TODO: load the map using our classes instead of the song directory
+            MapAnalyser analysedMap = new(BLMapChecker.tempFolderPath);// TODO: load the map using our classes instead of the song directory
 
             List<SwingData> swings;
 
@@ -128,6 +129,28 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             Offbeat.Check(diff.colorNotes);
             RollingEBPM.Check(swings, diff.colorNotes);
+
+            CheckResults.Instance.AddResult(new CheckResult()
+            {
+                Name = "BeatmapScanner data",
+                Difficulty = Difficulty,
+                Characteristic = Characteristic,
+                Severity = Severity.Info,
+                CheckType = "Statistics",
+                Description = "BeatmapScanner result data",
+                ResultData = new()
+                {
+                    new("Pass", BeatmapScannerData.pass.ToString()),
+                    new("Tech", BeatmapScannerData.tech.ToString()),
+                    new("EBPM", BeatmapScannerData.ebpm.ToString()),
+                    new("Slider", BeatmapScannerData.slider.ToString()),
+                    new("Reset", BeatmapScannerData.reset.ToString()),
+                    new("Crouch", BeatmapScannerData.crouch.ToString()),
+                    new("Linear", BeatmapScannerData.linear.ToString()),
+                    new("SPS", BeatmapScannerData.sps.ToString()),
+                    new("Handness", BeatmapScannerData.handness.ToString())
+                }
+            });
 
             Characteristic = characteristic;
             Difficulty = difficulty;

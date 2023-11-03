@@ -1,6 +1,7 @@
 ﻿using Beatmap.Base;
-using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
-using ChroMapper_LightModding.BeatmapScanner.MapCheck;
+using BLMapCheck.BeatmapScanner.Data.Criteria;
+using BLMapCheck.BeatmapScanner.MapCheck;
+using BLMapCheck.Classes.MapVersion.Difficulty;
 using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
@@ -10,7 +11,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
+using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using Object = UnityEngine.Object;
 
 namespace ChroMapper_LightModding.UI
@@ -534,7 +535,17 @@ namespace ChroMapper_LightModding.UI
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
-            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            List<Bpmevent> bpmChangesChecker = new();
+            foreach (var bpmChange in bpmChanges)
+            {
+                bpmChangesChecker.Add(new()
+                {
+                    b = bpmChange.JsonTime,
+                    m = bpmChange.Bpm
+                });
+            }
+
+            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
 
             var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
 
@@ -1054,7 +1065,7 @@ namespace ChroMapper_LightModding.UI
             plugin.CommentsUpdated.Invoke();
         }
 
-        private void CreateCriteriaStatusElement(Severity severity, string name, Vector2 pos, Transform parent = null)
+        private void CreateCriteriaStatusElement(CritResult severity, string name, Vector2 pos, Transform parent = null)
         {
             if (parent == null) parent = _criteriaMenu.transform;
             GameObject critStatusObj = GameObject.Find($"Crit_{name}_status");
@@ -1063,13 +1074,13 @@ namespace ChroMapper_LightModding.UI
             Color color;
             switch (severity)
             {
-                case Severity.Success:
+                case CritResult.Success:
                     color = Color.green;
                     break;
-                case Severity.Warning:
+                case CritResult.Warning:
                     color = Color.yellow;
                     break;
-                case Severity.Fail:
+                case CritResult.Fail:
                     color = Color.red;
                     break;
                 default:
@@ -1079,9 +1090,9 @@ namespace ChroMapper_LightModding.UI
             UIHelper.AddLabel(parent, $"Crit_{name}_status", "●", pos, new Vector2(25, 24), null, color, 12);
         }
 
-        private Severity IncrementSeverity(Severity severity)
+        private CritResult IncrementSeverity(CritResult severity)
         {
-            Severity[] enumValues = (Severity[])Enum.GetValues(typeof(Severity));
+            CritResult[] enumValues = (CritResult[])Enum.GetValues(typeof(CritResult));
             int currentIndex = Array.IndexOf(enumValues, severity);
             int nextIndex = (currentIndex + 1) % enumValues.Length;
             return enumValues[nextIndex];

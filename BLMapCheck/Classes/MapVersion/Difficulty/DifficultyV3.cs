@@ -93,7 +93,7 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
 
     public class Bpmevent : BeatmapObject
     {
-        public int m { get; set; }
+        public float m { get; set; }
     }
 
     public class Colornote : BeatmapGridObject

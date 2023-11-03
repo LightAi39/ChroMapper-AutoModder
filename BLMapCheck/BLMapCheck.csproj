@@ -98,7 +98,7 @@
     <Compile Include="BeatmapScanner\TechAlgo\BeatmapScanner.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\ScanAlgo.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\ScanMethod.cs" />
-    <Compile Include="BSMapCheck.cs" />
+    <Compile Include="BLMapChecker.cs" />
     <Compile Include="Classes\ChroMapper\SpawnParameterHelper.cs" />
     <Compile Include="Classes\MapVersion\BeatmapV3.cs" />
     <Compile Include="Classes\MapVersion\Difficulty\DifficultyV3.cs" />
@@ -106,7 +106,7 @@
     <Compile Include="Classes\Results\CheckResult.cs" />
     <Compile Include="Classes\Results\CheckResults.cs" />
     <Compile Include="Classes\Unity\Vector2.cs" />
-    <Compile Include="Config\Config.cs" />
+    <Compile Include="Configs\Config.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,7 @@ using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Config.Config;
+using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -14,7 +14,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         public static CritResult Check(List<BeatmapGridObject> Objects, List<Obstacle> Walls)
         {
             var issue = CritResult.Success;
-            var limit = BeatPerMinute.BPM.ToBeatTime((float)HotStartDuration, true);
+            var limit = BeatPerMinute.BPM.ToBeatTime((float)Instance.HotStartDuration, true);
             foreach (var c in Objects)
             {
                 if (c.b < limit)

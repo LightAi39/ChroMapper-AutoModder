@@ -111,7 +111,12 @@
     <Content Include="Licenses\LICENSE JoshaParity.txt" />
     <Content Include="Licenses\LICENSE Newtonsoft.Json.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\BLMapCheck\BLMapCheck.csproj">
+      <Project>{539891DA-7A54-4708-87BD-2367BECA6FA9}</Project>
+      <Name>BLMapCheck</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
