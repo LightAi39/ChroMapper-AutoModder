@@ -1,11 +1,12 @@
-﻿using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.Classes.MapVersion;
+using BLMapCheck.Classes.Results;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
     internal static class BPM
     {
-        public static CritResult Check()
+        public static CritResult Check(float bpm)
         {
             // TODO: Add automatic BPM detection
             CheckResults.Instance.AddResult(new CheckResult()

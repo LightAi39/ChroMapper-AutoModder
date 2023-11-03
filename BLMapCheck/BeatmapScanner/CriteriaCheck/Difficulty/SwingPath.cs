@@ -123,8 +123,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         var obj = beatmapGridObjects.Where(c => c.b == note.Time && note.Line == c.x && note.Layer == c.y).FirstOrDefault();
                                         CheckResults.Instance.AddResult(new CheckResult()
                                         {
-                                            Characteristic = BSMapCheck.Characteristic,
-                                            Difficulty = BSMapCheck.Difficulty,
+                                            Characteristic = CriteriaCheckManager.Characteristic,
+                                            Difficulty = CriteriaCheckManager.Difficulty,
                                             Name = "Swing Path",
                                             Severity = Severity.Info,
                                             CheckType = "Swing",
@@ -239,8 +239,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Swing Path",
                         Severity = Severity.Error,
                         CheckType = "Swing",

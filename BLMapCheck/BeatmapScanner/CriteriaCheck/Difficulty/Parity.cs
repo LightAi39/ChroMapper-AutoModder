@@ -28,8 +28,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 swing.notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Parity",
                     Severity = Severity.Error,
                     CheckType = "Parity",
@@ -45,8 +45,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 swing.notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Parity Mismatch",
                     Severity = Severity.Error,
                     CheckType = "Parity",
@@ -71,8 +71,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         rightHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Parity Warning",
                             Severity = Severity.Warning,
                             CheckType = "Parity",
@@ -90,8 +90,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             rightHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Parity Inverted",
                                 Severity = Severity.Inconclusive,
                                 CheckType = "Parity",
@@ -116,8 +116,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         leftHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Parity Warning",
                             Severity = Severity.Warning,
                             CheckType = "Parity",
@@ -135,8 +135,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             leftHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Parity Inverted",
                                 Severity = Severity.Inconclusive,
                                 CheckType = "Parity",
@@ -165,8 +165,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     swing.notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Parity Debug",
                         Severity = commentType,
                         CheckType = "Parity",

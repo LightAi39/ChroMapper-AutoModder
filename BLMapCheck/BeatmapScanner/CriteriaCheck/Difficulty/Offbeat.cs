@@ -24,8 +24,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         var reality = ScanMethod.RealToFraction(precision, 0.01);
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Offbeat Note",
                             Severity = Severity.Info,
                             CheckType = "Offbeat",

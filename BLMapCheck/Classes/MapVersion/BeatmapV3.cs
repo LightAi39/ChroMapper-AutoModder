@@ -28,5 +28,7 @@ namespace BLMapCheck.Classes.MapVersion
 
         public InfoV3 Info { get; set; }
         public List<(string difficulty, string characteristic, DifficultyV3 data)> Difficulties { get; set; } = new();
+
+        public float SongLength { get; set; }
     }
 }

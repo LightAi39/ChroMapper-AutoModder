@@ -46,8 +46,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Light",
                     Severity = Severity.Error,
                     CheckType = "Light",
@@ -68,8 +68,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Average Light",
                         Severity = Severity.Error,
                         CheckType = "Light",
@@ -85,8 +85,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     //ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked."); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Bomb Lit",
                         Severity = Severity.Inconclusive,
                         CheckType = "Light",
@@ -141,8 +141,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Bomb Lit",
                                 Severity = Severity.Inconclusive,
                                 CheckType = "Light",
