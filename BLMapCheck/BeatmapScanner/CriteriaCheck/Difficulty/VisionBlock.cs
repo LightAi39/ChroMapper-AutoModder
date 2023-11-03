@@ -13,12 +13,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
         // Most of the minimum and maximum duration are configurable
-        public static CritResult Check(List<Colornote> Notes, List<Bombnote> Bombs, double PassRating, double TechRating)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, double PassRating, double TechRating)
         {
             CritResult issue = CritResult.Success;
-            List<BeatmapGridObject> beatmapGridObjects = new();
-            beatmapGridObjects.AddRange(Notes);
-            beatmapGridObjects.AddRange(Bombs);
             if (beatmapGridObjects.Any())
             {
                 List<BeatmapGridObject> lastMidL = new();

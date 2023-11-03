@@ -53,7 +53,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.difficulty == difficulty && x.characteristic == characteristic).FirstOrDefault().data;
 
-            // TODO: method under here still uses chromapper classes, convert to our classes
             BeatPerMinute bpm = BeatPerMinute.Create(BeatmapV3.Instance.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.m < 10000 && x.m > 0).ToList(), BeatmapV3.Instance.Info._songTimeOffset);
 
             MapAnalyser analysedMap;// TODO: load the map using our classes instead of the song directory
@@ -84,7 +83,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             List<BeatmapGridObject> allNoteObjects = new();
             allNoteObjects.AddRange(diff.colorNotes);
             allNoteObjects.AddRange(diff.bombNotes);
-            allNoteObjects.AddRange(diff.burstSliders);
+            // allNoteObjects.AddRange(diff.burstSliders);
 
             _Difficultybeatmaps difficultyBeatmap = BeatmapV3.Instance.Info._difficultyBeatmapSets.Where(x => x._beatmapCharacteristicName == Characteristic).FirstOrDefault()._difficultyBeatmaps.Where(x => x._difficulty == Difficulty).FirstOrDefault();
 
@@ -105,7 +104,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Wall = Wall.Check(diff.colorNotes),
                 Chain = Chain.Check(),
                 Parity = Parity.Check(swings, diff.colorNotes),
-                VisionBlock = VisionBlock.Check(diff.colorNotes, diff.bombNotes, BeatmapScannerData.pass, BeatmapScannerData.tech),
+                VisionBlock = VisionBlock.Check(allNoteObjects, BeatmapScannerData.pass, BeatmapScannerData.tech),
                 ProlongedSwing = ProlongedSwing.Check(diff.colorNotes),
                 Loloppe = Loloppe.Check(diff.colorNotes),
                 SwingPath = SwingPath.Check(allNoteObjects, swings),

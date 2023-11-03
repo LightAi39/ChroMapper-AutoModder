@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BLMapCheck.Classes.ChroMapper
+﻿namespace BLMapCheck.Classes.ChroMapper
 {
     internal static class SpawnParameterHelper
     {

@@ -99,12 +99,6 @@
     <Compile Include="BeatmapScanner\TechAlgo\ScanAlgo.cs" />
     <Compile Include="BeatmapScanner\TechAlgo\ScanMethod.cs" />
     <Compile Include="BSMapCheck.cs" />
-    <Compile Include="Classes\ChroMapper\BaseBpmEvent.cs" />
-    <Compile Include="Classes\ChroMapper\BaseGrid.cs" />
-    <Compile Include="Classes\ChroMapper\BaseNote.cs" />
-    <Compile Include="Classes\ChroMapper\BaseObject.cs" />
-    <Compile Include="Classes\ChroMapper\BaseObstacle.cs" />
-    <Compile Include="Classes\ChroMapper\BaseSlider.cs" />
     <Compile Include="Classes\ChroMapper\SpawnParameterHelper.cs" />
     <Compile Include="Classes\MapVersion\BeatmapV3.cs" />
     <Compile Include="Classes\MapVersion\Difficulty\DifficultyV3.cs" />
