@@ -4,36 +4,36 @@ namespace BLMapCheck.BeatmapScanner.Data.Criteria
 {
     public class DiffCrit
     {
-        public CritSeverity HotStart { get; set; } = CritSeverity.Fail;
-        public CritSeverity ColdEnd { get; set; } = CritSeverity.Fail;
-        public CritSeverity MinSongDuration { get; set; } = CritSeverity.Fail;
-        public CritSeverity Outside { get; set; } = CritSeverity.Fail;
-        public CritSeverity ProlongedSwing { get; set; } = CritSeverity.Fail;
-        public CritSeverity VisionBlock { get; set; } = CritSeverity.Fail;
-        public CritSeverity Parity { get; set; } = CritSeverity.Fail;
-        public CritSeverity Chain { get; set; } = CritSeverity.Fail;
-        public CritSeverity FusedObject { get; set; } = CritSeverity.Fail;
-        public CritSeverity Loloppe { get; set; } = CritSeverity.Fail;
-        public CritSeverity HandClap { get; set; } = CritSeverity.Fail;
-        public CritSeverity SwingPath { get; set; } = CritSeverity.Fail;
-        public CritSeverity Hitbox { get; set; } = CritSeverity.Fail;
-        public CritSeverity Slider { get; set; } = CritSeverity.Fail;
-        public CritSeverity Wall { get; set; } = CritSeverity.Fail;
-        public CritSeverity Light { get; set; } = CritSeverity.Fail;
-        public CritSeverity DifficultyLabelSize { get; set; } = CritSeverity.Fail;
-        public CritSeverity DifficultyName { get; set; } = CritSeverity.Fail;
-        public CritSeverity Requirement { get; set; } = CritSeverity.Fail;
-        public CritSeverity NJS { get; set; } = CritSeverity.Fail;
+        public CritResult HotStart { get; set; } = CritResult.Fail;
+        public CritResult ColdEnd { get; set; } = CritResult.Fail;
+        public CritResult MinSongDuration { get; set; } = CritResult.Fail;
+        public CritResult Outside { get; set; } = CritResult.Fail;
+        public CritResult ProlongedSwing { get; set; } = CritResult.Fail;
+        public CritResult VisionBlock { get; set; } = CritResult.Fail;
+        public CritResult Parity { get; set; } = CritResult.Fail;
+        public CritResult Chain { get; set; } = CritResult.Fail;
+        public CritResult FusedObject { get; set; } = CritResult.Fail;
+        public CritResult Loloppe { get; set; } = CritResult.Fail;
+        public CritResult HandClap { get; set; } = CritResult.Fail;
+        public CritResult SwingPath { get; set; } = CritResult.Fail;
+        public CritResult Hitbox { get; set; } = CritResult.Fail;
+        public CritResult Slider { get; set; } = CritResult.Fail;
+        public CritResult Wall { get; set; } = CritResult.Fail;
+        public CritResult Light { get; set; } = CritResult.Fail;
+        public CritResult DifficultyLabelSize { get; set; } = CritResult.Fail;
+        public CritResult DifficultyName { get; set; } = CritResult.Fail;
+        public CritResult Requirement { get; set; } = CritResult.Fail;
+        public CritResult NJS { get; set; } = CritResult.Fail;
 
-        public CritSeverity HighestSeverityCheck()
+        public CritResult HighestSeverityCheck()
         {
             DiffCrit diffCrit = this;
             var properties = typeof(DiffCrit).GetProperties();
-            CritSeverity highestSeverity = CritSeverity.Success;
+            CritResult highestSeverity = CritResult.Success;
 
             foreach (var property in properties)
             {
-                CritSeverity propertySeverity = (CritSeverity)property.GetValue(diffCrit);
+                CritResult propertySeverity = (CritResult)property.GetValue(diffCrit);
                 if (propertySeverity > highestSeverity)
                 {
                     highestSeverity = propertySeverity;

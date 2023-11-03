@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
@@ -8,7 +9,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
     internal static class DiffOrdering
     {
         // Run this per characteristic
-        public static CritSeverity Check(List<DifficultyV3> difficulties, float BeatsPerMinute)
+        public static CritResult Check(List<DifficultyV3> difficulties, float BeatsPerMinute)
         {
             var passStandard = new List<double>();
 
@@ -34,12 +35,27 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
             order.Sort();
             if (passStandard.SequenceEqual(order))
             {
-                return CritSeverity.Success;
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Name = "Difficulty Ordering",
+                    Severity = Severity.Passed,
+                    CheckType = "SongInfo",
+                    Description = "Difficulty ordering is correct.",
+                    ResultData = new() { new("CurrentOrder", string.Join(",", passStandard.ToArray())) }
+                });
+                return CritResult.Success;
             }
 
-            //CreateSongInfoComment("R7E - Difficulty Ordering is wrong\nCurrent order: " + string.Join(",", passStandard.ToArray()) + "\nExpected order: " +
-            //        string.Join(",", order.ToArray()), CommentTypesEnum.Issue); TODO: USE NEW METHOD
-            return CritSeverity.Fail;
+            CheckResults.Instance.AddResult(new CheckResult()
+            {
+                Name = "Difficulty Ordering",
+                Severity = Severity.Error,
+                CheckType = "SongInfo",
+                Description = $"Difficulty ordering is wrong.",
+                ResultData = new() { new("CurrentOrder", string.Join(",", passStandard.ToArray())), new("ExpectedOrder", string.Join(",", order.ToArray())) }
+            });
+
+            return CritResult.Fail;
         }
     }
 }

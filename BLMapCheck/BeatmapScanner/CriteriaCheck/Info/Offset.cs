@@ -1,17 +1,34 @@
-﻿using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
+﻿using BLMapCheck.Classes.Results;
+using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
     internal static class Offset
     {
-        public static CritSeverity Check(float SongTimeOffset)
+        public static CritResult Check(float SongTimeOffset)
         {
             if (SongTimeOffset != 0)
             {
-                //CreateSongInfoComment("R7C - Song Time Offset should be 0. This is a deprecated feature", CommentTypesEnum.Issue); TODO: USE NEW METHOD
-                return CritSeverity.Fail;
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Name = "Song Time Offset",
+                    Severity = Severity.Error,
+                    CheckType = "SongInfo",
+                    Description = "The song time offset is not 0. This is a deprecated feature.",
+                    ResultData = new() { new("SongTimeOffset", SongTimeOffset.ToString()) }
+                });
+                return CritResult.Fail;
             }
-            return CritSeverity.Success;
+
+            CheckResults.Instance.AddResult(new CheckResult()
+            {
+                Name = "Song Time Offset",
+                Severity = Severity.Passed,
+                CheckType = "SongInfo",
+                Description = "The song time offset is 0.",
+                ResultData = new() { new("SongTimeOffset", SongTimeOffset.ToString()) }
+            });
+            return CritResult.Success;
         }
     }
 }

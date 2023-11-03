@@ -1,30 +1,70 @@
-﻿using System.Linq;
+﻿using BLMapCheck.Classes.Results;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
     internal static class SubName
     {
-        public static CritSeverity Check(string SongName, string Author)
+        public static CritResult Check(string songName, string Author)
         {
-            var issue = CritSeverity.Success;
-            if (SongName.Count() != 0)
+            var issue = CritResult.Success;
+            if (songName.Count() != 0)
             {
-                if (SongName.Contains("remix") || SongName.Contains("ver.") || SongName.Contains("feat.") || SongName.Contains("ft.") || SongName.Contains("featuring") || SongName.Contains("cover"))
+                var containedSubstrings = CheckForSubstrings(songName);
+
+                if (containedSubstrings.Any())
                 {
-                    // CreateSongInfoComment("R7B - Song Name - Tags should be in the Sub Name field", CommentTypesEnum.Issue); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Name = "Song Name",
+                        Severity = Severity.Error,
+                        CheckType = "SongInfo",
+                        Description = "Tags should only be in the Sub Name field.",
+                        ResultData = new()
+                        {
+                            new("SongName", songName),
+                            new("Tags", string.Join(", ", containedSubstrings))
+                        }
+                    });
+                    issue = CritResult.Fail;
                 }
             }
             if (Author.Count() != 0)
             {
-                if (Author.Contains("remix") || Author.Contains("ver.") || Author.Contains("feat.") || Author.Contains("ft.") || Author.Contains("featuring") || Author.Contains("cover"))
+                var containedSubstrings = CheckForSubstrings(Author);
+                if (containedSubstrings.Any())
                 {
-                    //CreateSongInfoComment("R7B - Song Author - Tags should be in the Sub Name field", CommentTypesEnum.Issue); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Name = "Song Author",
+                        Severity = Severity.Error,
+                        CheckType = "SongInfo",
+                        Description = "Tags should only be in the Sub Name field.",
+                        ResultData = new()
+                        {
+                            new("SongAuthor", Author),
+                            new("Tags", string.Join(", ", containedSubstrings))
+                        }
+                    });
+                    issue = CritResult.Fail;
                 }
             }
             return issue;
         }
+
+        private static List<string> CheckForSubstrings(string input)
+        {
+            string[] substringsToCheck = { "remix", "ver.", "feat.", "ft.", "featuring", "cover" };
+            var containedSubstrings = substringsToCheck
+                .Where(substring => input.IndexOf(substring, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+
+            return containedSubstrings;
+        }
     }
+
+    
 }

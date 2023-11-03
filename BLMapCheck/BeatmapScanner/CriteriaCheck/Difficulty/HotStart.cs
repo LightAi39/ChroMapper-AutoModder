@@ -8,9 +8,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class HotStart
     {
         // Detect objects that are too early in the map, configurable setting is available
-        public static CritSeverity Check()
+        public static CritResult Check()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var cube = BeatmapScanner.Cubes;
             cube = cube = cube.OrderBy(c => c.Time).ToList();
             var wall = BeatmapScanner.Walls;
@@ -21,7 +21,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (c.Time < limit)
                 {
                     //CreateDiffCommentNote("R1E - Hot Start", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 else break;
             }
@@ -30,7 +30,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (w.b < limit && ((w.x + w.w >= 2 && w.x < 2) || w.x == 1 || w.x == 2))
                 {
                     //CreateDiffCommentObstacle("R1E - Hot Start", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 else break;
             }
