@@ -12,7 +12,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // TODO: Check what would be a good value for MaxChar based on the numbers of difficulties in that characteristic (Count).
         public static CritResult Check(string DifficultyLabel, int Count = 1)
         {
-            if (DifficultyLabel.Count() > Instance.MaxChar / Count)
+            if (DifficultyLabel != null && DifficultyLabel.Count() > Instance.MaxChar / Count)
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -26,6 +26,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 });
                 return CritResult.Fail;
             }
+
+
             return CritResult.Success;
         }
     }

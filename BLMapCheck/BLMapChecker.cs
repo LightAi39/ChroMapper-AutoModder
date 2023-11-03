@@ -51,6 +51,8 @@ namespace BLMapCheck
                 BeatmapV3.Instance.Difficulties.Add(new(difficulty.difficulty, difficulty.characteristic, JsonConvert.DeserializeObject<DifficultyV3>(File.ReadAllText($"{folderPath}/{difficulty.path}"))));
             }
 
+            BeatmapV3.Instance.SongLength = 100; // TODO: actually get song length
+
             mapLoaded = true;
         }
 

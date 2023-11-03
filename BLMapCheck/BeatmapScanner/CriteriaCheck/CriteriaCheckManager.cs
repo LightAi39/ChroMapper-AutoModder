@@ -8,15 +8,17 @@ using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.MapVersion.Info;
 using BLMapCheck.Classes.Results;
 using JoshaParity;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using DifficultyV3 = BLMapCheck.Classes.MapVersion.Difficulty.DifficultyV3;
+using Light = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Light;
 using Parity = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Parity;
 using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
-using Config = BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -68,13 +70,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.difficulty == difficulty && x.characteristic == characteristic).FirstOrDefault().data;
 
-            Console.WriteLine("hello");
 
             BeatPerMinute bpm = BeatPerMinute.Create(BeatmapV3.Instance.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.m < 10000 && x.m > 0).ToList(), BeatmapV3.Instance.Info._songTimeOffset);
 
             MapAnalyser analysedMap = new(BLMapChecker.tempFolderPath);// TODO: load the map using our classes instead of the song directory
 
             List<SwingData> swings;
+
+            Debug.Log(JsonConvert.SerializeObject(diff, Formatting.Indented));
 
             if (Enum.TryParse(difficulty, true, out BeatmapDifficultyRank difficultyRank))
             {
@@ -104,6 +107,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             _Difficultybeatmaps difficultyBeatmap = BeatmapV3.Instance.Info._difficultyBeatmapSets.Where(x => x._beatmapCharacteristicName == Characteristic).FirstOrDefault()._difficultyBeatmaps.Where(x => x._difficulty == Difficulty).FirstOrDefault();
 
+            Debug.Log(JsonConvert.SerializeObject(difficultyBeatmap, Formatting.Indented));
+            Debug.Log("current folder: " + BLMapChecker.tempFolderPath);
 
             DiffCrit diffCrit = new()
             {
@@ -111,9 +116,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 ColdEnd = ColdEnd.Check(allNoteObjects, diff.obstacles, BeatmapV3.Instance.SongLength),
                 MinSongDuration = SongDuration.Check(),
                 Slider = Slider.Check(diff.colorNotes),
-                DifficultyLabelSize = DifficultyLabelSize.Check(difficultyBeatmap._customData._difficultyLabel),
-                DifficultyName = DifficultyLabelName.Check(difficultyBeatmap._customData._difficultyLabel),
-                Requirement = Requirements.Check(difficultyBeatmap._customData._requirements),
+                DifficultyLabelSize = DifficultyLabelSize.Check(difficultyBeatmap._customData?._difficultyLabel),
+                DifficultyName = DifficultyLabelName.Check(difficultyBeatmap._customData?._difficultyLabel),
+                Requirement = Requirements.Check(difficultyBeatmap._customData?._requirements),
                 NJS = NJS.Check(swings, BeatmapV3.Instance.SongLength, difficultyBeatmap._noteJumpMovementSpeed, difficultyBeatmap._noteJumpStartBeatOffset),
                 FusedObject = FusedObject.Check(diff.colorNotes, diff.bombNotes, diff.obstacles, diff.burstSliders, difficultyBeatmap._noteJumpMovementSpeed),
                 Outside = Outside.Check(BeatmapV3.Instance.SongLength),
