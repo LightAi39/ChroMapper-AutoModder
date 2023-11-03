@@ -145,7 +145,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             CheckResults.Instance.AddResult(new CheckResult()
             {
-                Name = "BeatmapScanner data",
+                Name = "Statistical Data",
                 Difficulty = Difficulty,
                 Characteristic = Characteristic,
                 Severity = Severity.Info,
