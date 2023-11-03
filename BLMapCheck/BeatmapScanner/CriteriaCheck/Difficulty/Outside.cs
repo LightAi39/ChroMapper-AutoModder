@@ -32,6 +32,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 issue = CritResult.Fail;
             }
 
+            if(issue == CritResult.Success) 
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Outside",
+                    Severity = Severity.Passed,
+                    CheckType = "Outside",
+                    Description = "No object detected outside of the playable length.",
+                    ResultData = new() { new("Outside", "Success") }
+                });
+            }
+
             return issue;
         }
     }

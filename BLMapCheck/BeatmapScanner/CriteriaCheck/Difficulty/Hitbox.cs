@@ -57,9 +57,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in arr)
                 {
-                    //CreateDiffCommentNote("R3G - Low NJS Inline", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.b && c.c == item.c
-                    //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritResult.Warning;
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
+                        Name = "Inline",
+                        Severity = Severity.Info,
+                        CheckType = "Hitbox",
+                        Description = "Low NJS Inline.",
+                        ResultData = new() { new("Inline", "Low NJS Inline") },
+                        BeatmapObjects = new() { item }
+                    });
                 }
 
                 var hitboxTime = (0.15 * BeatPerMinute.BPM.GetValue()) / 60;
@@ -149,7 +157,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Warning,
                         CheckType = "Staircase",
                         Description = "Potential Hitbox issue.",
-                        ResultData = new() { new("Staircase", "True") },
+                        ResultData = new() { new("Staircase", "Warning") },
                         BeatmapObjects = new() { item }
                     });
                     issue = CritResult.Warning;
@@ -212,11 +220,25 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Warning,
                         CheckType = "Staircase",
                         Description = "Potential Hitbox issue.",
-                        ResultData = new() { new("ReverseStaircase", "True") },
+                        ResultData = new() { new("ReverseStaircase", "Warning") },
                         BeatmapObjects = new() { item }
                     });
                     issue = CritResult.Warning;
                 }
+            }
+
+            if(issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Staircase",
+                    Severity = Severity.Passed,
+                    CheckType = "Staircase",
+                    Description = "No staircase issue detected.",
+                    ResultData = new() { new("Staircase", "Success") },
+                });
             }
 
             return issue;

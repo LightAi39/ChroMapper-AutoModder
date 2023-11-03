@@ -111,6 +111,31 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
 
             BeatPerMinute.BPM.ResetCurrentBPM();
+
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Note Jump Speed",
+                    Severity = Severity.Passed,
+                    CheckType = "NoteJumpSpeed",
+                    Description = "No issue with NJS detected.",
+                    ResultData = new() { new("NoteJumpSpeed", "Success") }
+                });
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Reaction Time",
+                    Severity = Severity.Passed,
+                    CheckType = "ReactionTime",
+                    Description = "No issue with RT detected.",
+                    ResultData = new() { new("ReactionTime", "Success") }
+                });
+            }
+
             return issue;
         }
     }

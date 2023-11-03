@@ -1,7 +1,6 @@
 ﻿using BLMapCheck.Classes.Results;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
@@ -52,6 +51,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
                     });
                     issue = CritResult.Fail;
                 }
+            }
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Name = "Song SubName",
+                    Severity = Severity.Passed,
+                    CheckType = "SongInfo",
+                    Description = "Tags were not found in the Song Name or Song Author field",
+                    ResultData = new() { new("SubName", "Success") }
+                });
             }
             return issue;
         }

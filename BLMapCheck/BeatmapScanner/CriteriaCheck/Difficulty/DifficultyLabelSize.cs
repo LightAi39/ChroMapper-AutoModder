@@ -12,23 +12,48 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // TODO: Check what would be a good value for MaxChar based on the numbers of difficulties in that characteristic (Count).
         public static CritResult Check(string DifficultyLabel, int Count = 1)
         {
-            if (DifficultyLabel != null && DifficultyLabel.Count() > Instance.MaxChar / Count)
+            if (DifficultyLabel != null)
             {
+                if (DifficultyLabel.Count() > Instance.MaxChar / Count)
+                {
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
+                        Name = "Difficulty Label Size",
+                        Severity = Severity.Error,
+                        CheckType = "Label",
+                        Description = "The difficulty label is too long.",
+                        ResultData = new() { new("LabelSize", "Current is " + DifficultyLabel.Count().ToString() + " characters. Maximum " + Instance.MaxChar.ToString() + " characters.") }
+                    });
+                    return CritResult.Fail;
+                }
+
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
                     Characteristic = CriteriaCheckManager.Characteristic,
                     Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Difficulty Label Size",
-                    Severity = Severity.Error,
+                    Severity = Severity.Passed,
                     CheckType = "Label",
-                    Description = "The difficulty label is too long.",
-                    ResultData = new() { new("LabelSize", "Current is " + DifficultyLabel.Count().ToString() + " characters. Maximum " + Instance.MaxChar.ToString() + " characters." )}
+                    Description = "The difficulty label size is valid.",
+                    ResultData = new() { new("LabelSize", "Current is " + DifficultyLabel.Count().ToString() + " characters. Maximum " + Instance.MaxChar.ToString() + " characters.") },
                 });
-                return CritResult.Fail;
+
+                return CritResult.Success;
             }
 
-
-            return CritResult.Success;
+            CheckResults.Instance.AddResult(new CheckResult()
+            {
+                Characteristic = CriteriaCheckManager.Characteristic,
+                Difficulty = CriteriaCheckManager.Difficulty,
+                Name = "Difficulty Label Size",
+                Severity = Severity.Error,
+                CheckType = "Label",
+                Description = "Error reading the label.",
+                ResultData = new() { new("LabelSize", "Error") }
+            });
+            return CritResult.Fail;
         }
     }
 }

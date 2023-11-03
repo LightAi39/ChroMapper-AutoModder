@@ -146,6 +146,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                 }
             }
+
             foreach (var data in rollingAverageRight)
             {
                 if (data.Flick)

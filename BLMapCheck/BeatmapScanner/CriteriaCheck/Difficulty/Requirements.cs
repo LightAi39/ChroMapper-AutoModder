@@ -13,7 +13,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (Requirements != null && Requirements.Any())
             {
-                //CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue); TODO: USE NEW METHOD
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
                     Characteristic = CriteriaCheckManager.Characteristic,
@@ -25,6 +24,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     ResultData = new() { new("Requirements", "Has " + string.Join(",", Requirements.ToArray())) }
                 });
                 issue = CritResult.Fail;
+            }
+
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Requirements",
+                    Severity = Severity.Passed,
+                    CheckType = "Requirements",
+                    Description = "Map doesn't have any mod requirement.",
+                    ResultData = new() { new("Requirements", "Success") }
+                });
             }
 
             return issue;

@@ -17,6 +17,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 Slider.Check(Notes);
             }
 
+            var duration = false;
+            var head = false;
             var issue = false;
             var unsure = false;
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
@@ -44,6 +46,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             BeatmapObjects = new() { ch }
                         });
                         issue = true;
+                        duration = true;
                     }
                     else if (ch.tb - ch.b > 0.125)
                     {
@@ -59,6 +62,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             BeatmapObjects = new() { ch }
                         });
                         unsure = true;
+                        duration = true;
                     }
                 }
                 else if (ch.tb - ch.b >= Slider.AverageSliderDuration * 3.15)
@@ -77,6 +81,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             BeatmapObjects = new() { ch }
                         });
                         unsure = true;
+                        duration = true;
                     }
                     else if (ch.tb - ch.b > 0.125)
                     {
@@ -92,12 +97,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             BeatmapObjects = new() { ch }
                         });
                         unsure = true;
+                        duration = true;
                     }
                 }
                 if (!cubes.Exists(c => c.Time == ch.b && c.Type == ch.c && c.Line == ch.x && c.Layer == ch.y))
                 {
                     // Link spam maybe idk
-                    //CreateDiffCommentLink("R2D - No head note", CommentTypesEnum.Issue, ch); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
                         Characteristic = CriteriaCheckManager.Characteristic,
@@ -110,8 +115,37 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         BeatmapObjects = new() { ch }
                     });
                     issue = true;
+                    head = true;
                 }
             }
+
+            if (!duration)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Chain Duration",
+                    Severity = Severity.Passed,
+                    CheckType = "Chain",
+                    Description = "Chains duration match the map sliders duration * 2.",
+                    ResultData = new() { new("ChainDuration", "Success") }
+                });
+            }
+            if(!head)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Chain Head",
+                    Severity = Severity.Passed,
+                    CheckType = "Chain",
+                    Description = "All chains in the map have an head note.",
+                    ResultData = new() { new("ChainHead", "Success") }
+                });
+            }
+            
             // Dot spam and pauls maybe
             var leftCube = cubes.Where(d => d.Type == 0).ToList();
             var rightCube = cubes.Where(d => d.Type == 1).ToList();
@@ -133,7 +167,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Inconclusive,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "True") },
+                                ResultData = new() { new("DotSpam", "Inconclusive") },
                                 BeatmapObjects = new() { note }
                             });
                             unsure = true;
@@ -149,7 +183,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "True") },
+                                ResultData = new() { new("DotSpam", "Error") },
                                 BeatmapObjects = new() { note }
                             });
                             issue = true;
@@ -178,7 +212,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Inconclusive,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "True") },
+                                ResultData = new() { new("DotSpam", "Inconclusive") },
                                 BeatmapObjects = new() { note }
                             });
                             unsure = true;
@@ -194,7 +228,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "True") },
+                                ResultData = new() { new("DotSpam", "Error") },
                                 BeatmapObjects = new() { note }
                             });
                             issue = true;
@@ -213,6 +247,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 return CritResult.Warning;
             }
+
+            CheckResults.Instance.AddResult(new CheckResult()
+            {
+                Characteristic = CriteriaCheckManager.Characteristic,
+                Difficulty = CriteriaCheckManager.Difficulty,
+                Name = "Dot Spam",
+                Severity = Severity.Passed,
+                CheckType = "Swing",
+                Description = "Map doesn't have any prolonged swing duration.",
+                ResultData = new() { new("DotSpam", "Success") }
+            });
 
             return CritResult.Success;
         }

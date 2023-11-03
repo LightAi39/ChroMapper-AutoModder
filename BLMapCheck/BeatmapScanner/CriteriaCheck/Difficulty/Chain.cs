@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.BeatmapScanner.Data;
+using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
 using System;
 using System.Collections.Generic;
@@ -84,7 +85,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 var newY = l.y + (l.ty - l.y) * chain.s;
                 if (newX > 4 || newX < -1 || newY > 2.33 || newY < -0.33)
                 {
-                    //CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
                         Characteristic = CriteriaCheckManager.Characteristic,
@@ -164,6 +164,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
+            }
+
+            if(issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Chain",
+                    Severity = Severity.Passed,
+                    CheckType = "Chain",
+                    Description = "Chains spacing, lead, placement and rotation are all proper.",
+                    ResultData = new() { new("Chain", "Success") }
+                });
             }
 
             return issue;

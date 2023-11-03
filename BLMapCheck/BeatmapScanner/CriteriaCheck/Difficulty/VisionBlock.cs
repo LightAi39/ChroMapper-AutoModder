@@ -374,6 +374,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Vision Block",
+                    Severity = Severity.Passed,
+                    CheckType = "Vision",
+                    Description = "No issue with vision from notes and bombs detected.",
+                    ResultData = new() { new("VisionBlock", "Success") }
+                });
+            }
+
             BeatPerMinute.BPM.ResetCurrentBPM();
             return issue;
         }

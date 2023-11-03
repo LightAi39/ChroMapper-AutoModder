@@ -1,5 +1,4 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.ChroMapper;
 using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
@@ -38,7 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Wall",
                         Description = "Notes cannot be hidden behind walls.",
-                        ResultData = new() { new("Hidden", "True") },
+                        ResultData = new() { new("Hidden", "Error") },
                         BeatmapObjects = new() { no }
                     });
                     issue = CritResult.Fail;
@@ -54,7 +53,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Wall",
                         Description = "Bombs cannot be hidden behind walls.",
-                        ResultData = new() { new("Hidden", "True") },
+                        ResultData = new() { new("Hidden", "Error") },
                         BeatmapObjects = new() { b }
                     });
                     issue = CritResult.Fail;
@@ -75,7 +74,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Wall",
                         Description = "Notes cannot be hidden behind walls.",
-                        ResultData = new() { new("Hidden", "True") },
+                        ResultData = new() { new("Hidden", "Error") },
                         BeatmapObjects = new() { no }
                     });
                     issue = CritResult.Fail;
@@ -91,7 +90,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Wall",
                         Description = "Bombs cannot be hidden behind walls.",
-                        ResultData = new() { new("Hidden", "True") },
+                        ResultData = new() { new("Hidden", "Error") },
                         BeatmapObjects = new() { b }
                     });
                     issue = CritResult.Fail;
@@ -116,7 +115,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Wall",
                         Description = "Walls cannot force the player to move into the outer lanes.",
-                        ResultData = new() { new("ForcedMovement", "True") },
+                        ResultData = new() { new("ForcedMovement", "Error") },
                         BeatmapObjects = new() { w }
                     });
                     issue = CritResult.Fail;
@@ -131,7 +130,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Wall",
                         Description = "Walls cannot force the player to move into the outer lanes.",
-                        ResultData = new() { new("ForcedMovement", "True") },
+                        ResultData = new() { new("ForcedMovement", "Error") },
                         BeatmapObjects = new() { w }
                     });
                     issue = CritResult.Fail;
@@ -149,7 +148,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Wall",
                         Description = "Walls must have positive width, height and duration.",
-                        ResultData = new() { new("WallSize", "Failed") },
+                        ResultData = new() { new("WallSize", "Error") },
                         BeatmapObjects = new() { w }
                     });
                     //CreateDiffCommentObstacle("R4D - Must have positive w, h and d", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
@@ -173,6 +172,18 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
 
                 previous = w;
+            }
+
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Name = "Wall",
+                    Severity = Severity.Passed,
+                    CheckType = "Wall",
+                    Description = "No issue with hidden objects, movement, wall size and duration detected.",
+                    ResultData = new() { new("Wall", "Success") }
+                });
             }
 
             for (int i = walls.Count - 1; i >= 0; i--)
@@ -242,6 +253,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         issue = CritResult.Warning;
                     }
                 }
+            }
+
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Wall Dodge",
+                    Severity = Severity.Passed,
+                    CheckType = "Wall",
+                    Description = "No issue with dodge wall found.",
+                    ResultData = new() { new("WallDodge", "Success") }
+                });
             }
 
             BeatPerMinute.BPM.ResetCurrentBPM();

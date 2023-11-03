@@ -42,6 +42,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var issue = CritResult.Success;
             var end = BeatPerMinute.BPM.ToBeatTime(LoadedSongLength, true);
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.b).ToList();
+            var lit = true;
             if (!Events.Any() || !Events.Exists(e => e.et >= 0 && e.et <= 5))
             {
                 CheckResults.Instance.AddResult(new CheckResult()
@@ -52,7 +53,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "Light",
                     Description = "The map must have sufficient lighting throughout.",
-                    ResultData = new() { new("Light", "False") }
+                    ResultData = new() { new("Light", "Error") }
                 });
                 return CritResult.Fail;
             }
@@ -78,6 +79,31 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
+
+                if (issue == CritResult.Success)
+                {
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
+                        Name = "Light",
+                        Severity = Severity.Passed,
+                        CheckType = "Light",
+                        Description = "Map has light.",
+                        ResultData = new() { new("Light", "Passed") }
+                    });
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
+                        Name = "Average Light",
+                        Severity = Severity.Passed,
+                        CheckType = "Light",
+                        Description = "Map has enough light per beat in average.",
+                        ResultData = new() { new("AverageLight", "Current average per beat: " + average.ToString() + " Required: " + Instance.AverageLightPerBeat.ToString()) }
+                    });
+                }
+
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 var eventLitTime = new List<List<EventLitTime>>();
                 if (V3Events.Count > 0)
@@ -91,7 +117,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Inconclusive,
                         CheckType = "Light",
                         Description = "V3 Lights detected. Bombs visibility won't be checked.",
-                        ResultData = new() { new("BombLit", "False") },
+                        ResultData = new() { new("BombLit", "Inconclusive") },
                         BeatmapObjects = new(bombs) { }
                     });
                     return CritResult.Warning;
@@ -150,11 +176,27 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 ResultData = new() { new("BombLit", isLit.ToString()) },
                                 BeatmapObjects = new() { bomb }
                             });
+                            lit = false;
                             issue = CritResult.Fail;
                         }
                     }
                 }
             }
+
+            if(lit)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Bomb Lit",
+                    Severity = Severity.Passed,
+                    CheckType = "Light",
+                    Description = "Bombs in the map are properly lit (or the map has v3 lights).",
+                    ResultData = new() { new("BombLit", "Success") }
+                });
+            }
+
             BeatPerMinute.BPM.ResetCurrentBPM();
             return issue;
         }

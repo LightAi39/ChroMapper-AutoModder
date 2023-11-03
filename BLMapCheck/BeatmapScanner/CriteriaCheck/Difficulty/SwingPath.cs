@@ -245,11 +245,25 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Swing",
                         Description = "Swing path issue.",
-                        ResultData = new() { new("SwingPath", "Swing path issue") },
+                        ResultData = new() { new("SwingPath", "Error") },
                         BeatmapObjects = new() { item }
                     });
                     issue = CritResult.Fail;
                 }
+            }
+
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Swing Path",
+                    Severity = Severity.Passed,
+                    CheckType = "Swing",
+                    Description = "No issue with swing path detected.",
+                    ResultData = new() { new("SwingPath", "Success") }
+                });
             }
 
             return issue;

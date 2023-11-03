@@ -24,7 +24,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Cold End",
                         Severity = Severity.Error,
                         CheckType = "Duration",
-                        Description = "There must be at least 2 seconds of time after the last interactable objects.",
+                        Description = "There must be at least 2 seconds of time after the last interactable object.",
                         ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current object is at: " + obj.b.ToString()) },
                         BeatmapObjects = new() { obj }
                     });
@@ -44,7 +44,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Cold End",
                         Severity = Severity.Error,
                         CheckType = "Duration",
-                        Description = "There must be at least 2 seconds of time after the last interactable objects.",
+                        Description = "There must be at least 2 seconds of time after the last interactable object.",
                         ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current obstacle is at: " + (w.b + w.d).ToString()) },
                         BeatmapObjects = new() { w }
                     });
@@ -52,6 +52,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 else break;
             }
+
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Cold End",
+                    Severity = Severity.Passed,
+                    CheckType = "Duration",
+                    Description = "There is at least 2 seconds of time after the last interactable object.",
+                    ResultData = new() { new("ColdEnd", "Success") }
+                });
+            }
+
             return issue;
         }
     }

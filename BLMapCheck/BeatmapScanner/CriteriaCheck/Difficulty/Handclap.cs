@@ -153,7 +153,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Warning,
                         CheckType = "Chain",
                         Description = "Patterns must not encourage hand clapping.",
-                        ResultData = new() { new("Handclap", "True") },
+                        ResultData = new() { new("Handclap", "Warning") },
                         BeatmapObjects = new() { item }
                     });
                     issue = CritResult.Warning;
@@ -169,11 +169,25 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Handclap",
                         Description = "Patterns must not encourage hand clapping.",
-                        ResultData = new() { new("Handclap", "True") },
+                        ResultData = new() { new("Handclap", "Error") },
                         BeatmapObjects = new() { item }
                     });
                     issue = CritResult.Fail;
                 }
+            }
+
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Hand Clap",
+                    Severity = Severity.Passed,
+                    CheckType = "Handclap",
+                    Description = "No handclap pattern detected.",
+                    ResultData = new() { new("Handclap", "Success") },
+                });
             }
 
             return issue;

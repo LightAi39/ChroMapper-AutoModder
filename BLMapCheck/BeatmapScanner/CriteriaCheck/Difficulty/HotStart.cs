@@ -2,7 +2,6 @@
 using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
-using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
 
@@ -19,7 +18,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (c.b < limit)
                 {
-                    //CreateDiffCommentNote("R1E - Hot Start", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
                         Characteristic = CriteriaCheckManager.Characteristic,
@@ -54,6 +52,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 else break;
             }
+
+            if(issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Hot Start",
+                    Severity = Severity.Passed,
+                    CheckType = "Duration",
+                    Description = "There is at least 1.33 seconds of time before any interactable objects.",
+                    ResultData = new() { new("HotStart", "Success") }
+                });
+            }
+
             return issue;
         }
     }

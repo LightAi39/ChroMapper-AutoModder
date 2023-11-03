@@ -1,6 +1,5 @@
 ﻿using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
-using JoshaParity;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
@@ -96,7 +95,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Slider",
                                 Description = "Multiple notes of the same color on the same swing must not differ by more than 45°.",
-                                ResultData = new() { new("SliderRotation", "True") },
+                                ResultData = new() { new("SliderRotation", "Error") },
                                 BeatmapObjects = new() { note }
                             });
                             issue = CritResult.Fail;
@@ -151,7 +150,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Slider",
                                 Description = "Multiple notes of the same color on the same swing must not differ by more than 45°.",
-                                ResultData = new() { new("SliderRotation", "True") },
+                                ResultData = new() { new("SliderRotation", "Error") },
                                 BeatmapObjects = new() { note }
                             });
                             issue = CritResult.Fail;
@@ -160,6 +159,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                     i--;
                 }
+            }
+
+            if (issue == CritResult.Success)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Slider",
+                    Severity = Severity.Passed,
+                    CheckType = "Slider",
+                    Description = "No issue with slider precision and rotation detected.",
+                    ResultData = new() { new("Slider", "Success") }
+                });
             }
 
             return issue;

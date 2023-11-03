@@ -5,9 +5,7 @@ using JoshaParity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Net.NetworkInformation;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
 
@@ -198,6 +196,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             else
             {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Parity",
+                    Severity = Severity.Passed,
+                    CheckType = "Parity",
+                    Description = "No possible parity issue detected.",
+                    ResultData = new() { new("Parity", "Success") }
+                });
                 return CritResult.Success;
             }
         }
