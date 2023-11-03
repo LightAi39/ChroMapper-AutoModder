@@ -43,5 +43,11 @@ namespace BLMapCheck.Classes.Results
             Results.Remove(result);
         }
 
+        public static CheckResults Reset()
+        {
+            _instance = new();
+            return _instance;
+        }
+
     }
 }

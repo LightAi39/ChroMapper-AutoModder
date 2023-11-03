@@ -69,6 +69,7 @@ namespace BLMapCheck
 
         public CheckResults CheckAllCriteria()
         {
+            CheckResults.Reset();
             if (!mapLoaded)
             {
                 throw new Exception("Map not loaded");
