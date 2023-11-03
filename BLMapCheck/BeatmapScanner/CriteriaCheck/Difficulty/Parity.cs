@@ -161,7 +161,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                     List<KeyValuePair> resultData = new()
                     {
-                        new("", swing.),
+                        new("swingParity", swing.swingParity.ToString()),
+                        new("resetType", swing.resetType.ToString()),
+                        new("swingStartBeat", swing.swingStartBeat.ToString()),
+                        new("swingEndBeat", swing.swingEndBeat.ToString()),
+                        new("swingEBPM", swing.swingEBPM.ToString()),
+                        new("notes", JsonConvert.SerializeObject(swing.notes, Formatting.Indented)),
+                        new("startPos", JsonConvert.SerializeObject(swing.startPos, Formatting.Indented)),
+                        new("endPos", JsonConvert.SerializeObject(swing.endPos, Formatting.Indented)),
+                        new("rightHand", swing.rightHand.ToString()),
+                        new("playerHorizontalOffset", swing.playerHorizontalOffset.ToString()),
+                        new("playerVerticalOffset", swing.playerVerticalOffset.ToString()),
                     };
                     
                     List<Colornote> colornotes = new();
