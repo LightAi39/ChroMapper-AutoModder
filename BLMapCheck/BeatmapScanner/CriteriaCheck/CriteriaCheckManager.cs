@@ -40,7 +40,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             }
 
             CheckResults.Instance.CheckFinished = true;
-            //Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
+            Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
         }
 
 
@@ -80,7 +80,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             List<SwingData> swings;
 
-            Debug.Log(JsonConvert.SerializeObject(diff, Formatting.Indented));
+            //Debug.Log(JsonConvert.SerializeObject(diff, Formatting.Indented));
 
             if (Enum.TryParse(difficulty, true, out BeatmapDifficultyRank difficultyRank))
             {
