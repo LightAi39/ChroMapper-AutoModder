@@ -41,8 +41,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Note Jump Speed",
                     Severity = Severity.Error,
                     CheckType = "NoteJumpSpeed",
@@ -57,8 +57,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Note Jump Speed",
                         Severity = Severity.Suggestion,
                         CheckType = "NoteJumpSpeed",
@@ -74,8 +74,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Reaction Time",
                         Severity = Severity.Suggestion,
                         CheckType = "ReactionTime",
@@ -90,8 +90,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Note Jump Speed",
                     Severity = Severity.Info,
                     CheckType = "NoteJumpSpeed",
@@ -100,8 +100,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 });
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Reaction Time",
                     Severity = Severity.Info,
                     CheckType = "ReactionTime",

@@ -19,8 +19,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Cold End",
                         Severity = Severity.Error,
                         CheckType = "Duration",
@@ -39,8 +39,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     //CreateDiffCommentObstacle("R1E - Cold End", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Cold End",
                         Severity = Severity.Error,
                         CheckType = "Duration",

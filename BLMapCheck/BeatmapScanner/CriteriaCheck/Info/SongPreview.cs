@@ -5,7 +5,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
     internal class SongPreview
     {
-        public CritResult Check(float PreviewStartTime, float PreviewDuration)
+        public static CritResult Check(float PreviewStartTime, float PreviewDuration)
         {
             if (PreviewStartTime == 12 && PreviewDuration == 10)
             {

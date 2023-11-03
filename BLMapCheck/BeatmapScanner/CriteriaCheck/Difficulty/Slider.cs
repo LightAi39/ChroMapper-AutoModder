@@ -33,8 +33,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         var expected = ScanMethod.RealToFraction(((c.Spacing + 1) * AverageSliderDuration), 0.01);
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Slider Precision",
                             Severity = Severity.Warning,
                             CheckType = "Slider",
@@ -90,8 +90,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             var note = Notes.Where(note => n.Time == note.b && n.Type == note.c && note.x == n.Line && note.y == n.Layer).FirstOrDefault();
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Slider Rotation",
                                 Severity = Severity.Error,
                                 CheckType = "Slider",
@@ -145,8 +145,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             var note = Notes.Where(note => n.Time == note.b && n.Type == note.c && note.x == n.Line && note.y == n.Layer).FirstOrDefault();
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Slider Rotation",
                                 Severity = Severity.Error,
                                 CheckType = "Slider",

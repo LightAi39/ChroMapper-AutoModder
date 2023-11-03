@@ -36,8 +36,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         var note2 = Notes.Where(n => n.b == red[i].Time && n.d == red[i].Direction && n.x == red[i].Line && n.y == red[i].Layer && n.c == red[i].Type).FirstOrDefault();
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Loloppe",
                             Severity = Severity.Error,
                             CheckType = "Loloppe",
@@ -69,8 +69,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         var note2 = Notes.Where(n => n.b == blue[i].Time && n.d == blue[i].Direction && n.x == blue[i].Line && n.y == blue[i].Layer && n.c == blue[i].Type).FirstOrDefault();
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Loloppe",
                             Severity = Severity.Error,
                             CheckType = "Loloppe",

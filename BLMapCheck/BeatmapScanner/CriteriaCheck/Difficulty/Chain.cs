@@ -25,8 +25,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Early Chain",
                         Severity = Severity.Error,
                         CheckType = "Chain",
@@ -41,8 +41,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Early Chain",
                     Severity = Severity.Error,
                     CheckType = "Chain",
@@ -69,8 +69,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Chain Squish",
                         Severity = Severity.Error,
                         CheckType = "Chain",
@@ -87,8 +87,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     //CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Chain Lead",
                         Severity = Severity.Error,
                         CheckType = "Chain",
@@ -102,8 +102,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Reversed Chain",
                         Severity = Severity.Error,
                         CheckType = "Chain",
@@ -120,8 +120,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Chain Flick",
                             Severity = Severity.Error,
                             CheckType = "Chain",
@@ -153,8 +153,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Chain Rotation",
                         Severity = Severity.Error,
                         CheckType = "Chain",

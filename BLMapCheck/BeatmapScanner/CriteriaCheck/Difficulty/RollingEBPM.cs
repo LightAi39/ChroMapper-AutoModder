@@ -119,8 +119,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Unexpected Speed",
                                 Severity = Severity.Info,
                                 CheckType = "Speed",
@@ -134,8 +134,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Unexpected Speed",
                             Severity = Severity.Info,
                             CheckType = "Speed",
@@ -159,8 +159,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Unexpected Speed",
                                 Severity = Severity.Info,
                                 CheckType = "Speed",
@@ -174,8 +174,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Unexpected Speed",
                             Severity = Severity.Info,
                             CheckType = "Speed",

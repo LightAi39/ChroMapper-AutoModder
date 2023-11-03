@@ -74,7 +74,8 @@ namespace BLMapCheck.Classes.MapVersion.Info
     public class _Customdata1
     {
         public string _difficultyLabel { get; set; }
-        public string[] _suggestions { get; set; }
+        public List<string> _requirements { get; set; }
+        public List<string> _suggestions { get; set; }
         public _Colorleft _colorLeft { get; set; }
         public _Colorright _colorRight { get; set; }
     }

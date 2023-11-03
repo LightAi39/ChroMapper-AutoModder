@@ -22,8 +22,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     //CreateDiffCommentNote("R1E - Hot Start", CommentTypesEnum.Issue, c); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Hot Start",
                         Severity = Severity.Error,
                         CheckType = "Duration",
@@ -41,8 +41,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Hot Start",
                         Severity = Severity.Error,
                         CheckType = "Duration",

@@ -34,8 +34,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Chain Duration",
                             Severity = Severity.Error,
                             CheckType = "Chain",
@@ -49,8 +49,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Chain Duration",
                             Severity = Severity.Inconclusive,
                             CheckType = "Chain",
@@ -67,8 +67,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Chain Duration",
                             Severity = Severity.Inconclusive,
                             CheckType = "Chain",
@@ -82,8 +82,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
-                            Characteristic = BSMapCheck.Characteristic,
-                            Difficulty = BSMapCheck.Difficulty,
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
                             Name = "Chain Duration",
                             Severity = Severity.Inconclusive,
                             CheckType = "Chain",
@@ -100,8 +100,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     //CreateDiffCommentLink("R2D - No head note", CommentTypesEnum.Issue, ch); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        Characteristic = BSMapCheck.Characteristic,
-                        Difficulty = BSMapCheck.Difficulty,
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Chain Head",
                         Severity = Severity.Inconclusive,
                         CheckType = "Chain",
@@ -127,8 +127,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             var note = Notes.Where(n => n.b == left.Time && n.d == left.Direction && n.x == left.Line && n.y == left.Layer && n.c == left.Type).FirstOrDefault();
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Dot Spam",
                                 Severity = Severity.Inconclusive,
                                 CheckType = "Swing",
@@ -143,8 +143,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             var note = Notes.Where(n => n.b == left.Time && n.d == left.Direction && n.x == left.Line && n.y == left.Layer && n.c == left.Type).FirstOrDefault();
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Dot Spam",
                                 Severity = Severity.Error,
                                 CheckType = "Swing",
@@ -172,8 +172,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             var note = Notes.Where(n => n.b == right.Time && n.d == right.Direction && n.x == right.Line && n.y == right.Layer && n.c == right.Type).FirstOrDefault();
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Dot Spam",
                                 Severity = Severity.Inconclusive,
                                 CheckType = "Swing",
@@ -188,8 +188,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             var note = Notes.Where(n => n.b == right.Time && n.d == right.Direction && n.x == right.Line && n.y == right.Layer && n.c == right.Type).FirstOrDefault();
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
-                                Characteristic = BSMapCheck.Characteristic,
-                                Difficulty = BSMapCheck.Difficulty,
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Dot Spam",
                                 Severity = Severity.Error,
                                 CheckType = "Swing",

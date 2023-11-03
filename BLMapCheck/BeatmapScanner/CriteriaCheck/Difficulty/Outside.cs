@@ -7,7 +7,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal class Outside
     {
         // Detect objects that are outside of the audio boundary
-        public CritResult Check(float LoadedSongLength)
+        public static CritResult Check(float LoadedSongLength)
         {
             var issue = CritResult.Success;
             var cubes = BeatmapScanner.Cubes;
@@ -21,8 +21,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Outside",
                     Severity = Severity.Error,
                     CheckType = "Outside",

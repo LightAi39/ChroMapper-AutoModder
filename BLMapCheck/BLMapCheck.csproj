@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BeatmapScanner\CriteriaCheck.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\CriteriaCheckManager.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Chain.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\ColdEnd.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\DifficultyLabelSize.cs" />

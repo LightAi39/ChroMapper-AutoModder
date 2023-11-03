@@ -13,7 +13,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
         // Most of the minimum and maximum duration are configurable
-        public static CritResult Check(List<Colornote> Notes, List<Bombnote> Bombs, float PassRating, float TechRating)
+        public static CritResult Check(List<Colornote> Notes, List<Bombnote> Bombs, double PassRating, double TechRating)
         {
             CritResult issue = CritResult.Success;
             List<BeatmapGridObject> beatmapGridObjects = new();
@@ -55,8 +55,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     {
                                         CheckResults.Instance.AddResult(new CheckResult()
                                         {
-                                            Characteristic = BSMapCheck.Characteristic,
-                                            Difficulty = BSMapCheck.Difficulty,
+                                            Characteristic = CriteriaCheckManager.Characteristic,
+                                            Difficulty = CriteriaCheckManager.Difficulty,
                                             Name = "Vision Block",
                                             Severity = Severity.Warning,
                                             CheckType = "Vision",
@@ -91,8 +91,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     {
                                         CheckResults.Instance.AddResult(new CheckResult()
                                         {
-                                            Characteristic = BSMapCheck.Characteristic,
-                                            Difficulty = BSMapCheck.Difficulty,
+                                            Characteristic = CriteriaCheckManager.Characteristic,
+                                            Difficulty = CriteriaCheckManager.Difficulty,
                                             Name = "Vision Block",
                                             Severity = Severity.Warning,
                                             CheckType = "Vision",
@@ -156,8 +156,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             {
                                                 CheckResults.Instance.AddResult(new CheckResult()
                                                 {
-                                                    Characteristic = BSMapCheck.Characteristic,
-                                                    Difficulty = BSMapCheck.Difficulty,
+                                                    Characteristic = CriteriaCheckManager.Characteristic,
+                                                    Difficulty = CriteriaCheckManager.Difficulty,
                                                     Name = "Vision Block",
                                                     Severity = Severity.Error,
                                                     CheckType = "Vision",
@@ -183,8 +183,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             CheckResults.Instance.AddResult(new CheckResult()
                                             {
-                                                Characteristic = BSMapCheck.Characteristic,
-                                                Difficulty = BSMapCheck.Difficulty,
+                                                Characteristic = CriteriaCheckManager.Characteristic,
+                                                Difficulty = CriteriaCheckManager.Difficulty,
                                                 Name = "Vision Block",
                                                 Severity = Severity.Error,
                                                 CheckType = "Vision",
@@ -205,8 +205,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             {
                                                 CheckResults.Instance.AddResult(new CheckResult()
                                                 {
-                                                    Characteristic = BSMapCheck.Characteristic,
-                                                    Difficulty = BSMapCheck.Difficulty,
+                                                    Characteristic = CriteriaCheckManager.Characteristic,
+                                                    Difficulty = CriteriaCheckManager.Difficulty,
                                                     Name = "Vision Block",
                                                     Severity = Severity.Error,
                                                     CheckType = "Vision",
@@ -232,8 +232,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             CheckResults.Instance.AddResult(new CheckResult()
                                             {
-                                                Characteristic = BSMapCheck.Characteristic,
-                                                Difficulty = BSMapCheck.Difficulty,
+                                                Characteristic = CriteriaCheckManager.Characteristic,
+                                                Difficulty = CriteriaCheckManager.Difficulty,
                                                 Name = "Vision Block",
                                                 Severity = Severity.Error,
                                                 CheckType = "Vision",
@@ -271,8 +271,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             {
                                                 CheckResults.Instance.AddResult(new CheckResult()
                                                 {
-                                                    Characteristic = BSMapCheck.Characteristic,
-                                                    Difficulty = BSMapCheck.Difficulty,
+                                                    Characteristic = CriteriaCheckManager.Characteristic,
+                                                    Difficulty = CriteriaCheckManager.Difficulty,
                                                     Name = "Vision Block",
                                                     Severity = Severity.Error,
                                                     CheckType = "Vision",
@@ -298,8 +298,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             CheckResults.Instance.AddResult(new CheckResult()
                                             {
-                                                Characteristic = BSMapCheck.Characteristic,
-                                                Difficulty = BSMapCheck.Difficulty,
+                                                Characteristic = CriteriaCheckManager.Characteristic,
+                                                Difficulty = CriteriaCheckManager.Difficulty,
                                                 Name = "Vision Block",
                                                 Severity = Severity.Error,
                                                 CheckType = "Vision",
@@ -320,8 +320,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             {
                                                 CheckResults.Instance.AddResult(new CheckResult()
                                                 {
-                                                    Characteristic = BSMapCheck.Characteristic,
-                                                    Difficulty = BSMapCheck.Difficulty,
+                                                    Characteristic = CriteriaCheckManager.Characteristic,
+                                                    Difficulty = CriteriaCheckManager.Difficulty,
                                                     Name = "Vision Block",
                                                     Severity = Severity.Error,
                                                     CheckType = "Vision",
@@ -347,8 +347,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             CheckResults.Instance.AddResult(new CheckResult()
                                             {
-                                                Characteristic = BSMapCheck.Characteristic,
-                                                Difficulty = BSMapCheck.Difficulty,
+                                                Characteristic = CriteriaCheckManager.Characteristic,
+                                                Difficulty = CriteriaCheckManager.Difficulty,
                                                 Name = "Vision Block",
                                                 Severity = Severity.Error,
                                                 CheckType = "Vision",

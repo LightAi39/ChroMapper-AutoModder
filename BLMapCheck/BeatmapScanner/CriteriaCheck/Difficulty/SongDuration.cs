@@ -18,8 +18,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Mapped Duration",
                     Severity = Severity.Error,
                     CheckType = "Duration",
@@ -31,8 +31,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             CheckResults.Instance.AddResult(new CheckResult()
             {
-                Characteristic = BSMapCheck.Characteristic,
-                Difficulty = BSMapCheck.Difficulty,
+                Characteristic = CriteriaCheckManager.Characteristic,
+                Difficulty = CriteriaCheckManager.Difficulty,
                 Name = "Mapped Duration",
                 Severity = Severity.Passed,
                 CheckType = "Duration",

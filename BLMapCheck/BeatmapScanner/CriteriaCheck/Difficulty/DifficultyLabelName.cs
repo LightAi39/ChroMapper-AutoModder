@@ -15,8 +15,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 //ExtendOverallComment("R7G - Difficulty name must not contain obscene content"); TODO: USE NEW METHOD
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    Characteristic = BSMapCheck.Characteristic,
-                    Difficulty = BSMapCheck.Difficulty,
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
                     Name = "Difficulty Label Name",
                     Severity = Severity.Error,
                     CheckType = "Label",
