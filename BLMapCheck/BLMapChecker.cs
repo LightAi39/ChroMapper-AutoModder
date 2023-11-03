@@ -28,7 +28,7 @@ namespace BLMapCheck
             }
         }
 
-        public void LoadMap(string folderPath)
+        public void LoadMap(string folderPath, float songLength)
         {
             tempFolderPath = folderPath; // TODO: remove
             BeatmapV3.Reset();
@@ -52,16 +52,17 @@ namespace BLMapCheck
                 BeatmapV3.Instance.Difficulties.Add(new(difficulty.difficulty, difficulty.characteristic, JsonConvert.DeserializeObject<DifficultyV3>(File.ReadAllText($"{folderPath}/{difficulty.path}"))));
             }
 
-            BeatmapV3.Instance.SongLength = 100; // TODO: actually get song length
+            BeatmapV3.Instance.SongLength = songLength; // TODO: actually get song length
 
             mapLoaded = true;
         }
 
-        public void LoadMap(BeatmapV3 beatmapV3)
+        public void LoadMap(BeatmapV3 beatmapV3, float songLength)
         {
             BeatmapV3.Reset();
             BeatmapV3.Instance.Info = beatmapV3.Info;
             BeatmapV3.Instance.Difficulties = beatmapV3.Difficulties;
+            BeatmapV3.Instance.SongLength = songLength;
 
             mapLoaded = true;
         }

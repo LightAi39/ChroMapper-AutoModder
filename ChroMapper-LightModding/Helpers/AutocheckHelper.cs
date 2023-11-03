@@ -22,7 +22,7 @@ namespace ChroMapper_LightModding.Helpers
 
         public (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, string characteristic = "", int difficultyRank = 0, string difficulty = "")
         {
-            criteriaCheck.LoadMap(plugin.currentlyLoadedFolderPath);
+            criteriaCheck.LoadMap(plugin.currentlyLoadedFolderPath, BeatSaberSongContainer.Instance.LoadedSongLength);
             var results = criteriaCheck.CheckAllCriteria();
 
             if (isAutoCheckOnInfo)
