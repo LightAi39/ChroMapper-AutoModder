@@ -40,7 +40,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 var resultData = results.Results.Where(x => x.Name == "BeatmapScanner data").FirstOrDefault().ResultData;
                 return (
-                    Convert.ToDouble(resultData.Where(x => x.key == "Diff").FirstOrDefault().value),
+                    Convert.ToDouble(resultData.Where(x => x.key == "Pass").FirstOrDefault().value),
                     Convert.ToDouble(resultData.Where(x => x.key == "Tech").FirstOrDefault().value),
                     Convert.ToDouble(resultData.Where(x => x.key == "EBPM").FirstOrDefault().value),
                     Convert.ToDouble(resultData.Where(x => x.key == "Slider").FirstOrDefault().value),
