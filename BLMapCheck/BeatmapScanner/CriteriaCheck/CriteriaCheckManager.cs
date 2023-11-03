@@ -100,7 +100,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 BeatmapScannerData = BeatmapScanner.Analyzer(diff.colorNotes, diff.burstSliders, diff.bombNotes, diff.obstacles, BeatmapV3.Instance.Info._beatsPerMinute);
             } else
             {
-                throw new Exception("No notes found in difficulty");
+                return new(); // temporary since it also load lightshow diff, etc.
             }
 
             List<BeatmapGridObject> allNoteObjects = new();
