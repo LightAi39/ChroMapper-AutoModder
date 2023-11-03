@@ -33,10 +33,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             foreach (var diff in BeatmapV3.Instance.Difficulties)
             {
-                Difficulty = diff.difficulty;
-                Characteristic = diff.characteristic;
+                Difficulty = diff.Difficulty;
+                Characteristic = diff.Characteristic;
 
-                CheckResults.Instance.DifficultyCriteriaResults.Add(new(diff.difficulty, diff.characteristic, AutoDiffCheck(diff.characteristic, diff.difficulty)));
+                CheckResults.Instance.DifficultyCriteriaResults.Add(new(diff.Difficulty, diff.Characteristic, AutoDiffCheck(diff.Characteristic, diff.Difficulty)));
             }
 
             CheckResults.Instance.CheckFinished = true;
@@ -71,7 +71,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             Debug.Log("current folder: " + BLMapChecker.tempFolderPath + " - Current diff: " + Difficulty + Characteristic);
 
-            DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.difficulty == difficulty && x.characteristic == characteristic).FirstOrDefault().data;
+            DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Data;
 
 
             BeatPerMinute bpm = BeatPerMinute.Create(BeatmapV3.Instance.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.m < 10000 && x.m > 0).ToList(), BeatmapV3.Instance.Info._songTimeOffset);

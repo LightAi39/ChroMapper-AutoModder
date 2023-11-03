@@ -18,7 +18,7 @@ namespace BLMapCheck.Classes.Results
         public string CheckType { get; set; } = "";
         public string Description { get; set; } = "";
         public List<BeatmapObject>? BeatmapObjects { get; set; }
-        public List<(string key, string value)>? ResultData { get; set; }
+        public List<KeyValuePair>? ResultData { get; set; }
     }
 
     public enum Severity
@@ -29,5 +29,17 @@ namespace BLMapCheck.Classes.Results
         Warning,
         Error,
         Inconclusive
+    }
+
+    public class KeyValuePair
+    {
+        public string Key { get; set; } = "";
+        public string Value { get; set; } = "";
+
+        public KeyValuePair(string key, string value)
+        {
+            Key = key;
+            Value = value;
+        }
     }
 }

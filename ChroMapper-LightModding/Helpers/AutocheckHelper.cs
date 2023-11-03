@@ -34,21 +34,21 @@ namespace ChroMapper_LightModding.Helpers
             {
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
-                plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = results.DifficultyCriteriaResults.Where(x => x.difficulty == difficulty && x.characteristic == characteristic).FirstOrDefault().crit;
+                plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = results.DifficultyCriteriaResults.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Crit;
             }
             if (isForMapCheckStats)
             {
                 var resultData = results.Results.Where(x => x.Name == "BeatmapScanner data").FirstOrDefault().ResultData;
                 return (
-                    Convert.ToDouble(resultData.Where(x => x.key == "Pass").FirstOrDefault().value),
-                    Convert.ToDouble(resultData.Where(x => x.key == "Tech").FirstOrDefault().value),
-                    Convert.ToDouble(resultData.Where(x => x.key == "EBPM").FirstOrDefault().value),
-                    Convert.ToDouble(resultData.Where(x => x.key == "Slider").FirstOrDefault().value),
-                    Convert.ToDouble(resultData.Where(x => x.key == "Reset").FirstOrDefault().value),
-                    Convert.ToInt32(resultData.Where(x => x.key == "Crouch").FirstOrDefault().value),
-                    Convert.ToDouble(resultData.Where(x => x.key == "Linear").FirstOrDefault().value),
-                    Convert.ToDouble(resultData.Where(x => x.key == "SPS").FirstOrDefault().value),
-                    resultData.Where(x => x.key == "Handness").FirstOrDefault().value
+                    Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),
+                    Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value),
+                    Convert.ToDouble(resultData.Where(x => x.Key == "EBPM").FirstOrDefault().Value),
+                    Convert.ToDouble(resultData.Where(x => x.Key == "Slider").FirstOrDefault().Value),
+                    Convert.ToDouble(resultData.Where(x => x.Key == "Reset").FirstOrDefault().Value),
+                    Convert.ToInt32(resultData.Where(x => x.Key == "Crouch").FirstOrDefault().Value),
+                    Convert.ToDouble(resultData.Where(x => x.Key == "Linear").FirstOrDefault().Value),
+                    Convert.ToDouble(resultData.Where(x => x.Key == "SPS").FirstOrDefault().Value),
+                    resultData.Where(x => x.Key == "Handness").FirstOrDefault().Value
                     );
             }
             return (0, 0, 0, 0, 0, 0, 0, 0, "");
