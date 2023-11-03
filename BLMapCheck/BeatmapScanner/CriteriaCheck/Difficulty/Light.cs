@@ -36,15 +36,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         // Fetch the average event per beat, and compare it to a configurable value
         // Also check for well-lit bombs
-        public static CritSeverity Check(float LoadedSongLength, List<Basicbeatmapevent> Events, List<Lightcoloreventboxgroup> V3Events)
+        public static CritResult Check(float LoadedSongLength, List<Basicbeatmapevent> Events, List<Lightcoloreventboxgroup> V3Events)
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var end = BeatPerMinute.BPM.ToBeatTime(LoadedSongLength, true);
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.b).ToList();
             if (!Events.Any() || !Events.Exists(e => e.et >= 0 && e.et <= 5))
             {
                 //ExtendOverallComment("R6A - Map has no light"); TODO: USE NEW METHOD
-                return CritSeverity.Fail;
+                return CritResult.Fail;
             }
             else
             {
@@ -57,14 +57,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (average < AverageLightPerBeat)
                 {
                     //ExtendOverallComment("R6A - Map doesn't have enough light"); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 var eventLitTime = new List<List<EventLitTime>>();
                 if (V3Events.Count > 0)
                 {
                     //ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked."); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
                 else
                 {
@@ -110,7 +110,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         if (!isLit)
                         {
                             //CreateDiffCommentBomb("R5B - Light missing for bomb", CommentTypesEnum.Issue, bomb); TODO: USE NEW METHOD
-                            issue = CritSeverity.Fail;
+                            issue = CritResult.Fail;
                         }
                     }
                 }

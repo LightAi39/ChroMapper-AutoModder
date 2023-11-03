@@ -10,9 +10,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Chain
     {
         // Check if chains is part of the first 16 notes, link spacing, reverse direction, max distance, reach, and angle
-        public static CritSeverity Check()
+        public static CritResult Check()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var links = BeatmapScanner.Chains.OrderBy(c => c.b).ToList();
             var notes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
 
@@ -22,7 +22,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var l in link)
                 {
                     //CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
             else if (links.Any())
@@ -31,7 +31,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var l in link)
                 {
                     //CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 
@@ -50,19 +50,19 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (chain.s - 0.01 > max)
                 {
                     //CreateDiffCommentLink("R2D - Link spacing issue. Maximum squish for placement: " + max, CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 var newX = l.x + (l.tx - l.x) * chain.s;
                 var newY = l.y + (l.ty - l.y) * chain.s;
                 if (newX > 4 || newX < -1 || newY > 2.33 || newY < -0.33)
                 {
                     //CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 if (l.tb < l.b)
                 {
                     //CreateDiffCommentLink("R2D - Reverse Direction", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 var note = notes.Find(x => x.Time >= l.tb && x.Type == l.c);
                 if (note != null)
@@ -70,7 +70,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (l.tb + (l.tb - l.b) > note.Time)
                     {
                         //CreateDiffCommentLink("R2D - Duration between tail and next note is too short", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                        issue = CritSeverity.Fail;
+                        issue = CritResult.Fail;
                     }
                 }
 
@@ -93,7 +93,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, MaxChainRotation))
                 {
                     //CreateDiffCommentLink("R2D - Over 45°", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 

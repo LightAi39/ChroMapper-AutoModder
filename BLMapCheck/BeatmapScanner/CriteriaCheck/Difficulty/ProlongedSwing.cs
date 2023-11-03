@@ -7,7 +7,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class ProlongedSwing
     {
         // Very basic check for stuff like Pauls, Dotspam, long chain duration, etc.
-        public static CritSeverity Check()
+        public static CritResult Check()
         {
             if(Slider.averageSliderDuration == -1)
             {
@@ -109,14 +109,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (issue)
             {
-                return CritSeverity.Fail;
+                return CritResult.Fail;
             }
             else if (unsure)
             {
-                return CritSeverity.Warning;
+                return CritResult.Warning;
             }
 
-            return CritSeverity.Success;
+            return CritResult.Success;
         }
     }
 }

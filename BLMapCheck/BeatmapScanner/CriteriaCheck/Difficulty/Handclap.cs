@@ -10,9 +10,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Handclap
     {
         // Attempt to detect specific note and angle placement based on BeatLeader criteria
-        public static CritSeverity Check(List<Colornote> Notes)
+        public static CritResult Check(List<Colornote> Notes)
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
 
             if (Notes.Any())
             {
@@ -145,14 +145,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     //CreateDiffCommentNote("R3D - Hand clap", CommentcsEnum.Issue, cubes.Find(c => c.Time == item.b && c.c == item.c
                     //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
 
                 foreach (var item in arr)
                 {
                     //CreateDiffCommentNote("R3D - Hand clap", CommentcsEnum.Issue, cubes.Find(c => c.Time == item.b && c.c == item.c
                     //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 

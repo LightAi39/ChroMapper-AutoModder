@@ -12,9 +12,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
         // Most of the minimum and maximum duration are configurable
-        public static CritSeverity Check(List<Colornote> Notes, List<Bombnote> Bombs, float PassRating, float TechRating)
+        public static CritResult Check(List<Colornote> Notes, List<Bombnote> Bombs, float PassRating, float TechRating)
         {
-            CritSeverity issue = CritSeverity.Success;
+            CritResult issue = CritResult.Success;
             List<BeatmapGridObject> beatmapGridObjects = new();
             beatmapGridObjects.AddRange(Notes);
             beatmapGridObjects.AddRange(Bombs);
@@ -54,7 +54,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     {
                                         //CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Unsure,
                                         //  cubes.Find(c => c.Time == note.b && c.c == note.c && note.x == c.Line && note.y == c.Layer)); TODO: USE NEW METHOD
-                                        issue = CritSeverity.Warning;
+                                        issue = CritResult.Warning;
                                     }
                                 }
                             }
@@ -81,7 +81,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     {
                                         //CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Unsure,
                                         //    cubes.Find(c => c.Time == note.b && c.c == note.c && note.x == c.Line && note.y == c.Layer)); TODO: USE NEW METHOD
-                                        issue = CritSeverity.Warning;
+                                        issue = CritResult.Warning;
                                     }
                                 }
                             }
@@ -137,7 +137,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             {
                                                 //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
                                                 //TODO: USE NEW METHOD
-                                                issue = CritSeverity.Fail;
+                                                issue = CritResult.Fail;
                                             }
                                             continue;
                                         }
@@ -155,7 +155,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
                                             //TODO: USE NEW METHOD
-                                            issue = CritSeverity.Fail;
+                                            issue = CritResult.Fail;
                                             continue;
                                         }
                                     }
@@ -168,7 +168,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             {
                                                 //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
                                                 //TODO: USE NEW METHOD
-                                                issue = CritSeverity.Fail;
+                                                issue = CritResult.Fail;
                                             }
                                             continue;
                                         }
@@ -186,7 +186,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
                                             //TODO: USE NEW METHOD
-                                            issue = CritSeverity.Fail;
+                                            issue = CritResult.Fail;
                                             continue;
                                         }
                                     }
@@ -216,7 +216,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             {
                                                 //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
                                                 //TODO: USE NEW METHOD
-                                                issue = CritSeverity.Fail;
+                                                issue = CritResult.Fail;
                                             }
                                             continue;
                                         }
@@ -234,7 +234,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
                                             //TODO: USE NEW METHOD
-                                            issue = CritSeverity.Fail;
+                                            issue = CritResult.Fail;
                                             continue;
                                         }
                                     }
@@ -247,7 +247,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             {
                                                 //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
                                                 //TODO: USE NEW METHOD
-                                                issue = CritSeverity.Fail;
+                                                issue = CritResult.Fail;
                                             }
                                             continue;
                                         }
@@ -265,7 +265,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
                                             //TODO: USE NEW METHOD
-                                            issue = CritSeverity.Fail;
+                                            issue = CritResult.Fail;
                                             continue;
                                         }
                                     }

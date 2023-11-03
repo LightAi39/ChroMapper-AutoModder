@@ -11,9 +11,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Calculate dodge wall per seconds, objects hidden behind walls, walls that force players outside of boundary, walls that are too short in middle lane and negative walls.
         // Subjective and max dodge wall, min wall d and trail d is configurable
-        public static CritSeverity Check()
+        public static CritResult Check()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
 
             var walls = BeatmapScanner.Walls;
             var notes = BeatmapScanner.Cubes;
@@ -28,13 +28,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var n in note)
                 {
                     //CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 var bomb = bombs.Where(b => b.x == 0 && !(b.y == 0 && w.y == 0 && w.h == 1) && ((b.y >= w.y && b.y < w.y + w.h) || (b.y >= 0 && w.y == 0 && w.h > 1)) && b.b > w.b && b.b <= w.b + w.d).ToList();
                 foreach (var b in bomb)
                 {
                     //CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 
@@ -44,13 +44,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var n in note)
                 {
                     //CreateDiffCommentNote("R3B - Hidden behind wall", CommentTypesEnum.Issue, n); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 var bomb = bombs.Where(b => b.x == 3 && !(b.y == 0 && w.y == 0 && w.h == 1) && ((b.y >= w.y && b.y < w.y + w.h) || (b.y >= 0 && w.y == 0 && w.h > 1)) && b.b > w.b && b.b <= w.b + w.d).ToList();
                 foreach (var b in bomb)
                 {
                     //CreateDiffCommentBomb("R5E - Hidden behind wall", CommentTypesEnum.Issue, b); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
             }
 
@@ -65,12 +65,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     (w.x + w.w == 3 && walls.Exists(wa => wa != w && wa.y == 0 && wa.h > 0 && wa.x + wa.w == 2 && wa.b <= w.b + w.d && wa.b >= w.b))))
                 {
                     //CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 else if (w.y <= 0 && w.h > 1 && ((w.w >= 3 && (w.x + w.w == 2 || w.x + w.w == 3 || w.x == 1)) || (w.w >= 2 && w.x == 1 && w.y == 0 && w.h > 0) || (w.w >= 4 && w.x + w.w >= 4 && w.x <= 0 && w.y == 0)))
                 {
                     //CreateDiffCommentObstacle("R4C - Force the player to move into the outer lanes", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 if (w.w <= 0 || w.d <= 0 || // Negative w or d
                     (w.h <= 0 && w.x >= 0 && w.x <= 3 && (w.y > 0 || w.y + w.h >= 0)) // In or above with negative h
@@ -78,13 +78,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     || (w.x + w.w >= 1 && w.x <= 4) && w.y + w.h >= 0 && w.h < 0) // Stretch above with negative h
                 {
                     //CreateDiffCommentObstacle("R4D - Must have positive w, h and d", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
                 if (w.d < min && (w.x + w.w == 2 || w.x + w.w == 3) && w.y + w.h > 1 &&
                     !walls.Exists(wa => wa != w && wa.x + wa.w >= w.x + w.w && wa.x <= w.x + w.w && wa.d >= min && w.b >= wa.b && w.b <= wa.b + wa.d + max))
                 {
                     //CreateDiffCommentObstacle("R4E - Shorter than 13.8ms in the middle two lanes", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    issue = CritResult.Fail;
                 }
 
                 previous = w;
@@ -129,12 +129,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (dodge >= MaximumDodgeWallPerSecond)
                     {
                         //CreateDiffCommentObstacle("R4B - Over the " + config.MaximumDodgeWallPerSecond + " dodge per second limit", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
-                        issue = CritSeverity.Fail;
+                        issue = CritResult.Fail;
                     }
                     else if (dodge >= SubjectiveDodgeWallPerSecond)
                     {
                         //CreateDiffCommentObstacle("Y4A - " + Plugin.configs.SubjectiveDodgeWallPerSecond + "+ dodge per second need justification", CommentTypesEnum.Suggestion, w); TODO: USE NEW METHOD
-                        issue = CritSeverity.Warning;
+                        issue = CritResult.Warning;
                     }
                 }
             }

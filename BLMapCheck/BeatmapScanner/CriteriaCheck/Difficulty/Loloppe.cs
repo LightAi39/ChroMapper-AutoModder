@@ -7,9 +7,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Loloppe
     { 
         // Detect parallel notes
-        public static CritSeverity Check()
+        public static CritResult Check()
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
             var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
             var red = cubes.Where(c => c.Type == 0).ToList();
             var blue = cubes.Where(c => c.Type == 1).ToList();
@@ -33,7 +33,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i - 1]); TODO: USE NEW METHOD 
                         //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, red[i]); TODO: USE NEW METHOD
-                        issue = CritSeverity.Fail;
+                        issue = CritResult.Fail;
                     }
                 }
             }
@@ -57,7 +57,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i - 1]); TODO: USE NEW METHOD 
                         //CreateDiffCommentNote("R3C - Loloppe", CommentTypesEnum.Issue, blue[i]); TODO: USE NEW METHOD
-                        issue = CritSeverity.Fail;
+                        issue = CritResult.Fail;
                     }
                 }
             }

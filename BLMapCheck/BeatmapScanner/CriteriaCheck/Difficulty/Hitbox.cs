@@ -12,9 +12,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Hitbox
     {
         // Implementation of Kival Evan hitboxInline.ts, hitboxStair.ts and hitboxReverseStaircase.ts
-        public static CritSeverity HitboxCheck(List<Colornote> Notes, float NoteJumpSpeed)
+        public static CritResult HitboxCheck(List<Colornote> Notes, float NoteJumpSpeed)
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
 
             if (Notes.Any())
             {
@@ -59,7 +59,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     //CreateDiffCommentNote("R3G - Low NJS Inline", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.b && c.c == item.c
                     //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
 
                 var hitboxTime = (0.15 * BeatPerMinute.BPM.GetValue()) / 60;
@@ -143,7 +143,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     //CreateDiffCommentNote("R3G - Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.b && c.c == item.c
                     //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
 
                 var constant = 0.03414823529;
@@ -197,7 +197,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     //CreateDiffCommentNote("R3G - Reverse Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.b && c.c == item.c
                     //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Warning;
+                    issue = CritResult.Warning;
                 }
             }
 

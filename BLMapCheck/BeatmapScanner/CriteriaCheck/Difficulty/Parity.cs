@@ -11,7 +11,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // JoshaParity is used to detect reset, high angle parity, and warn while playing inverted.
         // Parity warning angle is configurable
-        public static CritSeverity Check(List<SwingData> Swings)
+        public static CritResult Check(List<SwingData> Swings)
         {
             bool hadIssue = false;
             bool hadWarning = false;
@@ -91,15 +91,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (hadIssue)
             {
-                return CritSeverity.Fail;
+                return CritResult.Fail;
             }
             else if (hadWarning)
             {
-                return CritSeverity.Warning;
+                return CritResult.Warning;
             }
             else
             {
-                return CritSeverity.Success;
+                return CritResult.Success;
             }
         }
     }
