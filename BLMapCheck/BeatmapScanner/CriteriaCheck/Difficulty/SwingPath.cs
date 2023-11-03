@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using SwingData = JoshaParity.SwingData;
+using SwingType = BLMapCheck.BeatmapScanner.MapCheck.SwingType;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {

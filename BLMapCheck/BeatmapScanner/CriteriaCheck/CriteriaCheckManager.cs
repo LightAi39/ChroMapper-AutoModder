@@ -82,11 +82,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             List<SwingData> swings;
 
+            
+
             //Debug.Log(JsonConvert.SerializeObject(diff, Formatting.Indented));
 
             if (Enum.TryParse(difficulty, true, out BeatmapDifficultyRank difficultyRank))
             {
-                swings = mapAnalyser.GetSwingData(difficultyRank, characteristic.ToLower());
+                DiffAnalysis diffAnalysis = mapAnalyser.GetDiffAnalysis(difficultyRank, characteristic.ToLower());
+                swings = diffAnalysis.GetSwingData();
             } else
             {
                 throw new Exception("Difficulty could not be parsed to BeatmapDifficultyRank");
