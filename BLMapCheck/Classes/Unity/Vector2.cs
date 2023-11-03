@@ -65,6 +65,18 @@ namespace BLMapCheck.Classes.Unity
         {
             get { return x * x + y * y; }
         }
+
+        public static float Dot(Vector2 lhs, Vector2 rhs)
+        {
+            return lhs.x * rhs.x + lhs.y * rhs.y;
+        }
+
+        public static float Distance(Vector2 a, Vector2 b)
+        {
+            float num = a.x - b.x;
+            float num2 = a.y - b.y;
+            return (float)Math.Sqrt(num * num + num2 * num2);
+        }
     }
 
 }

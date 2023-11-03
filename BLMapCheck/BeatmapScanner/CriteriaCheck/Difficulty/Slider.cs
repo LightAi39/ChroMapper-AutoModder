@@ -6,7 +6,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Slider
     {
-        public static float averageSliderDuration { get; set; } = 0.0625f;
+        public static float averageSliderDuration { get; set; } = -1;
 
         // Get the average sliders precision and warn if it's not applied to all sliders in the map.
         // Also check if sliders is above 45 degree (that could use some work)

@@ -1,5 +1,6 @@
 ﻿using BLMapCheck.BeatmapScanner.Data;
 using BLMapCheck.Classes.ChroMapper;
+using BLMapCheck.Classes.MapVersion.Difficulty;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
         public ParityState? state { get; set; }
         public static readonly int[,] CONSTRAINT_ROTATION = { { -155, 195 }, { -195, 155 } };
 
-        public Parity(List<BaseNote> notes, int type, int warningThreshold, int errorThreshold, int allowedRotation, ParityState? parity) 
+        public Parity(List<Colornote> notes, int type, int warningThreshold, int errorThreshold, int allowedRotation, ParityState? parity) 
         {
             color = type;
             this.warningThreshold = warningThreshold;
@@ -37,7 +38,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             position = PredictStartPosition(notes, type);
         }
 
-        public ParityStatus Check(List<BaseNote> noteContext, List<BaseNote> bombContext)
+        public ParityStatus Check(List<Colornote> noteContext, List<Colornote> bombContext)
         {
             if (state == ParityState.Neutral)
             {
@@ -47,21 +48,21 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             {
                 return ParityStatus.None;
             }
-            var startTime = noteContext.Last().JsonTime;
+            var startTime = noteContext.Last().b;
             var noteType = color;
             var currentState = state;
             var currentRotation = rotation;
             
             bombContext.ForEach((bomb) => {
-                if (bomb.JsonTime - 0.001 > startTime)
+                if (bomb.b - 0.001 > startTime)
                 {
                     return;
                 }
-                else if (bomb.PosY == 0)
+                else if (bomb.y == 0)
                 {
                     if(noteType == 0)
                     {
-                        if (bomb.PosX == 1)
+                        if (bomb.x == 1)
                         {
                             currentState = ParityState.Backhand;
                             currentRotation = 0;
@@ -69,18 +70,18 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                     }
                     else if (noteType == 1)
                     {
-                        if (bomb.PosX == 2)
+                        if (bomb.x == 2)
                         {
                             currentState = ParityState.Backhand;
                             currentRotation = 0;
                         }
                     }
                 }
-                if (bomb.PosY == 2)
+                if (bomb.y == 2)
                 {
                     if (noteType == 0)
                     {
-                        if (bomb.PosX == 1)
+                        if (bomb.x == 1)
                         {
                             currentState = ParityState.Forehand;
                             currentRotation = 0;
@@ -88,7 +89,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                     }
                     else if (noteType == 1)
                     {
-                        if (bomb.PosX == 2)
+                        if (bomb.x == 2)
                         {
                             currentState = ParityState.Forehand;
                             currentRotation = 0;
@@ -97,16 +98,16 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 }
             });
 
-            BaseNote prevNote = null;
+            Colornote prevNote = null;
             var expectedDirection = NoteDirection.ANY;
             foreach (var note in noteContext) {
-                if (note.Type != 0 && note.Type != 1)
+                if (note.c != 0 && note.c != 1)
                 {
                     continue;
                 }
-                if (note.CutDirection != NoteDirection.ANY)
+                if (note.d != NoteDirection.ANY)
                 {
-                    expectedDirection = note.CutDirection;
+                    expectedDirection = note.d;
                 }
                 if(prevNote != null)
                 {
@@ -167,7 +168,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return ParityStatus.None;
         }
 
-        public void Next(List<BaseNote> noteContext, List<BaseNote> bombContext)
+        public void Next(List<Colornote> noteContext, List<Colornote> bombContext)
         {
             if (Check(noteContext, bombContext) != ParityStatus.Error)
             {
@@ -187,45 +188,45 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                         {
                             for (var i = 0; i < noteContext.Count; i++)
                             {
-                                if (noteContext[i].Type != 0 || noteContext[i].Type != 1)
+                                if (noteContext[i].c != 0 || noteContext[i].c != 1)
                                 {
                                     continue;
                                 }
                                 var note = noteContext[i];
-                                if(note.Type == 0)
+                                if(note.c == 0)
                                 {
-                                    if (NoteInitParity.RedForehand.Contains(note.CutDirection))
+                                    if (NoteInitParity.RedForehand.Contains(note.d))
                                     {
                                         state = ParityState.Backhand;
                                         break;
                                     }
-                                    if (NoteInitParity.RedBackhand.Contains(note.CutDirection))
+                                    if (NoteInitParity.RedBackhand.Contains(note.d))
                                     {
                                         state = ParityState.Forehand;
                                         break;
                                     }
                                 }
-                                else if (note.Type == 1)
+                                else if (note.c == 1)
                                 {
-                                    if (NoteInitParity.BlueForehand.Contains(note.CutDirection))
+                                    if (NoteInitParity.BlueForehand.Contains(note.d))
                                     {
                                         state = ParityState.Backhand;
                                         break;
                                     }
-                                    if (NoteInitParity.BlueBackhand.Contains(note.CutDirection))
+                                    if (NoteInitParity.BlueBackhand.Contains(note.d))
                                     {
                                         state = ParityState.Forehand;
                                         break;
                                     }
                                 }
 
-                                if (state == ParityState.Neutral && note.CutDirection == NoteDirection.ANY)
+                                if (state == ParityState.Neutral && note.d == NoteDirection.ANY)
                                 {
-                                    if (note.PosY == 0)
+                                    if (note.y == 0)
                                     {
                                         state = ParityState.Backhand;
                                     }
-                                    if (note.PosY > 0)
+                                    if (note.y > 0)
                                     {
                                         state = ParityState.Forehand;
                                     }
@@ -240,15 +241,15 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 return;
             }
 
-            var startTime = noteContext.First().JsonTime;
+            var startTime = noteContext.First().b;
             var noteType = color;
 
             bombContext.ForEach(bomb => {
-                if (bomb.PosY == 0)
+                if (bomb.y == 0)
                 {
                     if (noteType == 0)
                     {
-                        if (bomb.PosX == 1)
+                        if (bomb.x == 1)
                         {
                             state = ParityState.Backhand;
                             rotation = 0;
@@ -256,18 +257,18 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                     }
                     else if (noteType == 1)
                     {
-                        if (bomb.PosX == 2)
+                        if (bomb.x == 2)
                         {
                             state = ParityState.Backhand;
                             rotation = 0;
                         }
                     }
                 }
-                if (bomb.PosY == 2)
+                if (bomb.y == 2)
                 {
                     if (noteType == 0)
                     {
-                        if (bomb.PosX == 2)
+                        if (bomb.x == 2)
                         {
                             state = ParityState.Forehand;
                             rotation = 0;
@@ -275,7 +276,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                     }
                     else if (noteType == 1)
                     {
-                        if (bomb.PosX == 2)
+                        if (bomb.x == 2)
                         {
                             state = ParityState.Forehand;
                             rotation = 0;
@@ -284,16 +285,16 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 }
             });
 
-            BaseNote prevNote = null;
+            Colornote prevNote = null;
             var expectedDirection = NoteDirection.ANY;
             foreach (var note in noteContext) {
-                if (note.Type != 0 && note.Type != 1)
+                if (note.c != 0 && note.c != 1)
                 {
                     continue;
                 }
-                if (note.CutDirection != NoteDirection.ANY)
+                if (note.d != NoteDirection.ANY)
                 {
-                    expectedDirection = note.CutDirection;
+                    expectedDirection = note.d;
                 }
                 if(prevNote != null)
                 {
@@ -345,7 +346,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return ParityState.Neutral;
         }
 
-        public (double, double) PredictStartPosition(List<BaseNote> nc, int type)
+        public (double, double) PredictStartPosition(List<Colornote> nc, int type)
         {
             if (type == 0)
             {
@@ -359,115 +360,115 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return (0, 1);
         }
 
-        public int PredictStartRotation(List<BaseNote> nc, int color)
+        public int PredictStartRotation(List<Colornote> nc, int color)
         {
             var rotation = 0;
             for (var i = 0; i < nc.Count; i++)
             {
-                if (nc[i].Type != 0 || nc[i].Type != 1)
+                if (nc[i].c != 0 || nc[i].c != 1)
                 {
                     continue;
                 }
                 var note = nc[i];
-                if (note.Type != color)
+                if (note.c != color)
                 {
                     continue;
                 }
-                if (note.Type == color)
+                if (note.c == color)
                 {
-                    var startTime = note.JsonTime;
+                    var startTime = note.b;
                     for (var j = i; j < nc.Count; j++)
                     {
-                        if (nc[j].JsonTime > note.JsonTime + 0.001 && startTime < note.JsonTime + 0.001)
+                        if (nc[j].b > note.b + 0.001 && startTime < note.b + 0.001)
                         {
                             break;
                         }
                         note = nc[j];
-                        if (note.CutDirection != NoteDirection.ANY)
+                        if (note.d != NoteDirection.ANY)
                         {
-                            if (note.Type == 0)
+                            if (note.c == 0)
                             {
-                                return NoteInitRotation.Red[note.CutDirection];
+                                return NoteInitRotation.Red[note.d];
                             }
-                            else if (note.Type == 1)
+                            else if (note.c == 1)
                             {
-                                return NoteInitRotation.Blue[note.CutDirection];
+                                return NoteInitRotation.Blue[note.d];
                             }
                         }
-                        if (note.CutDirection == NoteDirection.ANY)
+                        if (note.d == NoteDirection.ANY)
                         {
-                            if (note.PosY == 0)
+                            if (note.y == 0)
                             {
-                                if (note.PosX == 0)
+                                if (note.x == 0)
                                 {
-                                    if (note.Type == 0)
+                                    if (note.c == 0)
                                     {
                                         rotation = NoteInitRotation.Red[6];
                                     }
-                                    else if (note.Type == 1)
+                                    else if (note.c == 1)
                                     {
                                         rotation = NoteInitRotation.Blue[6];
                                     }
                                 }
-                                if (note.PosX == 3)
+                                if (note.x == 3)
                                 {
-                                    if (note.Type == 0)
+                                    if (note.c == 0)
                                     {
                                         rotation = NoteInitRotation.Red[7];
                                     }
-                                    else if (note.Type == 1)
+                                    else if (note.c == 1)
                                     {
                                         rotation = NoteInitRotation.Blue[7];
                                     }
  
                                 }
                             }
-                            if (note.PosY == 1)
+                            if (note.y == 1)
                             {
-                                if (note.PosX == 0)
+                                if (note.x == 0)
                                 {
-                                    if (note.Type == 0)
+                                    if (note.c == 0)
                                     {
                                         rotation = NoteInitRotation.Red[2];
                                     }
-                                    else if (note.Type == 1)
+                                    else if (note.c == 1)
                                     {
                                         rotation = NoteInitRotation.Blue[2];
                                     }
                                 }
-                                if (note.PosX == 3)
+                                if (note.x == 3)
                                 {
-                                    if (note.Type == 0)
+                                    if (note.c == 0)
                                     {
                                         rotation = NoteInitRotation.Red[3];
                                     }
-                                    else if (note.Type == 1)
+                                    else if (note.c == 1)
                                     {
                                         rotation = NoteInitRotation.Blue[3];
                                     }
 
                                 }
                             }
-                            if (note.PosY == 2)
+                            if (note.y == 2)
                             {
-                                if (note.PosX == 0)
+                                if (note.x == 0)
                                 {
-                                    if (note.Type == 0)
+                                    if (note.c == 0)
                                     {
                                         rotation = NoteInitRotation.Red[4];
                                     }
-                                    else if (note.Type == 1)
+                                    else if (note.c == 1)
                                     {
                                         rotation = NoteInitRotation.Blue[4];
                                     }
                                 }
-                                if (note.PosX == 3)
+                                if (note.x == 3)
                                 {
-                                    if (note.Type == 0)
+                                    if (note.c == 0)
                                     {
                                         rotation = NoteInitRotation.Red[5];
                                     }
-                                    else if (note.Type == 1)
+                                    else if (note.c == 1)
                                     {
                                         rotation = NoteInitRotation.Blue[5];
                                     }
@@ -482,100 +483,100 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return rotation;
         }
 
-        public ParityState PredictStartState(List<BaseNote> nc, int type)
+        public ParityState PredictStartState(List<Colornote> nc, int type)
         {
             var startParity = ParityState.Neutral;
             for (var i = 0;  i < nc.Count; i++)
             {
-                if (nc[i].Type == 3)
+                if (nc[i].c == 3)
                 {
-                    if (nc[i].PosY == 0)
+                    if (nc[i].y == 0)
                     {
                         if(type == 0)
                         {
-                            if (nc[i].PosX == 1)
+                            if (nc[i].x == 1)
                             {
                                 startParity = ParityState.Backhand;
                             }
                         }
                         else if(type == 1)
                         {
-                            if (nc[i].PosX == 2)
+                            if (nc[i].x == 2)
                             {
                                 startParity = ParityState.Backhand;
                             }
                         }
                     }
-                    if (nc[i].PosY == 2)
+                    if (nc[i].y == 2)
                     {
                         if (type == 0)
                         {
-                            if (nc[i].PosX == 1)
+                            if (nc[i].x == 1)
                             {
                                 startParity = ParityState.Forehand;
                             }
                         }
                         else if (type == 1)
                         {
-                            if (nc[i].PosX == 2)
+                            if (nc[i].x == 2)
                             {
                                 startParity = ParityState.Forehand;
                             }
                         }
                     }
                 }
-                if (nc[i].Type != 0 && nc[i].Type != 1)
+                if (nc[i].c != 0 && nc[i].c != 1)
                 {
                     continue;
                 }
                 var note = nc[i];
-                if (note.Type == Math.Abs(type - 1))
+                if (note.c == Math.Abs(type - 1))
                 {
                     continue;
                 }
-                if (note.Type == type)
+                if (note.c == type)
                 {
                     if (startParity != ParityState.Neutral)
                     {
                         break;
                     }
-                    var startTime = note.JsonTime;
+                    var startTime = note.b;
                     for (var j = i; j < nc.Count; j++)
                     {
-                        if (nc[j].JsonTime > note.JsonTime + 0.001 && startTime < note.JsonTime + 0.001)
+                        if (nc[j].b > note.b + 0.001 && startTime < note.b + 0.001)
                         {
                             break;
                         }
                         note = nc[j];
-                        if(note.Type == 0)
+                        if(note.c == 0)
                         {
-                            if (NoteInitParity.RedForehand.Contains(note.CutDirection))
+                            if (NoteInitParity.RedForehand.Contains(note.d))
                             {
                                 return ParityState.Backhand;
                             }
-                            if (NoteInitParity.RedBackhand.Contains(note.CutDirection))
+                            if (NoteInitParity.RedBackhand.Contains(note.d))
                             {
                                 return ParityState.Forehand;
                             }
                         }
-                        else if (note.Type == 1)
+                        else if (note.c == 1)
                         {
-                            if (NoteInitParity.BlueForehand.Contains(note.CutDirection))
+                            if (NoteInitParity.BlueForehand.Contains(note.d))
                             {
                                 return ParityState.Backhand;
                             }
-                            if (NoteInitParity.BlueBackhand.Contains(note.CutDirection))
+                            if (NoteInitParity.BlueBackhand.Contains(note.d))
                             {
                                 return ParityState.Forehand;
                             }
                         }
-                        if (startParity == ParityState.Neutral && note.CutDirection == NoteDirection.ANY)
+                        if (startParity == ParityState.Neutral && note.d == NoteDirection.ANY)
                         {
-                            if (note.PosY == 0)
+                            if (note.y == 0)
                             {
                                 startParity = ParityState.Backhand;
                             }
-                            if (note.PosY > 0)
+                            if (note.y > 0)
                             {
                                 startParity = ParityState.Forehand;
                             }
@@ -587,62 +588,62 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return startParity;
         }
 
-        public static int PredictDirection(BaseNote currNote, BaseNote prevNote)
+        public static int PredictDirection(Colornote currNote, Colornote prevNote)
         {
             if (IsEnd(currNote, prevNote, NoteDirection.ANY))
             {
-                return currNote.CutDirection == NoteDirection.ANY ? prevNote.CutDirection : currNote.CutDirection;
+                return currNote.d == NoteDirection.ANY ? prevNote.d : currNote.d;
             }
-            if (currNote.CutDirection != NoteDirection.ANY)
+            if (currNote.d != NoteDirection.ANY)
             {
-                return currNote.CutDirection;
+                return currNote.d;
             }
-            if (currNote.JsonTime > prevNote.JsonTime)
+            if (currNote.b > prevNote.b)
             {
                 // if end note on right side
-                if (currNote.PosX > prevNote.PosX)
+                if (currNote.x > prevNote.x)
                 {
-                    if (currNote.PosY == prevNote.PosY)
+                    if (currNote.y == prevNote.y)
                     {
                         return NoteDirection.RIGHT;
                     }
                 }
                 // if end note on left side
-                if (currNote.PosX < prevNote.PosX)
+                if (currNote.x < prevNote.x)
                 {
-                    if (currNote.PosY == prevNote.PosY)
+                    if (currNote.y == prevNote.y)
                     {
                         return NoteDirection.LEFT;
                     }
                 }
                 // if end note is above
-                if (currNote.PosY > prevNote.PosY)
+                if (currNote.y > prevNote.y)
                 {
-                    if (currNote.PosX == prevNote.PosX)
+                    if (currNote.x == prevNote.x)
                     {
                         return NoteDirection.UP;
                     }
-                    if (currNote.PosX > prevNote.PosX)
+                    if (currNote.x > prevNote.x)
                     {
                         return NoteDirection.UP_RIGHT;
                     }
-                    if (currNote.PosX < prevNote.PosX)
+                    if (currNote.x < prevNote.x)
                     {
                         return NoteDirection.UP_LEFT;
                     }
                 }
                 // if end note is below
-                if (currNote.PosY < prevNote.PosY)
+                if (currNote.y < prevNote.y)
                 {
-                    if (currNote.PosX == prevNote.PosX)
+                    if (currNote.x == prevNote.x)
                     {
                         return NoteDirection.DOWN;
                     }
-                    if (currNote.PosX > prevNote.PosX)
+                    if (currNote.x > prevNote.x)
                     {
                         return NoteDirection.DOWN_RIGHT;
                     }
-                    if (currNote.PosX < prevNote.PosX)
+                    if (currNote.x < prevNote.x)
                     {
                         return NoteDirection.DOWN_LEFT;
                     }
@@ -651,32 +652,32 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return NoteDirection.ANY;
         }
 
-        public static bool IsEnd(BaseNote currNote, BaseNote prevNote, int cd)
+        public static bool IsEnd(Colornote currNote, Colornote prevNote, int cd)
         {
-            if(currNote.CutDirection == NoteDirection.ANY && prevNote.CutDirection == NoteDirection.ANY && cd != NoteDirection.ANY)
+            if(currNote.d == NoteDirection.ANY && prevNote.d == NoteDirection.ANY && cd != NoteDirection.ANY)
             {
-                if(currNote.PosX > prevNote.PosX)
+                if(currNote.x > prevNote.x)
                 {
                     if(cd == NoteDirection.UP_RIGHT || cd == NoteDirection.RIGHT || cd == NoteDirection.DOWN_RIGHT)
                     {
                         return true;
                     }
                 }
-                if(currNote.PosX < prevNote.PosX)
+                if(currNote.x < prevNote.x)
                 {
                     if (cd == NoteDirection.DOWN_LEFT || cd == NoteDirection.LEFT || cd == NoteDirection.UP_LEFT)
                     {
                         return true;
                     }
                 }
-                if(currNote.PosY > prevNote.PosY)
+                if(currNote.y > prevNote.y)
                 {
                     if(cd == NoteDirection.UP_LEFT || cd == NoteDirection.UP || cd == NoteDirection.UP_RIGHT)
                     {
                         return true;
                     }
                 }
-                if (currNote.PosY < prevNote.PosY)
+                if (currNote.y < prevNote.y)
                 {
                     if (cd == NoteDirection.DOWN_LEFT || cd == NoteDirection.DOWN || cd == NoteDirection.DOWN_RIGHT)
                     {
@@ -684,46 +685,46 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                     }
                 }
             }
-            if(currNote.PosX > prevNote.PosX)
+            if(currNote.x > prevNote.x)
             {
-                if(currNote.CutDirection == NoteDirection.UP_RIGHT || currNote.CutDirection == NoteDirection.RIGHT || currNote.CutDirection == NoteDirection.DOWN_RIGHT)
+                if(currNote.d == NoteDirection.UP_RIGHT || currNote.d == NoteDirection.RIGHT || currNote.d == NoteDirection.DOWN_RIGHT)
                 {
                     return true;
                 }
-                if ((prevNote.CutDirection == NoteDirection.UP_RIGHT || prevNote.CutDirection == NoteDirection.RIGHT || prevNote.CutDirection == NoteDirection.DOWN_RIGHT) && currNote.CutDirection == NoteDirection.ANY)
+                if ((prevNote.d == NoteDirection.UP_RIGHT || prevNote.d == NoteDirection.RIGHT || prevNote.d == NoteDirection.DOWN_RIGHT) && currNote.d == NoteDirection.ANY)
                 {
                     return true;
                 }
             }
-            if (currNote.PosX < prevNote.PosX)
+            if (currNote.x < prevNote.x)
             {
-                if (currNote.CutDirection == NoteDirection.DOWN_LEFT || currNote.CutDirection == NoteDirection.LEFT || currNote.CutDirection == NoteDirection.UP_LEFT)
+                if (currNote.d == NoteDirection.DOWN_LEFT || currNote.d == NoteDirection.LEFT || currNote.d == NoteDirection.UP_LEFT)
                 {
                     return true;
                 }
-                if ((prevNote.CutDirection == NoteDirection.DOWN_LEFT || prevNote.CutDirection == NoteDirection.LEFT || prevNote.CutDirection == NoteDirection.UP_LEFT) && currNote.CutDirection == NoteDirection.ANY)
+                if ((prevNote.d == NoteDirection.DOWN_LEFT || prevNote.d == NoteDirection.LEFT || prevNote.d == NoteDirection.UP_LEFT) && currNote.d == NoteDirection.ANY)
                 {
                     return true;
                 }
             }
-            if (currNote.PosY > prevNote.PosY)
+            if (currNote.y > prevNote.y)
             {
-                if (currNote.CutDirection == NoteDirection.UP_LEFT || currNote.CutDirection == NoteDirection.UP || currNote.CutDirection == NoteDirection.UP_RIGHT)
+                if (currNote.d == NoteDirection.UP_LEFT || currNote.d == NoteDirection.UP || currNote.d == NoteDirection.UP_RIGHT)
                 {
                     return true;
                 }
-                if ((prevNote.CutDirection == NoteDirection.UP_LEFT || prevNote.CutDirection == NoteDirection.UP || prevNote.CutDirection == NoteDirection.UP_RIGHT) && currNote.CutDirection == NoteDirection.ANY)
+                if ((prevNote.d == NoteDirection.UP_LEFT || prevNote.d == NoteDirection.UP || prevNote.d == NoteDirection.UP_RIGHT) && currNote.d == NoteDirection.ANY)
                 {
                     return true;
                 }
             }
-            if (currNote.PosY < prevNote.PosY)
+            if (currNote.y < prevNote.y)
             {
-                if (currNote.CutDirection == NoteDirection.DOWN_LEFT || currNote.CutDirection == NoteDirection.DOWN || currNote.CutDirection == NoteDirection.DOWN_RIGHT)
+                if (currNote.d == NoteDirection.DOWN_LEFT || currNote.d == NoteDirection.DOWN || currNote.d == NoteDirection.DOWN_RIGHT)
                 {
                     return true;
                 }
-                if ((prevNote.CutDirection == NoteDirection.DOWN_LEFT || prevNote.CutDirection == NoteDirection.DOWN || prevNote.CutDirection == NoteDirection.DOWN_RIGHT) && currNote.CutDirection == NoteDirection.ANY)
+                if ((prevNote.d == NoteDirection.DOWN_LEFT || prevNote.d == NoteDirection.DOWN || prevNote.d == NoteDirection.DOWN_RIGHT) && currNote.d == NoteDirection.ANY)
                 {
                     return true;
                 }
@@ -780,10 +781,10 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
         public static int DOWN_RIGHT { get; set; } = 7;
         public static int ANY { get; set; } = 8;
 
-        public static (int x, int y) Move(BaseNote note, int amount = 1)
+        public static (int x, int y) Move(Colornote note, int amount = 1)
         {
-            (int x, int y) position = (note.PosX, note.PosY);
-            int direction = note.CutDirection;
+            (int x, int y) position = (note.x, note.y);
+            int direction = note.d;
             switch(direction)
             {
                 case 0: return (position.x, position.y + (1 * amount));

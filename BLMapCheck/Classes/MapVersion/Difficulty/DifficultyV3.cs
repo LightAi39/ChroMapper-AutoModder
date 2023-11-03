@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 namespace BLMapCheck.Classes.MapVersion.Difficulty
@@ -15,10 +16,10 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public List<Burstslider> burstSliders { get; set; }
         public object[] waypoints { get; set; }
         public List<Basicbeatmapevent> basicBeatmapEvents { get; set; }
-        public object[] colorBoostBeatmapEvents { get; set; }
-        public object[] lightColorEventBoxGroups { get; set; }
-        public object[] lightRotationEventBoxGroups { get; set; }
-        public object[] lightTranslationEventBoxGroups { get; set; }
+        public List<Colorboostbeatmapevent> colorBoostBeatmapEvents { get; set; }
+        public List<Lightcoloreventboxgroup> lightColorEventBoxGroups { get; set; }
+        public List<Lightrotationeventboxgroup> lightRotationEventBoxGroups { get; set; }
+        public List<Lighttranslationeventboxgroup> lightTranslationEventBoxGroups { get; set; }
         public Basiceventtypeswithkeywords basicEventTypesWithKeywords { get; set; }
         public bool useNormalEventsAsCompatibleEvents { get; set; }
         public Customdata customData { get; set; }
@@ -104,6 +105,7 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
 
     public class Bombnote : BeatmapGridObject
     {
+
     }
 
     public class Obstacle : BeatmapGridObject
@@ -145,6 +147,14 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public int i { get; set; }
         public int f { get; set; }
         public Customdata1 customData { get; set; }
+        public bool IsBlue => et == 1 || et == 2 || et == 3 || et == 4;
+        public bool IsRed => et == 5 || et == 6 || et == 7 || et == 8;
+        public bool IsWhite => et == 9 || et == 10 || et == 11 || et == 12;
+        public bool IsOff => et == 0;
+        public bool IsOn => et == 1 || et == 5 || et == 9;
+        public bool IsFlash => et == 2 || et == 6 || et == 10;
+        public bool IsFade => et == 3 || et == 7 || et == 11;
+        public bool IsTransition => et == 4 || et == 8 || et == 12;
     }
 
     public class Customdata1
@@ -159,6 +169,139 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public bool lockRotation { get; set; }
         public string lerpType { get; set; }
         public string easing { get; set; }
+    }
+
+    public class Colorboostbeatmapevent
+    {
+        public int b { get; set; }
+        public bool o { get; set; }
+    }
+
+    public class Lightcoloreventboxgroup
+    {
+        public float b { get; set; }
+        public int g { get; set; }
+        public E[] e { get; set; }
+    }
+
+    public class E
+    {
+        public F f { get; set; }
+        public float w { get; set; }
+        public int d { get; set; }
+        public int r { get; set; }
+        public int t { get; set; }
+        public int b { get; set; }
+        public int i { get; set; }
+        public E1[] e { get; set; }
+    }
+
+    public class F
+    {
+        public int f { get; set; }
+        public int p { get; set; }
+        public int t { get; set; }
+        public int r { get; set; }
+        public int c { get; set; }
+        public int n { get; set; }
+        public int s { get; set; }
+        public int l { get; set; }
+        public int d { get; set; }
+    }
+
+    public class E1
+    {
+        public float b { get; set; }
+        public int c { get; set; }
+        public float s { get; set; }
+        public int i { get; set; }
+        public int f { get; set; }
+    }
+
+    public class Lightrotationeventboxgroup
+    {
+        public float b { get; set; }
+        public int g { get; set; }
+        public E2[] e { get; set; }
+    }
+
+    public class E2
+    {
+        public F1 f { get; set; }
+        public float w { get; set; }
+        public int d { get; set; }
+        public int s { get; set; }
+        public int t { get; set; }
+        public int b { get; set; }
+        public int a { get; set; }
+        public int r { get; set; }
+        public int i { get; set; }
+        public L[] l { get; set; }
+    }
+
+    public class F1
+    {
+        public int f { get; set; }
+        public int p { get; set; }
+        public int t { get; set; }
+        public int r { get; set; }
+        public int c { get; set; }
+        public int n { get; set; }
+        public int s { get; set; }
+        public int l { get; set; }
+        public int d { get; set; }
+    }
+
+    public class L
+    {
+        public float b { get; set; }
+        public int r { get; set; }
+        public int o { get; set; }
+        public int e { get; set; }
+        public int l { get; set; }
+        public int p { get; set; }
+    }
+
+    public class Lighttranslationeventboxgroup
+    {
+        public float b { get; set; }
+        public int g { get; set; }
+        public E3[] e { get; set; }
+    }
+
+    public class E3
+    {
+        public F2 f { get; set; }
+        public int w { get; set; }
+        public int d { get; set; }
+        public float s { get; set; }
+        public int t { get; set; }
+        public int b { get; set; }
+        public int a { get; set; }
+        public int r { get; set; }
+        public int i { get; set; }
+        public L1[] l { get; set; }
+    }
+
+    public class F2
+    {
+        public int f { get; set; }
+        public int p { get; set; }
+        public int t { get; set; }
+        public int r { get; set; }
+        public int c { get; set; }
+        public int n { get; set; }
+        public int s { get; set; }
+        public float l { get; set; }
+        public int d { get; set; }
+    }
+
+    public class L1
+    {
+        public float b { get; set; }
+        public int p { get; set; }
+        public int e { get; set; }
+        public float t { get; set; }
     }
 
     public class BeatmapObject

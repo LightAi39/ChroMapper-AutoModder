@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.Classes.ChroMapper;
+using BLMapCheck.Classes.MapVersion.Difficulty;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,9 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
         public double maxSpeed { get; set; }
         public double ebpm { get; set; }
         public double ebpmSwing { get; set; }
-        public List<BaseNote> data { get; set; }
+        public List<Colornote> data { get; set; }
 
-        public Swing(double time, double duration, List<BaseNote> data, double ebpm, double ebpmSwing, double maxSpeed, double minSpeed)
+        public Swing(double time, double duration, List<Colornote> data, double ebpm, double ebpmSwing, double maxSpeed, double minSpeed)
         {
             this.time = time;
             this.duration = duration;
@@ -27,60 +28,60 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             this.minSpeed = minSpeed;
         }
 
-        public static List<Swing> Generate(List<BaseNote> nc, double bpm)
+        public static List<Swing> Generate(List<Colornote> nc, double bpm)
         {
             var sc = new List<Swing>();
             var ebpm = 0d;
             var ebpmSwing = 0d;
             var minSpeed = 0d;
             var maxSpeed = 0d;
-            var firstNote = new List<List<BaseNote>>
+            var firstNote = new List<List<Colornote>>
             {
-                new List<BaseNote>(),
-                new List<BaseNote>()
+                new List<Colornote>(),
+                new List<Colornote>()
             };
-            var lastNote = new List<List<BaseNote>>
+            var lastNote = new List<List<Colornote>>
             {
-                new List<BaseNote>(),
-                new List<BaseNote>()
+                new List<Colornote>(),
+                new List<Colornote>()
             };
-            var swingNoteArray = new List<List<BaseNote>>
+            var swingNoteArray = new List<List<Colornote>>
             {
-                new List<BaseNote>(),
-                new List<BaseNote>()
+                new List<Colornote>(),
+                new List<Colornote>()
             };
 
             foreach (var n in nc) {
-                if (n.Type != 0 && n.Type != 1)
+                if (n.c != 0 && n.c != 1)
                 {
                     continue;
                 }
                 minSpeed = 0;
                 maxSpeed = double.MaxValue;
-                if (lastNote[n.Type].Count > 0)
+                if (lastNote[n.c].Count > 0)
                 {
-                    if (Next(n, lastNote[n.Type][0], bpm, swingNoteArray[n.Type]))
+                    if (Next(n, lastNote[n.c][0], bpm, swingNoteArray[n.c]))
                     {
-                        minSpeed = CalcMinSliderSpeed(swingNoteArray[n.Type], bpm);
-                        maxSpeed = CalcMaxSliderSpeed(swingNoteArray[n.Type], bpm);
+                        minSpeed = CalcMinSliderSpeed(swingNoteArray[n.c], bpm);
+                        maxSpeed = CalcMaxSliderSpeed(swingNoteArray[n.c], bpm);
                         if (!(minSpeed > 0 && maxSpeed != double.PositiveInfinity))
                         {
                             minSpeed = 0;
                             maxSpeed = 0;
                         }
-                        ebpmSwing = CalcEBPMBetweenObject(n, firstNote[n.Type][0], bpm);
-                        ebpm = CalcEBPMBetweenObject(n, lastNote[n.Type][0], bpm);
-                        sc.Add(new(firstNote[n.Type][0].JsonTime, lastNote[n.Type][0].JsonTime - firstNote[n.Type][0].JsonTime, swingNoteArray[n.Type], ebpm, ebpmSwing, maxSpeed, minSpeed));
-                        firstNote[n.Type][0] = n;
-                        swingNoteArray[n.Type].Clear();
+                        ebpmSwing = CalcEBPMBetweenObject(n, firstNote[n.c][0], bpm);
+                        ebpm = CalcEBPMBetweenObject(n, lastNote[n.c][0], bpm);
+                        sc.Add(new(firstNote[n.c][0].b, lastNote[n.c][0].b - firstNote[n.c][0].b, swingNoteArray[n.c], ebpm, ebpmSwing, maxSpeed, minSpeed));
+                        firstNote[n.c][0] = n;
+                        swingNoteArray[n.c].Clear();
                     }
                 }
                 else
                 {
-                    firstNote[n.Type][0] = n;
+                    firstNote[n.c][0] = n;
                 }
-                lastNote[n.Type][0] = n;
-                swingNoteArray[n.Type].Add(n);
+                lastNote[n.c][0] = n;
+                swingNoteArray[n.c].Add(n);
             }
 
             for (var color = 0; color < 2; color++)
@@ -94,29 +95,29 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                         minSpeed = 0;
                         maxSpeed = 0;
                     }
-                    sc.Add(new(firstNote[color][0].JsonTime, lastNote[color][0].JsonTime - firstNote[color][0].JsonTime, swingNoteArray[color], ebpm, ebpmSwing, maxSpeed, minSpeed));
+                    sc.Add(new(firstNote[color][0].b, lastNote[color][0].b - firstNote[color][0].b, swingNoteArray[color], ebpm, ebpmSwing, maxSpeed, minSpeed));
                 }
             }
 
             return sc;
         }
 
-        public static bool CheckDirection(BaseNote n1, BaseNote n2, double angleTol, bool equal)
+        public static bool CheckDirection(Colornote n1, Colornote n2, double angleTol, bool equal)
         {
             if (n1 == null || n2 == null)
             {
                 return false;
             }
-            if (n1.CutDirection == NoteDirection.ANY)
+            if (n1.d == NoteDirection.ANY)
             {
                 return false;
             }
-            var nA1 = n1.CutDirection;
-            if (n2.CutDirection == NoteDirection.ANY)
+            var nA1 = n1.d;
+            if (n2.d == NoteDirection.ANY)
             {
                 return false;
             }
-            var nA2 = n2.CutDirection;
+            var nA2 = n2.d;
             return equal
                 ? ShortRotDistance(nA1, nA2, 360) <= angleTol
                 : ShortRotDistance(nA1, nA2, 360) >= angleTol;
@@ -127,22 +128,22 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return Math.Min(ScanMethod.Mod(a - b, m), ScanMethod.Mod(b - a, m));
         }
 
-        public static bool Next(BaseNote currNote, BaseNote prevNote, double bpm, List<BaseNote> context = null)
+        public static bool Next(Colornote currNote, Colornote prevNote, double bpm, List<Colornote> context = null)
         {
-            if (currNote.Type == 3 || prevNote.Type == 3)
+            if (currNote.c == 3 || prevNote.c == 3)
             {
                 return false;
             }
             if (context != null)
             {
                 if (context.Count > 0 &&
-                (prevNote.JsonTime / bpm * 60) + 0.005 < (currNote.JsonTime / bpm * 60) &&
-                currNote.CutDirection != NoteDirection.ANY)
+                (prevNote.b / bpm * 60) + 0.005 < (currNote.b / bpm * 60) &&
+                currNote.d != NoteDirection.ANY)
                 {
                     foreach (var n in context) {
-                        if (n.Type == 0 || n.Type == 1)
+                        if (n.c == 0 || n.c == 1)
                         {
-                            if (n.CutDirection != NoteDirection.ANY &&
+                            if (n.d != NoteDirection.ANY &&
                                 CheckDirection(currNote, n, 90, false))
                             {
                                 return true;
@@ -154,9 +155,9 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 {
                     foreach (var other in context)
                     {
-                        if (other.Type == 0 || other.Type == 1)
+                        if (other.c == 0 || other.c == 1)
                         {
-                            var distance = Math.Sqrt(Math.Pow(other.PosX - currNote.PosX, 2) + Math.Pow(other.PosY - currNote.PosY, 2));
+                            var distance = Math.Sqrt(Math.Pow(other.x - currNote.x, 2) + Math.Pow(other.y - currNote.y, 2));
                             if(distance <= 0.5)
                             {
                                 return true;
@@ -165,16 +166,16 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                     }
                 }
             }
-            var dist = Math.Sqrt(Math.Pow(prevNote.PosX - currNote.PosX, 2) + Math.Pow(prevNote.PosY - currNote.PosY, 2));
-            return (dist > 1.8 && (currNote.JsonTime / bpm * 60) - (prevNote.JsonTime / bpm * 60) > 0.08) || ((currNote.JsonTime / bpm * 60) - (prevNote.JsonTime / bpm * 60) > 0.07);
+            var dist = Math.Sqrt(Math.Pow(prevNote.x - currNote.x, 2) + Math.Pow(prevNote.y - currNote.y, 2));
+            return (dist > 1.8 && (currNote.b / bpm * 60) - (prevNote.b / bpm * 60) > 0.08) || ((currNote.b / bpm * 60) - (prevNote.b / bpm * 60) > 0.07);
         }
 
-        public static double CalcEBPMBetweenObject(BaseNote currObj, BaseNote prevObj, double bpm)
+        public static double CalcEBPMBetweenObject(Colornote currObj, Colornote prevObj, double bpm)
         {
-            return bpm / ((currObj.JsonTime / bpm * 60) - (prevObj.JsonTime / bpm * 60) / 60 * bpm) * 2;
+            return bpm / ((currObj.b / bpm * 60) - (prevObj.b / bpm * 60) / 60 * bpm) * 2;
         }
 
-        public static double CalcMinSliderSpeed(List<BaseNote> notes, double bpm)
+        public static double CalcMinSliderSpeed(List<Colornote> notes, double bpm)
         {
             var hasStraight = false;
             var hasDiagonal = false;
@@ -183,14 +184,14 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
 
             for (int i = 1; i < notes.Count; i++)
             {
-                var dist = Math.Sqrt(Math.Pow(notes[i - 1].PosX - notes[i].PosX, 2) + Math.Pow(notes[i - 1].PosY - notes[i].PosY, 2));
-                if ((notes[i].PosY == notes[i - 1].PosY || notes[i].PosX == notes[i - 1].PosX) && !hasStraight)
+                var dist = Math.Sqrt(Math.Pow(notes[i - 1].x - notes[i].x, 2) + Math.Pow(notes[i - 1].y - notes[i].y, 2));
+                if ((notes[i].y == notes[i - 1].y || notes[i].x == notes[i - 1].x) && !hasStraight)
                 {
                     hasStraight = true;
-                    curvedSpeed = (notes[i].JsonTime - notes[i - 1].JsonTime) / dist;
+                    curvedSpeed = (notes[i].b - notes[i - 1].b) / dist;
                 }
-                var dX = Math.Abs(notes[i].PosX - notes[i - 1].PosX);
-                var dY = Math.Abs(notes[i].PosY - notes[i - 1].PosY);
+                var dX = Math.Abs(notes[i].x - notes[i - 1].x);
+                var dY = Math.Abs(notes[i].y - notes[i - 1].y);
                 if(dX == dY)
                 {
                     hasDiagonal = true;
@@ -199,7 +200,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 {
                     hasDiagonal = true;
                 }
-                speedList.Add((notes[i].JsonTime - notes[i - 1].JsonTime) / dist);
+                speedList.Add((notes[i].b - notes[i - 1].b) / dist);
             }
             var speed = speedList.Max() / bpm * 60;
 
@@ -210,7 +211,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return speed;
         }
 
-        public static double CalcMaxSliderSpeed(List<BaseNote> notes, double bpm)
+        public static double CalcMaxSliderSpeed(List<Colornote> notes, double bpm)
         {
             var hasStraight = false;
             var hasDiagonal = false;
@@ -219,14 +220,14 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
 
             for (int i = 1; i < notes.Count; i++)
             {
-                var dist = Math.Sqrt(Math.Pow(notes[i - 1].PosX - notes[i].PosX, 2) + Math.Pow(notes[i - 1].PosY - notes[i].PosY, 2));
-                if ((notes[i].PosY == notes[i - 1].PosY || notes[i].PosX == notes[i - 1].PosX) && !hasStraight)
+                var dist = Math.Sqrt(Math.Pow(notes[i - 1].x - notes[i].x, 2) + Math.Pow(notes[i - 1].y - notes[i].y, 2));
+                if ((notes[i].y == notes[i - 1].y || notes[i].x == notes[i - 1].x) && !hasStraight)
                 {
                     hasStraight = true;
-                    curvedSpeed = (notes[i].JsonTime - notes[i - 1].JsonTime) / dist;
+                    curvedSpeed = (notes[i].b - notes[i - 1].b) / dist;
                 }
-                var dX = Math.Abs(notes[i].PosX - notes[i - 1].PosX);
-                var dY = Math.Abs(notes[i].PosY - notes[i - 1].PosY);
+                var dX = Math.Abs(notes[i].x - notes[i - 1].x);
+                var dY = Math.Abs(notes[i].y - notes[i - 1].y);
                 if (dX == dY)
                 {
                     hasDiagonal = true;
@@ -235,7 +236,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 {
                     hasDiagonal = true;
                 }
-                speedList.Add((notes[i].JsonTime - notes[i - 1].JsonTime) / dist);
+                speedList.Add((notes[i].b - notes[i - 1].b) / dist);
             }
             var speed = speedList.Min() / bpm * 60;
 
@@ -248,14 +249,14 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
 
         public static int[] NoteDirectionAngle = { 90, 270, 180, 0, 115, 45, 225, 335, 0 };
 
-        public static bool IsIntersect(BaseNote currNote, BaseNote compareTo, double[,] angleDistances, int index, double a1 = -1, double a2 = -1)
+        public static bool IsIntersect(Colornote currNote, Colornote compareTo, double[,] angleDistances, int index, double a1 = -1, double a2 = -1)
         {
-            (var nX1, var nY1) = (currNote.PosX, currNote.PosY);
-            (var nX2, var nY2) = (compareTo.PosX, compareTo.PosY);
+            (var nX1, var nY1) = (currNote.x, currNote.y);
+            (var nX2, var nY2) = (compareTo.x, compareTo.y);
             var resultN1 = false;
-            if (currNote.CutDirection != 8 && currNote.Type != 3)
+            if (currNote.d != 8 && currNote.c != 3)
             { 
-                double nA1 = NoteDirectionAngle[currNote.CutDirection];
+                double nA1 = NoteDirectionAngle[currNote.d];
                 if (a1 != -1)
                 {
                     nA1 = a1;
@@ -275,9 +276,9 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 }
             }
             var resultN2 = false;
-            if (compareTo.CutDirection != 8 && compareTo.Type != 3)
+            if (compareTo.d != 8 && compareTo.c != 3)
             {
-                double nA2 = NoteDirectionAngle[compareTo.CutDirection];
+                double nA2 = NoteDirectionAngle[compareTo.d];
                 if (a2 != -1)
                 {
                     nA2 = a2;
@@ -305,19 +306,19 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return false;
         }
 
-        public static bool IsDouble(BaseNote note, List<BaseNote> nc, int index)
+        public static bool IsDouble(Colornote note, List<Colornote> nc, int index)
         {
             for(int i = index; i < nc.Count; i++)
             {
-                if (nc[i].Type != 0 && nc[i].Type != 1)
+                if (nc[i].c != 0 && nc[i].c != 1)
                 {
                     continue;
                 }
-                if (nc[i].JsonTime < note.JsonTime + 0.01 && nc[i].Type != note.Type)
+                if (nc[i].b < note.b + 0.01 && nc[i].c != note.c)
                 {
                     return true;
                 }
-                if (nc[i].JsonTime > note.JsonTime + 0.01)
+                if (nc[i].b > note.b + 0.01)
                 {
                     return false;
                 }
