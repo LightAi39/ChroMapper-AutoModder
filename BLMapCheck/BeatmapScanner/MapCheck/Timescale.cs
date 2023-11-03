@@ -1,4 +1,4 @@
-﻿using BLMapCheck.Classes.ChroMapper;
+﻿using BLMapCheck.Classes.MapVersion.Difficulty;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +23,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             _bpmChange = GetBpmChangeTime(bpmChange);
         }
 
-        public static BeatPerMinute Create(float bpm, List<BaseBpmEvent> bpmChange, float offset)
+        public static BeatPerMinute Create(float bpm, List<Bpmevent> bpmChange, float offset)
         {
             List<IBPMChange> change = new();
             foreach (var bpmEvent in bpmChange)
@@ -233,13 +233,13 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
         public float o { get; set; }
         public float newTime { get; set; }
 
-        public IBPMChange(BaseBpmEvent ev)
+        public IBPMChange(Bpmevent ev)
         {
-            b = ev.JsonTime;
-            m = ev.Bpm;
+            b = ev.b;
+            m = ev.m;
             p = 0;
             o = 0;
-            newTime = ev.JsonTime;
+            newTime = ev.b;
         }
     }
 }
