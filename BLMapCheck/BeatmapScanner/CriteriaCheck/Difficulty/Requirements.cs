@@ -11,7 +11,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         {
             var issue = CritResult.Success;
 
-            if (Requirements.Any())
+            if (Requirements != null && Requirements.Any())
             {
                 //CreateSongInfoComment("R1C - " + diff.BeatmapFilename + " has " + req + " requirement", CommentTypesEnum.Issue); TODO: USE NEW METHOD
                 CheckResults.Instance.AddResult(new CheckResult()
