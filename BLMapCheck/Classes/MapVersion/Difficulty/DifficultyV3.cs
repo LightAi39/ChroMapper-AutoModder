@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace BLMapCheck.Classes.MapVersion.Difficulty
 {
@@ -145,7 +143,7 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
     {
         public int et { get; set; }
         public int i { get; set; }
-        public int f { get; set; }
+        public float f { get; set; }
         public Customdata1 customData { get; set; }
         public bool IsBlue => et == 1 || et == 2 || et == 3 || et == 4;
         public bool IsRed => et == 5 || et == 6 || et == 7 || et == 8;
@@ -173,7 +171,7 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
 
     public class Colorboostbeatmapevent
     {
-        public int b { get; set; }
+        public float b { get; set; }
         public bool o { get; set; }
     }
 
@@ -189,7 +187,7 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public F f { get; set; }
         public float w { get; set; }
         public int d { get; set; }
-        public int r { get; set; }
+        public float r { get; set; }
         public int t { get; set; }
         public int b { get; set; }
         public int i { get; set; }
@@ -201,11 +199,11 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public int f { get; set; }
         public int p { get; set; }
         public int t { get; set; }
-        public int r { get; set; }
+        public float r { get; set; }
         public int c { get; set; }
         public int n { get; set; }
-        public int s { get; set; }
-        public int l { get; set; }
+        public float s { get; set; }
+        public float l { get; set; }
         public int d { get; set; }
     }
 
@@ -230,11 +228,11 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public F1 f { get; set; }
         public float w { get; set; }
         public int d { get; set; }
-        public int s { get; set; }
+        public float s { get; set; }
         public int t { get; set; }
         public int b { get; set; }
         public int a { get; set; }
-        public int r { get; set; }
+        public float r { get; set; }
         public int i { get; set; }
         public L[] l { get; set; }
     }
@@ -244,21 +242,21 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public int f { get; set; }
         public int p { get; set; }
         public int t { get; set; }
-        public int r { get; set; }
+        public float r { get; set; }
         public int c { get; set; }
         public int n { get; set; }
-        public int s { get; set; }
-        public int l { get; set; }
+        public float s { get; set; }
+        public float l { get; set; }
         public int d { get; set; }
     }
 
     public class L
     {
         public float b { get; set; }
-        public int r { get; set; }
+        public float r { get; set; }
         public int o { get; set; }
         public int e { get; set; }
-        public int l { get; set; }
+        public float l { get; set; }
         public int p { get; set; }
     }
 
@@ -272,13 +270,13 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
     public class E3
     {
         public F2 f { get; set; }
-        public int w { get; set; }
+        public float w { get; set; }
         public int d { get; set; }
         public float s { get; set; }
         public int t { get; set; }
         public int b { get; set; }
         public int a { get; set; }
-        public int r { get; set; }
+        public float r { get; set; }
         public int i { get; set; }
         public L1[] l { get; set; }
     }
@@ -288,10 +286,10 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public int f { get; set; }
         public int p { get; set; }
         public int t { get; set; }
-        public int r { get; set; }
+        public float r { get; set; }
         public int c { get; set; }
         public int n { get; set; }
-        public int s { get; set; }
+        public float s { get; set; }
         public float l { get; set; }
         public int d { get; set; }
     }
