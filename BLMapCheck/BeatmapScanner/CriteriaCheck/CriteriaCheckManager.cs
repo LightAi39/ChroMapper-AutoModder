@@ -6,6 +6,7 @@ using BLMapCheck.Classes.ChroMapper;
 using BLMapCheck.Classes.MapVersion;
 using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.MapVersion.Info;
+using BLMapCheck.Classes.Results;
 using JoshaParity;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
         public static string Difficulty { get; set; }
         public static string Characteristic { get; set; }
 
+        public void CheckAllCriteria()
+        {
+            CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
 
+            foreach (var diff in BeatmapV3.Instance.Difficulties)
+            {
+                Difficulty = diff.difficulty;
+                Characteristic = diff.characteristic;
+
+                CheckResults.Instance.DifficultyCriteriaResults.Add(new(diff.difficulty, diff.characteristic, AutoDiffCheck(diff.characteristic, diff.difficulty)));
+            }
+
+            CheckResults.Instance.CheckFinished = true;
+        }
 
 
         public InfoCrit AutoInfoCheck()
