@@ -33,7 +33,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Name = "Parity",
                     Severity = Severity.Error,
                     CheckType = "Parity",
-                    Description = "Error in the parity.",
+                    Description = "Parity error.",
                     ResultData = new() { new("Parity", "Reset Type: Rebound") },
                     BeatmapObjects = new(colornotes) { }
                 });
@@ -155,11 +155,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var swing in Swings)
                 {
                     var swingWithoutNotes = swing;
-                    swingWithoutNotes.notes = null;
-                    string message = JsonConvert.SerializeObject(swingWithoutNotes);
                     Severity commentType = Severity.Info;
                     if (swing.resetType == ResetType.Rebound) commentType = Severity.Error;
                     if (Math.Abs(swing.endPos.rotation) > 135 || Math.Abs(swing.endPos.rotation) > 135) commentType = Severity.Inconclusive;
+
+                    List<KeyValuePair> resultData = new()
+                    {
+                        new("", swing.),
+                    };
                     
                     List<Colornote> colornotes = new();
                     swing.notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
@@ -171,7 +174,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = commentType,
                         CheckType = "Parity",
                         Description = "Parity Debug.",
-                        ResultData = new() { new("ParityDebug", message) },
+                        ResultData = resultData,
                         BeatmapObjects = new(colornotes) { }
                     });
                 }
