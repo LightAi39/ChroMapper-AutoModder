@@ -27,9 +27,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
         public static string Difficulty { get; set; }
         public static string Characteristic { get; set; }
 
+        private MapAnalyser mapAnalyser;
+
         public void CheckAllCriteria()
         {
             CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
+
+            mapAnalyser = new(BLMapChecker.tempFolderPath); // TODO: load the map using our classes instead of the song directory
 
             foreach (var diff in BeatmapV3.Instance.Difficulties)
             {
@@ -41,6 +45,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             CheckResults.Instance.CheckFinished = true;
             Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
+            mapAnalyser = null;
         }
 
 
@@ -73,10 +78,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Data;
 
-
             BeatPerMinute bpm = BeatPerMinute.Create(BeatmapV3.Instance.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.m < 10000 && x.m > 0).ToList(), BeatmapV3.Instance.Info._songTimeOffset);
-
-            MapAnalyser analysedMap = new(BLMapChecker.tempFolderPath);// TODO: load the map using our classes instead of the song directory
 
             List<SwingData> swings;
 
@@ -84,7 +86,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             if (Enum.TryParse(difficulty, true, out BeatmapDifficultyRank difficultyRank))
             {
-                swings = analysedMap.GetSwingData(difficultyRank, characteristic.ToLower());
+                swings = mapAnalyser.GetSwingData(difficultyRank, characteristic.ToLower());
             } else
             {
                 throw new Exception("Difficulty could not be parsed to BeatmapDifficultyRank");

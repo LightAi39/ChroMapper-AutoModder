@@ -42,7 +42,7 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
 
     public class Bookmark
     {
-        public int b { get; set; }
+        public float b { get; set; }
         public string n { get; set; }
         public float[] c { get; set; }
     }
@@ -138,7 +138,7 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public int tx { get; set; }
         public int ty { get; set; }
         public int sc { get; set; }
-        public int s { get; set; }
+        public float s { get; set; }
     }
 
     public class Basicbeatmapevent : BeatmapObject
