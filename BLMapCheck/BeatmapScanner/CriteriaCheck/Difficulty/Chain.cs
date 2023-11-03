@@ -1,7 +1,9 @@
 ﻿using BLMapCheck.BeatmapScanner.Data;
+using BLMapCheck.Classes.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Config.Config;
 
@@ -19,20 +21,36 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             if (notes.Count >= 16)
             {
                 var link = links.Where(l => l.b <= notes[15].Time).ToList();
-                foreach (var l in link)
+                if(link.Any())
                 {
-                    //CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Early Chain",
+                        Severity = Severity.Error,
+                        CheckType = "Chain",
+                        Description = "Chains cannot be part of the first 16 notes of the map.",
+                        ResultData = new() { new("EarlyChain", "Found" )},
+                        BeatmapObjects = new(link) { }
+                    });
                     issue = CritResult.Fail;
                 }
             }
             else if (links.Any())
             {
-                var link = links.Where(l => l.b >= notes.Last().Time).Take(16 - notes.Count).ToList();
-                foreach (var l in link)
+                CheckResults.Instance.AddResult(new CheckResult()
                 {
-                    //CreateDiffCommentLink("R2D - Cannot be part of the first 16 notes", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
-                    issue = CritResult.Fail;
-                }
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Early Chain",
+                    Severity = Severity.Error,
+                    CheckType = "Chain",
+                    Description = "Chains cannot be part of the first 16 notes of the map.",
+                    ResultData = new() { new("EarlyChain", "Found") },
+                    BeatmapObjects = new(links) { }
+                });
+                issue = CritResult.Fail;
             }
 
             // TODO: Make this mess better idk
@@ -49,7 +67,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 else max = Math.Round(ChainLinkVsAir * 1.1 / value * chain.s, 2);
                 if (chain.s - 0.01 > max)
                 {
-                    //CreateDiffCommentLink("R2D - Link spacing issue. Maximum squish for placement: " + max, CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Chain Squish",
+                        Severity = Severity.Error,
+                        CheckType = "Chain",
+                        Description = "Chains must be at least 12.5% links versus air/empty-space.",
+                        ResultData = new() { new("ChainSquish", "Current squish:" + chain.s.ToString() + " Maximum squish for placement:" + max.ToString()) },
+                        BeatmapObjects = new() { chain }
+                    });
                     issue = CritResult.Fail;
                 }
                 var newX = l.x + (l.tx - l.x) * chain.s;
@@ -57,11 +85,32 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (newX > 4 || newX < -1 || newY > 2.33 || newY < -0.33)
                 {
                     //CreateDiffCommentLink("R2D - Lead too far", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Chain Lead",
+                        Severity = Severity.Error,
+                        CheckType = "Chain",
+                        Description = "Chain cannot lead too far off the grid.",
+                        ResultData = new() { new("ChainLead", "X: " + newX.ToString() + " Y: " + newY.ToString()) },
+                        BeatmapObjects = new() { l }
+                    });
                     issue = CritResult.Fail;
                 }
                 if (l.tb < l.b)
                 {
-                    //CreateDiffCommentLink("R2D - Reverse Direction", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Reversed Chain",
+                        Severity = Severity.Error,
+                        CheckType = "Chain",
+                        Description = "Chain cannot have a reverse direction.",
+                        ResultData = new() { new("ChainReverse", "Current duration: " + (l.b - l.tb).ToString()) },
+                        BeatmapObjects = new() { l }
+                    });
                     issue = CritResult.Fail;
                 }
                 var note = notes.Find(x => x.Time >= l.tb && x.Type == l.c);
@@ -69,7 +118,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     if (l.tb + (l.tb - l.b) > note.Time)
                     {
-                        //CreateDiffCommentLink("R2D - Duration between tail and next note is too short", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = BSMapCheck.Characteristic,
+                            Difficulty = BSMapCheck.Difficulty,
+                            Name = "Chain Flick",
+                            Severity = Severity.Error,
+                            CheckType = "Chain",
+                            Description = "The duration between the chain tail and next note must be at least the duration of the chain",
+                            ResultData = new() { new("ChainFlick", "Chain duration: " + (l.tb - l.b).ToString() + " Duration between:" + (note.Time - l.tb).ToString()) },
+                            BeatmapObjects = new() { l }
+                        });
                         issue = CritResult.Fail;
                     }
                 }
@@ -92,7 +151,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 };
                 if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, MaxChainRotation))
                 {
-                    //CreateDiffCommentLink("R2D - Over 45°", CommentTypesEnum.Issue, l); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Chain Rotation",
+                        Severity = Severity.Error,
+                        CheckType = "Chain",
+                        Description = "Chains cannot rotate over 45 degrees.",
+                        ResultData = new() { new("ChainRotation", "True") },
+                        BeatmapObjects = new() { l }
+                    });
                     issue = CritResult.Fail;
                 }
             }

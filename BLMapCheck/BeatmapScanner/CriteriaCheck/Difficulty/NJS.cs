@@ -1,6 +1,7 @@
 ﻿using BLMapCheck.BeatmapScanner.Data.Criteria;
 using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.ChroMapper;
+using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
@@ -38,14 +39,32 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (NoteJumpSpeed <= 0)
             {
-                //ExtendOverallComment("R1A - NJS is currently " + diff.NoteJumpMovementSpeed); TODO: USE NEW METHOD
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Note Jump Speed",
+                    Severity = Severity.Error,
+                    CheckType = "NoteJumpSpeed",
+                    Description = "Note Jump Speed cannot be lower or equal to 0.",
+                    ResultData = new() { new("NoteJumpSpeed", "NJS is currently: " + NoteJumpSpeed.ToString()) }
+                });
                 issue = CritResult.Fail;
             }
             else
             {
                 if (NoteJumpSpeed < NJS.min || NoteJumpSpeed > NJS.max)
                 {
-                    //ExtendOverallComment("R1A - Warning - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString()); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Note Jump Speed",
+                        Severity = Severity.Suggestion,
+                        CheckType = "NoteJumpSpeed",
+                        Description = "Note Jump Speed is outside of the recommended value.",
+                        ResultData = new() { new("NoteJumpSpeed", "Recommended NJS is: " + NJS.min.ToString() + " - " + NJS.max.ToString()) }
+                    });
                     issue = CritResult.Warning;
                 }
                 var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(NoteJumpSpeed, NoteJumpStartBeatOffset, BeatPerMinute.BPM.GetValue());
@@ -53,15 +72,42 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 var reactionTime = beatms * halfJumpDuration;
                 if (reactionTime < RT.min || reactionTime > RT.max)
                 {
-                    //ExtendOverallComment("R1A - Warning - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString()); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Reaction Time",
+                        Severity = Severity.Suggestion,
+                        CheckType = "ReactionTime",
+                        Description = "Reaction Time is outside of the recommended value.",
+                        ResultData = new() { new("ReactionTime", "Recommended RT is: " + RT.min.ToString() + " - " + RT.max.ToString()) }
+                    });
                     issue = CritResult.Warning;
                 }
             }
 
             if (issue == CritResult.Success)
             {
-                //ExtendOverallComment("R1A - Recommended NJS is " + NJS.min.ToString() + " - " + NJS.max.ToString()); TODO: USE NEW METHOD
-                //ExtendOverallComment("R1A - Recommended RT is " + RT.min.ToString() + " - " + RT.max.ToString()); TODO: USE NEW METHOD
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Note Jump Speed",
+                    Severity = Severity.Info,
+                    CheckType = "NoteJumpSpeed",
+                    Description = "Note Jump Speed is within the recommended value.",
+                    ResultData = new() { new("NoteJumpSpeed", "Recommended NJS is: " + NJS.min.ToString() + " - " + NJS.max.ToString()) }
+                });
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Reaction Time",
+                    Severity = Severity.Info,
+                    CheckType = "ReactionTime",
+                    Description = "Reaction Time is within the recommended value.",
+                    ResultData = new() { new("ReactionTime", "Recommended RT is: " + RT.min.ToString() + " - " + RT.max.ToString()) }
+                });
             }
 
             BeatPerMinute.BPM.ResetCurrentBPM();

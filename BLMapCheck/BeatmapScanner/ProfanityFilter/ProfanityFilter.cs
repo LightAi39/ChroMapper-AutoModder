@@ -26,7 +26,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using ProfanityFilter.Interfaces;
-using UnityEngine;
 
 namespace ProfanityFilter
 {

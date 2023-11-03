@@ -1,4 +1,6 @@
-﻿using JoshaParity;
+﻿using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Results;
+using JoshaParity;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,7 +15,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             public bool Flick { get; set; } = false;
         }
 
-        public static void Check(List<SwingData> Swings)
+        public static void Check(List<SwingData> Swings, List<Colornote> Notes)
         {
             var windowSize = 4f; // beats
             Queue<SwingData> dataWindowLeft = new();
@@ -22,7 +24,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             List<EbpmData> rollingAverageRight = new();
             List<EbpmData> ReverseRollingAverageLeft = new();
             List<EbpmData> ReverseRollingAverageRight = new();
-            var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
 
             foreach (var swing in Swings)
             {
@@ -110,14 +111,39 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (data.Flick)
                 {
                     var note = data.Swing.notes.FirstOrDefault();
-                    var index = cubes.FindIndex(c => c.Time == note.b && c.Type == note.c && note.x == c.Line && note.y == c.Layer);
-                    var cube = cubes[index];
-                    if (index < cubes.Count - 3)
+                    var index = Notes.FindIndex(c => c.b == note.b && c.c == note.c && note.x == c.x && note.y == c.y);
+                    var cube = Notes[index];
+                    if (index < Notes.Count - 3)
                     {
-                        if (cubes[index + 1].Time - cube.Time != cubes[index + 2].Time - cubes[index + 1].Time) continue;
-                        //CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube); TODO: USE NEW METHOD
+                        if (Notes[index + 1].b - cube.b != Notes[index + 2].b - Notes[index + 1].b)
+                        {
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = BSMapCheck.Characteristic,
+                                Difficulty = BSMapCheck.Difficulty,
+                                Name = "Unexpected Speed",
+                                Severity = Severity.Info,
+                                CheckType = "Speed",
+                                Description = "High EBPM compared to rolling average.",
+                                ResultData = new() { new("UnexpectedSpeed", "Swing EBPM: " + data.Swing.swingEBPM.ToString() + " Rolling Average EBPM: " + data.Average.ToString()) },
+                                BeatmapObjects = new() { cube }
+                            });
+                        }
                     }
-                    else continue; //CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube); TODO: USE NEW METHOD
+                    else
+                    {
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = BSMapCheck.Characteristic,
+                            Difficulty = BSMapCheck.Difficulty,
+                            Name = "Unexpected Speed",
+                            Severity = Severity.Info,
+                            CheckType = "Speed",
+                            Description = "High EBPM compared to rolling average.",
+                            ResultData = new() { new("UnexpectedSpeed", "Swing EBPM: " + data.Swing.swingEBPM.ToString() + " Rolling Average EBPM: " + data.Average.ToString()) },
+                            BeatmapObjects = new() { cube }
+                        });
+                    }
                 }
             }
             foreach (var data in rollingAverageRight)
@@ -125,14 +151,39 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (data.Flick)
                 {
                     var note = data.Swing.notes.FirstOrDefault();
-                    var index = cubes.FindIndex(c => c.Time == note.b && c.Type == note.c && note.x == c.Line && note.y == c.Layer);
-                    var cube = cubes[index];
-                    if (index < cubes.Count - 3)
+                    var index = Notes.FindIndex(c => c.b == note.b && c.c == note.c && note.x == c.x && note.y == c.y);
+                    var cube = Notes[index];
+                    if (index < Notes.Count - 3)
                     {
-                        if (cubes[index + 1].Time - cube.Time != cubes[index + 2].Time - cubes[index + 1].Time) continue;
-                        //CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube); TODO: USE NEW METHOD
+                        if (Notes[index + 1].b - cube.b != Notes[index + 2].b - Notes[index + 1].b)
+                        {
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = BSMapCheck.Characteristic,
+                                Difficulty = BSMapCheck.Difficulty,
+                                Name = "Unexpected Speed",
+                                Severity = Severity.Info,
+                                CheckType = "Speed",
+                                Description = "High EBPM compared to rolling average.",
+                                ResultData = new() { new("UnexpectedSpeed", "Swing EBPM: " + data.Swing.swingEBPM.ToString() + " Rolling Average EBPM: " + data.Average.ToString()) },
+                                BeatmapObjects = new() { cube }
+                            });
+                        }
                     }
-                    else continue; //CreateDiffCommentNote("Unexpected flick", CommentTypesEnum.Info, cube); TODO: USE NEW METHOD
+                    else
+                    {
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = BSMapCheck.Characteristic,
+                            Difficulty = BSMapCheck.Difficulty,
+                            Name = "Unexpected Speed",
+                            Severity = Severity.Info,
+                            CheckType = "Speed",
+                            Description = "High EBPM compared to rolling average.",
+                            ResultData = new() { new("UnexpectedSpeed", "Swing EBPM: " + data.Swing.swingEBPM.ToString() + " Rolling Average EBPM: " + data.Average.ToString()) },
+                            BeatmapObjects = new() { cube }
+                        });
+                    }
                 }
             }
         }

@@ -13,6 +13,8 @@ namespace BLMapCheck
 {
     public class BSMapCheck
     {
+        public static string Difficulty {  get; set; }
+        public static string Characteristic { get; set; }
         // this should be the entry point for the program
 
 

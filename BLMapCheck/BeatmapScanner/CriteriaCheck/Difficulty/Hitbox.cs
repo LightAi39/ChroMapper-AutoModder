@@ -1,11 +1,11 @@
 ﻿using BLMapCheck.BeatmapScanner.Data;
 using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.ChroMapper;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using System.Collections.Generic;
 using System.Linq;
 using System;
 using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Results;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -141,8 +141,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in arr)
                 {
-                    //CreateDiffCommentNote("R3G - Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.b && c.c == item.c
-                    //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Staircase",
+                        Severity = Severity.Warning,
+                        CheckType = "Staircase",
+                        Description = "Potential Hitbox issue.",
+                        ResultData = new() { new("Staircase", "True") },
+                        BeatmapObjects = new() { item }
+                    });
                     issue = CritResult.Warning;
                 }
 
@@ -195,8 +204,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in arr)
                 {
-                    //CreateDiffCommentNote("R3G - Reverse Staircase", CommentTypesEnum.Unsure, cubes.Find(c => c.Time == item.b && c.c == item.c
-                    //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Reverse Staircase",
+                        Severity = Severity.Warning,
+                        CheckType = "Staircase",
+                        Description = "Potential Hitbox issue.",
+                        ResultData = new() { new("ReverseStaircase", "True") },
+                        BeatmapObjects = new() { item }
+                    });
                     issue = CritResult.Warning;
                 }
             }

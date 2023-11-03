@@ -1,4 +1,7 @@
 ﻿using BLMapCheck.BeatmapScanner.Data;
+using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Results;
+using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
@@ -7,9 +10,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class ProlongedSwing
     {
         // Very basic check for stuff like Pauls, Dotspam, long chain duration, etc.
-        public static CritResult Check()
+        public static CritResult Check(List<Colornote> Notes)
         {
-            if(Slider.averageSliderDuration == -1)
+            if(Slider.AverageSliderDuration == -1)
             {
                 Slider.Check();
             }
@@ -25,29 +28,69 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             foreach (var ch in chains)
             {
-                if (ch.tb - ch.b >= Slider.averageSliderDuration * 4.2)
+                if (ch.tb - ch.b >= Slider.AverageSliderDuration * 4.2)
                 {
                     if (slider)
                     {
-                        //CreateDiffCommentLink("R2D - Duration is too high", CommentTypesEnum.Issue, ch); TODO: USE NEW METHOD
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = BSMapCheck.Characteristic,
+                            Difficulty = BSMapCheck.Difficulty,
+                            Name = "Chain Duration",
+                            Severity = Severity.Error,
+                            CheckType = "Chain",
+                            Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
+                            ResultData = new() { new("ChainDuration", "Current duration: " + (ch.tb - ch.b).ToString() + " Maximum duration: " + (Slider.AverageSliderDuration * 4.2).ToString()) },
+                            BeatmapObjects = new() { ch }
+                        });
                         issue = true;
                     }
                     else if (ch.tb - ch.b > 0.125)
                     {
-                        //CreateDiffCommentLink("R2D - Duration might be too high", CommentTypesEnum.Unsure, ch); TODO: USE NEW METHOD
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = BSMapCheck.Characteristic,
+                            Difficulty = BSMapCheck.Difficulty,
+                            Name = "Chain Duration",
+                            Severity = Severity.Inconclusive,
+                            CheckType = "Chain",
+                            Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
+                            ResultData = new() { new("ChainDuration", "Current duration: " + (ch.tb - ch.b).ToString() + " Recommended maximum duration: " +  (0.125).ToString()) },
+                            BeatmapObjects = new() { ch }
+                        });
                         unsure = true;
                     }
                 }
-                else if (ch.tb - ch.b >= Slider.averageSliderDuration * 3.15)
+                else if (ch.tb - ch.b >= Slider.AverageSliderDuration * 3.15)
                 {
                     if (slider)
                     {
-                        //CreateDiffCommentLink("Y2A - Recommend shorter chain", CommentTypesEnum.Suggestion, ch); TODO: USE NEW METHOD
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = BSMapCheck.Characteristic,
+                            Difficulty = BSMapCheck.Difficulty,
+                            Name = "Chain Duration",
+                            Severity = Severity.Inconclusive,
+                            CheckType = "Chain",
+                            Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
+                            ResultData = new() { new("ChainDuration", "Current duration: " + (ch.tb - ch.b).ToString() + " Recommended maximum duration: " + (Slider.AverageSliderDuration * 3.15).ToString()) },
+                            BeatmapObjects = new() { ch }
+                        });
                         unsure = true;
                     }
                     else if (ch.tb - ch.b > 0.125)
                     {
-                        //CreateDiffCommentLink("Y2A - Duration might be too high", CommentTypesEnum.Unsure, ch); TODO: USE NEW METHOD
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = BSMapCheck.Characteristic,
+                            Difficulty = BSMapCheck.Difficulty,
+                            Name = "Chain Duration",
+                            Severity = Severity.Inconclusive,
+                            CheckType = "Chain",
+                            Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
+                            ResultData = new() { new("ChainDuration", "Current duration: " + (ch.tb - ch.b).ToString() + " Recommended maximum duration: " + (0.125).ToString()) },
+                            BeatmapObjects = new() { ch }
+                        });
                         unsure = true;
                     }
                 }
@@ -55,6 +98,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     // Link spam maybe idk
                     //CreateDiffCommentLink("R2D - No head note", CommentTypesEnum.Issue, ch); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Chain Head",
+                        Severity = Severity.Inconclusive,
+                        CheckType = "Chain",
+                        Description = "Chain must have an head note.",
+                        ResultData = new() { new("ChainHead", "No head note at: " + ch.b + " " + ch.x + "/" + ch.y) },
+                        BeatmapObjects = new() { ch }
+                    });
                     issue = true;
                 }
             }
@@ -70,12 +124,34 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (left.CutDirection == 8)
                         {
-                            //CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Unsure, left); TODO: USE NEW METHOD
+                            var note = Notes.Where(n => n.b == left.Time && n.d == left.Direction && n.x == left.Line && n.y == left.Layer && n.c == left.Type).FirstOrDefault();
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = BSMapCheck.Characteristic,
+                                Difficulty = BSMapCheck.Difficulty,
+                                Name = "Dot Spam",
+                                Severity = Severity.Inconclusive,
+                                CheckType = "Swing",
+                                Description = "Swing duration should be consistent throughout the map.",
+                                ResultData = new() { new("DotSpam", "True") },
+                                BeatmapObjects = new() { note }
+                            });
                             unsure = true;
                         }
                         else
                         {
-                            //CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Issue, left); TODO: USE NEW METHOD
+                            var note = Notes.Where(n => n.b == left.Time && n.d == left.Direction && n.x == left.Line && n.y == left.Layer && n.c == left.Type).FirstOrDefault();
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = BSMapCheck.Characteristic,
+                                Difficulty = BSMapCheck.Difficulty,
+                                Name = "Dot Spam",
+                                Severity = Severity.Error,
+                                CheckType = "Swing",
+                                Description = "Swing duration should be consistent throughout the map.",
+                                ResultData = new() { new("DotSpam", "True") },
+                                BeatmapObjects = new() { note }
+                            });
                             issue = true;
                         }
                     }
@@ -93,12 +169,34 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (right.CutDirection == 8)
                         {
-                            //CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Unsure, right); TODO: USE NEW METHOD
+                            var note = Notes.Where(n => n.b == right.Time && n.d == right.Direction && n.x == right.Line && n.y == right.Layer && n.c == right.Type).FirstOrDefault();
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = BSMapCheck.Characteristic,
+                                Difficulty = BSMapCheck.Difficulty,
+                                Name = "Dot Spam",
+                                Severity = Severity.Inconclusive,
+                                CheckType = "Swing",
+                                Description = "Swing duration should be consistent throughout the map.",
+                                ResultData = new() { new("DotSpam", "True") },
+                                BeatmapObjects = new() { note }
+                            });
                             unsure = true;
                         }
                         else
                         {
-                            //CreateDiffCommentNote("R2A - Swing speed", CommentTypesEnum.Issue, right); TODO: USE NEW METHOD
+                            var note = Notes.Where(n => n.b == right.Time && n.d == right.Direction && n.x == right.Line && n.y == right.Layer && n.c == right.Type).FirstOrDefault();
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = BSMapCheck.Characteristic,
+                                Difficulty = BSMapCheck.Difficulty,
+                                Name = "Dot Spam",
+                                Severity = Severity.Error,
+                                CheckType = "Swing",
+                                Description = "Swing duration should be consistent throughout the map.",
+                                ResultData = new() { new("DotSpam", "True") },
+                                BeatmapObjects = new() { note }
+                            });
                             issue = true;
                         }
                     }

@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using BLMapCheck.Classes.Results;
+using System.ComponentModel;
+using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Config.Config;
 
@@ -11,8 +13,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         {
             if (DifficultyLabel.Count() > MaxChar / Count)
             {
-                // ExtendOverallComment("R7E - " + diff.BeatmapFilename + " difficulty label is too long. Current is " + diff.CustomData["_difficultyLabel"].ToString().Count() + " characters. Maximum " + Plugin.configs.MaxChar.ToString() + " characters.");
-                // TODO: USE NEW METHOD
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Difficulty Label Size",
+                    Severity = Severity.Error,
+                    CheckType = "Label",
+                    Description = "The difficulty label is too long.",
+                    ResultData = new() { new("LabelSize", "Current is " + DifficultyLabel.Count().ToString() + " characters. Maximum " + MaxChar.ToString() + " characters." )}
+                });
                 return CritResult.Fail;
             }
             return CritResult.Success;

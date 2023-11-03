@@ -1,5 +1,6 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,8 +53,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     arr.Add(note);
                                     if (note is Colornote)
                                     {
-                                        //CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Unsure,
-                                        //  cubes.Find(c => c.Time == note.b && c.c == note.c && note.x == c.Line && note.y == c.Layer)); TODO: USE NEW METHOD
+                                        CheckResults.Instance.AddResult(new CheckResult()
+                                        {
+                                            Characteristic = BSMapCheck.Characteristic,
+                                            Difficulty = BSMapCheck.Difficulty,
+                                            Name = "Vision Block",
+                                            Severity = Severity.Warning,
+                                            CheckType = "Vision",
+                                            Description = "Notes must be placed to give the player acceptable time to react.",
+                                            ResultData = new() { new("VisionBlock", "Possible VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                            BeatmapObjects = new() { note }
+                                        });
                                         issue = CritResult.Warning;
                                     }
                                 }
@@ -79,8 +89,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     arr.Add(note);
                                     if (note is Colornote)
                                     {
-                                        //CreateDiffCommentNote("R2B - Possible VB - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Unsure,
-                                        //    cubes.Find(c => c.Time == note.b && c.c == note.c && note.x == c.Line && note.y == c.Layer)); TODO: USE NEW METHOD
+                                        CheckResults.Instance.AddResult(new CheckResult()
+                                        {
+                                            Characteristic = BSMapCheck.Characteristic,
+                                            Difficulty = BSMapCheck.Difficulty,
+                                            Name = "Vision Block",
+                                            Severity = Severity.Warning,
+                                            CheckType = "Vision",
+                                            Description = "Notes must be placed to give the player acceptable time to react.",
+                                            ResultData = new() { new("VisionBlock", "Possible VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                            BeatmapObjects = new() { note }
+                                        });
                                         issue = CritResult.Warning;
                                     }
                                 }
@@ -135,8 +154,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             var di = Math.Sqrt(Math.Pow(note.x - left.x, 2) + Math.Pow(note.y - left.y, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
-                                                //TODO: USE NEW METHOD
+                                                CheckResults.Instance.AddResult(new CheckResult()
+                                                {
+                                                    Characteristic = BSMapCheck.Characteristic,
+                                                    Difficulty = BSMapCheck.Difficulty,
+                                                    Name = "Vision Block",
+                                                    Severity = Severity.Error,
+                                                    CheckType = "Vision",
+                                                    Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                    ResultData = new() { new("VisionBlock", "VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                                    BeatmapObjects = new() { note }
+                                                });
                                                 issue = CritResult.Fail;
                                             }
                                             continue;
@@ -153,8 +181,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         var d = Math.Sqrt(Math.Pow(note.x - pos.x, 2) + Math.Pow(note.y - pos.y, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
-                                            //TODO: USE NEW METHOD
+                                            CheckResults.Instance.AddResult(new CheckResult()
+                                            {
+                                                Characteristic = BSMapCheck.Characteristic,
+                                                Difficulty = BSMapCheck.Difficulty,
+                                                Name = "Vision Block",
+                                                Severity = Severity.Error,
+                                                CheckType = "Vision",
+                                                Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                ResultData = new() { new("VisionBlock", "VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                                BeatmapObjects = new() { note }
+                                            });
                                             issue = CritResult.Fail;
                                             continue;
                                         }
@@ -166,8 +203,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             var di = Math.Sqrt(Math.Pow(note.x - right.x, 2) + Math.Pow(note.y - right.y, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
-                                                //TODO: USE NEW METHOD
+                                                CheckResults.Instance.AddResult(new CheckResult()
+                                                {
+                                                    Characteristic = BSMapCheck.Characteristic,
+                                                    Difficulty = BSMapCheck.Difficulty,
+                                                    Name = "Vision Block",
+                                                    Severity = Severity.Error,
+                                                    CheckType = "Vision",
+                                                    Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                    ResultData = new() { new("VisionBlock", "VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                                    BeatmapObjects = new() { note }
+                                                });
                                                 issue = CritResult.Fail;
                                             }
                                             continue;
@@ -184,8 +230,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         var d = Math.Sqrt(Math.Pow(note.x - pos.x, 2) + Math.Pow(note.y - pos.y, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
-                                            //TODO: USE NEW METHOD
+                                            CheckResults.Instance.AddResult(new CheckResult()
+                                            {
+                                                Characteristic = BSMapCheck.Characteristic,
+                                                Difficulty = BSMapCheck.Difficulty,
+                                                Name = "Vision Block",
+                                                Severity = Severity.Error,
+                                                CheckType = "Vision",
+                                                Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                ResultData = new() { new("VisionBlock", "VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                                BeatmapObjects = new() { note }
+                                            });
                                             issue = CritResult.Fail;
                                             continue;
                                         }
@@ -214,8 +269,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             var di = Math.Sqrt(Math.Pow(note.x - left.x, 2) + Math.Pow(note.y - left.y, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
-                                                //TODO: USE NEW METHOD
+                                                CheckResults.Instance.AddResult(new CheckResult()
+                                                {
+                                                    Characteristic = BSMapCheck.Characteristic,
+                                                    Difficulty = BSMapCheck.Difficulty,
+                                                    Name = "Vision Block",
+                                                    Severity = Severity.Error,
+                                                    CheckType = "Vision",
+                                                    Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                    ResultData = new() { new("VisionBlock", "VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                                    BeatmapObjects = new() { note }
+                                                });
                                                 issue = CritResult.Fail;
                                             }
                                             continue;
@@ -232,8 +296,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         var d = Math.Sqrt(Math.Pow(note.x - pos.x, 2) + Math.Pow(note.y - pos.y, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
-                                            //TODO: USE NEW METHOD
+                                            CheckResults.Instance.AddResult(new CheckResult()
+                                            {
+                                                Characteristic = BSMapCheck.Characteristic,
+                                                Difficulty = BSMapCheck.Difficulty,
+                                                Name = "Vision Block",
+                                                Severity = Severity.Error,
+                                                CheckType = "Vision",
+                                                Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                ResultData = new() { new("VisionBlock", "VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                                BeatmapObjects = new() { note }
+                                            });
                                             issue = CritResult.Fail;
                                             continue;
                                         }
@@ -245,8 +318,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             var di = Math.Sqrt(Math.Pow(note.x - right.x, 2) + Math.Pow(note.y - right.y, 2));
                                             if (di >= 0 && di < 1.001)
                                             {
-                                                //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
-                                                //TODO: USE NEW METHOD
+                                                CheckResults.Instance.AddResult(new CheckResult()
+                                                {
+                                                    Characteristic = BSMapCheck.Characteristic,
+                                                    Difficulty = BSMapCheck.Difficulty,
+                                                    Name = "Vision Block",
+                                                    Severity = Severity.Error,
+                                                    CheckType = "Vision",
+                                                    Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                    ResultData = new() { new("VisionBlock", "VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                                    BeatmapObjects = new() { note }
+                                                });
                                                 issue = CritResult.Fail;
                                             }
                                             continue;
@@ -263,8 +345,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         var d = Math.Sqrt(Math.Pow(note.x - pos.x, 2) + Math.Pow(note.y - pos.y, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            //CreateDiffCommentBomb("R5E - Is vision blocked - " + Math.Round(bpm.ToRealTime(note.b - lastMidR.First().b) * 1000, 0) + "ms", CommentcsEnum.Issue, note);
-                                            //TODO: USE NEW METHOD
+                                            CheckResults.Instance.AddResult(new CheckResult()
+                                            {
+                                                Characteristic = BSMapCheck.Characteristic,
+                                                Difficulty = BSMapCheck.Difficulty,
+                                                Name = "Vision Block",
+                                                Severity = Severity.Error,
+                                                CheckType = "Vision",
+                                                Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                ResultData = new() { new("VisionBlock", "VB - " + Math.Round(BeatPerMinute.BPM.ToRealTime(note.b - lastMidL.First().b) * 1000, 0) + "ms") },
+                                                BeatmapObjects = new() { note }
+                                            });
                                             issue = CritResult.Fail;
                                             continue;
                                         }

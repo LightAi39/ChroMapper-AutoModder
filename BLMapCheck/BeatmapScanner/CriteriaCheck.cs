@@ -1,4 +1,4 @@
-﻿using BLMapCheck.BeatmapScanner.Data;
+﻿/*using BLMapCheck.BeatmapScanner.Data;
 using BLMapCheck.BeatmapScanner.Data.Criteria;
 using BLMapCheck.BeatmapScanner.MapCheck;
 using JoshaParity;
@@ -65,7 +65,7 @@ namespace BLMapCheck.BeatmapScanner
             this.difficultyRank = difficultyRank;
             this.difficulty = difficulty;
 
-            /* TODO: Rewrite this song loading code
+            *//* TODO: Rewrite this song loading code
             var song = plugin.BeatSaberSongContainer.Song;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
@@ -93,7 +93,7 @@ namespace BLMapCheck.BeatmapScanner
                     BeatmapScannerData = BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
                 }
             }
-            */
+            *//*
 
             DiffCrit diffCrit = new()
             {
@@ -119,11 +119,11 @@ namespace BLMapCheck.BeatmapScanner
                 HandClap = HandClapCheck()
             };
 
-            if (/*Plugin.configs.HighlightOffbeat TODO: fix*/ true)
+            if (*//*Plugin.configs.HighlightOffbeat TODO: fix*//* true)
             {
                 HighlightOffbeat();
             }
-            if (/*Plugin.configs.DisplayFlick TODO: fix */ true)
+            if (*//*Plugin.configs.DisplayFlick TODO: fix *//* true)
             {
                 RollingEBPM();
             }
@@ -2086,3 +2086,4 @@ namespace BLMapCheck.BeatmapScanner
         #endregion
     }
 }
+*/

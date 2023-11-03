@@ -1,8 +1,10 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
@@ -143,15 +145,33 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in arr2)
                 {
-                    //CreateDiffCommentNote("R3D - Hand clap", CommentcsEnum.Issue, cubes.Find(c => c.Time == item.b && c.c == item.c
-                    //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Hand Clap",
+                        Severity = Severity.Warning,
+                        CheckType = "Chain",
+                        Description = "Patterns must not encourage hand clapping.",
+                        ResultData = new() { new("Handclap", "True") },
+                        BeatmapObjects = new() { item }
+                    });
                     issue = CritResult.Warning;
                 }
 
                 foreach (var item in arr)
                 {
-                    //CreateDiffCommentNote("R3D - Hand clap", CommentcsEnum.Issue, cubes.Find(c => c.Time == item.b && c.c == item.c
-                    //                    && item.x == c.Line && item.y == c.Layer)); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Hand Clap",
+                        Severity = Severity.Error,
+                        CheckType = "Handclap",
+                        Description = "Patterns must not encourage hand clapping.",
+                        ResultData = new() { new("Handclap", "True") },
+                        BeatmapObjects = new() { item }
+                    });
                     issue = CritResult.Fail;
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
+using BLMapCheck.Classes.Results;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
@@ -18,7 +19,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             if (cubes.Exists(c => c.Time < 0 || c.Time > end) || chains.Exists(c => c.b < 0 || c.b > end)
                 || bombs.Exists(b => b.b < 0 || b.b > end) || walls.Exists(w => w.b < 0 || w.b + w.d > end))
             {
-                //ExtendOverallComment("R1B - Object outside of playable length"); TODO: USE NEW METHOD
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Outside",
+                    Severity = Severity.Error,
+                    CheckType = "Outside",
+                    Description = "Object cannot exist outside of playable length.",
+                    ResultData = new() { new("Outside", "Boundary: 0 to" + end.ToString()) },
+                });
                 issue = CritResult.Fail;
             }
 

@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
+using BLMapCheck.Classes.Results;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Config.Config;
@@ -15,9 +16,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var duration = BeatPerMinute.BPM.ToRealTime(cube.Last().Time - cube.First().Time, true);
             if (duration < MinSongDuration)
             {
-                //ExtendOverallComment("R1F - Current map duration is " + duration.ToString() + "s. Minimum required duration is " + config.MinSongDuration.ToString() + "s."); TODO: USE NEW METHOD
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Mapped Duration",
+                    Severity = Severity.Error,
+                    CheckType = "Duration",
+                    Description = "The map from first note to last note must be at least 45 seconds in length.",
+                    ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + MinSongDuration.ToString() + "s.") },
+                });
                 return CritResult.Fail;
             }
+
+            CheckResults.Instance.AddResult(new CheckResult()
+            {
+                Characteristic = BSMapCheck.Characteristic,
+                Difficulty = BSMapCheck.Difficulty,
+                Name = "Mapped Duration",
+                Severity = Severity.Passed,
+                CheckType = "Duration",
+                Description = "The map from first note to last note must be at least 45 seconds in length.",
+                ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + MinSongDuration.ToString() + "s.") },
+            });
 
             return CritResult.Success;
         }

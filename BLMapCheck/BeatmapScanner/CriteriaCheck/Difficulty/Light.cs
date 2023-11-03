@@ -1,5 +1,6 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
@@ -43,7 +44,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var bombs = BeatmapScanner.Bombs.OrderBy(b => b.b).ToList();
             if (!Events.Any() || !Events.Exists(e => e.et >= 0 && e.et <= 5))
             {
-                //ExtendOverallComment("R6A - Map has no light"); TODO: USE NEW METHOD
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Light",
+                    Severity = Severity.Error,
+                    CheckType = "Light",
+                    Description = "The map must have sufficient lighting throughout.",
+                    ResultData = new() { new("Light", "False") }
+                });
                 return CritResult.Fail;
             }
             else
@@ -56,7 +66,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 if (average < AverageLightPerBeat)
                 {
-                    //ExtendOverallComment("R6A - Map doesn't have enough light"); TODO: USE NEW METHOD
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Average Light",
+                        Severity = Severity.Error,
+                        CheckType = "Light",
+                        Description = "The map must have sufficient lighting throughout.",
+                        ResultData = new() { new("AverageLight", "Current average per beat: " + average.ToString() + " Required: " + AverageLightPerBeat.ToString()) }
+                    });
                     issue = CritResult.Fail;
                 }
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
@@ -64,7 +83,18 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (V3Events.Count > 0)
                 {
                     //ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked."); TODO: USE NEW METHOD
-                    issue = CritResult.Warning;
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Bomb Lit",
+                        Severity = Severity.Inconclusive,
+                        CheckType = "Light",
+                        Description = "V3 Lights detected. Bombs visibility won't be checked.",
+                        ResultData = new() { new("BombLit", "False") },
+                        BeatmapObjects = new(bombs) { }
+                    });
+                    return CritResult.Warning;
                 }
                 else
                 {
@@ -109,13 +139,23 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         }
                         if (!isLit)
                         {
-                            //CreateDiffCommentBomb("R5B - Light missing for bomb", CommentTypesEnum.Issue, bomb); TODO: USE NEW METHOD
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = BSMapCheck.Characteristic,
+                                Difficulty = BSMapCheck.Difficulty,
+                                Name = "Bomb Lit",
+                                Severity = Severity.Inconclusive,
+                                CheckType = "Light",
+                                Description = "There must be sufficient lighting whenever bombs are present.",
+                                ResultData = new() { new("BombLit", isLit.ToString()) },
+                                BeatmapObjects = new() { bomb }
+                            });
                             issue = CritResult.Fail;
                         }
                     }
                 }
             }
-            bpm.ResetCurrentBPM();
+            BeatPerMinute.BPM.ResetCurrentBPM();
             return issue;
         }
     }

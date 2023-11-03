@@ -1,14 +1,12 @@
 ﻿using BLMapCheck.BeatmapScanner.Data;
 using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.ChroMapper;
 using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Results;
 using BLMapCheck.Classes.Unity;
 using JoshaParity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using SwingData = JoshaParity.SwingData;
 
@@ -44,9 +42,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         }
 
         // Check if a note block the swing path of another note of a different color
-        public static CritSeverity Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> Swings)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> Swings)
         {
-            var issue = CritSeverity.Success;
+            var issue = CritResult.Success;
 
             if (beatmapGridObjects.Any())
             {
@@ -122,7 +120,18 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     var InPath = NearestPointOnFiniteLine(new(note2.Line, note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.Line, note.Layer));
                                     if (InPath)
                                     {
-                                        //CreateDiffCommentNote("Swing Path", CommentTypesEnum.Info, note); TODO: USE NEW METHOD
+                                        var obj = beatmapGridObjects.Where(c => c.b == note.Time && note.Line == c.x && note.Layer == c.y).FirstOrDefault();
+                                        CheckResults.Instance.AddResult(new CheckResult()
+                                        {
+                                            Characteristic = BSMapCheck.Characteristic,
+                                            Difficulty = BSMapCheck.Difficulty,
+                                            Name = "Swing Path",
+                                            Severity = Severity.Info,
+                                            CheckType = "Swing",
+                                            Description = "Possible swing path issue.",
+                                            ResultData = new() { new("SwingPath", "Possible swing path issue") },
+                                            BeatmapObjects = new() { obj }
+                                        });
                                     }
                                 }
                             }
@@ -228,9 +237,18 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 foreach (var item in arr)
                 {
-                    //CreateDiffCommentNote("R3E - Swing Path", CommentTypesEnum.Issue, cubes.Find(c => c.Time == item.JsonTime && c.Type == item.Type
-                    //                    && item.PosX == c.Line && item.PosY == c.Layer)); TODO: USE NEW METHOD
-                    issue = CritSeverity.Fail;
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Swing Path",
+                        Severity = Severity.Error,
+                        CheckType = "Swing",
+                        Description = "Swing path issue.",
+                        ResultData = new() { new("SwingPath", "Swing path issue") },
+                        BeatmapObjects = new() { item }
+                    });
+                    issue = CritResult.Fail;
                 }
             }
 

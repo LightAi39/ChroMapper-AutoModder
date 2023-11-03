@@ -1,7 +1,13 @@
-﻿using JoshaParity;
+﻿using BLMapCheck.BeatmapScanner.MapCheck;
+using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Results;
+using JoshaParity;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Net.NetworkInformation;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Config.Config;
 
@@ -11,19 +17,43 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // JoshaParity is used to detect reset, high angle parity, and warn while playing inverted.
         // Parity warning angle is configurable
-        public static CritResult Check(List<SwingData> Swings)
+        public static CritResult Check(List<SwingData> Swings, List<Colornote> Notes)
         {
             bool hadIssue = false;
             bool hadWarning = false;
 
             foreach (var swing in Swings.Where(x => x.resetType == ResetType.Rebound).ToList())
             {
-                //CreateDiffCommentNotes("R2 - Parity Error", CommentTypesEnum.Issue, swing.notes); TODO: USE NEW METHOD
+                List<Colornote> colornotes = new();
+                swing.notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Parity",
+                    Severity = Severity.Error,
+                    CheckType = "Parity",
+                    Description = "Error in the parity.",
+                    ResultData = new() { new("Parity", "Reset Type: Rebound") },
+                    BeatmapObjects = new(colornotes) { }
+                });
                 hadIssue = true;
             }
             foreach (var swing in Swings.Where(x => x.swingEBPM == float.PositiveInfinity).ToList())
             {
-                //CreateDiffCommentNotes("R2 - Parity Mismatch on same beat", CommentTypesEnum.Issue, swing.notes); TODO: USE NEW METHOD
+                List<Colornote> colornotes = new();
+                swing.notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = BSMapCheck.Characteristic,
+                    Difficulty = BSMapCheck.Difficulty,
+                    Name = "Parity Mismatch",
+                    Severity = Severity.Error,
+                    CheckType = "Parity",
+                    Description = "Parity mismatch on the same beat.",
+                    ResultData = new() { new("ParityMismatch", "swingEBPM is equal PositiveInfinity") },
+                    BeatmapObjects = new(colornotes) { }
+                });
                 hadIssue = true;
             }
 
@@ -37,14 +67,38 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= ParityWarningAngle)
                     {
-                        //CreateDiffCommentNotes("Parity Warning - " + config.ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, rightHandSwings[i].notes); TODO: USE NEW METHOD
+                        List<Colornote> colornotes = new();
+                        rightHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = BSMapCheck.Characteristic,
+                            Difficulty = BSMapCheck.Difficulty,
+                            Name = "Parity Warning",
+                            Severity = Severity.Warning,
+                            CheckType = "Parity",
+                            Description = "Parity degree difference.",
+                            ResultData = new() { new("ParityWarning", "Parity Warning - " + Math.Abs(difference) + " degree difference") },
+                            BeatmapObjects = new(colornotes) { }
+                        });
                         hadWarning = true;
                     }
                     else if (Math.Abs(rightHandSwings[i].startPos.rotation) > 135 || Math.Abs(rightHandSwings[i].endPos.rotation) > 135)
                     {
                         if (ParityInvertedWarning)
                         {
-                            //CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, rightHandSwings[i].notes); TODO: USE NEW METHOD
+                            List<Colornote> colornotes = new();
+                            rightHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = BSMapCheck.Characteristic,
+                                Difficulty = BSMapCheck.Difficulty,
+                                Name = "Parity Inverted",
+                                Severity = Severity.Inconclusive,
+                                CheckType = "Parity",
+                                Description = "Parity playing inverted.",
+                                ResultData = new() { new("ParityInverted", "Parity Warning - Playing inverted") },
+                                BeatmapObjects = new(colornotes) { }
+                            });
                         }
                         hadWarning = true;
                     }
@@ -58,14 +112,38 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= ParityWarningAngle)
                     {
-                        //CreateDiffCommentNotes("Parity Warning - " + config.ParityWarningAngle + " degree difference", CommentTypesEnum.Unsure, leftHandSwings[i].notes); TODO: USE NEW METHOD
+                        List<Colornote> colornotes = new();
+                        leftHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = BSMapCheck.Characteristic,
+                            Difficulty = BSMapCheck.Difficulty,
+                            Name = "Parity Warning",
+                            Severity = Severity.Warning,
+                            CheckType = "Parity",
+                            Description = "Parity degree difference.",
+                            ResultData = new() { new("ParityWarning", "Parity Warning - " + Math.Abs(difference).ToString() + " degree difference") },
+                            BeatmapObjects = new(colornotes) { }
+                        });
                         hadWarning = true;
                     }
                     else if (Math.Abs(leftHandSwings[i].startPos.rotation) > 135 || Math.Abs(leftHandSwings[i].endPos.rotation) > 135)
                     {
                         if (ParityInvertedWarning)
                         {
-                            //CreateDiffCommentNotes("Parity Warning - playing inverted", CommentTypesEnum.Unsure, leftHandSwings[i].notes); TODO: USE NEW METHOD
+                            List<Colornote> colornotes = new();
+                            leftHandSwings[i].notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = BSMapCheck.Characteristic,
+                                Difficulty = BSMapCheck.Difficulty,
+                                Name = "Parity Inverted",
+                                Severity = Severity.Inconclusive,
+                                CheckType = "Parity",
+                                Description = "Parity playing inverted.",
+                                ResultData = new() { new("ParityInverted", "Parity Warning - Playing inverted") },
+                                BeatmapObjects = new(colornotes) { }
+                            });
                         }
                         hadWarning = true;
                     }
@@ -76,16 +154,26 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 foreach (var swing in Swings)
                 {
-                    // TODO: USE NEW METHOD
-                    /*
                     var swingWithoutNotes = swing;
                     swingWithoutNotes.notes = null;
                     string message = JsonConvert.SerializeObject(swingWithoutNotes);
-                    CommentTypesEnum commentType = CommentTypesEnum.Info;
-                    if (swing.resetType == ResetType.Rebound) commentType = CommentTypesEnum.Issue;
-                    if (Math.Abs(swing.endPos.rotation) > 135 || Math.Abs(swing.endPos.rotation) > 135) commentType = CommentTypesEnum.Unsure;
-                    CreateDiffCommentNotes(message, commentType, swing.notes);
-                    */
+                    Severity commentType = Severity.Info;
+                    if (swing.resetType == ResetType.Rebound) commentType = Severity.Error;
+                    if (Math.Abs(swing.endPos.rotation) > 135 || Math.Abs(swing.endPos.rotation) > 135) commentType = Severity.Inconclusive;
+                    
+                    List<Colornote> colornotes = new();
+                    swing.notes.ForEach(note => colornotes.Add(Notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = BSMapCheck.Characteristic,
+                        Difficulty = BSMapCheck.Difficulty,
+                        Name = "Parity Debug",
+                        Severity = commentType,
+                        CheckType = "Parity",
+                        Description = "Parity Debug.",
+                        ResultData = new() { new("ParityDebug", message) },
+                        BeatmapObjects = new(colornotes) { }
+                    });
                 }
             }
 
