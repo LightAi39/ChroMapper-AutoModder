@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using DifficultyV3 = BLMapCheck.Classes.MapVersion.Difficulty.DifficultyV3;
 using Light = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Light;
 using Parity = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Parity;

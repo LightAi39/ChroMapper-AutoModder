@@ -105,6 +105,7 @@
     <Compile Include="BLMapChecker.cs" />
     <Compile Include="Classes\ChroMapper\SpawnParameterHelper.cs" />
     <Compile Include="Classes\MapVersion\BeatmapV3.cs" />
+    <Compile Include="Classes\MapVersion\Difficulty\DifficultyV2.cs" />
     <Compile Include="Classes\MapVersion\Difficulty\DifficultyV3.cs" />
     <Compile Include="Classes\MapVersion\Info\InfoV3.cs" />
     <Compile Include="Classes\Results\CheckResult.cs" />
