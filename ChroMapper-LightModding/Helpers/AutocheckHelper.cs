@@ -49,7 +49,7 @@ namespace ChroMapper_LightModding.Helpers
             }
             if (isForMapCheckStats)
             {
-                var resultData = results.Results.Where(x => x.Name == "Statistical Data").FirstOrDefault().ResultData;
+                var resultData = results.Results.Where(x => x.Name == "Statistical Data" && x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault().ResultData;
                 return (
                     Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value),
