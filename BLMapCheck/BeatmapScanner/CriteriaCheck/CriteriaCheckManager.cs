@@ -2,7 +2,6 @@
 using BLMapCheck.BeatmapScanner.CriteriaCheck.Info;
 using BLMapCheck.BeatmapScanner.Data.Criteria;
 using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.ChroMapper;
 using BLMapCheck.Classes.MapVersion;
 using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.MapVersion.Info;
@@ -12,8 +11,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using DifficultyV3 = BLMapCheck.Classes.MapVersion.Difficulty.DifficultyV3;
 using Light = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Light;
@@ -26,9 +23,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
     {
         public static string Difficulty { get; set; }
         public static string Characteristic { get; set; }
+        public static readonly List<string> DiffOrder = new(){ "Easy", "Normal", "Hard", "Expert", "ExpertPlus" };
 
         public void CheckAllCriteria()
         {
+            BeatmapV3.Instance.Difficulties.OrderBy(x => DiffOrder.IndexOf(x.Difficulty));
             CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
 
             foreach (var diff in BeatmapV3.Instance.Difficulties)
@@ -40,15 +39,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             }
 
             CheckResults.Instance.CheckFinished = true;
-            Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
+            // Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
         }
 
 
         public InfoCrit AutoInfoCheck()
         {
-            Characteristic = null;
-            Difficulty = null;
-
             InfoCrit infoCrit = new()
             {
                 SongName = SongName.Check(BeatmapV3.Instance.Info._songName),

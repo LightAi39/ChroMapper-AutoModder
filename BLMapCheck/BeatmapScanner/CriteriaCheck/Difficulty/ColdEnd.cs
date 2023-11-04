@@ -2,7 +2,6 @@
 using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
-using System.Diagnostics;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
 

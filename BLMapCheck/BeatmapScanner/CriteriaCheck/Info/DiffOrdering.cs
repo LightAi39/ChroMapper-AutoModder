@@ -14,7 +14,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
         {
             var passStandard = new List<double>();
 
-            foreach (var difficulty in difficulties)
+            foreach (var difficulty in difficulties.Where(x => x.Characteristic == CriteriaCheckManager.Characteristic))
             {
                 if (difficulty.Data.colorNotes.Any())
                 {
