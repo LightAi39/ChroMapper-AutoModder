@@ -2,6 +2,7 @@
 using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
 using System.Collections.Generic;
+using System.Diagnostics;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
 
@@ -13,6 +14,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         {
             var issue = CritResult.Success;
             var limit = BeatPerMinute.BPM.ToBeatTime(LoadedSongLength - (float)Instance.ColdEndDuration, true);
+
             foreach (var obj in Objects)
             {
                 if (obj.b > limit)
@@ -30,7 +32,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                else break;
             }
             foreach (var w in Walls)
             {
@@ -50,7 +51,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                else break;
             }
 
             if (issue == CritResult.Success)
