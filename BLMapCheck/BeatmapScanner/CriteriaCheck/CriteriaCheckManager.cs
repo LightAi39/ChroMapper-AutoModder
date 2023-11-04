@@ -25,26 +25,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
         public static string Characteristic { get; set; }
         public static readonly List<string> DiffOrder = new(){ "Easy", "Normal", "Hard", "Expert", "ExpertPlus" };
 
-        public void CheckAllCriteria(string characteristic = "Standard", string difficulty = "")
+        public void CheckAllCriteria()
         {
             BeatmapV3.Instance.Difficulties.OrderBy(x => DiffOrder.IndexOf(x.Difficulty));
             CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
-            
 
-            if(difficulty == "")
+            foreach (var diff in BeatmapV3.Instance.Difficulties)
             {
-                foreach (var diff in BeatmapV3.Instance.Difficulties.Where(d => d.Characteristic == characteristic))
-                {
-                    Difficulty = diff.Difficulty;
-                    Characteristic = diff.Characteristic;
-                    CheckResults.Instance.DifficultyCriteriaResults.Add(new(diff.Difficulty, diff.Characteristic, AutoDiffCheck(diff.Characteristic, diff.Difficulty)));
-                }
-            }
-            else
-            {
-                Characteristic = characteristic;
-                Difficulty = difficulty;
-                CheckResults.Instance.DifficultyCriteriaResults.Add(new(Difficulty, Characteristic, AutoDiffCheck(Characteristic, Difficulty)));
+                Difficulty = diff.Difficulty;
+                Characteristic = diff.Characteristic;
+
+                CheckResults.Instance.DifficultyCriteriaResults.Add(new(diff.Difficulty, diff.Characteristic, AutoDiffCheck(diff.Characteristic, diff.Difficulty)));
             }
 
             CheckResults.Instance.CheckFinished = true;
