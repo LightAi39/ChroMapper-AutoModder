@@ -65,7 +65,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             Characteristic = characteristic;
             Difficulty = difficulty;
 
-            Debug.Log("Current diff: " + Difficulty + Characteristic);
+            // Debug.Log("Current diff: " + Difficulty + Characteristic);
 
             DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Data;
 
@@ -110,7 +110,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             _Difficultybeatmaps difficultyBeatmap = BeatmapV3.Instance.Info._difficultyBeatmapSets.Where(x => x._beatmapCharacteristicName == Characteristic).FirstOrDefault()._difficultyBeatmaps.Where(x => x._difficulty == Difficulty).FirstOrDefault();
 
-            Debug.Log(JsonConvert.SerializeObject(difficultyBeatmap, Formatting.Indented));
+            // Debug.Log(JsonConvert.SerializeObject(difficultyBeatmap, Formatting.Indented));
 
             DiffCrit diffCrit = new()
             {

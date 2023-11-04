@@ -2,7 +2,6 @@
 using System.Linq;
 using System;
 using BLMapCheck.BeatmapScanner.Data;
-using BLMapCheck.Classes.ChroMapper;
 using BLMapCheck.Classes.MapVersion.Difficulty;
 
 namespace BLMapCheck.BeatmapScanner
@@ -45,54 +44,7 @@ namespace BLMapCheck.BeatmapScanner
 
             #region Algorithm
 
-            var tempRed = red;
-            var tempBlue = blue;
-
-            float end;
-            if (tempRed.Count > 0 && tempBlue.Count > 0)
-            {
-                end = Math.Max(tempRed.Last().Time, tempBlue.Last().Time);
-            }
-            else if (tempRed.Count > 0)
-            {
-                end = tempRed.Last().Time;
-            }
-            else
-            {
-                end = tempBlue.Last().Time;
-            }
-
-            var temp = end;
-            if (tempRed.Count() > 0)
-            {
-                var length = tempRed.Count();
-                while (tempRed.Count() < 50)
-                {
-                    for (int i = 0; i < length; i++)
-                    {
-                        var note = new Cube(tempRed[i]);
-                        note.Time += temp;
-                        tempRed.Add(note);
-                    }
-                    temp = tempRed.Last().Time + 16;
-                }
-            }
-            if (tempBlue.Count() > 0)
-            {
-                var length = tempBlue.Count();
-                while (tempBlue.Count() < 50)
-                {
-                    for (int i = 0; i < length; i++)
-                    {
-                        var note = new Cube(tempBlue[i]);
-                        note.Time += temp;
-                        tempBlue.Add(note);
-                    }
-                    temp = tempBlue.Last().Time + 16;
-                }
-            }
-
-            (pass, tech, data) = ScanAlgo.UseLackWizAlgorithm(tempRed, tempBlue, bpm, bombs);
+            (pass, tech, data) = ScanAlgo.UseLackWizAlgorithm(red, blue, bpm, bombs);
 
             if (red.Count() > 0)
             {
@@ -105,6 +57,10 @@ namespace BLMapCheck.BeatmapScanner
                 // ebpm = Math.Max(ScanMethod.GetEBPM(blue, bpm), ebpm);
                 ScanMethod.CalculateLinear(blue);
             }
+
+            cube = new(red);
+            cube.AddRange(blue);
+            cube = cube.OrderBy(c => c.Time).ToList();
 
             #endregion
 
