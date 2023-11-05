@@ -11,12 +11,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class NJS
     {
         // Warn the user if the current NJS and RT set doesn't match BeatLeader recommended value chart.
-        public static CritResult Check(List<JoshaParity.SwingData> swings, float LoadedSongLength, float NoteJumpSpeed, float NoteJumpStartBeatOffset)
+        public static CritResult Check(List<JoshaParity.SwingData> swings, float songLength, float njs, float noteJumpStartBeatOffset)
         {
             var issue = CritResult.Success;
             List<double> sps = new();
 
-            for (int i = 0; i < LoadedSongLength - 1; i++)
+            for (int i = 0; i < songLength - 1; i++)
             {
                 BeatPerMinute.BPM.SetCurrentBPM(BeatPerMinute.BPM.ToRealTime(i, true));
                 var secInBeat = BeatPerMinute.BPM.GetValue() / 60;
@@ -37,7 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            if (NoteJumpSpeed <= 0)
+            if (njs <= 0)
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -47,13 +47,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "NoteJumpSpeed",
                     Description = "Note Jump Speed cannot be lower or equal to 0.",
-                    ResultData = new() { new("NoteJumpSpeed", "NJS is currently: " + NoteJumpSpeed.ToString()) }
+                    ResultData = new() { new("NoteJumpSpeed", "NJS is currently: " + njs.ToString()) }
                 });
                 issue = CritResult.Fail;
             }
             else
             {
-                if (NoteJumpSpeed < NJS.min || NoteJumpSpeed > NJS.max)
+                if (njs < NJS.min || njs > NJS.max)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -67,7 +67,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Warning;
                 }
-                var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(NoteJumpSpeed, NoteJumpStartBeatOffset, BeatPerMinute.BPM.GetValue());
+                var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(njs, noteJumpStartBeatOffset, BeatPerMinute.BPM.GetValue());
                 var beatms = 60000 / BeatPerMinute.BPM.GetValue();
                 var reactionTime = beatms * halfJumpDuration;
                 if (reactionTime < RT.min || reactionTime > RT.max)

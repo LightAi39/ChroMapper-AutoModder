@@ -1,27 +1,25 @@
-﻿using BLMapCheck.BeatmapScanner.Data;
-using BLMapCheck.Classes.MapVersion.Difficulty;
+﻿using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
+using static BLMapCheck.Classes.Helper.Helper;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Chain
     {
         // Check if chains is part of the first 16 notes, link spacing, reverse direction, max distance, reach, and angle
-        public static CritResult Check()
+        public static CritResult Check(List<Burstslider> chains, List<Colornote> notes)
         {
             var issue = CritResult.Success;
-            var links = BeatmapScanner.Chains.OrderBy(c => c.b).ToList();
-            var notes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
 
             if (notes.Count >= 16)
             {
-                var link = links.Where(l => l.b <= notes[15].Time).ToList();
+                var link = chains.Where(l => l.b <= notes[15].b).ToList();
                 if(link.Any())
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -38,7 +36,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     issue = CritResult.Fail;
                 }
             }
-            else if (links.Any())
+            else if (chains.Any())
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -49,13 +47,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     CheckType = "Chain",
                     Description = "Chains cannot be part of the first 16 notes of the map.",
                     ResultData = new() { new("EarlyChain", "Found") },
-                    BeatmapObjects = new(links) { }
+                    BeatmapObjects = new(chains) { }
                 });
                 issue = CritResult.Fail;
             }
 
             // TODO: Make this mess better idk
-            foreach (var l in links)
+            foreach (var l in chains)
             {
                 var chain = l;
                 var x = Math.Abs(l.tx - l.x) * chain.s;
@@ -113,10 +111,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                var note = notes.Find(x => x.Time >= l.tb && x.Type == l.c);
+                var note = notes.Find(x => x.b >= l.tb && x.c == l.c);
                 if (note != null)
                 {
-                    if (l.tb + (l.tb - l.b) > note.Time)
+                    if (l.tb + (l.tb - l.b) > note.b)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -126,30 +124,30 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Chain",
                             Description = "The duration between the chain tail and next note must be at least the duration of the chain",
-                            ResultData = new() { new("ChainFlick", "Chain duration: " + (l.tb - l.b).ToString() + " Duration between:" + (note.Time - l.tb).ToString()) },
+                            ResultData = new() { new("ChainFlick", "Chain duration: " + (l.tb - l.b).ToString() + " Duration between:" + (note.b - l.tb).ToString()) },
                             BeatmapObjects = new() { l }
                         });
                         issue = CritResult.Fail;
                     }
                 }
 
-                var temp = new Cube(notes.First())
+                var temp = new NoteData()
                 {
-                    Direction = ScanMethod.Mod(ScanMethod.DirectionToDegree[l.d], 360),
+                    Direction = Mod(DirectionToDegree[l.d], 360),
                     Line = l.x,
                     Layer = l.y
                 };
-                var temp2 = new Cube(notes.First())
+                var temp2 = new NoteData(notes.First())
                 {
                     Line = l.tx,
                     Layer = l.ty
                 };
-                var temp3 = new List<Cube>
+                var temp3 = new List<NoteData>
                 {
                     temp,
                     temp2
                 };
-                if (!ScanMethod.IsSameDirection(ScanMethod.ReverseCutDirection(ScanMethod.FindAngleViaPosition(temp3, 0, 1)), temp.Direction, Instance.MaxChainRotation))
+                if (!IsSameDirection(ReverseCutDirection(FindAngleViaPosition(temp3, 0, 1)), temp.Direction, Instance.MaxChainRotation))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {

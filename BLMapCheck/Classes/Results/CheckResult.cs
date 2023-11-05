@@ -1,9 +1,5 @@
-﻿using BLMapCheck.Classes.MapVersion.Difficulty;
-using System;
+﻿using Parser.Map.Difficulty.V3.Base;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BLMapCheck.Classes.Results
 {

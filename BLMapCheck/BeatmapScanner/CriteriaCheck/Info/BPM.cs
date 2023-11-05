@@ -1,5 +1,4 @@
-﻿using BLMapCheck.Classes.MapVersion;
-using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.Classes.Results;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info

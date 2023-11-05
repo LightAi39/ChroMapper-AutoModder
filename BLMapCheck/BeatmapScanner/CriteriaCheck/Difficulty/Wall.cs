@@ -1,6 +1,7 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
+using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
@@ -12,23 +13,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Calculate dodge wall per seconds, objects hidden behind walls, walls that force players outside of boundary, walls that are too short in middle lane and negative walls.
         // Subjective and max dodge wall, min wall d and trail d is configurable
-        public static CritResult Check(List<Colornote> ColorNotes)
+        public static CritResult Check(List<Colornote> notes, List<Obstacle> walls, List<Bombnote> bombs)
         {
             var issue = CritResult.Success;
 
-            var walls = BeatmapScanner.Walls;
-            var notes = BeatmapScanner.Cubes;
-            var bombs = BeatmapScanner.Bombs;
-
             var leftWall = walls.Where(w => w.x == 1 && w.w == 1);
             var rightWall = walls.Where(w => w.x == 2 && w.w == 1);
+            var data = Helper.NotesData;
 
             foreach (var w in leftWall)
             {
-                var note = notes.Where(n => n.Line == 0 && !(n.Layer == 0 && w.y == 0 && w.h == 1) && ((n.Layer >= w.y && n.Layer < w.y + w.h) || (n.Layer >= 0 && w.y == 0 && w.h > 1)) && n.Time > w.b && n.Time <= w.b + w.d && (n.Head || !n.Pattern)).ToList();
-                foreach (var n in note)
+                var note = notes.Where(n => n.x == 0 && !(n.y == 0 && w.y == 0 && w.h == 1) && ((n.y >= w.y && n.y < w.y + w.h) || (n.y >= 0 && w.y == 0 && w.h > 1)) && n.b > w.b && n.b <= w.b + w.d && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
+                
+                foreach (var no in note)
                 {
-                    var no = ColorNotes.Where(c => c.b == n.Time && c.c == n.Type && n.Line == c.x && n.Layer == c.y).FirstOrDefault();
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
                         Characteristic = CriteriaCheckManager.Characteristic,
@@ -42,6 +40,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
+                
                 var bomb = bombs.Where(b => b.x == 0 && !(b.y == 0 && w.y == 0 && w.h == 1) && ((b.y >= w.y && b.y < w.y + w.h) || (b.y >= 0 && w.y == 0 && w.h > 1)) && b.b > w.b && b.b <= w.b + w.d).ToList();
                 foreach (var b in bomb)
                 {
@@ -62,10 +61,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             foreach (var w in rightWall)
             {
-                var note = notes.Where(n => n.Line == 3 && !(n.Layer == 0 && w.y == 0 && w.h == 1) && ((n.Layer >= w.y && n.Layer < w.y + w.h) || (n.Layer >= 0 && w.y == 0 && w.h > 1)) && n.Time > w.b && n.Time <= w.b + w.d && (n.Head || !n.Pattern)).ToList();
+                var note = notes.Where(n => n.x == 3 && !(n.y == 0 && w.y == 0 && w.h == 1) && ((n.y >= w.y && n.y < w.y + w.h) || (n.y >= 0 && w.y == 0 && w.h > 1)) && n.b > w.b && n.b <= w.b + w.d && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
                 foreach (var n in note)
                 {
-                    var no = ColorNotes.Where(c => c.b == n.Time && c.c == n.Type && n.Line == c.x && n.Layer == c.y).FirstOrDefault();
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
                         Characteristic = CriteriaCheckManager.Characteristic,
@@ -75,7 +73,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         CheckType = "Wall",
                         Description = "Notes cannot be hidden behind walls.",
                         ResultData = new() { new("Hidden", "Error") },
-                        BeatmapObjects = new() { no }
+                        BeatmapObjects = new() { n }
                     });
                     issue = CritResult.Fail;
                 }

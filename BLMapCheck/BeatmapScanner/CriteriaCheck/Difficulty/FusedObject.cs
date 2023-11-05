@@ -1,9 +1,8 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
 
@@ -13,16 +12,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Detect if objects are too close. Configurable margin (in ms)
         // TODO: There's probably a way better way to do this, can someone clean this mess
-        public static CritResult Check(List<Colornote> Notes, List<Bombnote> Bombs, List<Obstacle> Obstacles, List<Burstslider> Chains, float NoteJumpSpeed)
+        public static CritResult Check(List<Colornote> notes, List<Bombnote> bombs, List<Obstacle> obstacles, List<Burstslider> chains, float njs)
         {
             var issue = CritResult.Success;
 
-            foreach (var w in Obstacles)
+            foreach (var w in obstacles)
             {
-                foreach (var c in Notes)
+                foreach (var c in notes)
                 {
                     BeatPerMinute.BPM.SetCurrentBPM(c.b);
-                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / NoteJumpSpeed * Instance.FusedDistance, 3);
+                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
                     if (c.b - (w.b + w.d) >= max)
                     {
                         break;
@@ -43,10 +42,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         issue = CritResult.Fail;
                     }
                 }
-                foreach (var b in Bombs)
+                foreach (var b in bombs)
                 {
                     BeatPerMinute.BPM.SetCurrentBPM(b.b);
-                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / NoteJumpSpeed * Instance.FusedDistance, 3);
+                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
                     if (b.b - (w.b + w.d) >= max)
                     {
                         break;
@@ -67,10 +66,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         issue = CritResult.Fail;
                     }
                 }
-                foreach (var c in Chains)
+                foreach (var c in chains)
                 {
                     BeatPerMinute.BPM.SetCurrentBPM(c.b);
-                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / NoteJumpSpeed * Instance.FusedDistance, 3);
+                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
                     if (c.b - (w.b + w.d) >= max)
                     {
                         break;
@@ -93,14 +92,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            for (int i = 0; i < Notes.Count; i++)
+            for (int i = 0; i < notes.Count; i++)
             {
-                var c = Notes[i];
-                for (int j = i + 1; j < Notes.Count; j++)
+                var c = notes[i];
+                for (int j = i + 1; j < notes.Count; j++)
                 {
-                    var c2 = Notes[j];
+                    var c2 = notes[j];
                     BeatPerMinute.BPM.SetCurrentBPM(c2.b);
-                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / NoteJumpSpeed * Instance.FusedDistance, 3);
+                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
                     if (c2.b - c.b >= max)
                     {
                         break;
@@ -121,11 +120,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         issue = CritResult.Fail;
                     }
                 }
-                for (int j = 0; j < Bombs.Count; j++)
+                for (int j = 0; j < bombs.Count; j++)
                 {
-                    var b = Bombs[j];
+                    var b = bombs[j];
                     BeatPerMinute.BPM.SetCurrentBPM(b.b);
-                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / NoteJumpSpeed * Instance.FusedDistance, 3);
+                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
                     if (b.b - c.b >= max)
                     {
                         break;
@@ -146,11 +145,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         issue = CritResult.Fail;
                     }
                 }
-                for (int j = i + 1; j < Chains.Count; j++)
+                for (int j = i + 1; j < chains.Count; j++)
                 {
-                    var c2 = Chains[j];
+                    var c2 = chains[j];
                     BeatPerMinute.BPM.SetCurrentBPM(c2.b);
-                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / NoteJumpSpeed * Instance.FusedDistance, 3);
+                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
                     if (c2.b - c.b >= max)
                     {
                         break;
@@ -173,14 +172,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            for (int i = 0; i < Bombs.Count; i++)
+            for (int i = 0; i < bombs.Count; i++)
             {
-                var b = Bombs[i];
-                for (int j = i + 1; j < Bombs.Count; j++)
+                var b = bombs[i];
+                for (int j = i + 1; j < bombs.Count; j++)
                 {
-                    var b2 = Bombs[j];
+                    var b2 = bombs[j];
                     BeatPerMinute.BPM.SetCurrentBPM(b2.b);
-                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / NoteJumpSpeed * Instance.FusedDistance, 3);
+                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
                     if (b2.b - b.b >= max)
                     {
                         break;
@@ -201,11 +200,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         issue = CritResult.Fail;
                     }
                 }
-                for (int j = i + 1; j < Chains.Count; j++)
+                for (int j = i + 1; j < chains.Count; j++)
                 {
-                    var c2 = Chains[j];
+                    var c2 = chains[j];
                     BeatPerMinute.BPM.SetCurrentBPM(c2.b);
-                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / NoteJumpSpeed * Instance.FusedDistance, 3);
+                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
                     if (c2.b - b.b >= max)
                     {
                         break;
@@ -228,14 +227,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            for (int i = 0; i < Chains.Count; i++)
+            for (int i = 0; i < chains.Count; i++)
             {
-                var c = Chains[i];
-                for (int j = i + 1; j < Chains.Count; j++)
+                var c = chains[i];
+                for (int j = i + 1; j < chains.Count; j++)
                 {
-                    var c2 = Chains[j];
+                    var c2 = chains[j];
                     BeatPerMinute.BPM.SetCurrentBPM(c2.b);
-                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / NoteJumpSpeed * Instance.FusedDistance, 3);
+                    var max = Math.Round(BeatPerMinute.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
                     if (c2.b - c.b >= max)
                     {
                         break;

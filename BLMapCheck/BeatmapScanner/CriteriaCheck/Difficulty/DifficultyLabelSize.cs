@@ -10,11 +10,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class DifficultyLabelSize
     {
         // TODO: Check what would be a good value for MaxChar based on the numbers of difficulties in that characteristic (Count).
-        public static CritResult Check(string DifficultyLabel, int Count = 1)
+        public static CritResult Check(string difficultyLabel, int count = 1)
         {
-            if (DifficultyLabel != null)
+            if (difficultyLabel != null)
             {
-                if (DifficultyLabel.Count() > Instance.MaxChar / Count)
+                if (difficultyLabel.Count() > Instance.MaxChar / count)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -24,7 +24,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Label",
                         Description = "The difficulty label is too long.",
-                        ResultData = new() { new("LabelSize", "Current is " + DifficultyLabel.Count().ToString() + " characters. Maximum " + Instance.MaxChar.ToString() + " characters.") }
+                        ResultData = new() { new("LabelSize", "Current is " + difficultyLabel.Count().ToString() + " characters. Maximum " + Instance.MaxChar.ToString() + " characters.") }
                     });
                     return CritResult.Fail;
                 }
@@ -37,7 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Label",
                     Description = "The difficulty label size is valid.",
-                    ResultData = new() { new("LabelSize", "Current is " + DifficultyLabel.Count().ToString() + " characters. Maximum " + Instance.MaxChar.ToString() + " characters.") },
+                    ResultData = new() { new("LabelSize", "Current is " + difficultyLabel.Count().ToString() + " characters. Maximum " + Instance.MaxChar.ToString() + " characters.") },
                 });
 
                 return CritResult.Success;

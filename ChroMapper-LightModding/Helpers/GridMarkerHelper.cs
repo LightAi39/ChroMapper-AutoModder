@@ -1,14 +1,10 @@
 ﻿using Beatmap.Base;
-using Beatmap.Base.Customs;
 using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
 using ChroMapper_LightModding.Models;
+using Parser.Map.Difficulty.V3.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -209,7 +205,12 @@ namespace ChroMapper_LightModding.Helpers
             List<Bpmevent> bpmChangesChecker = new();
             foreach (var bpmChange in bpmChanges)
             {
-                bpmChangesChecker.Add(new(bpmChange.Bpm, bpmChange.JsonTime));
+                Bpmevent bpmevent = new Bpmevent
+                {
+                    b = bpmChange.JsonTime,
+                    m = bpmChange.Bpm
+                };
+                bpmChangesChecker.Add(bpmevent);
             }
             bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
         }

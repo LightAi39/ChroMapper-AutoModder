@@ -1,5 +1,5 @@
-﻿using BLMapCheck.Classes.MapVersion.Difficulty;
-using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Grid;
 using JoshaParity;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             public bool Flick { get; set; } = false;
         }
 
-        public static void Check(List<SwingData> Swings, List<Colornote> Notes)
+        public static void Check(List<SwingData> swings, List<Colornote> notes)
         {
             var windowSize = 4f; // beats
             Queue<SwingData> dataWindowLeft = new();
@@ -25,7 +25,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             List<EbpmData> ReverseRollingAverageLeft = new();
             List<EbpmData> ReverseRollingAverageRight = new();
 
-            foreach (var swing in Swings)
+            foreach (var swing in swings)
             {
                 EbpmData data = new();
                 var clean = true;
@@ -56,9 +56,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             dataWindowLeft.Clear();
             dataWindowRight.Clear();
-            for (int i = Swings.Count - 1; i >= 0; i--)
+            for (int i = swings.Count - 1; i >= 0; i--)
             {
-                var swing = Swings[i];
+                var swing = swings[i];
                 EbpmData data = new();
                 var clean = true;
                 if (!swing.rightHand)
@@ -111,11 +111,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (data.Flick)
                 {
                     var note = data.Swing.notes.FirstOrDefault();
-                    var index = Notes.FindIndex(c => c.b == note.b && c.c == note.c && note.x == c.x && note.y == c.y);
-                    var cube = Notes[index];
-                    if (index < Notes.Count - 3)
+                    var index = notes.FindIndex(c => c.b == note.b && c.c == note.c && note.x == c.x && note.y == c.y);
+                    var cube = notes[index];
+                    if (index < notes.Count - 3)
                     {
-                        if (Notes[index + 1].b - cube.b != Notes[index + 2].b - Notes[index + 1].b)
+                        if (notes[index + 1].b - cube.b != notes[index + 2].b - notes[index + 1].b)
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
@@ -152,11 +152,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (data.Flick)
                 {
                     var note = data.Swing.notes.FirstOrDefault();
-                    var index = Notes.FindIndex(c => c.b == note.b && c.c == note.c && note.x == c.x && note.y == c.y);
-                    var cube = Notes[index];
-                    if (index < Notes.Count - 3)
+                    var index = notes.FindIndex(c => c.b == note.b && c.c == note.c && note.x == c.x && note.y == c.y);
+                    var cube = notes[index];
+                    if (index < notes.Count - 3)
                     {
-                        if (Notes[index + 1].b - cube.b != Notes[index + 2].b - Notes[index + 1].b)
+                        if (notes[index + 1].b - cube.b != notes[index + 2].b - notes[index + 1].b)
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {

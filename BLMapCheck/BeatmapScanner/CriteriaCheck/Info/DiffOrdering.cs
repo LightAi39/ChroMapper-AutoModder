@@ -1,9 +1,9 @@
-﻿using BLMapCheck.Classes.MapVersion;
-using BLMapCheck.Classes.MapVersion.Difficulty;
-using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.Classes.Results;
+using Parser.Map;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
+using beatleader_analyzer;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
@@ -16,19 +16,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 
             foreach (var difficulty in difficulties.Where(x => x.Characteristic == CriteriaCheckManager.Characteristic))
             {
-                if (difficulty.Data.colorNotes.Any())
-                {
-                    var notes = difficulty.Data.colorNotes.Where(n => n.c == 0 || n.c == 1).ToList();
-                    notes = notes.OrderBy(o => o.b).ToList();
-
-                    if (notes.Count > 0)
+                if(difficulty.Data.colorNotes.Count >= 20)
                     {
-                        List<Burstslider> chains = difficulty.Data.burstSliders.OrderBy(o => o.b).ToList();
-                        List<Bombnote> bombs = difficulty.Data.bombNotes.OrderBy(o => o.b).ToList();
-                        List<Obstacle> obstacles = difficulty.Data.obstacles.OrderBy(o => o.b).ToList();
-                        var data = BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatsPerMinute);
-                        passStandard.Add(data.diff);
-                    }
+                    var data = Analyze.GetDataOneDiff(difficulty.Data, BeatsPerMinute);
+                    passStandard.Add(data[0]);
                 }
             }
 

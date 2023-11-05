@@ -1,10 +1,5 @@
 ﻿using BLMapCheck.BeatmapScanner.Data.Criteria;
-using BLMapCheck.Classes.MapVersion;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BLMapCheck.Classes.Results
 {

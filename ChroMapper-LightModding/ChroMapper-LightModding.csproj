@@ -47,6 +47,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>dll\JoshaParity.dll</HintPath>
     </Reference>
+    <Reference Include="Parser">
+      <HintPath>..\BLMapCheck\dll\Parser.dll</HintPath>
+    </Reference>
     <Reference Include="Plugins, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Plugins.dll</HintPath>

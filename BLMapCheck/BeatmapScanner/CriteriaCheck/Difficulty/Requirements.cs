@@ -7,11 +7,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Requirements
     {
-        public static CritResult Check(List<string> Requirements)
+        public static CritResult Check(List<string> requirements)
         {
             var issue = CritResult.Success;
 
-            if (Requirements != null && Requirements.Any())
+            if (requirements != null && requirements.Any())
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -21,7 +21,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "Requirements",
                     Description = "Any map that is dependent on other mods or programs is not allowed.",
-                    ResultData = new() { new("Requirements", "Has " + string.Join(",", Requirements.ToArray())) }
+                    ResultData = new() { new("Requirements", "Has " + string.Join(",", requirements.ToArray())) }
                 });
                 issue = CritResult.Fail;
             }

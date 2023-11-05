@@ -1,9 +1,9 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Base;
+using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
@@ -14,7 +14,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
         // Most of the minimum and maximum duration are configurable
-        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, double PassRating, double TechRating)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, double pass, double tech)
         {
             CritResult issue = CritResult.Success;
             if (beatmapGridObjects.Any())
@@ -29,7 +29,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var MaxBottomNoteTime = BeatPerMinute.BPM.ToBeatTime((float)Instance.VBMinBottomNoteTime);
                     var MaxOuterNoteTime = BeatPerMinute.BPM.ToBeatTime((float)Instance.VBMaxOuterNoteTime);
                     var Overall = BeatPerMinute.BPM.ToBeatTime((float)Instance.VBMinimum);
-                    var MinTimeWarning = BeatPerMinute.BPM.ToBeatTime((float)((800 - 300) * Math.Pow(Math.E, -PassRating / 7.6 - TechRating * 0.04) + 300) / 1000);
+                    var MinTimeWarning = BeatPerMinute.BPM.ToBeatTime((float)((800 - 300) * Math.Pow(Math.E, -pass / 7.6 - tech * 0.04) + 300) / 1000);
                     lastMidL.RemoveAll(l => note.b - l.b > MinTimeWarning);
                     lastMidR.RemoveAll(l => note.b - l.b > MinTimeWarning);
                     if (lastMidL.Count > 0)

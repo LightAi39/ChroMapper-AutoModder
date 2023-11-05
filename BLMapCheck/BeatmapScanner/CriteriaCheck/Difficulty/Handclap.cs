@@ -1,10 +1,9 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
@@ -12,14 +11,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Handclap
     {
         // Attempt to detect specific note and angle placement based on BeatLeader criteria
-        public static CritResult Check(List<Colornote> Notes)
+        public static CritResult Check(List<Colornote> notes)
         {
             var issue = CritResult.Success;
 
-            if (Notes.Any())
+            if (notes.Any())
             {
-                var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
-                Colornote previous = Notes[0];
+                Colornote previous = notes[0];
                 Colornote[] lastNote = { null, null };
                 List<List<Colornote>> swingNoteArray = new()
                 {
@@ -28,9 +26,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 };
                 var arr = new List<Colornote>();
                 var arr2 = new List<Colornote>();
-                for (int i = 0; i < Notes.Count; i++)
+                for (int i = 0; i < notes.Count; i++)
                 {
-                    var note = Notes[i];
+                    var note = notes[i];
                     if (note.d == 8)
                     {
                         continue;

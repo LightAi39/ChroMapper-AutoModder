@@ -1,13 +1,13 @@
-﻿using BLMapCheck.BeatmapScanner.Data;
-using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
+﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.Results;
 using BLMapCheck.Classes.Unity;
-using JoshaParity;
+using Parser.Map.Difficulty.V3.Base;
+using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
+using static BLMapCheck.Classes.Helper.Helper;
 using SwingData = JoshaParity.SwingData;
 using SwingType = BLMapCheck.BeatmapScanner.MapCheck.SwingType;
 
@@ -43,24 +43,23 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         }
 
         // Check if a note block the swing path of another note of a different color
-        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> Swings)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Colornote> notes)
         {
             var issue = CritResult.Success;
 
             if (beatmapGridObjects.Any())
             {
-                var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
-                List<List<Cube>> doubleNotes = new();
-                foreach (var note in cubes) // Find the double and group them together
+                List<List<Colornote>> doubleNotes = new();
+                foreach (var note in notes) // Find the double and group them together
                 {
-                    var n = cubes.Where(n => n.Time == note.Time && n != note && ((n.Type == 0 && note.Type == 1) || (n.Type == 1 && note.Type == 0))).FirstOrDefault();
+                    var n = notes.Where(n => n.b == note.b && n != note && ((n.c == 0 && note.c == 1) || (n.c == 1 && note.c == 0))).FirstOrDefault();
                     if (n != null)
                     {
                         if (doubleNotes.Count == 0)
                         {
                             doubleNotes.Add(new());
                         }
-                        else if (!doubleNotes.Last().Exists(x => x.Time == n.Time))
+                        else if (!doubleNotes.Last().Exists(x => x.b == n.b))
                         {
                             doubleNotes.Add(new());
                             doubleNotes[doubleNotes.Count - 1] = new();
@@ -80,17 +79,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             if (i == j) continue;
                             var note2 = group[j];
-                            if (note.Time != note2.Time) break; // Not a double anymore
-                            if (note.Type == note2.Type) continue; // Same color
+                            if (note.b != note2.b) break; // Not a double anymore
+                            if (note.c == note2.c) continue; // Same color
                                                                    // Fetch previous note, simulate swing
-                            var previous = cubes.Where(c => c.Time < note2.Time && c.Type == note2.Type).LastOrDefault();
+                            var previous = notes.Where(c => c.b < note2.b && c.c == note2.c).LastOrDefault();
                             if (previous != null)
                             {
-                                var angleOfAttack = note2.Direction;
-                                var prevDirection = ScanMethod.ReverseCutDirection(previous.Direction);
                                 // This is calculating the angle between the previous note + extra swing and the next note
-                                if (note2.CutDirection != 8 && previous.CutDirection != 8)
+                                if (note2.d != 8 && previous.d != 8)
                                 {
+                                    var angleOfAttack = DirectionToDegree[note2.d];
+                                    var prevDirection = ReverseCutDirection(DirectionToDegree[previous.d]);
                                     var di = Math.Abs(prevDirection - angleOfAttack);
                                     di = Math.Min(di, 360 - di) / 4;
                                     if (angleOfAttack < prevDirection)
@@ -116,12 +115,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         }
                                     }
                                     // Simulate the position of the line based on the new angle found
-                                    var simulatedLineOfAttack = ScanMethod.SimulateSwingPos(note2.Line, note2.Layer, ScanMethod.ReverseCutDirection(angleOfAttack), 2);
+                                    var simulatedLineOfAttack = SimSwingPos(note2.x, note2.y, ReverseCutDirection(angleOfAttack), 2);
                                     // Check if the other note is close to the line
-                                    var InPath = NearestPointOnFiniteLine(new(note2.Line, note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.Line, note.Layer));
+                                    var InPath = NearestPointOnFiniteLine(new(note2.x, note2.y), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.x, note.y));
                                     if (InPath)
                                     {
-                                        var obj = beatmapGridObjects.Where(c => c.b == note.Time && note.Line == c.x && note.Layer == c.y).FirstOrDefault();
+                                        var obj = beatmapGridObjects.Where(c => c.b == note.b && note.x == c.x && note.y == c.y).FirstOrDefault();
                                         CheckResults.Instance.AddResult(new CheckResult()
                                         {
                                             Characteristic = CriteriaCheckManager.Characteristic,
@@ -177,8 +176,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             IsDiagonal = true;
                         }
-                        var a = Swings.Where(x => x.notes.Any(y => y.b == curr.b && y.c == curr.c && y.d == curr.d && y.x == curr.x && y.y == curr.y)).FirstOrDefault();
-                        var b = Swings.Where(x => x.notes.Any(y => y.b == comp.b && y.c == comp.c && y.d == comp.d && y.x == comp.x && y.y == comp.y)).FirstOrDefault();
+                        var a = swings.Where(x => x.notes.Any(y => y.b == curr.b && y.c == curr.c && y.d == curr.d && y.x == curr.x && y.y == curr.y)).FirstOrDefault();
+                        var b = swings.Where(x => x.notes.Any(y => y.b == comp.b && y.c == comp.c && y.d == comp.d && y.x == comp.x && y.y == comp.y)).FirstOrDefault();
                         var d = Math.Sqrt(Math.Pow(curr.x - comp.x, 2) + Math.Pow(curr.y - comp.y, 2));
                         if (d > 0.499 && d < 1.001) // Adjacent
                         {

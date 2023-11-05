@@ -1,4 +1,4 @@
-﻿using BLMapCheck.Classes.MapVersion.Difficulty;
+﻿using Parser.Map.Difficulty.V3.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,11 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Event;
+using Parser.Map.Difficulty.V3.Event.V3;
+using Parser.Map.Difficulty.V3.Grid;
+using Parser.Map.Difficulty.V3.Event;
+using Parser.Map.Difficulty.V3.Event.V3;
+using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
@@ -37,13 +42,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         // Fetch the average event per beat, and compare it to a configurable value
         // Also check for well-lit bombs
-        public static CritResult Check(float LoadedSongLength, List<Basicbeatmapevent> Events, List<Lightcoloreventboxgroup> V3Events)
+        public static CritResult Check(float songLength, List<Basicbeatmapevent> events, List<Lightcoloreventboxgroup> v3events, List<Bombnote> bombs)
         {
             var issue = CritResult.Success;
-            var end = BeatPerMinute.BPM.ToBeatTime(LoadedSongLength, true);
-            var bombs = BeatmapScanner.Bombs.OrderBy(b => b.b).ToList();
+            var end = BeatPerMinute.BPM.ToBeatTime(songLength, true);
             var lit = true;
-            if (!Events.Any() || !Events.Exists(e => e.et >= 0 && e.et <= 5))
+            if (!events.Any() || !events.Exists(e => e.et >= 0 && e.et <= 5))
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -59,11 +63,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             else
             {
-                var lights = Events.Where(e => e.et >= 0 && e.et <= 5).OrderBy(e => e.b).ToList();
+                var lights = events.Where(e => e.et >= 0 && e.et <= 5).OrderBy(e => e.b).ToList();
                 var average = lights.Count() / end;
-                if (V3Events.Count > 0)
+                if (v3events.Count > 0)
                 {
-                    average = V3Events.Count() / end;
+                    average = v3events.Count() / end;
                 }
                 if (average < Instance.AverageLightPerBeat)
                 {
@@ -106,7 +110,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 var eventLitTime = new List<List<EventLitTime>>();
-                if (V3Events.Count > 0)
+                if (v3events.Count > 0)
                 {
                     //ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked."); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()

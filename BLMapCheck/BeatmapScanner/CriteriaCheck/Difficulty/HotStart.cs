@@ -1,6 +1,7 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Base;
+using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
@@ -10,11 +11,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class HotStart
     {
         // Detect objects that are too early in the map, configurable setting is available
-        public static CritResult Check(List<BeatmapGridObject> Objects, List<Obstacle> Walls)
+        public static CritResult Check(List<BeatmapGridObject> objects, List<Obstacle> walls)
         {
             var issue = CritResult.Success;
             var limit = BeatPerMinute.BPM.ToBeatTime((float)Instance.HotStartDuration, true);
-            foreach (var c in Objects)
+            foreach (var c in objects)
             {
                 if (c.b < limit)
                 {
@@ -33,7 +34,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 else break;
             }
-            foreach (var w in Walls)
+            foreach (var w in walls)
             {
                 if (w.b < limit && ((w.x + w.w >= 2 && w.x < 2) || w.x == 1 || w.x == 2))
                 {

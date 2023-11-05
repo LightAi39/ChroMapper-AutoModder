@@ -1,6 +1,7 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Base;
+using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
@@ -9,12 +10,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class ColdEnd
     {
-        public static CritResult Check(List<BeatmapGridObject> Objects, List<Obstacle> Walls, float LoadedSongLength)
+        public static CritResult Check(List<BeatmapGridObject> objects, List<Obstacle> walls, float songLength)
         {
             var issue = CritResult.Success;
-            var limit = BeatPerMinute.BPM.ToBeatTime(LoadedSongLength - (float)Instance.ColdEndDuration, true);
+            var limit = BeatPerMinute.BPM.ToBeatTime(songLength - (float)Instance.ColdEndDuration, true);
 
-            foreach (var obj in Objects)
+            foreach (var obj in objects)
             {
                 if (obj.b > limit)
                 {
@@ -32,7 +33,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     issue = CritResult.Fail;
                 }
             }
-            foreach (var w in Walls)
+            foreach (var w in walls)
             {
                 if (w.b + w.d > limit && ((w.x + w.w >= 2 && w.x < 2) || w.x == 1 || w.x == 2))
                 {

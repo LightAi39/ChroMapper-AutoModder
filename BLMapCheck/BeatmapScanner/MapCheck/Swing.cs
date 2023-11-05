@@ -1,8 +1,8 @@
-﻿using BLMapCheck.Classes.ChroMapper;
-using BLMapCheck.Classes.MapVersion.Difficulty;
+﻿using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static BLMapCheck.Classes.Helper.Helper;
 
 namespace BLMapCheck.BeatmapScanner.MapCheck
 {
@@ -125,7 +125,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
 
         public static double ShortRotDistance(double a, double b, double m)
         {
-            return Math.Min(ScanMethod.Mod(a - b, m), ScanMethod.Mod(b - a, m));
+            return Math.Min(Mod(a - b, m), Mod(b - a, m));
         }
 
         public static bool Next(Colornote currNote, Colornote prevNote, double bpm, List<Colornote> context = null)
@@ -261,7 +261,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 {
                     nA1 = a1;
                 }
-                var a = (ScanMethod.ConvertRadiansToDegrees(Math.Atan2(nY1 - nY2, nX1 - nX2)) + 360) % 360;
+                var a = (ConvertRadiansToDegrees(Math.Atan2(nY1 - nY2, nX1 - nX2)) + 360) % 360;
                 for (int i = 0; i < index; i++)
                 {
                     var aS = (nA1 + 360 - angleDistances[i, 0]) % 360;
@@ -283,7 +283,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
                 {
                     nA2 = a2;
                 }
-                var a = (ScanMethod.ConvertRadiansToDegrees(Math.Atan2(nY2 - nY1, nX2 - nX1)) + 360) % 360;
+                var a = (ConvertRadiansToDegrees(Math.Atan2(nY2 - nY1, nX2 - nX1)) + 360) % 360;
                 for (int i = 0; i < index; i++)
                 {
                     var aS = (nA2 + 360 - angleDistances[i, 0]) % 360;

@@ -1,24 +1,23 @@
-﻿using BLMapCheck.BeatmapScanner.Data;
-using BLMapCheck.BeatmapScanner.MapCheck;
+﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Grid;
+using static BLMapCheck.Classes.Helper.Helper;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Hitbox
     {
         // Implementation of Kival Evan hitboxInline.ts, hitboxStair.ts and hitboxReverseStaircase.ts
-        public static CritResult HitboxCheck(List<Colornote> Notes, float NoteJumpSpeed)
+        public static CritResult HitboxCheck(List<Colornote> notes, float njs)
         {
             var issue = CritResult.Success;
 
-            if (Notes.Any())
+            if (notes.Any())
             {
-                var cubes = BeatmapScanner.Cubes.OrderBy(c => c.Time).ToList();
                 Colornote[] lastNote = { null, null };
                 List<List<Colornote>> swingNoteArray = new()
                 {
@@ -27,9 +26,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 };
                 var arr = new List<Colornote>();
 
-                for (int i = 0; i < Notes.Count; i++)
+                for (int i = 0; i < notes.Count; i++)
                 {
-                    var note = Notes[i];
+                    var note = notes[i];
                     if (lastNote[note.c] != null)
                     {
                         if (Swing.Next(note, lastNote[note.c], BeatPerMinute.BPM.GetValue(), swingNoteArray[note.c]))
@@ -45,7 +44,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             isInline = true;
                         }
-                        if (NoteJumpSpeed < 1.425 / ((60 * (note.b - other.b)) / BeatPerMinute.BPM.GetValue()) && isInline)
+                        if (njs < 1.425 / ((60 * (note.b - other.b)) / BeatPerMinute.BPM.GetValue()) && isInline)
                         {
                             arr.Add(note);
                             break;
@@ -80,11 +79,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     new(),
                     new()
                 };
-                Cube[] noteOccupy = { new(), new() };
+                NoteData[] noteOccupy = { new(), new() };
                 arr.Clear();
-                for (int i = 0; i < Notes.Count; i++)
+                for (int i = 0; i < notes.Count; i++)
                 {
-                    var note = Notes[i];
+                    var note = notes[i];
                     if (lastNote[note.c] != null)
                     {
                         if (Swing.Next(note, lastNote[note.c], BeatPerMinute.BPM.GetValue(), swingNoteArray[note.c]))
@@ -122,7 +121,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             if (note.b - lastNote[(note.c + 1) % 2].b != 0 &&
                                 note.b - lastNote[(note.c + 1) % 2].b < Math.Min(hitboxTime, lastSpeed[(note.c + 1) % 2]))
                             {
-                                if (note.x == noteOccupy[(note.c + 1) % 2].Line && note.y == noteOccupy[(note.c + 1) % 2].Layer && !Swing.IsDouble(note, Notes, i))
+                                if (note.x == noteOccupy[(note.c + 1) % 2].Line && note.y == noteOccupy[(note.c + 1) % 2].Layer && !Swing.IsDouble(note, notes, i))
                                 {
                                     arr.Add(note);
                                 }
@@ -173,9 +172,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     new()
                 };
                 arr.Clear();
-                for (int i = 0; i < Notes.Count; i++)
+                for (int i = 0; i < notes.Count; i++)
                 {
-                    var note = Notes[i];
+                    var note = notes[i];
                     if (lastNote[note.c] != null)
                     {
                         if (Swing.Next(note, lastNote[note.c], BeatPerMinute.BPM.GetValue(), swingNoteArray[note.c]))
@@ -197,7 +196,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             }
                             var isDiagonal = Swing.NoteDirectionAngle[other.d] % 90 > 15 && Swing.NoteDirectionAngle[other.d] % 90 < 75;
                             double[,] value = { { 15, 1.5 } };
-                            if (NoteJumpSpeed < 1.425 / ((60 * (note.b - other.b)) / BeatPerMinute.BPM.GetValue() + (isDiagonal ? constantDiagonal : constant)) &&
+                            if (njs < 1.425 / ((60 * (note.b - other.b)) / BeatPerMinute.BPM.GetValue() + (isDiagonal ? constantDiagonal : constant)) &&
                                 Swing.IsIntersect(note, other, value, 1))
                             {
                                 arr.Add(other);

@@ -32,12 +32,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Analyzer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\Analyzer.dll</HintPath>
+    </Reference>
     <Reference Include="JoshaParity, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>dll\JoshaParity.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Parser, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\Parser.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,9 +56,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BeatmapScanner\CriteriaCheck.cs" />
@@ -85,11 +90,9 @@
     <Compile Include="BeatmapScanner\CriteriaCheck\Info\SongName.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Info\SongPreview.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Info\SubName.cs" />
-    <Compile Include="BeatmapScanner\Data\Criteria\DiffCrit.cs" />
-    <Compile Include="BeatmapScanner\Data\Criteria\InfoCrit.cs" />
-    <Compile Include="BeatmapScanner\Data\Criteria\Recommended.cs" />
-    <Compile Include="BeatmapScanner\Data\Cube.cs" />
-    <Compile Include="BeatmapScanner\Data\SwingData.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Criteria\DiffCrit.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Criteria\InfoCrit.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Criteria\Recommended.cs" />
     <Compile Include="BeatmapScanner\MapCheck\Parity.cs" />
     <Compile Include="BeatmapScanner\MapCheck\Swing.cs" />
     <Compile Include="BeatmapScanner\MapCheck\Timescale.cs" />
@@ -99,15 +102,9 @@
     <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityBase.cs" />
     <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityFilter.cs" />
     <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityList.cs" />
-    <Compile Include="BeatmapScanner\TechAlgo\BeatmapScanner.cs" />
-    <Compile Include="BeatmapScanner\TechAlgo\ScanAlgo.cs" />
-    <Compile Include="BeatmapScanner\TechAlgo\ScanMethod.cs" />
     <Compile Include="BLMapChecker.cs" />
     <Compile Include="Classes\ChroMapper\SpawnParameterHelper.cs" />
-    <Compile Include="Classes\MapVersion\BeatmapV3.cs" />
-    <Compile Include="Classes\MapVersion\Difficulty\DifficultyV2.cs" />
-    <Compile Include="Classes\MapVersion\Difficulty\DifficultyV3.cs" />
-    <Compile Include="Classes\MapVersion\Info\InfoV3.cs" />
+    <Compile Include="Classes\Helper\Helper.cs" />
     <Compile Include="Classes\Results\CheckResult.cs" />
     <Compile Include="Classes\Results\CheckResults.cs" />
     <Compile Include="Classes\Unity\Vector2.cs" />
@@ -115,7 +112,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dll\Analyzer.dll" />
     <Content Include="dll\JoshaParity.dll" />
+    <Content Include="dll\Parser.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

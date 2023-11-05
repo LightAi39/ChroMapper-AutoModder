@@ -1,13 +1,11 @@
-﻿using Beatmap.Base;
-using Beatmap.Enums;
+﻿using Beatmap.Enums;
 using BLMapCheck;
-using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
 using ChroMapper_LightModding.Models;
+using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Obstacle = BLMapCheck.Classes.MapVersion.Difficulty.Obstacle;
 
 namespace ChroMapper_LightModding.Helpers
 {
@@ -30,7 +28,7 @@ namespace ChroMapper_LightModding.Helpers
 
         public (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, string characteristic = "", int difficultyRank = 0, string difficulty = "")
         {
-            criteriaCheck.LoadMap(plugin.currentlyLoadedFolderPath, BeatSaberSongContainer.Instance.LoadedSongLength);
+            criteriaCheck.LoadMap(plugin.currentlyLoadedFolderPath);
             var results = criteriaCheck.CheckAllCriteria();
 
             if (isAutoCheckOnInfo)

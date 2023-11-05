@@ -2,19 +2,19 @@
 using BLMapCheck.BeatmapScanner.CriteriaCheck.Info;
 using BLMapCheck.BeatmapScanner.Data.Criteria;
 using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.MapVersion;
-using BLMapCheck.Classes.MapVersion.Difficulty;
-using BLMapCheck.Classes.MapVersion.Info;
+using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
+using Parser.Map;
+using Parser.Map.Difficulty.V3.Base;
 using JoshaParity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DifficultyV3 = BLMapCheck.Classes.MapVersion.Difficulty.DifficultyV3;
 using Light = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Light;
 using Parity = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Parity;
 using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
+using beatleader_analyzer;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -66,7 +66,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             // Debug.Log("Current diff: " + Difficulty + Characteristic);
 
-            DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Data;
+            Parser.Map.Difficulty.V3.Base.DifficultyV3 diff = BeatmapV3.Instance.Difficulties.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Data;
 
             BeatPerMinute bpm = BeatPerMinute.Create(BeatmapV3.Instance.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.m < 10000 && x.m > 0).ToList(), BeatmapV3.Instance.Info._songTimeOffset);
 
@@ -89,14 +89,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 throw new Exception("Difficulty could not be parsed to BeatmapDifficultyRank");
             }
 
-            (double pass, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) BeatmapScannerData;
+            List<double> BeatmapScannerData = new();
 
             if (diff.colorNotes.Any())
             {
-                //diff.colorNotes = diff.colorNotes.OrderBy(o => o.b).ToList();
-                // disabled for now, but if we have problems we can sort the objects, but it's probably not necessary, but it was done in the old method
-
-                BeatmapScannerData = BeatmapScanner.Analyzer(diff.colorNotes, diff.burstSliders, diff.bombNotes, diff.obstacles, BeatmapV3.Instance.Info._beatsPerMinute);
+                Helper.CreateNoteData(diff.colorNotes);
+                BeatmapScannerData = Analyze.GetDataOneDiff(diff, BeatmapV3.Instance.Info._beatsPerMinute);
             } else
             {
                 return new(); // temporary since it also load lightshow diff, etc.
@@ -114,23 +112,23 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             DiffCrit diffCrit = new()
             {
                 HotStart = HotStart.Check(allNoteObjects, diff.obstacles),
-                ColdEnd = ColdEnd.Check(allNoteObjects, diff.obstacles, BeatmapV3.Instance.SongLength),
-                MinSongDuration = SongDuration.Check(),
-                Slider = Slider.Check(diff.colorNotes),
+                ColdEnd = ColdEnd.Check(allNoteObjects, diff.obstacles, (float)BeatmapV3.Instance.SongLength),
+                MinSongDuration = SongDuration.Check(diff.colorNotes),
+                Slider = Slider.Check(),
                 DifficultyLabelSize = DifficultyLabelSize.Check(difficultyBeatmap._customData?._difficultyLabel),
                 DifficultyName = DifficultyLabelName.Check(difficultyBeatmap._customData?._difficultyLabel),
                 Requirement = Requirements.Check(difficultyBeatmap._customData?._requirements),
-                NJS = NJS.Check(swings, BeatmapV3.Instance.SongLength, difficultyBeatmap._noteJumpMovementSpeed, difficultyBeatmap._noteJumpStartBeatOffset),
+                NJS = NJS.Check(swings, (float)BeatmapV3.Instance.SongLength, difficultyBeatmap._noteJumpMovementSpeed, difficultyBeatmap._noteJumpStartBeatOffset),
                 FusedObject = FusedObject.Check(diff.colorNotes, diff.bombNotes, diff.obstacles, diff.burstSliders, difficultyBeatmap._noteJumpMovementSpeed),
-                Outside = Outside.Check(BeatmapV3.Instance.SongLength),
-                Light = Light.Check(BeatmapV3.Instance.SongLength, diff.basicBeatmapEvents, diff.lightColorEventBoxGroups),
-                Wall = Wall.Check(diff.colorNotes),
-                Chain = Chain.Check(),
+                Outside = Outside.Check((float)BeatmapV3.Instance.SongLength, diff.colorNotes, diff.burstSliders, diff.bombNotes, diff.obstacles),
+                Light = Light.Check((float)BeatmapV3.Instance.SongLength, diff.basicBeatmapEvents, diff.lightColorEventBoxGroups, diff.bombNotes),
+                Wall = Wall.Check(diff.colorNotes, diff.obstacles, diff.bombNotes),
+                Chain = Chain.Check(diff.burstSliders, diff.colorNotes),
                 Parity = Parity.Check(swings, diff.colorNotes),
-                VisionBlock = VisionBlock.Check(allNoteObjects, BeatmapScannerData.pass, BeatmapScannerData.tech),
-                ProlongedSwing = ProlongedSwing.Check(diff.colorNotes),
+                VisionBlock = VisionBlock.Check(allNoteObjects, BeatmapScannerData[0], BeatmapScannerData[1]),
+                ProlongedSwing = ProlongedSwing.Check(diff.colorNotes, diff.burstSliders),
                 Loloppe = Loloppe.Check(diff.colorNotes),
-                SwingPath = SwingPath.Check(allNoteObjects, swings),
+                SwingPath = SwingPath.Check(allNoteObjects, swings, diff.colorNotes),
                 Hitbox = Hitbox.HitboxCheck(diff.colorNotes, difficultyBeatmap._noteJumpMovementSpeed),
                 HandClap = Handclap.Check(diff.colorNotes)
             };
@@ -148,14 +146,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Description = "BeatmapScanner result data",
                 ResultData = new()
                 {
-                    new("Pass", BeatmapScannerData.pass.ToString()),
-                    new("Tech", BeatmapScannerData.tech.ToString()),
+                    new("Pass", BeatmapScannerData[0].ToString()),
+                    new("Tech", BeatmapScannerData[1].ToString()),
                     new("EBPM", diffAnalysis.GetAverageEBPM().ToString()),
-                    new("Slider", BeatmapScannerData.slider.ToString()),
-                    new("BombReset", BeatmapScannerData.reset.ToString()),
+                    new("Slider", BeatmapScannerData[3].ToString()), // TODO: rename to pattern instead
+                    new("BombReset","0"), // TODO: remove or fix
                     new("Reset", diffAnalysis.GetResetCount().ToString()),
-                    new("Crouch", BeatmapScannerData.crouch.ToString()),
-                    new("Linear", BeatmapScannerData.linear.ToString()),
+                    new("Crouch", "0"), // TODO: remove or fix
+                    new("Linear", BeatmapScannerData[4].ToString()),
                     new("SPS", diffAnalysis.GetSPS().ToString()),
                     new("Handness", diffAnalysis.GetHandedness().ToString())
                 }

@@ -6,12 +6,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class DifficultyLabelName
     {
         // Compare current label name with a list of offensive words.
-        public static CritResult Check(string DifficultyLabel)
+        public static CritResult Check(string difficultyLabel)
         {
-            if(DifficultyLabel != null)
+            if(difficultyLabel != null)
             {
                 ProfanityFilter.ProfanityFilter pf = new();
-                var isProfanity = pf.ContainsProfanity(DifficultyLabel);
+                var isProfanity = pf.ContainsProfanity(difficultyLabel);
                 if (isProfanity)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
