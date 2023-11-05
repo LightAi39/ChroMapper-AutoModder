@@ -209,11 +209,7 @@ namespace ChroMapper_LightModding.Helpers
             List<Bpmevent> bpmChangesChecker = new();
             foreach (var bpmChange in bpmChanges)
             {
-                bpmChangesChecker.Add(new()
-                {
-                    b = bpmChange.JsonTime,
-                    m = bpmChange.Bpm
-                });
+                bpmChangesChecker.Add(new(bpmChange.Bpm, bpmChange.JsonTime));
             }
             bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
         }

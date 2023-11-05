@@ -4,7 +4,6 @@ using BLMapCheck;
 using BLMapCheck.Classes.MapVersion.Difficulty;
 using BLMapCheck.Classes.Results;
 using ChroMapper_LightModding.Models;
-using JoshaParity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -491,7 +490,7 @@ namespace ChroMapper_LightModding.Helpers
 
         private void CreateDiffCommentNotes(string message, CommentTypesEnum type, CheckResult result )
         {
-            List<Colornote> notes = result.BeatmapObjects.Cast<Colornote>().ToList();
+            List<Colornote> notes = result.BeatmapObjects.Where(x => x is Colornote).Cast<Colornote>().ToList();
 
             if (notes.Count == 0) return;
             string id = Guid.NewGuid().ToString();

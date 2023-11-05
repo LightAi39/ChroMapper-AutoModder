@@ -29,26 +29,38 @@ namespace BLMapCheck
         {
             BeatmapV3.Reset();
             BeatmapV3.Instance.Info = JsonConvert.DeserializeObject<InfoV3>(File.ReadAllText($"{folderPath}/Info.dat"));
-
-            List<(string path, string difficulty, string characteristic)> difficultyFiles = new();
-
-            foreach (var characteristic in BeatmapV3.Instance.Info._difficultyBeatmapSets)
+            if (BeatmapV3.Instance.Info != null)
             {
-                string characteristicName = characteristic._beatmapCharacteristicName;
+                List<(string path, string difficulty, string characteristic)> difficultyFiles = new();
 
-                foreach (var difficultyBeatmap in characteristic._difficultyBeatmaps)
+                foreach (var characteristic in BeatmapV3.Instance.Info._difficultyBeatmapSets)
                 {
-                    string difficultyName = difficultyBeatmap._difficulty;
-                    difficultyFiles.Add(new($"{difficultyName + characteristicName}.dat", difficultyName, characteristicName));
+                    string characteristicName = characteristic._beatmapCharacteristicName;
+
+                    foreach (var difficultyBeatmap in characteristic._difficultyBeatmaps)
+                    {
+                        string difficultyName = difficultyBeatmap._difficulty;
+                        difficultyFiles.Add(new($"{difficultyBeatmap._beatmapFilename}", difficultyName, characteristicName));
+                    }
                 }
-            }
 
-            foreach (var difficulty in difficultyFiles)
-            {
-                BeatmapV3.Instance.Difficulties.Add(new(difficulty.difficulty, difficulty.characteristic, JsonConvert.DeserializeObject<DifficultyV3>(File.ReadAllText($"{folderPath}/{difficulty.path}"))));
-            }
+                foreach (var difficulty in difficultyFiles)
+                {
+                    if (File.ReadAllText($"{folderPath}/{difficulty.path}").Contains("_version\":\"2"))
+                    {
+                        DifficultyV2 v2 = JsonConvert.DeserializeObject<DifficultyV2>(File.ReadAllText($"{folderPath}/{difficulty.path}"));
+                        BeatmapV3.Instance.Difficulties.Add(new(difficulty.difficulty, difficulty.characteristic, DifficultyV3.V2toV3(v2)));
+                        // This might not be necessary, but I'm adding a BPM event at beat 0 just in case.
+                        BeatmapV3.Instance.Difficulties.Last().Data.bpmEvents.Add(new(BeatmapV3.Instance.Info._beatsPerMinute));
+                    }
+                    else
+                    {
+                        BeatmapV3.Instance.Difficulties.Add(new(difficulty.difficulty, difficulty.characteristic, JsonConvert.DeserializeObject<DifficultyV3>(File.ReadAllText($"{folderPath}/{difficulty.path}"))));
+                    }
+                }
 
-            BeatmapV3.Instance.SongLength = songLength;
+                BeatmapV3.Instance.SongLength = songLength;
+            }
 
             mapLoaded = true;
         }
@@ -63,7 +75,7 @@ namespace BLMapCheck
             mapLoaded = true;
         }
 
-        public void LoadMap(List<(string filename,string json)> jsonStrings, float songLength)
+        public void LoadMap(List<(string filename, string json)> jsonStrings, float songLength)
         {
             BeatmapV3.Reset();
 
@@ -103,6 +115,5 @@ namespace BLMapCheck
             }
             throw new Exception("Check was not finished correctly");
         }
-
     }
 }
