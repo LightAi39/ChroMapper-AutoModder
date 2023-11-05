@@ -161,7 +161,7 @@ namespace BLMapCheck.Classes.MapVersion.Difficulty
         public int rotation { get; set; }
         public int prop { get; set; }
         public float speed { get; set; }
-        public int step { get; set; }
+        public float step { get; set; }
         public int[] lightID { get; set; }
         public int direction { get; set; }
         public bool lockRotation { get; set; }
