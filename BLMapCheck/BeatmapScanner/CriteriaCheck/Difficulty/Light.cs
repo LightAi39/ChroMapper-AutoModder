@@ -3,13 +3,11 @@ using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Event;
 using Parser.Map.Difficulty.V3.Event.V3;
 using Parser.Map.Difficulty.V3.Grid;
-using Parser.Map.Difficulty.V3.Event;
-using Parser.Map.Difficulty.V3.Event.V3;
-using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
+using System.Diagnostics;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -47,7 +45,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var issue = CritResult.Success;
             var end = BeatPerMinute.BPM.ToBeatTime(songLength, true);
             var lit = true;
-            if (!events.Any() || !events.Exists(e => e.et >= 0 && e.et <= 5))
+            if ((!events.Any() || !events.Exists(e => e.et >= 0 && e.et <= 5)) && !v3events.Any())
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -110,7 +108,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 var eventLitTime = new List<List<EventLitTime>>();
-                if (v3events.Count > 0)
+                if (v3events.Any())
                 {
                     //ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked."); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()

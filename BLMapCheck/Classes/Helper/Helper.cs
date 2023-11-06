@@ -49,17 +49,17 @@ namespace BLMapCheck.Classes.Helper
                     Note = red[0]
                 };
                 NotesData.Add(d);
-                for (int i = 1; i < red.Count - 1; i++)
+                for (int i = 1; i < red.Count; i++)
                 {
                     var data = new NoteData
                     {
                         Note = red[i]
                     };
-                    if (red[i + 1].b - red[i].b <= 0.125)
+                    if (red[i].b - red[i - 1].b <= 0.125)
                     {
                         data.Pattern = true;
-                        data.Precision = red[i + 1].b - red[i].b;
-                        data.Spacing = Math.Max(Math.Max(Math.Abs(red[i + 1].x - red[i].x), Math.Abs(red[i + 1].y - red[i].y)) - 1, 0);
+                        data.Precision = red[i].b - red[i - 1].b;
+                        data.Spacing = Math.Max(Math.Max(Math.Abs(red[i].x - red[i - 1].x), Math.Abs(red[i].y - red[i - 1].y)) - 1, 0);
                         if (!NotesData.Last().Pattern)
                         {
                             NotesData.Last().Head = true;
@@ -77,17 +77,17 @@ namespace BLMapCheck.Classes.Helper
                     Note = blue[0]
                 };
                 NotesData.Add(d);
-                for (int i = 1; i < blue.Count - 1; i++)
+                for (int i = 1; i < blue.Count; i++)
                 {
                     var data = new NoteData
                     {
                         Note = blue[i]
                     };
-                    if (blue[i + 1].b - blue[i].b <= 0.125)
+                    if (blue[i].b - blue[i - 1].b <= 0.125)
                     {
                         data.Pattern = true;
-                        data.Precision = blue[i + 1].b - blue[i].b;
-                        data.Spacing = Math.Max(Math.Max(Math.Abs(blue[i + 1].x - blue[i].x), Math.Abs(blue[i + 1].y - blue[i].y)) - 1, 0);
+                        data.Precision = blue[i].b - blue[i - 1].b;
+                        data.Spacing = Math.Max(Math.Max(Math.Abs(blue[i].x - blue[i - 1].x), Math.Abs(blue[i].y - blue[i - 1].y)) - 1, 0);
                         if (!NotesData.Last().Pattern)
                         {
                             NotesData.Last().Head = true;
@@ -175,7 +175,78 @@ namespace BLMapCheck.Classes.Helper
         {
             return (x + dis * Math.Cos(ConvertDegreesToRadians(direction)), y + dis * Math.Sin(ConvertDegreesToRadians(direction)));
         }
-    
+
+        public static void OrderPattern(List<Colornote> notes)
+        {
+            var length = 0;
+            for (int n = 0; n < notes.Count - 2; n++)
+            {
+                if (length > 0)
+                {
+                    length--;
+                    continue;
+                }
+                if (notes[n].b == notes[n + 1].b)
+                {
+                    length = notes.Where(c => c.b == notes[n].b).Count() - 1;
+                    var arrow = notes.Where(c => c.d != 8 && c.b == notes[n].b);
+                    double direction = 0;
+                    if (arrow.Count() == 0)
+                    {
+                        var foundArrow = notes.Where(c => c.d != 8 && c.b > notes[n].b).ToList();
+                        if (foundArrow.Count() > 0)
+                        {
+                            direction = ReverseCutDirection(Mod(DirectionToDegree[foundArrow[0].d] + foundArrow[0].a, 360));
+                            for (int i = notes.IndexOf(foundArrow[0]) - 1; i > n; i--)
+                            {
+                                if (notes[i + 1].b - notes[i].b >= 0.25)
+                                {
+                                    direction = ReverseCutDirection(direction);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        direction = ReverseCutDirection(Mod(DirectionToDegree[arrow.Last().d] + arrow.Last().a, 360));
+                    }
+                    (double x, double y) pos;
+                    if (n > 0)
+                    {
+                        pos = SimSwingPos(notes[n - 1].x, notes[n - 1].y, direction);
+                    }
+                    else
+                    {
+                        pos = SimSwingPos(notes[0].x, notes[0].y, direction);
+                    }
+                    List<double> distance = new();
+                    for (int i = n; i < n + length + 1; i++)
+                    {
+                        distance.Add(Math.Sqrt(Math.Pow(pos.y - notes[i].y, 2) + Math.Pow(pos.x - notes[i].x, 2)));
+                    }
+                    for (int i = 0; i < distance.Count; i++)
+                    {
+                        for (int j = n; j < n + length; j++)
+                        {
+                            if (distance[j - n + 1] < distance[j - n])
+                            {
+                                Swap(notes, j, j + 1);
+                                Swap(distance, j - n + 1, j - n);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void Swap<T>(IList<T> list, int indexA, int indexB)
+        {
+            (list[indexB], list[indexA]) = (list[indexA], list[indexB]);
+        }
 
         public static Fraction RealToFraction(double value, double accuracy)
         {

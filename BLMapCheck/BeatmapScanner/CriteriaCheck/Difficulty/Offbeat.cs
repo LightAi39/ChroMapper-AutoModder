@@ -15,16 +15,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         {
             if (notes.Any())
             {
-                var red = notes.Where(n => n.c == 0).ToList();
-                var blue = notes.Where(n => n.c == 1).ToList();
+                var red = NotesData.Where(n => n.Note.c == 0 && (n.Head || !n.Pattern)).ToList();
+                var blue = NotesData.Where(n => n.Note.c == 1 && (n.Head || !n.Pattern)).ToList();
 
                 if(red.Count >= 2)
                 {
                     for (int i = 0; i < red.Count - 1; i++)
                     {
                         var note = red[i];
-                        var precision = (float)Math.Round(note.b % 1, 3);
-                        if (!AllowedSnap.Contains(precision) && red[i + 1].b - red[i].b > 0.125)
+                        var precision = (float)Math.Round(note.Note.b % 1, 3);
+                        if (!AllowedSnap.Contains(precision))
                         {
                             var reality = RealToFraction(precision, 0.01);
                             CheckResults.Instance.AddResult(new CheckResult()
@@ -36,7 +36,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 CheckType = "Offbeat",
                                 Description = "Uncommon precision.",
                                 ResultData = new() { new("Offbeat", reality.N.ToString() + "/" + reality.D.ToString()) },
-                                BeatmapObjects = new() { note }
+                                BeatmapObjects = new() { note.Note }
                             });
                         }
                     }
@@ -46,8 +46,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     for (int i = 0; i < blue.Count - 1; i++)
                     {
                         var note = blue[i];
-                        var precision = (float)Math.Round(note.b % 1, 3);
-                        if (!AllowedSnap.Contains(precision) && blue[i + 1].b - blue[i].b > 0.125)
+                        var precision = (float)Math.Round(note.Note.b % 1, 3);
+                        if (!AllowedSnap.Contains(precision))
                         {
                             var reality = RealToFraction(precision, 0.01);
                             CheckResults.Instance.AddResult(new CheckResult()
@@ -59,7 +59,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 CheckType = "Offbeat",
                                 Description = "Uncommon precision.",
                                 ResultData = new() { new("Offbeat", reality.N.ToString() + "/" + reality.D.ToString()) },
-                                BeatmapObjects = new() { note }
+                                BeatmapObjects = new() { note.Note }
                             });
                         }
                     }

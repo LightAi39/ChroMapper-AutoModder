@@ -109,7 +109,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (previous != null)
                 {
-                    if (left.b - previous.b <= 0.25 && left.b != previous.b && left.x == previous.x && left.y == previous.y)
+                    if (left.b - previous.b <= 0.125 && left.b != previous.b && left.x == previous.x && left.y == previous.y)
                     {
                         if (left.d == 8)
                         {
@@ -152,7 +152,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (previous != null)
                 {
-                    if (right.b - previous.b <= 0.25  && right.b != previous.b && right.x == previous.x && right.y == previous.y)
+                    if (right.b - previous.b <= 0.125  && right.b != previous.b && right.x == previous.x && right.y == previous.y)
                     {
                         if (right.d == 8)
                         {
