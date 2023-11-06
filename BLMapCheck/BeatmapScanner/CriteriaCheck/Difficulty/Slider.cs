@@ -48,14 +48,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var blue = NotesData.Where(c => c.Note.c == 1).ToList();
 
             // TODO: This could probably be done way better but idk
-            for (int i = 0; i < red.Count(); i++)
+            for (int i = 0; i < red.Count() - 1; i++)
             {
                 List<double> dir = new();
-                if (red[i].Head)
+                if (red[i].Head && red[i + 1].Precision != 0)
                 {
                     if (red[i].Note.d != 8)
                     {
-                        dir.Add(red[i].Direction);
+                        dir.Add(DirectionToDegree[red[i].Note.d]);
                     }
                     else
                     {
@@ -101,15 +101,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            for (int i = 0; i < blue.Count(); i++)
+            for (int i = 0; i < blue.Count() - 1; i++)
             {
                 List<double> dir = new();
 
-                if (blue[i].Head)
+                if (blue[i].Head && blue[i + 1].Precision != 0)
                 {
                     if (blue[i].Note.d != 8)
                     {
-                        dir.Add(blue[i].Direction);
+                        dir.Add(DirectionToDegree[blue[i].Note.d]);
                     }
                     else
                     {

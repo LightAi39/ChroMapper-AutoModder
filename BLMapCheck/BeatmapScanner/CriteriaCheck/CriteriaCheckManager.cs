@@ -15,6 +15,7 @@ using Light = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Light;
 using Parity = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Parity;
 using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
 using beatleader_analyzer;
+using beatleader_analyzer.BeatmapScanner.Data;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -89,12 +90,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 throw new Exception("Difficulty could not be parsed to BeatmapDifficultyRank");
             }
 
-            List<double> BeatmapScannerData = new();
+            List<Ratings> BeatmapScannerData = new();
 
             if (diff.colorNotes.Any())
             {
+                BeatmapScannerData = Analyze.GetDataOneDiff(diff, characteristic, difficulty, BeatmapV3.Instance.Info._beatsPerMinute);
                 Helper.CreateNoteData(diff.colorNotes);
-                BeatmapScannerData = Analyze.GetDataOneDiff(diff, BeatmapV3.Instance.Info._beatsPerMinute);
             } else
             {
                 return new(); // temporary since it also load lightshow diff, etc.
@@ -125,7 +126,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Wall = Wall.Check(diff.colorNotes, diff.obstacles, diff.bombNotes),
                 Chain = Chain.Check(diff.burstSliders, diff.colorNotes),
                 Parity = Parity.Check(swings, diff.colorNotes),
-                VisionBlock = VisionBlock.Check(allNoteObjects, BeatmapScannerData[0], BeatmapScannerData[1]),
+                VisionBlock = VisionBlock.Check(allNoteObjects, BeatmapScannerData[0].Pass, BeatmapScannerData[0].Tech),
                 ProlongedSwing = ProlongedSwing.Check(diff.colorNotes, diff.burstSliders),
                 Loloppe = Loloppe.Check(diff.colorNotes),
                 SwingPath = SwingPath.Check(allNoteObjects, swings, diff.colorNotes),
@@ -146,14 +147,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Description = "BeatmapScanner result data",
                 ResultData = new()
                 {
-                    new("Pass", BeatmapScannerData[0].ToString()),
-                    new("Tech", BeatmapScannerData[1].ToString()),
+                    new("Pass", Math.Round(BeatmapScannerData[0].Pass, 2).ToString()),
+                    new("Tech", Math.Round(BeatmapScannerData[0].Tech, 2).ToString()),
                     new("EBPM", diffAnalysis.GetAverageEBPM().ToString()),
-                    new("Slider", BeatmapScannerData[3].ToString()), // TODO: rename to pattern instead
+                    new("Slider", Math.Round(BeatmapScannerData[0].Pattern, 2).ToString()), // TODO: rename to pattern instead
                     new("BombReset","0"), // TODO: remove or fix
                     new("Reset", diffAnalysis.GetResetCount().ToString()),
                     new("Crouch", "0"), // TODO: remove or fix
-                    new("Linear", BeatmapScannerData[4].ToString()),
+                    new("Linear", Math.Round(BeatmapScannerData[0].Linear, 2).ToString()),
                     new("SPS", diffAnalysis.GetSPS().ToString()),
                     new("Handness", diffAnalysis.GetHandedness().ToString())
                 }
