@@ -1,12 +1,12 @@
-﻿using beatleader_parser;
+﻿using beatleader_analyzer;
+using beatleader_parser;
 using BLMapCheck.BeatmapScanner.CriteriaCheck;
 using BLMapCheck.Classes.Results;
 using BLMapCheck.Configs;
-using Parser;
 using Parser.Map;
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace BLMapCheck
 {
@@ -14,6 +14,9 @@ namespace BLMapCheck
     {
         // this should be the entry point for the program
         private bool mapLoaded = false;
+        public static readonly Parse parser = new();
+        public static readonly Analyze analyzer = new();
+        public static BeatmapV3 map;
 
         public BLMapChecker(Config config = null)
         {
@@ -25,27 +28,33 @@ namespace BLMapCheck
 
         public void LoadMap(string folderPath)
         {
-            if (Parse.TryLoadPath(folderPath))
+            mapLoaded = false;
+
+            map = parser.TryLoadPath(folderPath).FirstOrDefault();
+            if (map != null)
             {
                 mapLoaded = true;
             }
         }
 
-        public void LoadMap(BeatmapV3 Beatmap, float songLength)
+        public void LoadMap(BeatmapV3 beatmap)
         {
-            BeatmapV3.Reset();
-            BeatmapV3.Instance.Info = Beatmap.Info;
-            BeatmapV3.Instance.Difficulties = Beatmap.Difficulties;
-            BeatmapV3.Instance.SongLength = songLength;
+            mapLoaded = false;
 
-            mapLoaded = true;
+            if(beatmap != null)
+            {
+                map = beatmap;
+                mapLoaded = true;
+            }
         }
 
         public void LoadMap(List<(string filename, string json)> jsonStrings, float songLength)
         {
-            if(Parse.TryLoadString(jsonStrings, songLength))
+            mapLoaded = false;
+
+            map = parser.TryLoadString(jsonStrings, songLength).FirstOrDefault();
+            if(map != null)
             {
-                BeatmapV3.Instance.SongLength = songLength;
                 mapLoaded = true;
             }
         }

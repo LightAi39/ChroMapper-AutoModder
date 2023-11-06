@@ -18,7 +18,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
             {
                 if(difficulty.Data.colorNotes.Count >= 20)
                 {
-                    var data = Analyze.GetDataOneDiff(difficulty.Data, difficulty.Characteristic, difficulty.Difficulty, BeatsPerMinute);
+                    var data = BLMapChecker.analyzer.GetRating(difficulty.Data, difficulty.Characteristic, difficulty.Difficulty, BeatsPerMinute);
                     passStandard.Add(data[0].Pass);
                 }
             }
