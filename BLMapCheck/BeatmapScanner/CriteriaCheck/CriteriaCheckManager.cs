@@ -94,7 +94,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             if (diff.colorNotes.Any())
             {
                 BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
-                Helper.OrderPattern(diff.colorNotes);
                 Helper.CreateNoteData(diff.colorNotes);
             } else
             {

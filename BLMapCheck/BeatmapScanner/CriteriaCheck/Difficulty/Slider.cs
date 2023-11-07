@@ -51,7 +51,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             for (int i = 0; i < red.Count() - 1; i++)
             {
                 List<double> dir = new();
-                if (red[i].Head)
+                if (red[i].Head && red[i + 1].Note.b != red[i].Note.b)
                 {
                     if (red[i].Note.d != 8)
                     {
@@ -105,7 +105,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 List<double> dir = new();
 
-                if (blue[i].Head)
+                if (blue[i].Head && blue[i + 1].Note.b != blue[i].Note.b)
                 {
                     if (blue[i].Note.d != 8)
                     {
