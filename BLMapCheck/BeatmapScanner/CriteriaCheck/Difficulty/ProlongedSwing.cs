@@ -9,7 +9,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class ProlongedSwing
     {
         // Very basic check for stuff like Pauls, Dotspam, long chain duration, etc.
-        public static CritResult Check(List<Colornote> notes, List<Burstslider> chains)
+        public static CritResult Check(List<Note> notes, List<Chain> chains)
         {
             if(Slider.AverageSliderDuration == -1)
             {
@@ -23,7 +23,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             foreach (var ch in chains)
             {
-                if (ch.tb - ch.b >= Slider.AverageSliderDuration * 4.2)
+                if (ch.TailInBeats - ch.Beats >= Slider.AverageSliderDuration * 4.2)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -33,13 +33,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Chain",
                         Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
-                        ResultData = new() { new("ChainDuration", "Current duration: " + (ch.tb - ch.b).ToString() + " Maximum duration: " + (Slider.AverageSliderDuration * 4.2).ToString()) },
+                        ResultData = new() { new("ChainDuration", "Current duration: " + (ch.TailInBeats - ch.Beats).ToString() + " Maximum duration: " + (Slider.AverageSliderDuration * 4.2).ToString()) },
                         BeatmapObjects = new() { ch }
                     });
                     issue = true;
                     duration = true;
                 }
-                else if (ch.tb - ch.b >= Slider.AverageSliderDuration * 3.15)
+                else if (ch.TailInBeats - ch.Beats >= Slider.AverageSliderDuration * 3.15)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -49,13 +49,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Inconclusive,
                         CheckType = "Chain",
                         Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
-                        ResultData = new() { new("ChainDuration", "Current duration: " + (ch.tb - ch.b).ToString() + " Recommended maximum duration: " + (Slider.AverageSliderDuration * 3.15).ToString()) },
+                        ResultData = new() { new("ChainDuration", "Current duration: " + (ch.TailInBeats - ch.Beats).ToString() + " Recommended maximum duration: " + (Slider.AverageSliderDuration * 3.15).ToString()) },
                         BeatmapObjects = new() { ch }
                     });
                     unsure = true;
                     duration = true;
                 }
-                if (!notes.Exists(c => c.b == ch.b && c.c == ch.c && c.x == ch.x && c.y == ch.y))
+                if (!notes.Exists(c => c.Beats == ch.Beats && c.Color == ch.Color && c.x == ch.x && c.y == ch.y))
                 {
                     // Link spam maybe idk
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -66,7 +66,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Inconclusive,
                         CheckType = "Chain",
                         Description = "Chain must have an head note.",
-                        ResultData = new() { new("ChainHead", "No head note at: " + ch.b + " " + ch.x + "/" + ch.y) },
+                        ResultData = new() { new("ChainHead", "No head note at: " + ch.Beats + " " + ch.x + "/" + ch.y) },
                         BeatmapObjects = new() { ch }
                     });
                     issue = true;
@@ -102,16 +102,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             
             // Dot spam and pauls maybe
-            var leftNotes = notes.Where(d => d.c == 0).ToList();
-            var rightNotes = notes.Where(d => d.c == 1).ToList();
-            Colornote previous = null;
+            var leftNotes = notes.Where(d => d.Color == 0).ToList();
+            var rightNotes = notes.Where(d => d.Color == 1).ToList();
+            Note previous = null;
             foreach (var left in leftNotes)
             {
                 if (previous != null)
                 {
-                    if (left.b - previous.b <= 0.125 && left.b != previous.b && left.x == previous.x && left.y == previous.y)
+                    if (left.Beats - previous.Beats <= 0.125 && left.Beats != previous.Beats && left.x == previous.x && left.y == previous.y)
                     {
-                        if (left.d == 8)
+                        if (left.CutDirection == 8)
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
@@ -152,9 +152,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (previous != null)
                 {
-                    if (right.b - previous.b <= 0.125  && right.b != previous.b && right.x == previous.x && right.y == previous.y)
+                    if (right.Beats - previous.Beats <= 0.125  && right.Beats != previous.Beats && right.x == previous.x && right.y == previous.y)
                     {
-                        if (right.d == 8)
+                        if (right.CutDirection == 8)
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {

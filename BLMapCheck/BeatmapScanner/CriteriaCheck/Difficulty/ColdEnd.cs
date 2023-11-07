@@ -1,5 +1,4 @@
-﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
@@ -10,14 +9,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class ColdEnd
     {
-        public static CritResult Check(List<BeatmapGridObject> objects, List<Obstacle> walls, float songLength)
+        public static CritResult Check(List<BeatmapGridObject> objects, List<Wall> walls, float songLength)
         {
             var issue = CritResult.Success;
-            var limit = BeatPerMinute.BPM.ToBeatTime(songLength - (float)Instance.ColdEndDuration, true);
+            var timescale = CriteriaCheckManager.timescale;
+            var limit = timescale.BPM.ToBeatTime(songLength - (float)Instance.ColdEndDuration, true);
 
             foreach (var obj in objects)
             {
-                if (obj.b > limit)
+                if (obj.Beats > limit)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -27,7 +27,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Duration",
                         Description = "There must be at least 2 seconds of time after the last interactable object.",
-                        ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current object is at: " + obj.b.ToString()) },
+                        ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current object is at: " + obj.Beats.ToString()) },
                         BeatmapObjects = new() { obj }
                     });
                     issue = CritResult.Fail;
@@ -35,7 +35,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             foreach (var w in walls)
             {
-                if (w.b + w.d > limit && ((w.x + w.w >= 2 && w.x < 2) || w.x == 1 || w.x == 2))
+                if (w.Beats + w.DurationInBeats > limit && ((w.x + w.Width >= 2 && w.x < 2) || w.x == 1 || w.x == 2))
                 {
                     //CreateDiffCommentObstacle("R1E - Cold End", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -46,7 +46,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Duration",
                         Description = "There must be at least 2 seconds of time after the last interactable object.",
-                        ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current obstacle is at: " + (w.b + w.d).ToString()) },
+                        ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current obstacle is at: " + (w.Beats + w.DurationInBeats).ToString()) },
                         BeatmapObjects = new() { w }
                     });
                     issue = CritResult.Fail;

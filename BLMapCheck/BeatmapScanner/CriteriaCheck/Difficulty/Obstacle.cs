@@ -1,4 +1,5 @@
-﻿using BLMapCheck.BeatmapScanner.MapCheck;
+﻿using beatleader_parser.Timescale;
+using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
@@ -9,21 +10,21 @@ using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
-    internal static class Wall
+    internal static class Obstacle
     {
         // Calculate dodge wall per seconds, objects hidden behind walls, walls that force players outside of boundary, walls that are too short in middle lane and negative walls.
         // Subjective and max dodge wall, min wall d and trail d is configurable
-        public static CritResult Check(List<Colornote> notes, List<Obstacle> walls, List<Bombnote> bombs)
+        public static CritResult Check(List<Note> notes, List<Wall> walls, List<Bomb> bombs)
         {
             var issue = CritResult.Success;
 
-            var leftWall = walls.Where(w => w.x == 1 && w.w == 1);
-            var rightWall = walls.Where(w => w.x == 2 && w.w == 1);
+            var leftWall = walls.Where(w => w.x == 1 && w.Width == 1);
+            var rightWall = walls.Where(w => w.x == 2 && w.Width == 1);
             var data = Helper.NotesData;
 
             foreach (var w in leftWall)
             {
-                var note = notes.Where(n => n.x == 0 && !(n.y == 0 && w.y == 0 && w.h == 1) && ((n.y >= w.y && n.y < w.y + w.h) || (n.y >= 0 && w.y == 0 && w.h > 1)) && n.b > w.b && n.b <= w.b + w.d && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
+                var note = notes.Where(n => n.x == 0 && !(n.y == 0 && w.y == 0 && w.Height == 1) && ((n.y >= w.y && n.y < w.y + w.Height) || (n.y >= 0 && w.y == 0 && w.Height > 1)) && n.Beats > w.Beats && n.Beats <= w.Beats + w.DurationInBeats && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
                 
                 foreach (var no in note)
                 {
@@ -41,7 +42,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     issue = CritResult.Fail;
                 }
                 
-                var bomb = bombs.Where(b => b.x == 0 && !(b.y == 0 && w.y == 0 && w.h == 1) && ((b.y >= w.y && b.y < w.y + w.h) || (b.y >= 0 && w.y == 0 && w.h > 1)) && b.b > w.b && b.b <= w.b + w.d).ToList();
+                var bomb = bombs.Where(b => b.x == 0 && !(b.y == 0 && w.y == 0 && w.Height == 1) && ((b.y >= w.y && b.y < w.y + w.Height) || (b.y >= 0 && w.y == 0 && w.Height > 1)) && b.Beats > w.Beats && b.Beats <= w.Beats + w.DurationInBeats).ToList();
                 foreach (var b in bomb)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -61,7 +62,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             foreach (var w in rightWall)
             {
-                var note = notes.Where(n => n.x == 3 && !(n.y == 0 && w.y == 0 && w.h == 1) && ((n.y >= w.y && n.y < w.y + w.h) || (n.y >= 0 && w.y == 0 && w.h > 1)) && n.b > w.b && n.b <= w.b + w.d && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
+                var note = notes.Where(n => n.x == 3 && !(n.y == 0 && w.y == 0 && w.Height == 1) && ((n.y >= w.y && n.y < w.y + w.Height) || (n.y >= 0 && w.y == 0 && w.Height > 1)) && n.Beats > w.Beats && n.Beats <= w.Beats + w.DurationInBeats && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
                 foreach (var n in note)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -77,7 +78,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                var bomb = bombs.Where(b => b.x == 3 && !(b.y == 0 && w.y == 0 && w.h == 1) && ((b.y >= w.y && b.y < w.y + w.h) || (b.y >= 0 && w.y == 0 && w.h > 1)) && b.b > w.b && b.b <= w.b + w.d).ToList();
+                var bomb = bombs.Where(b => b.x == 3 && !(b.y == 0 && w.y == 0 && w.Height == 1) && ((b.y >= w.y && b.y < w.y + w.Height) || (b.y >= 0 && w.y == 0 && w.Height > 1)) && b.Beats > w.Beats && b.Beats <= w.Beats + w.DurationInBeats).ToList();
                 foreach (var b in bomb)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -95,15 +96,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            Obstacle previous = null;
+            Wall previous = null;
+            Timescale timescale = CriteriaCheckManager.timescale;
             foreach (var w in walls)
             {
-                BeatPerMinute.BPM.SetCurrentBPM(w.b);
-                var min = BeatPerMinute.BPM.ToBeatTime((float)Instance.MinimumWallDuration);
-                var max = BeatPerMinute.BPM.ToBeatTime((float)Instance.ShortWallTrailDuration);
+                timescale.BPM.SetCurrentBPM(w.Beats);
+                var min = timescale.BPM.ToBeatTime((float)Instance.MinimumWallDuration);
+                var max = timescale.BPM.ToBeatTime((float)Instance.ShortWallTrailDuration);
 
-                if (w.y <= 0 && w.h > 1 && ((w.x + w.w == 2 && walls.Exists(wa => wa != w && wa.y == 0 && wa.h > 0 && wa.x + wa.w == 3 && wa.b <= w.b + w.d && wa.b >= w.b)) ||
-                    (w.x + w.w == 3 && walls.Exists(wa => wa != w && wa.y == 0 && wa.h > 0 && wa.x + wa.w == 2 && wa.b <= w.b + w.d && wa.b >= w.b))))
+                if (w.y <= 0 && w.Height > 1 && ((w.x + w.Width == 2 && walls.Exists(wa => wa != w && wa.y == 0 && wa.Height > 0 && wa.x + wa.Width == 3 && wa.Beats <= w.Beats + w.DurationInBeats && wa.Beats >= w.Beats)) ||
+                    (w.x + w.Width == 3 && walls.Exists(wa => wa != w && wa.y == 0 && wa.Height > 0 && wa.x + wa.Width == 2 && wa.Beats <= w.Beats + w.DurationInBeats && wa.Beats >= w.Beats))))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -118,7 +120,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                else if (w.y <= 0 && w.h > 1 && ((w.w >= 3 && (w.x + w.w == 2 || w.x + w.w == 3 || w.x == 1)) || (w.w >= 2 && w.x == 1 && w.y == 0 && w.h > 0) || (w.w >= 4 && w.x + w.w >= 4 && w.x <= 0 && w.y == 0)))
+                else if (w.y <= 0 && w.Height > 1 && ((w.Width >= 3 && (w.x + w.Width == 2 || w.x + w.Width == 3 || w.x == 1)) || (w.Width >= 2 && w.x == 1 && w.y == 0 && w.Height > 0) || (w.Width >= 4 && w.x + w.Width >= 4 && w.x <= 0 && w.y == 0)))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -133,10 +135,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                if (w.w <= 0 || w.d <= 0 || // Negative w or d
-                    (w.h <= 0 && w.x >= 0 && w.x <= 3 && (w.y > 0 || w.y + w.h >= 0)) // In or above with negative h
-                    || ((w.x == 1 || w.x == 2 || (w.x + w.w >= 2 && w.x <= 3)) && w.h < 0)  // Under middle lane with negative h
-                    || (w.x + w.w >= 1 && w.x <= 4) && w.y + w.h >= 0 && w.h < 0) // Stretch above with negative h
+                if (w.Width <= 0 || w.DurationInBeats <= 0 || // Negative w or d
+                    (w.Height <= 0 && w.x >= 0 && w.x <= 3 && (w.y > 0 || w.y + w.Height >= 0)) // In or above with negative h
+                    || ((w.x == 1 || w.x == 2 || (w.x + w.Width >= 2 && w.x <= 3)) && w.Height < 0)  // Under middle lane with negative h
+                    || (w.x + w.Width >= 1 && w.x <= 4) && w.y + w.Height >= 0 && w.Height < 0) // Stretch above with negative h
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -152,8 +154,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     //CreateDiffCommentObstacle("R4D - Must have positive w, h and d", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     issue = CritResult.Fail;
                 }
-                if (w.d < min && (w.x + w.w == 2 || w.x + w.w == 3) && w.y + w.h > 1 &&
-                    !walls.Exists(wa => wa != w && wa.x + wa.w >= w.x + w.w && wa.x <= w.x + w.w && wa.d >= min && w.b >= wa.b && w.b <= wa.b + wa.d + max))
+                if (w.DurationInBeats < min && (w.x + w.Width == 2 || w.x + w.Width == 3) && w.y + w.Height > 1 &&
+                    !walls.Exists(wa => wa != w && wa.x + wa.Width >= w.x + w.Width && wa.x <= w.x + w.Width && wa.DurationInBeats >= min && w.Beats >= wa.Beats && w.Beats <= wa.Beats + wa.DurationInBeats + max))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -163,7 +165,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Wall",
                         Description = "Walls cannot be shorter than 13.8ms in the middle two lanes.",
-                        ResultData = new() { new("WallLength", "Current length: " + w.d.ToString() + " Minimum required: " + min.ToString()) },
+                        ResultData = new() { new("WallLength", "Current length: " + w.DurationInBeats.ToString() + " Minimum required: " + min.ToString()) },
                         BeatmapObjects = new() { w }
                     });
                     issue = CritResult.Fail;
@@ -189,17 +191,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 var dodge = 0d;
                 var side = 0;
                 var w = walls[i];
-                BeatPerMinute.BPM.SetCurrentBPM(w.b);
-                var sec = BeatPerMinute.BPM.ToBeatTime(1);
+                timescale.BPM.SetCurrentBPM(w.Beats);
+                var sec = timescale.BPM.ToBeatTime(1);
                 // All the walls under 1 second
-                var wallinsec = walls.Where(x => x.b < w.b && x.b >= w.b - sec).ToList();
+                var wallinsec = walls.Where(x => x.Beats < w.Beats && x.Beats >= w.Beats - sec).ToList();
                 wallinsec.Reverse();
-                if (w.x + w.w == 2 && w.y <= 2 && w.y + w.h >= 3)
+                if (w.x + w.Width == 2 && w.y <= 2 && w.y + w.Height >= 3)
                 {
                     side = 2;
                     dodge++;
                 }
-                else if (w.x == 2 && w.y <= 2 && w.y + w.h >= 3)
+                else if (w.x == 2 && w.y <= 2 && w.y + w.Height >= 3)
                 {
                     side = 1;
                     dodge++;
@@ -209,12 +211,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     // Count the amount of dodge in the last second
                     foreach (var wall in wallinsec)
                     {
-                        if (wall.x + wall.w == 2 && side != 2 && wall.y <= 2 && wall.y + wall.h >= 3)
+                        if (wall.x + wall.Width == 2 && side != 2 && wall.y <= 2 && wall.y + wall.Height >= 3)
                         {
                             side = 2;
                             dodge++;
                         }
-                        else if (wall.x == 2 && side != 1 && wall.y <= 2 && wall.y + wall.h >= 3)
+                        else if (wall.x == 2 && side != 1 && wall.y <= 2 && wall.y + wall.Height >= 3)
                         {
                             side = 1;
                             dodge++;
@@ -267,7 +269,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 });
             }
 
-            BeatPerMinute.BPM.ResetCurrentBPM();
+            timescale.BPM.ResetCurrentBPM();
             return issue;
         }
     }

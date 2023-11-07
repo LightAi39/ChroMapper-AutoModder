@@ -1,4 +1,5 @@
-﻿using Beatmap.Base;
+﻿using beatleader_parser.Timescale;
+using Beatmap.Base;
 using BLMapCheck.BeatmapScanner.Data.Criteria;
 using BLMapCheck.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Export;
@@ -535,27 +536,27 @@ namespace ChroMapper_LightModding.UI
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
-            List<Bpmevent> bpmChangesChecker = new();
+            List<BpmEvent> bpmChangesChecker = new();
             foreach (var bpmChange in bpmChanges)
             {
-                Bpmevent bpmevent = new Bpmevent
+                BpmEvent bpmevent = new BpmEvent
                 {
-                    b = bpmChange.JsonTime,
-                    m = bpmChange.Bpm
+                    Beats = bpmChange.JsonTime,
+                    Bpm = bpmChange.Bpm
                 };
                 bpmChangesChecker.Add(bpmevent);
             }
 
-            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            Timescale timescale = Timescale.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
 
-            var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
+            var totalBeats = timescale.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
 
             var comments = plugin.currentReview.Comments.ToList();
             comments.Sort((x, y) => y.Type.CompareTo(x.Type));
 
             foreach (var comment in plugin.currentReview.Comments)
             {
-                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat));
+                double cmbeat = timescale.ToBeatTime(timescale.ToRealTime(comment.StartBeat));
                 Color color = Color.gray;
                 if (!comment.MarkAsSuppressed)
                 {

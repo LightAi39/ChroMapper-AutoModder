@@ -232,7 +232,7 @@ namespace ChroMapper_LightModding.Helpers
                 {
                     ExtendOverallComment(item.Description);
                 }
-                else if (item.BeatmapObjects[0] is Colornote note)
+                else if (item.BeatmapObjects[0] is Note note)
                 {
                     if (commentType != null)
                     {
@@ -244,21 +244,21 @@ namespace ChroMapper_LightModding.Helpers
                     }
                     
                 }
-                else if (item.BeatmapObjects[0] is Bombnote bomb)
+                else if (item.BeatmapObjects[0] is Bomb bomb)
                 {
                     if (commentType != null)
                     {
                         CreateDiffCommentBomb(item.Description, (CommentTypesEnum)commentType, item);
                     }
                 }
-                else if (item.BeatmapObjects[0] is Burstslider slider)
+                else if (item.BeatmapObjects[0] is Chain slider)
                 {
                     if (commentType != null)
                     {
                         CreateDiffCommentLink(item.Description, (CommentTypesEnum)commentType, item);
                     }
                 }
-                else if (item.BeatmapObjects[0] is Obstacle wall)
+                else if (item.BeatmapObjects[0] is Wall wall)
                 {
                     if (commentType != null)
                     {
@@ -306,21 +306,21 @@ namespace ChroMapper_LightModding.Helpers
         {
             string id = Guid.NewGuid().ToString();
 
-            Colornote cube = (Colornote)result.BeatmapObjects[0];
+            Note cube = (Note)result.BeatmapObjects[0];
 
             SelectedObject note = new()
             {
-                Beat = cube.b,
+                Beat = cube.Beats,
                 PosX = cube.x,
                 PosY = cube.y,
-                Color = cube.c,
+                Color = cube.Color,
                 ObjectType = ObjectType.Note
             };
 
             Comment comment = new()
             {
                 Id = id,
-                StartBeat = cube.b,
+                StartBeat = cube.Beats,
                 Objects = new() { note },
                 Type = type,
                 Message = message,
@@ -345,21 +345,21 @@ namespace ChroMapper_LightModding.Helpers
         {
             string id = Guid.NewGuid().ToString();
 
-            Burstslider chainLink = (Burstslider)result.BeatmapObjects[0];
+            Chain chainLink = (Chain)result.BeatmapObjects[0];
 
             SelectedObject note = new()
             {
-                Beat = chainLink.b,
+                Beat = chainLink.Beats,
                 PosX = chainLink.x,
                 PosY = chainLink.y,
-                Color = chainLink.c,
+                Color = chainLink.Color,
                 ObjectType = ObjectType.Chain
             };
 
             Comment comment = new()
             {
                 Id = id,
-                StartBeat = chainLink.b,
+                StartBeat = chainLink.Beats,
                 Objects = new() { note },
                 Type = type,
                 Message = message,
@@ -384,11 +384,11 @@ namespace ChroMapper_LightModding.Helpers
         {
             string id = Guid.NewGuid().ToString();
 
-            Bombnote bomb = (Bombnote)result.BeatmapObjects[0];
+            Bomb bomb = (Bomb)result.BeatmapObjects[0];
 
             SelectedObject note = new()
             {
-                Beat = bomb.b,
+                Beat = bomb.Beats,
                 PosX = bomb.x,
                 PosY = bomb.y,
                 Color = 3,
@@ -398,7 +398,7 @@ namespace ChroMapper_LightModding.Helpers
             Comment comment = new()
             {
                 Id = id,
-                StartBeat = bomb.b,
+                StartBeat = bomb.Beats,
                 Objects = new() { note },
                 Type = type,
                 Message = message,
@@ -423,11 +423,11 @@ namespace ChroMapper_LightModding.Helpers
         {
             string id = Guid.NewGuid().ToString();
 
-            Obstacle wall = (Obstacle)result.BeatmapObjects[0];
+            Wall wall = (Wall)result.BeatmapObjects[0];
 
             SelectedObject note = new()
             {
-                Beat = wall.b,
+                Beat = wall.Beats,
                 PosX = wall.x,
                 PosY = wall.y,
                 Color = 0,
@@ -437,7 +437,7 @@ namespace ChroMapper_LightModding.Helpers
             Comment comment = new()
             {
                 Id = id,
-                StartBeat = wall.b,
+                StartBeat = wall.Beats,
                 Objects = new() { note },
                 Type = type,
                 Message = message,
@@ -488,7 +488,7 @@ namespace ChroMapper_LightModding.Helpers
 
         private void CreateDiffCommentNotes(string message, CommentTypesEnum type, CheckResult result )
         {
-            List<Colornote> notes = result.BeatmapObjects.Where(x => x is Colornote).Cast<Colornote>().ToList();
+            List<Note> notes = result.BeatmapObjects.Where(x => x is Note).Cast<Note>().ToList();
 
             if (notes.Count == 0) return;
             string id = Guid.NewGuid().ToString();
@@ -499,10 +499,10 @@ namespace ChroMapper_LightModding.Helpers
             {
                 objects.Add(new()
                 {
-                    Beat = note.b,
+                    Beat = note.Beats,
                     PosX = note.x,
                     PosY = note.y,
-                    Color = note.c,
+                    Color = note.Color,
                     ObjectType = ObjectType.Note
                 });
             }

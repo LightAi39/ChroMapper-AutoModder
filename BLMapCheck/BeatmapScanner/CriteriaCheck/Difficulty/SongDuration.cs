@@ -1,5 +1,4 @@
-﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +10,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class SongDuration
     {
         // Detect if the mapped duration is above the minimum required, from first note to last note, configurable setting is available
-        public static CritResult Check(List<Colornote> notes)
+        public static CritResult Check(List<Note> notes)
         {
+            var timescale = CriteriaCheckManager.timescale;
+
             if(notes.Any())
             {
-                var duration = BeatPerMinute.BPM.ToRealTime(notes.Last().b - notes.First().b, true);
+                var duration = timescale.BPM.ToRealTime(notes.Last().Beats - notes.First().Beats, true);
                 if (duration < Instance.MinSongDuration)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()

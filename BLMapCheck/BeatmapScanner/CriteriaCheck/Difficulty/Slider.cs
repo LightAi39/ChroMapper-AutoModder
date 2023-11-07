@@ -44,18 +44,18 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            var red = NotesData.Where(c => c.Note.c == 0).ToList();
-            var blue = NotesData.Where(c => c.Note.c == 1).ToList();
+            var red = NotesData.Where(c => c.Note.Color == 0).ToList();
+            var blue = NotesData.Where(c => c.Note.Color == 1).ToList();
 
             // TODO: This could probably be done way better but idk
             for (int i = 0; i < red.Count() - 1; i++)
             {
                 List<double> dir = new();
-                if (red[i].Head && red[i + 1].Note.b != red[i].Note.b)
+                if (red[i].Head && red[i + 1].Note.Beats != red[i].Note.Beats)
                 {
-                    if (red[i].Note.d != 8)
+                    if (red[i].Note.CutDirection != 8)
                     {
-                        dir.Add(DirectionToDegree[red[i].Note.d]);
+                        dir.Add(DirectionToDegree[red[i].Note.CutDirection]);
                     }
                     else
                     {
@@ -105,11 +105,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 List<double> dir = new();
 
-                if (blue[i].Head && blue[i + 1].Note.b != blue[i].Note.b)
+                if (blue[i].Head && blue[i + 1].Note.Beats != blue[i].Note.Beats)
                 {
-                    if (blue[i].Note.d != 8)
+                    if (blue[i].Note.CutDirection != 8)
                     {
-                        dir.Add(DirectionToDegree[blue[i].Note.d]);
+                        dir.Add(DirectionToDegree[blue[i].Note.CutDirection]);
                     }
                     else
                     {

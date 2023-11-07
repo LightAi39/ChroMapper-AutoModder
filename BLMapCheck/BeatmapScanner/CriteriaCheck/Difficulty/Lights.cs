@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
-    internal static class Light
+    internal static class Lights
     {
         public class EventState
         {
@@ -40,12 +40,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         // Fetch the average event per beat, and compare it to a configurable value
         // Also check for well-lit bombs
-        public static CritResult Check(float songLength, List<Basicbeatmapevent> events, List<Lightcoloreventboxgroup> v3events, List<Bombnote> bombs)
+        public static CritResult Check(float songLength, List<Light> events, List<Lightcoloreventboxgroup> v3events, List<Bomb> bombs)
         {
+            var timescale = CriteriaCheckManager.timescale;
+
             var issue = CritResult.Success;
-            var end = BeatPerMinute.BPM.ToBeatTime(songLength, true);
+            var end = timescale.BPM.ToBeatTime(songLength, true);
             var lit = true;
-            if ((!events.Any() || !events.Exists(e => e.et >= 0 && e.et <= 5)) && !v3events.Any())
+            if ((!events.Any() || !events.Exists(e => e.Type >= 0 && e.Type <= 5)) && !v3events.Any())
             {
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -61,7 +63,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             else
             {
-                var lights = events.Where(e => e.et >= 0 && e.et <= 5).OrderBy(e => e.b).ToList();
+                var lights = events.Where(e => e.Type >= 0 && e.Type <= 5).OrderBy(e => e.Beats).ToList();
                 var average = lights.Count() / end;
                 if (v3events.Count > 0)
                 {
@@ -133,20 +135,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     for (int i = 0; i < lights.Count; i++)
                     {
                         var ev = lights[i];
-                        BeatPerMinute.BPM.SetCurrentBPM(ev.b);
-                        var fadeTime = BeatPerMinute.BPM.ToBeatTime((float)Instance.LightFadeDuration, true);
-                        var reactTime = BeatPerMinute.BPM.ToBeatTime((float)Instance.LightBombReactionTime, true);
-                        if (ev.IsOn || ev.IsFlash || ev.IsFade)
+                        timescale.BPM.SetCurrentBPM(ev.Beats);
+                        var fadeTime = timescale.BPM.ToBeatTime((float)Instance.LightFadeDuration, true);
+                        var reactTime = timescale.BPM.ToBeatTime((float)Instance.LightBombReactionTime, true);
+                        if (ev.isOn || ev.isFlash || ev.isFade)
                         {
-                            eventLitTime[ev.et].Add(new(ev.b, true));
-                            if (ev.IsFade)
+                            eventLitTime[ev.Type].Add(new(ev.Beats, true));
+                            if (ev.isFade)
                             {
-                                eventLitTime[ev.et].Add(new(ev.b + fadeTime, false));
+                                eventLitTime[ev.Type].Add(new(ev.Beats + fadeTime, false));
                             }
                         }
-                        if (ev.f < 0.25 || ev.IsOff)
+                        if (ev.f < 0.25 || ev.isOff)
                         {
-                            eventLitTime[ev.et].Add(new(ev.b + reactTime, false));
+                            eventLitTime[ev.Type].Add(new(ev.Beats + reactTime, false));
                         }
                     }
                     foreach (var elt in eventLitTime)
@@ -159,7 +161,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         var isLit = false;
                         foreach (var el in eventLitTime)
                         {
-                            var t = el.Find(e => e.Time < bomb.b);
+                            var t = el.Find(e => e.Time < bomb.Beats);
                             if (t != null)
                             {
                                 isLit = isLit || t.State;
@@ -199,7 +201,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 });
             }
 
-            BeatPerMinute.BPM.ResetCurrentBPM();
+            timescale.BPM.ResetCurrentBPM();
             return issue;
         }
     }

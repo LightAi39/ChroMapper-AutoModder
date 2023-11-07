@@ -14,12 +14,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         public static CritResult Check(List<JoshaParity.SwingData> swings, float songLength, float njs, float noteJumpStartBeatOffset)
         {
             var issue = CritResult.Success;
+            var timescale = CriteriaCheckManager.timescale;
             List<double> sps = new();
 
             for (int i = 0; i < songLength - 1; i++)
             {
-                BeatPerMinute.BPM.SetCurrentBPM(BeatPerMinute.BPM.ToRealTime(i, true));
-                var secInBeat = BeatPerMinute.BPM.GetValue() / 60;
+                timescale.BPM.SetCurrentBPM(timescale.BPM.ToRealTime(i, true));
+                var secInBeat = timescale.BPM.GetValue() / 60;
                 sps.Add(swings.Where(s => s.swingStartBeat > i * secInBeat && s.swingStartBeat < (i + 1) * secInBeat).Count());
             }
             sps.Sort();
@@ -67,8 +68,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Warning;
                 }
-                var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(njs, noteJumpStartBeatOffset, BeatPerMinute.BPM.GetValue());
-                var beatms = 60000 / BeatPerMinute.BPM.GetValue();
+                var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(njs, noteJumpStartBeatOffset, timescale.BPM.GetValue());
+                var beatms = 60000 / timescale.BPM.GetValue();
                 var reactionTime = beatms * halfJumpDuration;
                 if (reactionTime < RT.min || reactionTime > RT.max)
                 {
@@ -110,7 +111,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 });
             }
 
-            BeatPerMinute.BPM.ResetCurrentBPM();
+            timescale.BPM.ResetCurrentBPM();
 
             if (issue == CritResult.Success)
             {

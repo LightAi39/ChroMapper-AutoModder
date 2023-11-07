@@ -15,7 +15,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             public bool Flick { get; set; } = false;
         }
 
-        public static void Check(List<SwingData> swings, List<Colornote> notes)
+        public static void Check(List<SwingData> swings, List<Parser.Map.Difficulty.V3.Grid.Note> notes)
         {
             var windowSize = 4f; // beats
             Queue<SwingData> dataWindowLeft = new();
@@ -111,11 +111,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (data.Flick)
                 {
                     var note = data.Swing.notes.FirstOrDefault();
-                    var index = notes.FindIndex(c => c.b == note.b && c.c == note.c && note.x == c.x && note.y == c.y);
+                    var index = notes.FindIndex(c => c.Beats == note.b && c.Color == note.c && note.x == c.x && note.y == c.y);
                     var cube = notes[index];
                     if (index < notes.Count - 3)
                     {
-                        if (notes[index + 1].b - cube.b != notes[index + 2].b - notes[index + 1].b)
+                        if (notes[index + 1].Beats - cube.Beats != notes[index + 2].Beats - notes[index + 1].Beats)
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
@@ -152,11 +152,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (data.Flick)
                 {
                     var note = data.Swing.notes.FirstOrDefault();
-                    var index = notes.FindIndex(c => c.b == note.b && c.c == note.c && note.x == c.x && note.y == c.y);
+                    var index = notes.FindIndex(c => c.Beats == note.b && c.Color == note.c && note.x == c.x && note.y == c.y);
                     var cube = notes[index];
                     if (index < notes.Count - 3)
                     {
-                        if (notes[index + 1].b - cube.b != notes[index + 2].b - notes[index + 1].b)
+                        if (notes[index + 1].Beats - cube.Beats != notes[index + 2].Beats - notes[index + 1].Beats)
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {

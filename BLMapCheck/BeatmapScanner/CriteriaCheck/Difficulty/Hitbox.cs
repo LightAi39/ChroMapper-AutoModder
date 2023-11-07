@@ -12,31 +12,32 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Hitbox
     {
         // Implementation of Kival Evan hitboxInline.ts, hitboxStair.ts and hitboxReverseStaircase.ts
-        public static CritResult HitboxCheck(List<Colornote> notes, float njs)
+        public static CritResult HitboxCheck(List<Note> notes, float njs)
         {
             var issue = CritResult.Success;
+            var timescale = CriteriaCheckManager.timescale;
 
             if (notes.Any())
             {
-                Colornote[] lastNote = { null, null };
-                List<List<Colornote>> swingNoteArray = new()
+                Note[] lastNote = { null, null };
+                List<List<Note>> swingNoteArray = new()
                 {
                     new(),
                     new()
                 };
-                var arr = new List<Colornote>();
+                var arr = new List<Note>();
 
                 for (int i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
-                    if (lastNote[note.c] != null)
+                    if (lastNote[note.Color] != null)
                     {
-                        if (Swing.Next(note, lastNote[note.c], BeatPerMinute.BPM.GetValue(), swingNoteArray[note.c]))
+                        if (Swing.Next(note, lastNote[note.Color], timescale.BPM.GetValue(), swingNoteArray[note.Color]))
                         {
-                            swingNoteArray[note.c].Clear();
+                            swingNoteArray[note.Color].Clear();
                         }
                     }
-                    foreach (var other in swingNoteArray[(note.c + 1) % 2])
+                    foreach (var other in swingNoteArray[(note.Color + 1) % 2])
                     {
                         var isInline = false;
                         var distance = Math.Sqrt(Math.Pow(note.x - other.x, 2) + Math.Pow(note.y - other.y, 2));
@@ -44,14 +45,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             isInline = true;
                         }
-                        if (njs < 1.425 / ((60 * (note.b - other.b)) / BeatPerMinute.BPM.GetValue()) && isInline)
+                        if (njs < 1.425 / ((60 * (note.Beats - other.Beats)) / timescale.BPM.GetValue()) && isInline)
                         {
                             arr.Add(note);
                             break;
                         }
                     }
-                    lastNote[note.c] = note;
-                    swingNoteArray[note.c].Add(note);
+                    lastNote[note.Color] = note;
+                    swingNoteArray[note.Color].Add(note);
                 }
 
                 foreach (var item in arr)
@@ -69,7 +70,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                 }
 
-                var hitboxTime = (0.15 * BeatPerMinute.BPM.GetValue()) / 60;
+                var hitboxTime = (0.15 * timescale.BPM.GetValue()) / 60;
                 int[] lastNoteDirection = { -1, -1 };
                 double[] lastSpeed = { -1, -1 };
                 lastNote[0] = null;
@@ -84,44 +85,44 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 for (int i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
-                    if (lastNote[note.c] != null)
+                    if (lastNote[note.Color] != null)
                     {
-                        if (Swing.Next(note, lastNote[note.c], BeatPerMinute.BPM.GetValue(), swingNoteArray[note.c]))
+                        if (Swing.Next(note, lastNote[note.Color], timescale.BPM.GetValue(), swingNoteArray[note.Color]))
                         {
-                            lastSpeed[note.c] = note.b - lastNote[note.c].b;
-                            if (note.d != NoteDirection.ANY)
+                            lastSpeed[note.Color] = note.Beats - lastNote[note.Color].Beats;
+                            if (note.CutDirection != NoteDirection.ANY)
                             {
-                                noteOccupy[note.c].Line = note.x + NoteDirectionSpace.Get(note.d)[0];
-                                noteOccupy[note.c].Layer = note.y + NoteDirectionSpace.Get(note.d)[1];
+                                noteOccupy[note.Color].Line = note.x + NoteDirectionSpace.Get(note.CutDirection)[0];
+                                noteOccupy[note.Color].Layer = note.y + NoteDirectionSpace.Get(note.CutDirection)[1];
                             }
                             else
                             {
-                                noteOccupy[note.c].Line = -1;
-                                noteOccupy[note.c].Layer = -1;
+                                noteOccupy[note.Color].Line = -1;
+                                noteOccupy[note.Color].Layer = -1;
                             }
-                            swingNoteArray[note.c].Clear();
-                            lastNoteDirection[note.c] = note.d;
+                            swingNoteArray[note.Color].Clear();
+                            lastNoteDirection[note.Color] = note.CutDirection;
                         }
-                        else if (MapCheck.Parity.IsEnd(note, lastNote[note.c], lastNoteDirection[note.c]))
+                        else if (MapCheck.Parity.IsEnd(note, lastNote[note.Color], lastNoteDirection[note.Color]))
                         {
-                            if (note.d != NoteDirection.ANY)
+                            if (note.CutDirection != NoteDirection.ANY)
                             {
-                                noteOccupy[note.c].Line = note.x + NoteDirectionSpace.Get(note.d)[0];
-                                noteOccupy[note.c].Layer = note.y + NoteDirectionSpace.Get(note.d)[1];
-                                lastNoteDirection[note.c] = note.d;
+                                noteOccupy[note.Color].Line = note.x + NoteDirectionSpace.Get(note.CutDirection)[0];
+                                noteOccupy[note.Color].Layer = note.y + NoteDirectionSpace.Get(note.CutDirection)[1];
+                                lastNoteDirection[note.Color] = note.CutDirection;
                             }
                             else
                             {
-                                noteOccupy[note.c].Line = note.x + NoteDirectionSpace.Get(lastNoteDirection[note.c])[0];
-                                noteOccupy[note.c].Layer = note.y + NoteDirectionSpace.Get(lastNoteDirection[note.c])[1];
+                                noteOccupy[note.Color].Line = note.x + NoteDirectionSpace.Get(lastNoteDirection[note.Color])[0];
+                                noteOccupy[note.Color].Layer = note.y + NoteDirectionSpace.Get(lastNoteDirection[note.Color])[1];
                             }
                         }
-                        if (lastNote[(note.c + 1) % 2] != null)
+                        if (lastNote[(note.Color + 1) % 2] != null)
                         {
-                            if (note.b - lastNote[(note.c + 1) % 2].b != 0 &&
-                                note.b - lastNote[(note.c + 1) % 2].b < Math.Min(hitboxTime, lastSpeed[(note.c + 1) % 2]))
+                            if (note.Beats - lastNote[(note.Color + 1) % 2].Beats != 0 &&
+                                note.Beats - lastNote[(note.Color + 1) % 2].Beats < Math.Min(hitboxTime, lastSpeed[(note.Color + 1) % 2]))
                             {
-                                if (note.x == noteOccupy[(note.c + 1) % 2].Line && note.y == noteOccupy[(note.c + 1) % 2].Layer && !Swing.IsDouble(note, notes, i))
+                                if (note.x == noteOccupy[(note.Color + 1) % 2].Line && note.y == noteOccupy[(note.Color + 1) % 2].Layer && !Swing.IsDouble(note, notes, i))
                                 {
                                     arr.Add(note);
                                 }
@@ -130,20 +131,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     else
                     {
-                        if (note.d != NoteDirection.ANY)
+                        if (note.CutDirection != NoteDirection.ANY)
                         {
-                            noteOccupy[note.c].Line = note.x + NoteDirectionSpace.Get(note.d)[0];
-                            noteOccupy[note.c].Layer = note.y + NoteDirectionSpace.Get(note.d)[1];
+                            noteOccupy[note.Color].Line = note.x + NoteDirectionSpace.Get(note.CutDirection)[0];
+                            noteOccupy[note.Color].Layer = note.y + NoteDirectionSpace.Get(note.CutDirection)[1];
                         }
                         else
                         {
-                            noteOccupy[note.c].Line = -1;
-                            noteOccupy[note.c].Layer = -1;
+                            noteOccupy[note.Color].Line = -1;
+                            noteOccupy[note.Color].Layer = -1;
                         }
-                        lastNoteDirection[note.c] = note.d;
+                        lastNoteDirection[note.Color] = note.CutDirection;
                     }
-                    lastNote[note.c] = note;
-                    swingNoteArray[note.c].Add(note);
+                    lastNote[note.Color] = note;
+                    swingNoteArray[note.Color].Add(note);
                 }
 
                 foreach (var item in arr)
@@ -175,28 +176,28 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 for (int i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
-                    if (lastNote[note.c] != null)
+                    if (lastNote[note.Color] != null)
                     {
-                        if (Swing.Next(note, lastNote[note.c], BeatPerMinute.BPM.GetValue(), swingNoteArray[note.c]))
+                        if (Swing.Next(note, lastNote[note.Color], timescale.BPM.GetValue(), swingNoteArray[note.Color]))
                         {
-                            swingNoteArray[note.c].Clear();
+                            swingNoteArray[note.Color].Clear();
                         }
                     }
-                    foreach (var other in swingNoteArray[(note.c + 1) % 2])
+                    foreach (var other in swingNoteArray[(note.Color + 1) % 2])
                     {
-                        if (other.c != 0 && other.c != 1)
+                        if (other.Color != 0 && other.Color != 1)
                         {
                             continue;
                         }
-                        if (other.d != NoteDirection.ANY)
+                        if (other.CutDirection != NoteDirection.ANY)
                         {
-                            if (!((note.b / BeatPerMinute.BPM.GetValue() * 60) > (other.b / BeatPerMinute.BPM.GetValue() * 60) + 0.01))
+                            if (!((note.Beats / timescale.BPM.GetValue() * 60) > (other.Beats / timescale.BPM.GetValue() * 60) + 0.01))
                             {
                                 continue;
                             }
-                            var isDiagonal = Swing.NoteDirectionAngle[other.d] % 90 > 15 && Swing.NoteDirectionAngle[other.d] % 90 < 75;
+                            var isDiagonal = Swing.NoteDirectionAngle[other.CutDirection] % 90 > 15 && Swing.NoteDirectionAngle[other.CutDirection] % 90 < 75;
                             double[,] value = { { 15, 1.5 } };
-                            if (njs < 1.425 / ((60 * (note.b - other.b)) / BeatPerMinute.BPM.GetValue() + (isDiagonal ? constantDiagonal : constant)) &&
+                            if (njs < 1.425 / ((60 * (note.Beats - other.Beats)) / timescale.BPM.GetValue() + (isDiagonal ? constantDiagonal : constant)) &&
                                 Swing.IsIntersect(note, other, value, 1))
                             {
                                 arr.Add(other);
@@ -205,8 +206,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         }
 
                     }
-                    lastNote[note.c] = note;
-                    swingNoteArray[note.c].Add(note);
+                    lastNote[note.Color] = note;
+                    swingNoteArray[note.Color].Add(note);
                 }
 
                 foreach (var item in arr)

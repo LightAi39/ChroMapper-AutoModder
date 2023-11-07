@@ -1,4 +1,5 @@
-﻿using Parser.Map.Difficulty.V3.Grid;
+﻿using beatleader_parser;
+using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace BLMapCheck.Classes.Helper
 
         public class NoteData
         {
-            public Colornote Note { get; set; }
+            public Note Note { get; set; }
             public double Direction = 0;
             public double Line = 0;
             public double Layer = 0;
@@ -25,7 +26,7 @@ namespace BLMapCheck.Classes.Helper
 
             }
 
-            public NoteData(Colornote note)
+            public NoteData(Note note)
             {
                 Note = note;
                 Line = note.x;
@@ -35,25 +36,25 @@ namespace BLMapCheck.Classes.Helper
 
         public static List<NoteData> NotesData = new();
 
-        public static void CreateNoteData(List<Colornote> notes)
+        public static void CreateNoteData(List<Note> notes)
         {
             NotesData = new();
 
-            var red = notes.Where(n => n.c == 0).ToList();
-            var blue = notes.Where(n => n.c == 1).ToList();
+            var red = notes.Where(n => n.Color == 0).ToList();
+            var blue = notes.Where(n => n.Color == 1).ToList();
 
             if (red.Count > 2)
             {
                 NotesData.Add(new(red[0]));
                 for (int i = 1; i < red.Count; i++)
                 {
-                    if (red[i].b - red[i - 1].b <= 0.125)
+                    if (red[i].Beats - red[i - 1].Beats <= 0.125)
                     {
                         var data = new NoteData
                         {
                             Note = red[i],
                             Pattern = true,
-                            Precision = red[i].b - red[i - 1].b,
+                            Precision = red[i].Beats - red[i - 1].Beats,
                             Spacing = Math.Max(Math.Max(Math.Abs(red[i].x - red[i - 1].x), Math.Abs(red[i].y - red[i - 1].y)) - 1, 0)
                         };
                         if (!NotesData.Last().Pattern)
@@ -77,13 +78,13 @@ namespace BLMapCheck.Classes.Helper
                 for (int i = 1; i < blue.Count; i++)
                 {
                     
-                    if (blue[i].b - blue[i - 1].b <= 0.125)
+                    if (blue[i].Beats - blue[i - 1].Beats <= 0.125)
                     {
                         var data = new NoteData
                         {
                             Note = blue[i],
                             Pattern = true,
-                            Precision = blue[i].b - blue[i - 1].b,
+                            Precision = blue[i].Beats - blue[i - 1].Beats,
                             Spacing = Math.Max(Math.Max(Math.Abs(blue[i].x - blue[i - 1].x), Math.Abs(blue[i].y - blue[i - 1].y)) - 1, 0)
                         };
                         if (!NotesData.Last().Pattern)

@@ -1,5 +1,6 @@
 ﻿using beatleader_analyzer;
 using beatleader_parser;
+using beatleader_parser.Timescale;
 using BLMapCheck.BeatmapScanner.CriteriaCheck;
 using BLMapCheck.Classes.Results;
 using BLMapCheck.Configs;
@@ -30,7 +31,7 @@ namespace BLMapCheck
         {
             mapLoaded = false;
 
-            map = parser.TryLoadPath(folderPath).FirstOrDefault();
+            map = parser.TryLoadPath(folderPath);
             if (map != null)
             {
                 mapLoaded = true;

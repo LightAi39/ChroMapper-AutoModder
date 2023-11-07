@@ -14,15 +14,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // JoshaParity is used to detect reset, high angle parity, and warn while playing inverted.
         // Parity warning angle is configurable
-        public static CritResult Check(List<SwingData> swings, List<Colornote> notes)
+        public static CritResult Check(List<SwingData> swings, List<Parser.Map.Difficulty.V3.Grid.Note> notes)
         {
             bool hadIssue = false;
             bool hadWarning = false;
 
             foreach (var swing in swings.Where(x => x.resetType == ResetType.Rebound).ToList())
             {
-                List<Colornote> colornotes = new();
-                swing.notes.ForEach(note => colornotes.Add(notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
+                swing.notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
                     Characteristic = CriteriaCheckManager.Characteristic,
@@ -38,8 +38,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             foreach (var swing in swings.Where(x => x.swingEBPM == float.PositiveInfinity).ToList())
             {
-                List<Colornote> colornotes = new();
-                swing.notes.ForEach(note => colornotes.Add(notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
+                swing.notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
                     Characteristic = CriteriaCheckManager.Characteristic,
@@ -64,8 +64,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
-                        List<Colornote> colornotes = new();
-                        rightHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                        List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
+                        rightHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
                             Characteristic = CriteriaCheckManager.Characteristic,
@@ -83,8 +83,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (Instance.ParityInvertedWarning)
                         {
-                            List<Colornote> colornotes = new();
-                            rightHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                            List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
+                            rightHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
                                 Characteristic = CriteriaCheckManager.Characteristic,
@@ -109,8 +109,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
-                        List<Colornote> colornotes = new();
-                        leftHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                        List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
+                        leftHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
                             Characteristic = CriteriaCheckManager.Characteristic,
@@ -128,8 +128,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (Instance.ParityInvertedWarning)
                         {
-                            List<Colornote> colornotes = new();
-                            leftHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                            List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
+                            leftHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
                                 Characteristic = CriteriaCheckManager.Characteristic,
@@ -169,8 +169,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         new("rightHand", swing.rightHand.ToString())
                     };
                     
-                    List<Colornote> colornotes = new();
-                    swing.notes.ForEach(note => colornotes.Add(notes.Where(n => n.b == note.b && n.d == note.d && n.x == note.x && n.y == note.y && n.c == note.c).FirstOrDefault()));
+                    List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
+                    swing.notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
                         Characteristic = CriteriaCheckManager.Characteristic,

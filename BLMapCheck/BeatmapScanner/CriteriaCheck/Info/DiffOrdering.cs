@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using beatleader_analyzer;
+using JoshaParity;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
@@ -16,7 +17,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 
             foreach (var difficulty in difficulties.Where(x => x.Characteristic == CriteriaCheckManager.Characteristic))
             {
-                if(difficulty.Data.colorNotes.Count >= 20)
+                if(difficulty.Data.Notes.Count >= 20)
                 {
                     var data = BLMapChecker.analyzer.GetRating(difficulty.Data, difficulty.Characteristic, difficulty.Difficulty, BeatsPerMinute);
                     passStandard.Add(data[0].Pass);

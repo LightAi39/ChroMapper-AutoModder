@@ -60,7 +60,7 @@
   <ItemGroup>
     <Compile Include="BeatmapScanner\CriteriaCheck.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\CriteriaCheckManager.cs" />
-    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Chain.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Chains.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\ColdEnd.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\DifficultyLabelSize.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\DifficultyLabelName.cs" />
@@ -68,7 +68,7 @@
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Handclap.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Hitbox.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\HotStart.cs" />
-    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Light.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Lights.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Loloppe.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\SongDuration.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\NJS.cs" />
@@ -81,7 +81,7 @@
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Slider.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\SwingPath.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\VisionBlock.cs" />
-    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Wall.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Obstacle.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Info\BPM.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Info\Creator.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Info\Offset.cs" />
@@ -95,7 +95,6 @@
     <Compile Include="BeatmapScanner\CriteriaCheck\Criteria\Recommended.cs" />
     <Compile Include="BeatmapScanner\MapCheck\Parity.cs" />
     <Compile Include="BeatmapScanner\MapCheck\Swing.cs" />
-    <Compile Include="BeatmapScanner\MapCheck\Timescale.cs" />
     <Compile Include="BeatmapScanner\ProfanityFilter\AllowList.cs" />
     <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IAllowList.cs" />
     <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IProfanityFilter.cs" />

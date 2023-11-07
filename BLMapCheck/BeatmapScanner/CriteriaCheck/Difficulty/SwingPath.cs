@@ -43,23 +43,24 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         }
 
         // Check if a note block the swing path of another note of a different color
-        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Colornote> notes)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Note> notes)
         {
             var issue = CritResult.Success;
+            var timescale = CriteriaCheckManager.timescale;
 
             if (beatmapGridObjects.Any())
             {
-                List<List<Colornote>> doubleNotes = new();
+                List<List<Note>> doubleNotes = new();
                 foreach (var note in notes) // Find the double and group them together
                 {
-                    var n = notes.Where(n => n.b == note.b && n != note && ((n.c == 0 && note.c == 1) || (n.c == 1 && note.c == 0))).FirstOrDefault();
+                    var n = notes.Where(n => n.Beats == note.Beats && n != note && ((n.Color == 0 && note.Color == 1) || (n.Color == 1 && note.Color == 0))).FirstOrDefault();
                     if (n != null)
                     {
                         if (doubleNotes.Count == 0)
                         {
                             doubleNotes.Add(new());
                         }
-                        else if (!doubleNotes.Last().Exists(x => x.b == n.b))
+                        else if (!doubleNotes.Last().Exists(x => x.Beats == n.Beats))
                         {
                             doubleNotes.Add(new());
                             doubleNotes[doubleNotes.Count - 1] = new();
@@ -79,17 +80,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             if (i == j) continue;
                             var note2 = group[j];
-                            if (note.b != note2.b) break; // Not a double anymore
-                            if (note.c == note2.c) continue; // Same color
+                            if (note.Beats != note2.Beats) break; // Not a double anymore
+                            if (note.Color == note2.Color) continue; // Same color
                                                                    // Fetch previous note, simulate swing
-                            var previous = notes.Where(c => c.b < note2.b && c.c == note2.c).LastOrDefault();
+                            var previous = notes.Where(c => c.Beats < note2.Beats && c.Color == note2.Color).LastOrDefault();
                             if (previous != null)
                             {
                                 // This is calculating the angle between the previous note + extra swing and the next note
-                                if (note2.d != 8 && previous.d != 8)
+                                if (note2.CutDirection != 8 && previous.CutDirection != 8)
                                 {
-                                    var angleOfAttack = DirectionToDegree[note2.d];
-                                    var prevDirection = ReverseCutDirection(DirectionToDegree[previous.d]);
+                                    var angleOfAttack = DirectionToDegree[note2.CutDirection];
+                                    var prevDirection = ReverseCutDirection(DirectionToDegree[previous.CutDirection]);
                                     var di = Math.Abs(prevDirection - angleOfAttack);
                                     di = Math.Min(di, 360 - di) / 4;
                                     if (angleOfAttack < prevDirection)
@@ -120,7 +121,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     var InPath = NearestPointOnFiniteLine(new(note2.x, note2.y), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.x, note.y));
                                     if (InPath)
                                     {
-                                        var obj = beatmapGridObjects.Where(c => c.b == note.b && note.x == c.x && note.y == c.y).FirstOrDefault();
+                                        var obj = beatmapGridObjects.Where(c => c.Beats == note.Beats && note.x == c.x && note.y == c.y).FirstOrDefault();
                                         CheckResults.Instance.AddResult(new CheckResult()
                                         {
                                             Characteristic = CriteriaCheckManager.Characteristic,
@@ -139,31 +140,31 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                 }
 
-                List<Colornote> arr = new();
-                List<Colornote> arr2 = new();
+                List<Note> arr = new();
+                List<Note> arr2 = new();
                 var lastTime = 0d;
 
                 for (int i = 0; i < beatmapGridObjects.Count; i++)
                 {
                     var current = beatmapGridObjects[i];
-                    if (current is not Colornote || (current.b / BeatPerMinute.BPM.GetValue() * 60) < lastTime + 0.01)
+                    if (current is not Note || (current.Beats / timescale.BPM.GetValue() * 60) < lastTime + 0.01)
                     {
                         continue;
                     }
                     for (int j = i + 1; j < beatmapGridObjects.Count; j++)
                     {
-                        var curr = (Colornote)current;
+                        var curr = (Note)current;
                         var compareTo = beatmapGridObjects[j];
-                        if ((compareTo.b / BeatPerMinute.BPM.GetValue() * 60) > (current.b / BeatPerMinute.BPM.GetValue() * 60) + 0.01)
+                        if ((compareTo.Beats / timescale.BPM.GetValue() * 60) > (current.Beats / timescale.BPM.GetValue() * 60) + 0.01)
                         {
                             break;
                         }
-                        if(compareTo is not Colornote)
+                        if(compareTo is not Note)
                         {
                             continue;
                         }
-                        var comp = (Colornote)compareTo;
-                        if (curr.c == comp.c)
+                        var comp = (Note)compareTo;
+                        if (curr.Color == comp.Color)
                         {
                             continue;
                         }
@@ -176,15 +177,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             IsDiagonal = true;
                         }
-                        var a = swings.Where(x => x.notes.Any(y => y.b == curr.b && y.c == curr.c && y.d == curr.d && y.x == curr.x && y.y == curr.y)).FirstOrDefault();
-                        var b = swings.Where(x => x.notes.Any(y => y.b == comp.b && y.c == comp.c && y.d == comp.d && y.x == comp.x && y.y == comp.y)).FirstOrDefault();
+                        var a = swings.Where(x => x.notes.Any(y => y.b == curr.Beats && y.c == curr.Color && y.d == curr.CutDirection && y.x == curr.x && y.y == curr.y)).FirstOrDefault();
+                        var b = swings.Where(x => x.notes.Any(y => y.b == comp.Beats && y.c == comp.Color && y.d == comp.CutDirection && y.x == comp.x && y.y == comp.y)).FirstOrDefault();
                         var d = Math.Sqrt(Math.Pow(curr.x - comp.x, 2) + Math.Pow(curr.y - comp.y, 2));
                         if (d > 0.499 && d < 1.001) // Adjacent
                         {
-                            if (curr.d == comp.d && SwingType.Diagonal.Contains(curr.d))
+                            if (curr.CutDirection == comp.CutDirection && SwingType.Diagonal.Contains(curr.CutDirection))
                             {
                                 arr.Add(curr);
-                                lastTime = (curr.b / BeatPerMinute.BPM.GetValue() * 60);
+                                lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
                                 continue;
                             }
                         }
@@ -193,8 +194,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             var pos = (curr.x, curr.y);
                             var target = (comp.x, comp.y);
                             var index = 1;
-                            var rev = Reverse.Get(curr.d);
-                            if (curr.d != 8)
+                            var rev = Reverse.Get(curr.CutDirection);
+                            if (curr.CutDirection != 8)
                             {
                                 while (!NoteDirection.IsLimit(pos, rev))
                                 {
@@ -203,17 +204,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     if (pos == target)
                                     {
                                         arr2.Add(curr);
-                                        lastTime = (curr.b / BeatPerMinute.BPM.GetValue() * 60);
+                                        lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
                                         continue;
                                     }
                                 }
                             }
-                            if (comp.d != 8)
+                            if (comp.CutDirection != 8)
                             {
                                 target = (curr.x, curr.y);
                                 pos = (comp.x, comp.y);
                                 index = 1;
-                                rev = Reverse.Get(comp.d);
+                                rev = Reverse.Get(comp.CutDirection);
                                 while (!NoteDirection.IsLimit(pos, rev))
                                 {
                                     pos = NoteDirection.Move(comp, -index);
@@ -221,7 +222,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     if (pos == target)
                                     {
                                         arr2.Add(curr);
-                                        lastTime = (curr.b / BeatPerMinute.BPM.GetValue() * 60);
+                                        lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
                                         continue;
                                     }
                                 }
@@ -231,7 +232,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 (IsDiagonal && Swing.IsIntersect(curr, comp, angle2, 2)))
                         {
                             arr.Add(curr);
-                            lastTime = (curr.b / BeatPerMinute.BPM.GetValue() * 60);
+                            lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
                         }
                     }
                 }

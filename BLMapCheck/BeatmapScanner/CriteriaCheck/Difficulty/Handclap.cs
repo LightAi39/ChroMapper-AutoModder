@@ -11,46 +11,46 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Handclap
     {
         // Attempt to detect specific note and angle placement based on BeatLeader criteria
-        public static CritResult Check(List<Colornote> notes)
+        public static CritResult Check(List<Note> notes)
         {
             var issue = CritResult.Success;
 
             if (notes.Any())
             {
-                Colornote previous = notes[0];
-                Colornote[] lastNote = { null, null };
-                List<List<Colornote>> swingNoteArray = new()
+                Note previous = notes[0];
+                Note[] lastNote = { null, null };
+                List<List<Note>> swingNoteArray = new()
                 {
                     new(),
                     new()
                 };
-                var arr = new List<Colornote>();
-                var arr2 = new List<Colornote>();
+                var arr = new List<Note>();
+                var arr2 = new List<Note>();
                 for (int i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
-                    if (note.d == 8)
+                    if (note.CutDirection == 8)
                     {
                         continue;
                     }
-                    if (lastNote[note.c] != null)
+                    if (lastNote[note.Color] != null)
                     {
-                        if (note.b != lastNote[note.c].b)
+                        if (note.Beats != lastNote[note.Color].Beats)
                         {
-                            swingNoteArray[note.c].Clear();
+                            swingNoteArray[note.Color].Clear();
                         }
                     }
-                    foreach (var other in swingNoteArray[(note.c + 1) % 2])
+                    foreach (var other in swingNoteArray[(note.Color + 1) % 2])
                     {
-                        if (other.d == 8)
+                        if (other.CutDirection == 8)
                         {
                             continue;
                         }
-                        if (other.c != 0 && other.c != 1)
+                        if (other.Color != 0 && other.Color != 1)
                         {
                             continue;
                         }
-                        if (note.b != other.b)
+                        if (note.Beats != other.Beats)
                         {
                             continue;
                         }
@@ -60,8 +60,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                             if (other.x == note.x)
                             {
-                                if ((SwingType.Up.Contains(note.d) && SwingType.Down.Contains(other.d)) ||
-                                    (SwingType.Down.Contains(note.d) && SwingType.Up.Contains(other.d)))
+                                if ((SwingType.Up.Contains(note.CutDirection) && SwingType.Down.Contains(other.CutDirection)) ||
+                                    (SwingType.Down.Contains(note.CutDirection) && SwingType.Up.Contains(other.CutDirection)))
                                 {
                                     arr.Add(other);
                                     arr.Add(note);
@@ -70,8 +70,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             }
                             else if (other.y == note.y)
                             {
-                                if ((SwingType.Left.Contains(note.d) && SwingType.Right.Contains(other.d)) ||
-                                    (SwingType.Right.Contains(note.d) && SwingType.Left.Contains(other.d)))
+                                if ((SwingType.Left.Contains(note.CutDirection) && SwingType.Right.Contains(other.CutDirection)) ||
+                                    (SwingType.Right.Contains(note.CutDirection) && SwingType.Left.Contains(other.CutDirection)))
                                 {
                                     arr.Add(other);
                                     arr.Add(note);
@@ -81,10 +81,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         }
                         else if (d >= 1.001 && d < 2) // Diagonal
                         {
-                            if (((note.d == 6 && note.y > other.y && note.x > other.x) ||
-                                (note.d == 7 && note.y > other.y && note.x < other.x) ||
-                                (note.d == 4 && note.y < other.y && note.x > other.x) ||
-                                (note.d == 5 && note.y < other.y && note.x < other.x)) && Reverse.Get(note.d) == other.d)
+                            if (((note.CutDirection == 6 && note.y > other.y && note.x > other.x) ||
+                                (note.CutDirection == 7 && note.y > other.y && note.x < other.x) ||
+                                (note.CutDirection == 4 && note.y < other.y && note.x > other.x) ||
+                                (note.CutDirection == 5 && note.y < other.y && note.x < other.x)) && Reverse.Get(note.CutDirection) == other.CutDirection)
                             {
                                 arr.Add(other);
                                 arr.Add(note);
@@ -95,7 +95,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             if (NoteDirection.Move(note) == NoteDirection.Move(other))
                             {
-                                if ((note.c == 0 && note.x > other.x) || (note.c == 1 && note.x < other.x)) // Crossover
+                                if ((note.Color == 0 && note.x > other.x) || (note.Color == 1 && note.x < other.x)) // Crossover
                                 {
                                     arr.Add(other);
                                     arr.Add(note);
@@ -103,10 +103,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 }
                                 else if ((note.x == other.x + 2 && note.y == other.y + 2) || (other.x == note.x + 2 && other.y == note.y + 2) // Facing directly
                                 || (note.x == other.x + 2 && note.y == other.y - 2) || (other.x == note.x + 2 && other.y == note.y - 2)
-                                || (note.x == other.x && note.y == other.y + 2 && Reverse.Get(note.d) == other.d) ||
-                                (note.x == other.x && note.y == other.y - 2 && Reverse.Get(note.d) == other.d) ||
-                                (other.y == note.y && other.x == note.x + 2 && Reverse.Get(note.d) == other.d) ||
-                                (other.y == note.y && other.x == note.x - 2 && Reverse.Get(note.d) == other.d))
+                                || (note.x == other.x && note.y == other.y + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) ||
+                                (note.x == other.x && note.y == other.y - 2 && Reverse.Get(note.CutDirection) == other.CutDirection) ||
+                                (other.y == note.y && other.x == note.x + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) ||
+                                (other.y == note.y && other.x == note.x - 2 && Reverse.Get(note.CutDirection) == other.CutDirection))
                                 {
                                     arr.Add(other);
                                     arr.Add(note);
@@ -114,20 +114,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 }
                             }
                         }
-                        else if (d > 2.99 && ((note.c == 0 && note.x > 2) || (note.c == 1 && note.x < 1))) // 3-wide
+                        else if (d > 2.99 && ((note.Color == 0 && note.x > 2) || (note.Color == 1 && note.x < 1))) // 3-wide
                         {
                             // TODO: This is trash, could easily be done better
                             if (other.y == note.y)
                             {
-                                if (((SwingType.Up_Left.Contains(note.d) && SwingType.Up_Right.Contains(other.d) && note.c == 1) ||
-                                    (SwingType.Up_Right.Contains(note.d) && SwingType.Up_Left.Contains(other.d) && note.c == 0)))
+                                if (((SwingType.Up_Left.Contains(note.CutDirection) && SwingType.Up_Right.Contains(other.CutDirection) && note.Color == 1) ||
+                                    (SwingType.Up_Right.Contains(note.CutDirection) && SwingType.Up_Left.Contains(other.CutDirection) && note.Color == 0)))
                                 {
                                     arr2.Add(other);
                                     arr2.Add(note);
                                     break;
                                 }
-                                if ((SwingType.Down_Left.Contains(note.d) && SwingType.Down_Right.Contains(other.d) && note.c == 1) ||
-                                (SwingType.Down_Right.Contains(note.d) && SwingType.Down_Left.Contains(other.d) && note.c == 0))
+                                if ((SwingType.Down_Left.Contains(note.CutDirection) && SwingType.Down_Right.Contains(other.CutDirection) && note.Color == 1) ||
+                                (SwingType.Down_Right.Contains(note.CutDirection) && SwingType.Down_Left.Contains(other.CutDirection) && note.Color == 0))
                                 {
                                     arr2.Add(other);
                                     arr2.Add(note);
@@ -137,8 +137,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             }
                         }
                     }
-                    lastNote[note.c] = note;
-                    swingNoteArray[note.c].Add(note);
+                    lastNote[note.Color] = note;
+                    swingNoteArray[note.Color].Add(note);
                 }
 
                 foreach (var item in arr2)

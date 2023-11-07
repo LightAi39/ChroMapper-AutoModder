@@ -11,13 +11,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class HotStart
     {
         // Detect objects that are too early in the map, configurable setting is available
-        public static CritResult Check(List<BeatmapGridObject> objects, List<Obstacle> walls)
+        public static CritResult Check(List<BeatmapGridObject> objects, List<Wall> walls)
         {
             var issue = CritResult.Success;
-            var limit = BeatPerMinute.BPM.ToBeatTime((float)Instance.HotStartDuration, true);
+            var timescale = CriteriaCheckManager.timescale;
+            var limit = timescale.BPM.ToBeatTime((float)Instance.HotStartDuration, true);
             foreach (var c in objects)
             {
-                if (c.b < limit)
+                if (c.Beats < limit)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -27,7 +28,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Duration",
                         Description = "There must be at least 1.33 seconds of time before any interactable objects.",
-                        ResultData = new() { new("HotStart", "Minimum beat is: " + limit.ToString() + " Current object is at: " + c.b.ToString()) },
+                        ResultData = new() { new("HotStart", "Minimum beat is: " + limit.ToString() + " Current object is at: " + c.Beats.ToString()) },
                         BeatmapObjects = new() { c }
                     });
                     issue = CritResult.Fail;
@@ -36,7 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             foreach (var w in walls)
             {
-                if (w.b < limit && ((w.x + w.w >= 2 && w.x < 2) || w.x == 1 || w.x == 2))
+                if (w.Beats < limit && ((w.x + w.Width >= 2 && w.x < 2) || w.x == 1 || w.x == 2))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -46,7 +47,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Duration",
                         Description = "There must be at least 1.33 seconds of time before any interactable objects.",
-                        ResultData = new() { new("HotStart", "Minimum beat is: " + limit.ToString() + " Current object is at: " + w.b.ToString()) },
+                        ResultData = new() { new("HotStart", "Minimum beat is: " + limit.ToString() + " Current object is at: " + w.ToString()) },
                         BeatmapObjects = new() { w }
                     });
                     issue = CritResult.Fail;

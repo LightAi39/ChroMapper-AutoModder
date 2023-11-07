@@ -1,4 +1,6 @@
-﻿using Beatmap.Base;
+﻿using beatleader_parser.Timescale;
+using Beatmap.Base;
+using BLMapCheck.BeatmapScanner.CriteriaCheck;
 using BLMapCheck.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Models;
 using Parser.Map.Difficulty.V3.Event;
@@ -19,7 +21,7 @@ namespace ChroMapper_LightModding.Helpers
         private List<CachedComment> renderedComments = new List<CachedComment>();
 
         private List<BaseBpmEvent> bpmChanges = new List<BaseBpmEvent>();
-        private BeatPerMinute bpm;
+        private Timescale timescale;
 
         private class CachedComment
         {
@@ -99,7 +101,7 @@ namespace ChroMapper_LightModding.Helpers
         private void OnEditorScaleChange(float newScale)
         {
             foreach (CachedComment commentDisplay in renderedComments)
-                SetBookmarkPos(commentDisplay.Text.rectTransform, (float)bpm.ToBeatTime(bpm.ToRealTime(commentDisplay.Comment.StartBeat)));
+                SetBookmarkPos(commentDisplay.Text.rectTransform, (float)timescale.ToBeatTime(timescale.ToRealTime(commentDisplay.Comment.StartBeat)));
         }
 
         private void SetBookmarkPos(RectTransform rect, float time)
@@ -110,10 +112,10 @@ namespace ChroMapper_LightModding.Helpers
 
         private TextMeshProUGUI CreateGridBookmark(Comment comment)
         {
-            GameObject obj = new GameObject("GridBookmark", typeof(TextMeshProUGUI));
+            GameObject obj = new("GridBookmark", typeof(TextMeshProUGUI));
             RectTransform rect = (RectTransform)obj.transform;
             rect.SetParent(gridBookmarksParent);
-            SetBookmarkPos(rect, (float)bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat)));
+            SetBookmarkPos(rect, (float)timescale.ToBeatTime(timescale.ToRealTime(comment.StartBeat)));
             rect.sizeDelta = Vector2.one;
             rect.localRotation = Quaternion.identity;
 
@@ -202,17 +204,17 @@ namespace ChroMapper_LightModding.Helpers
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
-            List<Bpmevent> bpmChangesChecker = new();
+            List<BpmEvent> bpmChangesChecker = new();
             foreach (var bpmChange in bpmChanges)
             {
-                Bpmevent bpmevent = new Bpmevent
+                BpmEvent bpmevent = new()
                 {
-                    b = bpmChange.JsonTime,
-                    m = bpmChange.Bpm
+                    Beats = bpmChange.JsonTime,
+                    Bpm = bpmChange.Bpm
                 };
                 bpmChangesChecker.Add(bpmevent);
             }
-            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            timescale = Timescale.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
         }
 
         public void Dispose()
