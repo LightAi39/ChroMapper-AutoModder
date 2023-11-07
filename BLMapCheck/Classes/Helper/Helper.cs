@@ -73,9 +73,10 @@ namespace BLMapCheck.Classes.Helper
 
             if (blue.Count > 2)
             {
+                NotesData.Add(new(blue[0]));
                 for (int i = 1; i < blue.Count; i++)
                 {
-                    NotesData.Add(new(blue[0]));
+                    
                     if (blue[i].b - blue[i - 1].b <= 0.125)
                     {
                         var data = new NoteData
