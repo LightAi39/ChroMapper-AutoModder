@@ -8,7 +8,7 @@ namespace BLMapCheck.Classes.Helper
 {
     internal class Helper
     {
-        public static double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315, 270 };
+        public static double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315 };
 
         public class NoteData
         {
@@ -50,12 +50,14 @@ namespace BLMapCheck.Classes.Helper
                 {
                     if (red[i].Beats - red[i - 1].Beats <= 0.125)
                     {
-                        var data = new NoteData
+                        var data = new NoteData()
                         {
                             Note = red[i],
                             Pattern = true,
                             Precision = red[i].Beats - red[i - 1].Beats,
-                            Spacing = Math.Max(Math.Max(Math.Abs(red[i].x - red[i - 1].x), Math.Abs(red[i].y - red[i - 1].y)) - 1, 0)
+                            Spacing = Math.Max(Math.Max(Math.Abs(red[i].x - red[i - 1].x), Math.Abs(red[i].y - red[i - 1].y)) - 1, 0),
+                            Line = red[i].x,
+                            Layer = red[i].y
                         };
                         if (!NotesData.Last().Pattern)
                         {
@@ -80,12 +82,14 @@ namespace BLMapCheck.Classes.Helper
                     
                     if (blue[i].Beats - blue[i - 1].Beats <= 0.125)
                     {
-                        var data = new NoteData
+                        var data = new NoteData()
                         {
                             Note = blue[i],
                             Pattern = true,
                             Precision = blue[i].Beats - blue[i - 1].Beats,
-                            Spacing = Math.Max(Math.Max(Math.Abs(blue[i].x - blue[i - 1].x), Math.Abs(blue[i].y - blue[i - 1].y)) - 1, 0)
+                            Spacing = Math.Max(Math.Max(Math.Abs(blue[i].x - blue[i - 1].x), Math.Abs(blue[i].y - blue[i - 1].y)) - 1, 0),
+                            Line = blue[i].x,
+                            Layer = blue[i].y
                         };
                         if (!NotesData.Last().Pattern)
                         {
@@ -165,13 +169,12 @@ namespace BLMapCheck.Classes.Helper
             return degrees;
         }
 
-        public static double FindAngleViaPosition(List<NoteData> data, int index, int h)
+        public static double FindAngleViaPosition(List<NoteData> data, int next, int prev)
         {
-            (double x, double y) previousPosition = (data[h].Line, data[h].Layer);
-            (double x, double y) currentPosition = (data[index].Line, data[index].Layer);
-
-            var currentAngle = ReverseCutDirection(Mod(ConvertRadiansToDegrees(Math.Atan2(previousPosition.y - currentPosition.y, previousPosition.x - currentPosition.x)), 360));
-            return currentAngle;
+            // Use Math.Atan2 to calculate the angle in radians
+            double angle = Math.Atan2(data[prev].Layer - data[next].Layer, data[prev].Line - data[next].Line);
+            angle = Mod(ConvertRadiansToDegrees(angle), 360);
+            return angle;
         }
 
         public static (double x, double y) SimSwingPos(double x, double y, double direction, double dis = 5)

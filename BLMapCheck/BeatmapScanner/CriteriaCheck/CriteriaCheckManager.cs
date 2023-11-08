@@ -67,7 +67,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             // Debug.Log("Current diff: " + Difficulty + Characteristic);
 
-            Parser.Map.Difficulty.V3.Base.DifficultyV3 diff = BLMapChecker.map.Difficulties.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Data;
+            Parser.Map.Difficulty.V3.Base.DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
 
             timescale = Timescale.Create(BLMapChecker.map.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), BLMapChecker.map.Info._songTimeOffset);
 

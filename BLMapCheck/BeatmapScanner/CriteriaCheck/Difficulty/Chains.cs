@@ -1,5 +1,4 @@
-﻿using BLMapCheck.Classes.Helper;
-using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;

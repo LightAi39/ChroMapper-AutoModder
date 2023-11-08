@@ -44,14 +44,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            var red = NotesData.Where(c => c.Note.Color == 0).ToList();
-            var blue = NotesData.Where(c => c.Note.Color == 1).ToList();
+            var red = NotesData.Where(c => c.Note.Color == 0 && c.Pattern).ToList();
+            var blue = NotesData.Where(c => c.Note.Color == 1 && c.Pattern).ToList();
 
             // TODO: This could probably be done way better but idk
             for (int i = 0; i < red.Count() - 1; i++)
             {
                 List<double> dir = new();
-                if (red[i].Head && red[i + 1].Note.Beats != red[i].Note.Beats)
+                if (red[i].Head)
                 {
                     if (red[i].Note.CutDirection != 8)
                     {
@@ -61,7 +61,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         dir.Add(FindAngleViaPosition(red, i + 1, i));
                     }
-
                     do
                     {
                         i++;
@@ -73,13 +72,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             break;
                         }
-
                         dir.Add(FindAngleViaPosition(red, i, i - 1));
                     } while (!red[i].Head);
+                    i--;
                     var degree = dir.FirstOrDefault();
                     for (int j = 1; j < dir.Count(); j++)
                     {
-                        if (!IsSameDirection(degree, dir[j], 45))
+                        if (!IsSameDirection(degree, dir[j], 45) && !IsSameDirection(degree, ReverseCutDirection(dir[j]), 45))
                         {
                             var n = red[i - dir.Count() + j];
                             CheckResults.Instance.AddResult(new CheckResult()
@@ -96,8 +95,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             issue = CritResult.Fail;
                         }
                     }
-
-                    i--;
                 }
             }
 
@@ -105,7 +102,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 List<double> dir = new();
 
-                if (blue[i].Head && blue[i + 1].Note.Beats != blue[i].Note.Beats)
+                if (blue[i].Head)
                 {
                     if (blue[i].Note.CutDirection != 8)
                     {
@@ -130,10 +127,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                         dir.Add(FindAngleViaPosition(blue, i, i - 1));
                     } while (!blue[i].Head);
+                    i--;
                     var degree = dir.FirstOrDefault();
                     for (int j = 1; j < dir.Count(); j++)
                     {
-                        if (!IsSameDirection(degree, dir[j], 45))
+                        if (!IsSameDirection(degree, dir[j], 45) && !IsSameDirection(degree, ReverseCutDirection(dir[j]), 45))
                         {
                             var n = blue[i - dir.Count() + j];
                             CheckResults.Instance.AddResult(new CheckResult()
@@ -150,8 +148,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             issue = CritResult.Fail;
                         }
                     }
-
-                    i--;
                 }
             }
 
