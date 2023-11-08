@@ -113,6 +113,7 @@
   <ItemGroup>
     <Content Include="dll\Analyzer.dll" />
     <Content Include="dll\JoshaParity.dll" />
+    <Content Include="dll\NVorbis.dll" />
     <Content Include="dll\Parser.dll" />
   </ItemGroup>
   <ItemGroup>
