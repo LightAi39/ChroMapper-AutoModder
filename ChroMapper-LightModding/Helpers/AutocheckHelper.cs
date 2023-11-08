@@ -29,17 +29,16 @@ namespace ChroMapper_LightModding.Helpers
         public (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, string characteristic = "", int difficultyRank = 0, string difficulty = "")
         {
             criteriaCheck.LoadMap(plugin.currentlyLoadedFolderPath);
+            var results = criteriaCheck.CheckAllCriteria();
 
             if (isAutoCheckOnInfo)
             {
-                var results = criteriaCheck.CheckAllCriteria(characteristic, difficulty);
                 RemovePastAutoCheckCommentsSongInfo();
                 plugin.currentMapsetReview.Criteria = results.InfoCriteriaResult;
                 CreateCommentsFromNewData(results.Results.Where(x => x.Difficulty == null && x.Characteristic == null).ToList());
             }
             if (isAutoCheckOnDiff)
             {
-                var results = criteriaCheck.CheckAllCriteria(characteristic, difficulty);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                 plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = results.DifficultyCriteriaResults.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Crit;
@@ -47,7 +46,6 @@ namespace ChroMapper_LightModding.Helpers
             }
             if (isForMapCheckStats)
             {
-                var results = criteriaCheck.CheckAllCriteria(characteristic, difficulty, true);
                 var resultData = results.Results.Where(x => x.Name == "Statistical Data" && x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault().ResultData;
                 return (
                     Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),
