@@ -111,7 +111,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                var note = notes.Find(x => x.Beats >= l.TailInBeats && x.Color == l.Color);
+                var note = notes.FirstOrDefault(x => x.Beats >= l.TailInBeats && x.Color == l.Color);
                 if (note != null)
                 {
                     if (l.TailInBeats + (l.TailInBeats - l.Beats) > note.Beats)
@@ -130,14 +130,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         issue = CritResult.Fail;
                     }
                 }
-
                 var temp = new NoteData()
                 {
                     Direction = Mod(DirectionToDegree[l.Direction], 360),
                     Line = l.x,
                     Layer = l.y
                 };
-                var temp2 = new NoteData(notes.First())
+                var temp2 = new NoteData()
                 {
                     Line = l.tx,
                     Layer = l.ty

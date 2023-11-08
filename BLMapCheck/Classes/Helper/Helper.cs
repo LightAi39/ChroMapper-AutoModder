@@ -167,11 +167,10 @@ namespace BLMapCheck.Classes.Helper
 
         public static double FindAngleViaPosition(List<NoteData> data, int index, int h)
         {
-            (double x, double y) previousPosition = (data[h].Note.x, data[h].Note.y);
-            (double x, double y) = (data[index].Note.x, data[index].Note.y);
+            (double x, double y) previousPosition = (data[h].Line, data[h].Layer);
+            (double x, double y) currentPosition = (data[index].Line, data[index].Layer);
 
-            var currentAngle = ReverseCutDirection(Mod(ConvertRadiansToDegrees(Math.Atan2(previousPosition.y - y, previousPosition.x - x)), 360));
-
+            var currentAngle = ReverseCutDirection(Mod(ConvertRadiansToDegrees(Math.Atan2(previousPosition.y - currentPosition.y, previousPosition.x - currentPosition.x)), 360));
             return currentAngle;
         }
 
