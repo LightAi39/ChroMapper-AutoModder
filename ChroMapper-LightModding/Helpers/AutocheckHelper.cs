@@ -32,7 +32,7 @@ namespace ChroMapper_LightModding.Helpers
 
             if (isAutoCheckOnInfo)
             {
-                var results = criteriaCheck.CheckAllCriteria(characteristic, difficulty, true);
+                var results = criteriaCheck.CheckAllCriteria(characteristic, difficulty);
                 RemovePastAutoCheckCommentsSongInfo();
                 plugin.currentMapsetReview.Criteria = results.InfoCriteriaResult;
                 CreateCommentsFromNewData(results.Results.Where(x => x.Difficulty == null && x.Characteristic == null).ToList());
@@ -47,7 +47,7 @@ namespace ChroMapper_LightModding.Helpers
             }
             if (isForMapCheckStats)
             {
-                var results = criteriaCheck.CheckAllCriteria(characteristic, difficulty, false, true);
+                var results = criteriaCheck.CheckAllCriteria(characteristic, difficulty, true);
                 var resultData = results.Results.Where(x => x.Name == "Statistical Data" && x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault().ResultData;
                 return (
                     Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),

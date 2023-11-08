@@ -25,14 +25,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
         public static readonly List<string> DiffOrder = new(){ "Easy", "Normal", "Hard", "Expert", "ExpertPlus" };
         public static Timescale timescale { get; set; }
 
-        public void CheckAllCriteria(string characteristic, string difficulty, bool info, bool onlyStat)
+        public void CheckAllCriteria(string characteristic, string difficulty, bool onlyStat)
         {
-            if(info)
-            {
-                BLMapChecker.map.Difficulties.OrderBy(x => DiffOrder.IndexOf(x.Difficulty));
-                CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
-            }
-            else if(characteristic != "" && difficulty != "")
+            BLMapChecker.map.Difficulties.OrderBy(x => DiffOrder.IndexOf(x.Difficulty));
+            CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
+
+            if(characteristic != "" && difficulty != "")
             {
                 CheckResults.Instance.DifficultyCriteriaResults.Add(new(difficulty, characteristic, AutoDiffCheck(characteristic, difficulty, onlyStat)));
             }

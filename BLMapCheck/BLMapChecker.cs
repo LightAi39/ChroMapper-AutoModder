@@ -60,7 +60,7 @@ namespace BLMapCheck
             }
         }
 
-        public CheckResults CheckAllCriteria(string characteristic, string difficulty, bool info = false, bool stat = false)
+        public CheckResults CheckAllCriteria(string characteristic, string difficulty, bool onlyStat = false)
         {
             CheckResults.Reset();
             if (!mapLoaded)
@@ -69,7 +69,7 @@ namespace BLMapCheck
             }
 
             CriteriaCheckManager manager = new();
-            manager.CheckAllCriteria(characteristic, difficulty, info, stat);
+            manager.CheckAllCriteria(characteristic, difficulty, onlyStat);
 
             if (CheckResults.Instance.CheckFinished)
             {
