@@ -59,7 +59,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     else
                     {
-                        dir.Add(FindAngleViaPosition(red, i + 1, i));
+                        dir.Add(ReverseCutDirection(FindAngleViaPosition(red, i + 1, i)));
                     }
                     do
                     {
@@ -78,7 +78,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var degree = dir.FirstOrDefault();
                     for (int j = 1; j < dir.Count(); j++)
                     {
-                        if (!IsSameDirection(degree, dir[j], 45) && !IsSameDirection(degree, ReverseCutDirection(dir[j]), 45))
+                        if (!IsSameDirection(degree, dir[j]) && !IsSameDirection(degree, ReverseCutDirection(dir[j])))
                         {
                             var n = red[i - dir.Count() + j];
                             CheckResults.Instance.AddResult(new CheckResult()
@@ -110,7 +110,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     else
                     {
-                        dir.Add(FindAngleViaPosition(blue, i + 1, i));
+                        dir.Add(ReverseCutDirection(FindAngleViaPosition(blue, i + 1, i)));
                     }
 
                     do
@@ -131,7 +131,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var degree = dir.FirstOrDefault();
                     for (int j = 1; j < dir.Count(); j++)
                     {
-                        if (!IsSameDirection(degree, dir[j], 45) && !IsSameDirection(degree, ReverseCutDirection(dir[j]), 45))
+                        if (!IsSameDirection(degree, dir[j]) && !IsSameDirection(degree, ReverseCutDirection(dir[j])))
                         {
                             var n = blue[i - dir.Count() + j];
                             CheckResults.Instance.AddResult(new CheckResult()

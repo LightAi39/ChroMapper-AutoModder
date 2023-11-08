@@ -145,7 +145,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     temp,
                     temp2
                 };
-                if (!IsSameDirection(ReverseCutDirection(FindAngleViaPosition(temp3, 0, 1)), temp.Direction, Instance.MaxChainRotation))
+                if (!IsSameDirection(ReverseCutDirection(FindAngleViaPosition(temp3, 0, 1)), temp.Direction, Instance.MaxChainRotation) && !IsSameDirection(FindAngleViaPosition(temp3, 0, 1), temp.Direction, Instance.MaxChainRotation))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
