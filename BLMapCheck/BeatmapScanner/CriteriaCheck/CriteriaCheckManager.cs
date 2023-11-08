@@ -15,6 +15,8 @@ using Parity = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Parity;
 using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
 using beatleader_analyzer.BeatmapScanner.Data;
 using beatleader_parser.Timescale;
+using Parser.Map.Difficulty.V2.Base;
+using DifficultyV3 = Parser.Map.Difficulty.V3.Base.DifficultyV3;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -27,6 +29,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
         public void CheckAllCriteria()
         {
+            if (CheckResults.Instance.CheckFinished) CheckResults.Reset();
+
             BLMapChecker.map.Difficulties.OrderBy(x => DiffOrder.IndexOf(x.Difficulty));
             CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
 
@@ -42,6 +46,32 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             // Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
         }
 
+        public void CheckSongInfo()
+        {
+            if (CheckResults.Instance.CheckFinished) CheckResults.Reset();
+
+            CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
+
+            CheckResults.Instance.CheckFinished = true;
+        }
+
+        public void CheckSingleDifficulty(string characteristic, string difficulty)
+        {
+            if (CheckResults.Instance.CheckFinished) CheckResults.Reset();
+
+            CheckResults.Instance.DifficultyCriteriaResults.Add(new(difficulty, characteristic, AutoDiffCheck(characteristic, difficulty)));
+
+            CheckResults.Instance.CheckFinished = true;
+        }
+
+        public void CheckDifficultyStatistics(string characteristic, string difficulty)
+        {
+            if (CheckResults.Instance.CheckFinished) CheckResults.Reset();
+
+            CheckResults.Instance.Results.Add(GetDiffStatistics(characteristic, difficulty));
+
+            CheckResults.Instance.CheckFinished = true;
+        }
 
         public InfoCrit AutoInfoCheck()
         {
@@ -67,7 +97,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             // Debug.Log("Current diff: " + Difficulty + Characteristic);
 
-            Parser.Map.Difficulty.V3.Base.DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
+            DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
 
             timescale = Timescale.Create(BLMapChecker.map.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), BLMapChecker.map.Info._songTimeOffset);
 
@@ -137,33 +167,72 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             Offbeat.Check(diff.Notes);
             RollingEBPM.Check(swings, diff.Notes);
 
-            CheckResults.Instance.AddResult(new CheckResult()
+            CheckResults.Instance.AddResult(WriteDifficultyStatistics(BeatmapScannerData, diffAnalysis));
+
+            return diffCrit;
+        }
+
+
+        private CheckResult GetDiffStatistics(string characteristic, string difficulty)
+        {
+            DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
+
+            DiffAnalysis diffAnalysis;
+            List<SwingData> swings;
+
+            if (Enum.TryParse(difficulty, true, out BeatmapDifficultyRank difficultyRank))
+            {
+                string infoDat = JsonConvert.SerializeObject(BLMapChecker.map.Info);
+                string diffDat = JsonConvert.SerializeObject(diff);
+
+                diffAnalysis = new(infoDat, diffDat, difficultyRank);
+
+                swings = diffAnalysis.GetSwingData();
+            }
+            else
+            {
+                throw new Exception("Difficulty could not be parsed to BeatmapDifficultyRank");
+            }
+
+            List<Ratings> BeatmapScannerData = new();
+
+            if (diff.Notes.Any())
+            {
+                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
+            } else
+            {
+                throw new Exception("No notes found");
+            }
+
+
+            return WriteDifficultyStatistics(BeatmapScannerData, diffAnalysis);
+        }
+
+        private CheckResult WriteDifficultyStatistics(List<Ratings> beatmapScannerData, DiffAnalysis diffAnalysis)
+        {
+            return new CheckResult()
             {
                 Name = "Statistical Data",
                 Difficulty = Difficulty,
                 Characteristic = Characteristic,
                 Severity = Severity.Info,
                 CheckType = "Statistics",
-                Description = "BeatmapScanner result data",
+                Description = "Statistical data of the difficulty",
                 ResultData = new()
                 {
-                    new("Pass", Math.Round(BeatmapScannerData[0].Pass, 2).ToString()),
-                    new("Tech", Math.Round(BeatmapScannerData[0].Tech, 2).ToString()),
+                    new("Pass", Math.Round(beatmapScannerData[0].Pass, 2).ToString()),
+                    new("Tech", Math.Round(beatmapScannerData[0].Tech, 2).ToString()),
                     new("EBPM", diffAnalysis.GetAverageEBPM().ToString()),
-                    new("Slider", Math.Round(BeatmapScannerData[0].Pattern, 2).ToString()), // TODO: rename to pattern instead
+                    new("Slider", Math.Round(beatmapScannerData[0].Pattern, 2).ToString()), // TODO: rename to pattern instead
                     new("BombReset","0"), // TODO: remove or fix
                     new("Reset", diffAnalysis.GetResetCount().ToString()),
                     new("Crouch", "0"), // TODO: remove or fix
-                    new("Linear", Math.Round(BeatmapScannerData[0].Linear, 2).ToString()),
+                    new("Linear", Math.Round(beatmapScannerData[0].Linear, 2).ToString()),
                     new("SPS", diffAnalysis.GetSPS().ToString()),
                     new("Handness", diffAnalysis.GetHandedness().ToString())
                 }
-            });
-
-            Characteristic = characteristic;
-            Difficulty = difficulty;
-
-            return diffCrit;
+            };
         }
+
     }
 }

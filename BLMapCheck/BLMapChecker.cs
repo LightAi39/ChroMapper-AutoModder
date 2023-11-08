@@ -77,5 +77,59 @@ namespace BLMapCheck
             }
             throw new Exception("Check was not finished correctly");
         }
+
+        public CheckResults CheckSongInfo()
+        {
+            CheckResults.Reset();
+            if (!mapLoaded)
+            {
+                throw new Exception("Map not loaded");
+            }
+
+            CriteriaCheckManager manager = new();
+            manager.CheckSongInfo();
+
+            if (CheckResults.Instance.CheckFinished)
+            {
+                return CheckResults.Instance;
+            }
+            throw new Exception("Check was not finished correctly");
+        }
+
+        public CheckResults CheckSingleDifficulty(string characteristic, string difficulty)
+        {
+            CheckResults.Reset();
+            if (!mapLoaded)
+            {
+                throw new Exception("Map not loaded");
+            }
+
+            CriteriaCheckManager manager = new();
+            manager.CheckSingleDifficulty(characteristic, difficulty);
+
+            if (CheckResults.Instance.CheckFinished)
+            {
+                return CheckResults.Instance;
+            }
+            throw new Exception("Check was not finished correctly");
+        }
+
+        public CheckResults CheckDifficultyStatistics(string characteristic, string difficulty)
+        {
+            CheckResults.Reset();
+            if (!mapLoaded)
+            {
+                throw new Exception("Map not loaded");
+            }
+
+            CriteriaCheckManager manager = new();
+            manager.CheckDifficultyStatistics(characteristic, difficulty);
+
+            if (CheckResults.Instance.CheckFinished)
+            {
+                return CheckResults.Instance;
+            }
+            throw new Exception("Check was not finished correctly");
+        }
     }
 }
