@@ -93,16 +93,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Light",
                         Severity = Severity.Passed,
                         CheckType = "Light",
-                        Description = "Map has light.",
-                        ResultData = new() { new("Light", "Passed") }
-                    });
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Average Light",
-                        Severity = Severity.Passed,
-                        CheckType = "Light",
                         Description = "Map has enough light per beat in average.",
                         ResultData = new() { new("AverageLight", "Current average per beat: " + average.ToString() + " Required: " + Instance.AverageLightPerBeat.ToString()) }
                     });
@@ -128,6 +118,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 else
                 {
+                    float fadeTime = 0f;
+                    float reactTime = 0f;
                     for (var i = 0; i < 12; i++)
                     {
                         eventLitTime.Add(new());
@@ -136,8 +128,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         var ev = lights[i];
                         timescale.BPM.SetCurrentBPM(ev.Beats);
-                        var fadeTime = timescale.BPM.ToBeatTime((float)Instance.LightFadeDuration, true);
-                        var reactTime = timescale.BPM.ToBeatTime((float)Instance.LightBombReactionTime, true);
+                        fadeTime = timescale.BPM.ToBeatTime((float)Instance.LightFadeDuration, true);
+                        reactTime = timescale.BPM.ToBeatTime((float)Instance.LightBombReactionTime, true);
                         if (ev.isOn || ev.isFlash || ev.isFade)
                         {
                             eventLitTime[ev.Type].Add(new(ev.Beats, true));
@@ -161,7 +153,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         var isLit = false;
                         foreach (var el in eventLitTime)
                         {
-                            var t = el.Find(e => e.Time < bomb.Beats);
+                            var t = el.Find(e => e.Time < bomb.Beats - reactTime);
                             if (t != null)
                             {
                                 isLit = isLit || t.State;
@@ -174,7 +166,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Characteristic = CriteriaCheckManager.Characteristic,
                                 Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Bomb Lit",
-                                Severity = Severity.Inconclusive,
+                                Severity = Severity.Error,
                                 CheckType = "Light",
                                 Description = "There must be sufficient lighting whenever bombs are present.",
                                 ResultData = new() { new("BombLit", isLit.ToString()) },
@@ -196,7 +188,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Name = "Bomb Lit",
                     Severity = Severity.Passed,
                     CheckType = "Light",
-                    Description = "Bombs in the map are properly lit (or the map has v3 lights).",
+                    Description = "Bombs in the map are properly lit.",
                     ResultData = new() { new("BombLit", "Success") }
                 });
             }

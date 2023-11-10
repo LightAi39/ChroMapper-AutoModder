@@ -1,5 +1,4 @@
 ﻿using beatleader_parser.Timescale;
-using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
@@ -24,7 +23,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             foreach (var w in leftWall)
             {
-                var note = notes.Where(n => n.x == 0 && !(n.y == 0 && w.y == 0 && w.Height == 1) && ((n.y >= w.y && n.y < w.y + w.Height) || (n.y >= 0 && w.y == 0 && w.Height > 1)) && n.Beats > w.Beats && n.Beats <= w.Beats + w.DurationInBeats && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
+                var note = notes.Where(n => n.x == 0 && !(n.y == 0 && w.y == 0 && w.Height == 1) && ((n.y >= w.y - 1 && n.y < w.y + w.Height) || (n.y >= 0 && w.y == 0 && w.Height > 1)) && n.Beats > w.Beats && n.Beats <= w.Beats + w.DurationInBeats + 0.25 && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
                 
                 foreach (var no in note)
                 {
@@ -42,7 +41,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     issue = CritResult.Fail;
                 }
                 
-                var bomb = bombs.Where(b => b.x == 0 && !(b.y == 0 && w.y == 0 && w.Height == 1) && ((b.y >= w.y && b.y < w.y + w.Height) || (b.y >= 0 && w.y == 0 && w.Height > 1)) && b.Beats > w.Beats && b.Beats <= w.Beats + w.DurationInBeats).ToList();
+                var bomb = bombs.Where(b => b.x == 0 && !(b.y == 0 && w.y == 0 && w.Height == 1) && ((b.y >= w.y - 1 && b.y < w.y + w.Height) || (b.y >= 0 && w.y == 0 && w.Height > 1)) && b.Beats > w.Beats && b.Beats <= w.Beats + w.DurationInBeats + 0.25).ToList();
                 foreach (var b in bomb)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -62,7 +61,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             foreach (var w in rightWall)
             {
-                var note = notes.Where(n => n.x == 3 && !(n.y == 0 && w.y == 0 && w.Height == 1) && ((n.y >= w.y && n.y < w.y + w.Height) || (n.y >= 0 && w.y == 0 && w.Height > 1)) && n.Beats > w.Beats && n.Beats <= w.Beats + w.DurationInBeats && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
+                var note = notes.Where(n => n.x == 3 && !(n.y == 0 && w.y == 0 && w.Height == 1) && ((n.y >= w.y - 1 && n.y < w.y + w.Height) || (n.y >= 0 && w.y == 0 && w.Height > 1)) && n.Beats > w.Beats && n.Beats <= w.Beats + w.DurationInBeats + 0.25 && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
                 foreach (var n in note)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -78,7 +77,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                var bomb = bombs.Where(b => b.x == 3 && !(b.y == 0 && w.y == 0 && w.Height == 1) && ((b.y >= w.y && b.y < w.y + w.Height) || (b.y >= 0 && w.y == 0 && w.Height > 1)) && b.Beats > w.Beats && b.Beats <= w.Beats + w.DurationInBeats).ToList();
+                var bomb = bombs.Where(b => b.x == 3 && !(b.y == 0 && w.y == 0 && w.Height == 1) && ((b.y >= w.y - 1 && b.y < w.y + w.Height) || (b.y >= 0 && w.y == 0 && w.Height > 1)) && b.Beats > w.Beats && b.Beats <= w.Beats + w.DurationInBeats + 0.25).ToList();
                 foreach (var b in bomb)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -151,7 +150,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         ResultData = new() { new("WallSize", "Error") },
                         BeatmapObjects = new() { w }
                     });
-                    //CreateDiffCommentObstacle("R4D - Must have positive w, h and d", CommentTypesEnum.Issue, w); TODO: USE NEW METHOD
                     issue = CritResult.Fail;
                 }
                 if (w.DurationInBeats < min && (w.x + w.Width == 2 || w.x + w.Width == 3) && w.y + w.Height > 1 &&

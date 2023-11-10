@@ -80,7 +80,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (!IsSameDirection(degree, dir[j]) && !IsSameDirection(degree, ReverseCutDirection(dir[j])))
                         {
-                            var n = red[i - dir.Count() + j];
+                            var n = red[i - dir.Count() + j + 1];
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
                                 Characteristic = CriteriaCheckManager.Characteristic,
@@ -133,7 +133,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (!IsSameDirection(degree, dir[j]) && !IsSameDirection(degree, ReverseCutDirection(dir[j])))
                         {
-                            var n = blue[i - dir.Count() + j];
+                            var n = blue[i - dir.Count() + j + 1];
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
                                 Characteristic = CriteriaCheckManager.Characteristic,

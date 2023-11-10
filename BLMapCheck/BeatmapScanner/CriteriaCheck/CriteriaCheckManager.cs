@@ -17,6 +17,7 @@ using beatleader_analyzer.BeatmapScanner.Data;
 using beatleader_parser.Timescale;
 using Parser.Map.Difficulty.V2.Base;
 using DifficultyV3 = Parser.Map.Difficulty.V3.Base.DifficultyV3;
+using System.Diagnostics;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -96,7 +97,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             Difficulty = difficulty;
 
             // Debug.Log("Current diff: " + Difficulty + Characteristic);
-
+            
             DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
 
             timescale = Timescale.Create(BLMapChecker.map.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), BLMapChecker.map.Info._songTimeOffset);
@@ -122,7 +123,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             List<Ratings> BeatmapScannerData = new();
 
-            if (diff.Notes.Any())
+            if (diff.Notes.Count >= 20)
             {
                 BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
                 Helper.CreateNoteData(diff.Notes);
@@ -136,7 +137,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             allNoteObjects.AddRange(diff.Bombs);
             // allNoteObjects.AddRange(diff.Chains);
 
-            _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.Where(x => x._beatmapCharacteristicName == Characteristic).FirstOrDefault()._difficultyBeatmaps.Where(x => x._difficulty == Difficulty).FirstOrDefault();
+            _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == Characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == Difficulty);
+            int diffCount = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic)._difficultyBeatmaps.Count();
 
             // Debug.Log(JsonConvert.SerializeObject(difficultyBeatmap, Formatting.Indented));
 
@@ -146,7 +148,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 ColdEnd = ColdEnd.Check(allNoteObjects, diff.Walls, (float)BLMapChecker.map.SongLength),
                 MinSongDuration = SongDuration.Check(diff.Notes),
                 Slider = Slider.Check(),
-                DifficultyLabelSize = DifficultyLabelSize.Check(difficultyBeatmap._customData?._difficultyLabel),
+                DifficultyLabelSize = DifficultyLabelSize.Check(difficultyBeatmap._customData?._difficultyLabel, diffCount),
                 DifficultyName = DifficultyLabelName.Check(difficultyBeatmap._customData?._difficultyLabel),
                 Requirement = Requirements.Check(difficultyBeatmap._customData?._requirements),
                 NJS = NJS.Check(swings, (float)BLMapChecker.map.SongLength, difficultyBeatmap._noteJumpMovementSpeed, difficultyBeatmap._noteJumpStartBeatOffset),
@@ -163,7 +165,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Hitbox = Hitbox.HitboxCheck(diff.Notes, difficultyBeatmap._noteJumpMovementSpeed),
                 HandClap = Handclap.Check(diff.Notes)
             };
-
             Offbeat.Check(diff.Notes);
             RollingEBPM.Check(swings, diff.Notes);
 
@@ -196,7 +197,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             List<Ratings> BeatmapScannerData = new();
 
-            if (diff.Notes.Any())
+            if (diff.Notes.Count >= 20)
             {
                 BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
             } else
@@ -233,6 +234,5 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 }
             };
         }
-
     }
 }

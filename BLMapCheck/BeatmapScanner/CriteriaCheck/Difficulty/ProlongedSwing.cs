@@ -3,6 +3,7 @@ using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
+using static BLMapCheck.Classes.Helper.Helper;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -118,15 +119,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Characteristic = CriteriaCheckManager.Characteristic,
                                 Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Dot Spam",
-                                Severity = Severity.Inconclusive,
+                                Severity = Severity.Error,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "Inconclusive") },
+                                ResultData = new() { new("DotSpam", "Error") },
                                 BeatmapObjects = new() { left }
                             });
                             unsure = true;
                         }
-                        else
+                        else if(previous.CutDirection != 8 && IsSameDirection(DirectionToDegree[previous.CutDirection], DirectionToDegree[left.CutDirection]))
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {
@@ -161,15 +162,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Characteristic = CriteriaCheckManager.Characteristic,
                                 Difficulty = CriteriaCheckManager.Difficulty,
                                 Name = "Dot Spam",
-                                Severity = Severity.Inconclusive,
+                                Severity = Severity.Error,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "Inconclusive") },
+                                ResultData = new() { new("DotSpam", "Error") },
                                 BeatmapObjects = new() { right }
                             });
                             unsure = true;
                         }
-                        else
+                        else if (previous.CutDirection != 8 && IsSameDirection(DirectionToDegree[previous.CutDirection], DirectionToDegree[right.CutDirection]))
                         {
                             CheckResults.Instance.AddResult(new CheckResult()
                             {

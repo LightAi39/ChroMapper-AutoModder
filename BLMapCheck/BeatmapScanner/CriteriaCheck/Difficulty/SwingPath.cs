@@ -1,6 +1,5 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.Results;
-using BLMapCheck.Classes.Unity;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
@@ -15,33 +14,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class SwingPath
     {
-        public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
-        {
-            Vector2 direction = B - A;
-            Vector2 pointAP = P - A;
-
-            float t = Vector2.Dot(pointAP, direction) / Vector2.Dot(direction, direction);
-            if (t < 0)
-            {
-                // Before A
-            }
-            else if (t > 1)
-            {
-                // After B
-                Vector2 closestPoint = B;
-                float distance = Vector2.Distance(P, closestPoint);
-                if (distance < 0.4) return true;
-            }
-            else
-            {
-                // In between
-                Vector2 closestPoint = A + direction * t;
-                float distance = Vector2.Distance(P, closestPoint);
-                if (distance < 0.4) return true;
-            }
-            return false;
-        }
-
+       
         // Check if a note block the swing path of another note of a different color
         public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Note> notes)
         {

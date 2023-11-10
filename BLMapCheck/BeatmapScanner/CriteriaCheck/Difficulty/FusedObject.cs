@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
+using static BLMapCheck.Classes.Helper.Helper;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -35,7 +36,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Fused Object",
                             Severity = Severity.Error,
                             CheckType = "Fused",
-                            Description = "Objects cannot collide within" + max.ToString() + " in the same line",
+                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
                             ResultData = new() { new("FusedObject", "Error") },
                             BeatmapObjects = new() { c, w }
                         });
@@ -59,7 +60,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Fused Object",
                             Severity = Severity.Error,
                             CheckType = "Fused",
-                            Description = "Objects cannot collide within" + max.ToString() + " in the same line",
+                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
                             ResultData = new() { new("FusedObject", "Error") },
                             BeatmapObjects = new() { b, w }
                         });
@@ -70,11 +71,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     timescale.BPM.SetCurrentBPM(c.Beats);
                     var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (c.Beats - (w.Beats + w.DurationInBeats) >= max)
+                    if (c.TailInBeats - (w.Beats + w.DurationInBeats) >= max)
                     {
                         break;
                     }
-                    if (c.Beats >= w.Beats - max && c.Beats <= w.Beats + w.DurationInBeats + max && c.tx <= w.x + w.Width - 1 && c.tx >= w.x && c.ty < w.y + w.Height && c.ty >= w.y - 1)
+                    var pre = w.Beats - max;
+                    var post = w.Beats + w.DurationInBeats + max;
+                    if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && c.tx <= w.x + w.Width - 1 && c.tx >= w.x && c.ty < w.y + w.Height && c.ty >= w.y - 1)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -83,7 +86,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Fused Object",
                             Severity = Severity.Error,
                             CheckType = "Fused",
-                            Description = "Objects cannot collide within" + max.ToString() + " in the same line",
+                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
                             ResultData = new() { new("FusedObject", "Error") },
                             BeatmapObjects = new() { c, w }
                         });
@@ -94,17 +97,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             for (int i = 0; i < notes.Count; i++)
             {
-                var c = notes[i];
+                var n = notes[i];
                 for (int j = i + 1; j < notes.Count; j++)
                 {
-                    var c2 = notes[j];
-                    timescale.BPM.SetCurrentBPM(c2.Beats);
+                    var n2 = notes[j];
+                    timescale.BPM.SetCurrentBPM(n2.Beats);
                     var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (c2.Beats - c.Beats >= max)
+                    if (n2.Beats - n.Beats >= max)
                     {
                         break;
                     }
-                    if (c.Beats >= c2.Beats - max && c.Beats <= c2.Beats + max && c.x == c2.x && c.y == c2.y)
+                    if (n.Beats >= n2.Beats - max && n.Beats <= n2.Beats + max && n.x == n2.x && n.y == n2.y)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -113,23 +116,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Fused Object",
                             Severity = Severity.Error,
                             CheckType = "Fused",
-                            Description = "Objects cannot collide within" + max.ToString() + " in the same line",
+                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
                             ResultData = new() { new("FusedObject", "Error") },
-                            BeatmapObjects = new() { c, c2 }
+                            BeatmapObjects = new() { n, n2 }
                         });
                         issue = CritResult.Fail;
                     }
                 }
-                for (int j = 0; j < bombs.Count; j++)
+                foreach (var b in bombs)
                 {
-                    var b = bombs[j];
                     timescale.BPM.SetCurrentBPM(b.Beats);
                     var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (b.Beats - c.Beats >= max)
+                    if (b.Beats - n.Beats >= max)
                     {
                         break;
                     }
-                    if (c.Beats >= b.Beats - max && c.Beats <= b.Beats + max && c.x == b.x && c.y == b.y)
+                    if (n.Beats >= b.Beats - max && n.Beats <= b.Beats + max && n.x == b.x && n.y == b.y)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -138,23 +140,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Fused Object",
                             Severity = Severity.Error,
                             CheckType = "Fused",
-                            Description = "Objects cannot collide within" + max.ToString() + " in the same line",
+                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
                             ResultData = new() { new("FusedObject", "Error") },
-                            BeatmapObjects = new() { c, b }
+                            BeatmapObjects = new() { n, b }
                         });
                         issue = CritResult.Fail;
                     }
                 }
-                for (int j = i + 1; j < chains.Count; j++)
+                foreach (var c in chains)
                 {
-                    var c2 = chains[j];
-                    timescale.BPM.SetCurrentBPM(c2.Beats);
+                    timescale.BPM.SetCurrentBPM(c.Beats);
                     var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (c2.Beats - c.Beats >= max)
+                    if (c.TailInBeats - n.Beats >= max)
                     {
                         break;
                     }
-                    if (c.Beats >= c2.Beats - max && c.Beats <= c2.Beats + max && c.x == c2.tx && c.y == c2.ty)
+                    if (n.x == c.x && n.y == c.y) // Head
+                    {
+                        break;
+                    }
+                    var pre = n.Beats - max;
+                    var post = n.Beats + max;
+                    var dir = c.Direction;
+                    if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && IsPointBetween(n, c))
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -163,9 +171,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Fused Object",
                             Severity = Severity.Error,
                             CheckType = "Fused",
-                            Description = "Objects cannot collide within" + max.ToString() + " in the same line",
+                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
                             ResultData = new() { new("FusedObject", "Error") },
-                            BeatmapObjects = new() { c, c2 }
+                            BeatmapObjects = new() { n, c }
                         });
                         issue = CritResult.Fail;
                     }
@@ -193,23 +201,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Fused Object",
                             Severity = Severity.Error,
                             CheckType = "Fused",
-                            Description = "Objects cannot collide within" + max.ToString() + " in the same line",
+                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
                             ResultData = new() { new("FusedObject", "Error") },
                             BeatmapObjects = new() { b, b2 }
                         });
                         issue = CritResult.Fail;
                     }
                 }
-                for (int j = i + 1; j < chains.Count; j++)
+                foreach (var c in chains)
                 {
-                    var c2 = chains[j];
-                    timescale.BPM.SetCurrentBPM(c2.Beats);
+                    timescale.BPM.SetCurrentBPM(c.Beats);
                     var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (c2.Beats - b.Beats >= max)
+                    if (c.TailInBeats - b.Beats >= max)
                     {
                         break;
                     }
-                    if (b.Beats >= c2.Beats - max && b.Beats <= c2.Beats + max && b.x == c2.tx && b.y == c2.ty)
+                    if (b.x == c.x && b.y == c.y) // Head
+                    {
+                        break;
+                    }
+                    var pre = b.Beats - max;
+                    var post = b.Beats + max;
+                    var dir = c.Direction;
+                    if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && IsPointBetween(b, c))
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -218,9 +232,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Fused Object",
                             Severity = Severity.Error,
                             CheckType = "Fused",
-                            Description = "Objects cannot collide within" + max.ToString() + " in the same line",
+                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
                             ResultData = new() { new("FusedObject", "Error") },
-                            BeatmapObjects = new() { b, c2 }
+                            BeatmapObjects = new() { b, c }
                         });
                         issue = CritResult.Fail;
                     }
@@ -235,11 +249,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var c2 = chains[j];
                     timescale.BPM.SetCurrentBPM(c2.Beats);
                     var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (c2.Beats - c.Beats >= max)
+                    if (Math.Abs(c2.TailInBeats - c.Beats) >= max || Math.Abs(c2.TailInBeats - c.TailInBeats) >= max || Math.Abs(c2.Beats - c.Beats) >= max || Math.Abs(c2.Beats - c.TailInBeats) >= max)
                     {
                         break;
                     }
-                    if (c.Beats >= c2.Beats - max && c.Beats <= c2.Beats + max && c.tx == c2.tx && c.ty == c2.ty)
+                    var pre = c.Beats - max;
+                    var post = c.Beats + max;
+                    if ((c2.Beats >= pre || c2.TailInBeats >= pre) && (c2.Beats <= post || c2.TailInBeats <= post) && DoLinesIntersect(c, c2))
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -248,7 +264,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Fused Object",
                             Severity = Severity.Error,
                             CheckType = "Fused",
-                            Description = "Objects cannot collide within" + max.ToString() + " in the same line",
+                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
                             ResultData = new() { new("FusedObject", "Error") },
                             BeatmapObjects = new() { c, c2 }
                         });

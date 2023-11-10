@@ -31,7 +31,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         (red[i - 1], red[i]) = (red[i], red[i - 1]);
                     }
                     var sliderAngle2 = Mod(ConvertRadiansToDegrees(Math.Atan2(red[i].y - red[i - 1].y, red[i].x - red[i - 1].x)), 360);
-                    if (Math.Abs(sliderAngle2 - direction) >= 45 && Math.Abs(sliderAngle2 - direction) <= 90)
+                    if (Math.Abs(sliderAngle2 - direction) >= 45)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -40,7 +40,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Loloppe",
                             Severity = Severity.Error,
                             CheckType = "Loloppe",
-                            Description = "Multiple notes of the same color on the same swing must not be parallel.",
+                            Description = "Multiple notes of the same color on the same swing must flow.",
                             ResultData = new() { new("Loloppe", "Error") },
                             BeatmapObjects = new() { red[i], red[i - 1] }
                         });
@@ -63,7 +63,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         (blue[i - 1], blue[i]) = (blue[i], blue[i - 1]);
                     }
                     var sliderAngle2 = Mod(ConvertRadiansToDegrees(Math.Atan2(blue[i].y - blue[i - 1].y, blue[i].x - blue[i - 1].x)), 360);
-                    if (Math.Abs(sliderAngle2 - direction) >= 45 && Math.Abs(sliderAngle2 - direction) <= 90)
+                    if (Math.Abs(sliderAngle2 - direction) >= 45)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -72,7 +72,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Name = "Loloppe",
                             Severity = Severity.Error,
                             CheckType = "Loloppe",
-                            Description = "Multiple notes of the same color on the same swing must not be parallel.",
+                            Description = "Multiple notes of the same color on the same swing must flow.",
                             ResultData = new() { new("Loloppe", "Error") },
                             BeatmapObjects = new() { blue[i], blue[i - 1] }
                         });

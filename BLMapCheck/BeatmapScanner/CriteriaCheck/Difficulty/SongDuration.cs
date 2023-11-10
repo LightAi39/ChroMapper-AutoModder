@@ -26,7 +26,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Mapped Duration",
                         Severity = Severity.Error,
                         CheckType = "Duration",
-                        Description = "The map from first note to last note must be at least 45 seconds in length.",
+                        Description = "The map from first note to last note must be at least " + Instance.MinSongDuration.ToString() + " seconds in length.",
                         ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + Instance.MinSongDuration.ToString() + "s.") },
                     });
                     return CritResult.Fail;
@@ -39,7 +39,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Name = "Mapped Duration",
                     Severity = Severity.Passed,
                     CheckType = "Duration",
-                    Description = "The map from first note to last note must be at least 45 seconds in length.",
+                    Description = "The map from first note to last note must be at least " + Instance.MinSongDuration.ToString() + " seconds in length.",
                     ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + Instance.MinSongDuration.ToString() + "s.") },
                 });
 
@@ -53,7 +53,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 Name = "Mapped Duration",
                 Severity = Severity.Error,
                 CheckType = "Duration",
-                Description = "The map from first note to last note must be at least 45 seconds in length.",
+                Description = "The map from first note to last note must be at least " + Instance.MinSongDuration.ToString() + " seconds in length.",
                 ResultData = new() { new("MappedDuration", "Current map duration is 0s. Minimum required duration is " + Instance.MinSongDuration.ToString() + "s.") },
             });
             return CritResult.Fail;

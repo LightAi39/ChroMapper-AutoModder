@@ -113,7 +113,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 var note = notes.FirstOrDefault(x => x.Beats >= l.TailInBeats && x.Color == l.Color);
                 if (note != null)
                 {
-                    if (l.TailInBeats + (l.TailInBeats - l.Beats) > note.Beats)
+                    if (note.Beats - l.TailInBeats < l.TailInBeats - l.Beats)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {

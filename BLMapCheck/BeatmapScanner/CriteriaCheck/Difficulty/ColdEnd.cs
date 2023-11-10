@@ -26,7 +26,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Cold End",
                         Severity = Severity.Error,
                         CheckType = "Duration",
-                        Description = "There must be at least 2 seconds of time after the last interactable object.",
+                        Description = "There must be at least " + Instance.ColdEndDuration.ToString() + " seconds of time after the last interactable object.",
                         ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current object is at: " + obj.Beats.ToString()) },
                         BeatmapObjects = new() { obj }
                     });
@@ -45,7 +45,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Cold End",
                         Severity = Severity.Error,
                         CheckType = "Duration",
-                        Description = "There must be at least 2 seconds of time after the last interactable object.",
+                        Description = "There must be at least " + Instance.ColdEndDuration.ToString() + " seconds of time after the last interactable object.",
                         ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current obstacle is at: " + (w.Beats + w.DurationInBeats).ToString()) },
                         BeatmapObjects = new() { w }
                     });
@@ -62,7 +62,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Name = "Cold End",
                     Severity = Severity.Passed,
                     CheckType = "Duration",
-                    Description = "There is at least 2 seconds of time after the last interactable object.",
+                    Description = "There is at least " + Instance.ColdEndDuration.ToString() + " seconds of time after the last interactable object.",
                     ResultData = new() { new("ColdEnd", "Success") }
                 });
             }

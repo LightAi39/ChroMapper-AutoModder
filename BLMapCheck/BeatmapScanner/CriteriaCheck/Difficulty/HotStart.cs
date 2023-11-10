@@ -27,7 +27,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Hot Start",
                         Severity = Severity.Error,
                         CheckType = "Duration",
-                        Description = "There must be at least 1.33 seconds of time before any interactable objects.",
+                        Description = "There must be at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects.",
                         ResultData = new() { new("HotStart", "Minimum beat is: " + limit.ToString() + " Current object is at: " + c.Beats.ToString()) },
                         BeatmapObjects = new() { c }
                     });
@@ -46,7 +46,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Hot Start",
                         Severity = Severity.Error,
                         CheckType = "Duration",
-                        Description = "There must be at least 1.33 seconds of time before any interactable objects.",
+                        Description = "There must be at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects.",
                         ResultData = new() { new("HotStart", "Minimum beat is: " + limit.ToString() + " Current object is at: " + w.ToString()) },
                         BeatmapObjects = new() { w }
                     });
@@ -64,7 +64,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Name = "Hot Start",
                     Severity = Severity.Passed,
                     CheckType = "Duration",
-                    Description = "There is at least 1.33 seconds of time before any interactable objects.",
+                    Description = "There is at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects.",
                     ResultData = new() { new("HotStart", "Success") }
                 });
             }

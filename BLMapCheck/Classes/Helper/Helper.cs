@@ -1,8 +1,9 @@
-﻿using beatleader_parser;
+﻿using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace BLMapCheck.Classes.Helper
 {
@@ -107,6 +108,111 @@ namespace BLMapCheck.Classes.Helper
             }
         }
 
+        public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
+        {
+            Vector2 direction = B - A;
+            Vector2 pointAP = P - A;
+
+            float t = Vector2.Dot(pointAP, direction) / Vector2.Dot(direction, direction);
+            if (t < 0)
+            {
+                // Before A
+            }
+            else if (t > 1)
+            {
+                // After B
+                Vector2 closestPoint = B;
+                float distance = Vector2.Distance(P, closestPoint);
+                if (distance < 0.4) return true;
+            }
+            else
+            {
+                // In between
+                Vector2 closestPoint = A + direction * t;
+                float distance = Vector2.Distance(P, closestPoint);
+                if (distance < 0.4) return true;
+            }
+            return false;
+        }
+
+        // https://stackoverflow.com/questions/4543506/algorithm-for-intersection-of-2-lines
+        public static bool DoLinesIntersect(Chain chain1, Chain chain2, double tolerance = 0.001)
+        {
+            double x1 = chain1.x, y1 = chain1.y;
+            double x2 = chain1.tx, y2 = chain1.ty;
+            double x3 = chain2.x, y3 = chain2.y;
+            double x4 = chain2.tx, y4 = chain2.ty;
+            if (Math.Abs(x1 - x2) < tolerance && Math.Abs(x3 - x4) < tolerance && Math.Abs(x1 - x3) < tolerance)
+            {
+                return false;
+            }
+            if (Math.Abs(y1 - y2) < tolerance && Math.Abs(y3 - y4) < tolerance && Math.Abs(y1 - y3) < tolerance)
+            {
+                return false;
+            }
+            if (Math.Abs(x1 - x2) < tolerance && Math.Abs(x3 - x4) < tolerance)
+            {
+                return false;
+            }
+            if (Math.Abs(y1 - y2) < tolerance && Math.Abs(y3 - y4) < tolerance)
+            {
+                return false;
+            }
+            double x, y;
+            if (Math.Abs(x1 - x2) < tolerance)
+            {
+                double m2 = (y4 - y3) / (x4 - x3);
+                double c2 = -m2 * x3 + y3;
+                x = x1;
+                y = c2 + m2 * x1;
+            }
+            else if (Math.Abs(x3 - x4) < tolerance)
+            {
+                double m1 = (y2 - y1) / (x2 - x1);
+                double c1 = -m1 * x1 + y1;
+                x = x3;
+                y = c1 + m1 * x3;
+            }
+            else
+            {
+                double m1 = (y2 - y1) / (x2 - x1);
+                double c1 = -m1 * x1 + y1;
+
+                double m2 = (y4 - y3) / (x4 - x3);
+                double c2 = -m2 * x3 + y3;
+
+                x = (c1 - c2) / (m2 - m1);
+                y = c2 + m2 * x;
+
+                if (!(Math.Abs(-m1 * x + y - c1) < tolerance
+                    && Math.Abs(-m2 * x + y - c2) < tolerance))
+                {
+                    return false;
+                }
+            }
+            if (IsInsideLine(chain1, x, y) &&
+                IsInsideLine(chain2, x, y))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static bool IsInsideLine(Chain line, double x, double y)
+        {
+            return (x >= line.x && x <= line.tx
+                        || x >= line.tx && x <= line.x)
+                   && (y >= line.y && y <= line.ty
+                        || y >= line.ty && y <= line.y);
+        }
+
+        public static bool IsPointBetween(BeatmapGridObject target, Chain chain)
+        {
+            bool isXBetween = (target.x >= Math.Min(chain.x, chain.tx) && target.x <= Math.Max(chain.x, chain.tx));
+            bool isYBetween = (target.y >= Math.Min(chain.y, chain.ty) && target.y <= Math.Max(chain.y, chain.ty));
+
+            return isXBetween && isYBetween;
+        }
 
         public static double Mod(double x, double m)
         {
