@@ -13,59 +13,61 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         public static void Check(List<Note> notes)
         {
-            if (notes.Any())
+            if(Configs.Config.Instance.HighlightOffbeat)
             {
-                var red = NotesData.Where(n => n.Note.Color == 0 && (n.Head || !n.Pattern)).ToList();
-                var blue = NotesData.Where(n => n.Note.Color == 1 && (n.Head || !n.Pattern)).ToList();
-
-                if(red.Count >= 2)
+                if (notes.Any())
                 {
-                    for (int i = 0; i < red.Count - 1; i++)
+                    var red = NotesData.Where(n => n.Note.Color == 0 && (n.Head || !n.Pattern)).ToList();
+                    var blue = NotesData.Where(n => n.Note.Color == 1 && (n.Head || !n.Pattern)).ToList();
+
+                    if (red.Count >= 2)
                     {
-                        var note = red[i];
-                        var precision = (float)Math.Round(note.Note.Beats % 1, 3);
-                        if (!AllowedSnap.Contains(precision))
+                        for (int i = 0; i < red.Count - 1; i++)
                         {
-                            var reality = RealToFraction(precision, 0.01);
-                            CheckResults.Instance.AddResult(new CheckResult()
+                            var note = red[i];
+                            var precision = (float)Math.Round(note.Note.Beats % 1, 3);
+                            if (!AllowedSnap.Contains(precision))
                             {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Offbeat Note",
-                                Severity = Severity.Info,
-                                CheckType = "Offbeat",
-                                Description = "Uncommon precision.",
-                                ResultData = new() { new("Offbeat", reality.N.ToString() + "/" + reality.D.ToString()) },
-                                BeatmapObjects = new() { note.Note }
-                            });
+                                var reality = RealToFraction(precision, 0.01);
+                                CheckResults.Instance.AddResult(new CheckResult()
+                                {
+                                    Characteristic = CriteriaCheckManager.Characteristic,
+                                    Difficulty = CriteriaCheckManager.Difficulty,
+                                    Name = "Offbeat Note",
+                                    Severity = Severity.Info,
+                                    CheckType = "Offbeat",
+                                    Description = "Uncommon precision.",
+                                    ResultData = new() { new("Offbeat", reality.N.ToString() + "/" + reality.D.ToString()) },
+                                    BeatmapObjects = new() { note.Note }
+                                });
+                            }
                         }
                     }
-                }
-                if(blue.Count >= 2)
-                {
-                    for (int i = 0; i < blue.Count - 1; i++)
+                    if (blue.Count >= 2)
                     {
-                        var note = blue[i];
-                        var precision = (float)Math.Round(note.Note.Beats % 1, 3);
-                        if (!AllowedSnap.Contains(precision))
+                        for (int i = 0; i < blue.Count - 1; i++)
                         {
-                            var reality = RealToFraction(precision, 0.01);
-                            CheckResults.Instance.AddResult(new CheckResult()
+                            var note = blue[i];
+                            var precision = (float)Math.Round(note.Note.Beats % 1, 3);
+                            if (!AllowedSnap.Contains(precision))
                             {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Offbeat Note",
-                                Severity = Severity.Info,
-                                CheckType = "Offbeat",
-                                Description = "Uncommon precision.",
-                                ResultData = new() { new("Offbeat", reality.N.ToString() + "/" + reality.D.ToString()) },
-                                BeatmapObjects = new() { note.Note }
-                            });
+                                var reality = RealToFraction(precision, 0.01);
+                                CheckResults.Instance.AddResult(new CheckResult()
+                                {
+                                    Characteristic = CriteriaCheckManager.Characteristic,
+                                    Difficulty = CriteriaCheckManager.Difficulty,
+                                    Name = "Offbeat Note",
+                                    Severity = Severity.Info,
+                                    CheckType = "Offbeat",
+                                    Description = "Uncommon precision.",
+                                    ResultData = new() { new("Offbeat", reality.N.ToString() + "/" + reality.D.ToString()) },
+                                    BeatmapObjects = new() { note.Note }
+                                });
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 }

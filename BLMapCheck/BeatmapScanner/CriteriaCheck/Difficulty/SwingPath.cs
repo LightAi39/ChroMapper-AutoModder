@@ -44,68 +44,71 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
 
                 // No dot support for now
-                foreach (var group in doubleNotes)
+                if(Configs.Config.Instance.DisplayBadcut)
                 {
-                    for (int i = 0; i < group.Count; i++)
+                    foreach (var group in doubleNotes)
                     {
-                        var note = group[i];
-                        for (int j = 0; j < group.Count; j++)
+                        for (int i = 0; i < group.Count; i++)
                         {
-                            if (i == j) continue;
-                            var note2 = group[j];
-                            if (note.Beats != note2.Beats) break; // Not a double anymore
-                            if (note.Color == note2.Color) continue; // Same color
-                                                                   // Fetch previous note, simulate swing
-                            var previous = notes.Where(c => c.Beats < note2.Beats && c.Color == note2.Color).LastOrDefault();
-                            if (previous != null)
+                            var note = group[i];
+                            for (int j = 0; j < group.Count; j++)
                             {
-                                // This is calculating the angle between the previous note + extra swing and the next note
-                                if (note2.CutDirection != 8 && previous.CutDirection != 8)
+                                if (i == j) continue;
+                                var note2 = group[j];
+                                if (note.Beats != note2.Beats) break; // Not a double anymore
+                                if (note.Color == note2.Color) continue; // Same color
+                                                                         // Fetch previous note, simulate swing
+                                var previous = notes.Where(c => c.Beats < note2.Beats && c.Color == note2.Color).LastOrDefault();
+                                if (previous != null)
                                 {
-                                    var angleOfAttack = DirectionToDegree[note2.CutDirection];
-                                    var prevDirection = ReverseCutDirection(DirectionToDegree[previous.CutDirection]);
-                                    var di = Math.Abs(prevDirection - angleOfAttack);
-                                    di = Math.Min(di, 360 - di) / 4;
-                                    if (angleOfAttack < prevDirection)
+                                    // This is calculating the angle between the previous note + extra swing and the next note
+                                    if (note2.CutDirection != 8 && previous.CutDirection != 8)
                                     {
-                                        if (prevDirection - angleOfAttack < 180)
+                                        var angleOfAttack = DirectionToDegree[note2.CutDirection];
+                                        var prevDirection = ReverseCutDirection(DirectionToDegree[previous.CutDirection]);
+                                        var di = Math.Abs(prevDirection - angleOfAttack);
+                                        di = Math.Min(di, 360 - di) / 4;
+                                        if (angleOfAttack < prevDirection)
                                         {
-                                            angleOfAttack += di;
+                                            if (prevDirection - angleOfAttack < 180)
+                                            {
+                                                angleOfAttack += di;
+                                            }
+                                            else
+                                            {
+                                                angleOfAttack -= di;
+                                            }
                                         }
                                         else
                                         {
-                                            angleOfAttack -= di;
+                                            if (angleOfAttack - prevDirection < 180)
+                                            {
+                                                angleOfAttack -= di;
+                                            }
+                                            else
+                                            {
+                                                angleOfAttack += di;
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        if (angleOfAttack - prevDirection < 180)
+                                        // Simulate the position of the line based on the new angle found
+                                        var simulatedLineOfAttack = SimSwingPos(note2.x, note2.y, ReverseCutDirection(angleOfAttack), 2);
+                                        // Check if the other note is close to the line
+                                        var InPath = NearestPointOnFiniteLine(new(note2.x, note2.y), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.x, note.y));
+                                        if (InPath)
                                         {
-                                            angleOfAttack -= di;
+                                            var obj = beatmapGridObjects.Where(c => c.Beats == note.Beats && note.x == c.x && note.y == c.y).FirstOrDefault();
+                                            CheckResults.Instance.AddResult(new CheckResult()
+                                            {
+                                                Characteristic = CriteriaCheckManager.Characteristic,
+                                                Difficulty = CriteriaCheckManager.Difficulty,
+                                                Name = "Swing Path",
+                                                Severity = Severity.Info,
+                                                CheckType = "Swing",
+                                                Description = "Possible swing path issue.",
+                                                ResultData = new() { new("SwingPath", "Possible swing path issue") },
+                                                BeatmapObjects = new() { obj }
+                                            });
                                         }
-                                        else
-                                        {
-                                            angleOfAttack += di;
-                                        }
-                                    }
-                                    // Simulate the position of the line based on the new angle found
-                                    var simulatedLineOfAttack = SimSwingPos(note2.x, note2.y, ReverseCutDirection(angleOfAttack), 2);
-                                    // Check if the other note is close to the line
-                                    var InPath = NearestPointOnFiniteLine(new(note2.x, note2.y), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.x, note.y));
-                                    if (InPath)
-                                    {
-                                        var obj = beatmapGridObjects.Where(c => c.Beats == note.Beats && note.x == c.x && note.y == c.y).FirstOrDefault();
-                                        CheckResults.Instance.AddResult(new CheckResult()
-                                        {
-                                            Characteristic = CriteriaCheckManager.Characteristic,
-                                            Difficulty = CriteriaCheckManager.Difficulty,
-                                            Name = "Swing Path",
-                                            Severity = Severity.Info,
-                                            CheckType = "Swing",
-                                            Description = "Possible swing path issue.",
-                                            ResultData = new() { new("SwingPath", "Possible swing path issue") },
-                                            BeatmapObjects = new() { obj }
-                                        });
                                     }
                                 }
                             }
