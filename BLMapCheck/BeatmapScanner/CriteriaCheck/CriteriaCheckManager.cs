@@ -95,7 +95,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
         {
             Characteristic = characteristic;
             Difficulty = difficulty;
-
+            
             // Debug.Log("Current diff: " + Difficulty + Characteristic);
             
             DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
@@ -176,6 +176,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
         private CheckResult GetDiffStatistics(string characteristic, string difficulty)
         {
+            Difficulty = difficulty;
+            Characteristic = characteristic;
+
             DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
 
             DiffAnalysis diffAnalysis;
