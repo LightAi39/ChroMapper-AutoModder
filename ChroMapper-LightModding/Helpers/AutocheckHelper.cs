@@ -321,7 +321,17 @@ namespace ChroMapper_LightModding.Helpers
                 ObjectType = ObjectType.Note
             };
 
-            Comment comment = new()
+            Comment comment;
+            if (result.ResultData.Any(x => x.Key == "currentReactionTime"))
+            {
+                message += "\nCurrent RT: " + result.ResultData.Where(x => x.Key == "currentReactionTime").FirstOrDefault().Value;
+            }
+            if (result.ResultData.Any(x => x.Key == "targetReactionTime"))
+            {
+                message += "\nTarget RT: " + result.ResultData.Where(x => x.Key == "targetReactionTime").FirstOrDefault().Value;
+            }
+
+            comment = new()
             {
                 Id = id,
                 StartBeat = cube.Beats,

@@ -59,8 +59,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             Name = "Vision Block",
                                             Severity = Severity.Warning,
                                             CheckType = "Vision",
-                                            Description = "Notes must be placed to give the player acceptable time to react.",
-                                            ResultData = new() { new("VisionBlock", "Possible VB - " + Math.Round(timescale.BPM.ToRealTime(note.Beats - lastMidL.First().Beats) * 1000, 0) + "ms") },
+                                            Description = "Notes must be placed with enough time to react.",
+                                            ResultData = new() {
+                                                new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(note.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
+                                                new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeWarning) * 1000, 0).ToString()),
+                                            },
                                             BeatmapObjects = new() { note }
                                         });
                                         issue = CritResult.Warning;
@@ -95,8 +98,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                             Name = "Vision Block",
                                             Severity = Severity.Warning,
                                             CheckType = "Vision",
-                                            Description = "Notes must be placed to give the player acceptable time to react.",
-                                            ResultData = new() { new("VisionBlock", "Possible VB - " + Math.Round(timescale.BPM.ToRealTime(note.Beats - lastMidR.First().Beats) * 1000, 0) + "ms") },
+                                            Description = "Notes must be placed with enough time to react.",
+                                            ResultData = new() {
+                                                new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(note.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
+                                                new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeWarning) * 1000, 0).ToString()),
+                                            },
                                             BeatmapObjects = new() { note }
                                         });
                                         issue = CritResult.Warning;
