@@ -53,7 +53,7 @@ namespace ChroMapper_LightModding.Helpers
                 var resultData = results.Results.Where(x => x.Name == "Statistical Data" && x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault().ResultData;
                 return (
                     Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),
-                    Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value),
+                    Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value) * 10,
                     Convert.ToDouble(resultData.Where(x => x.Key == "EBPM").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "Slider").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "BombReset").FirstOrDefault().Value),
