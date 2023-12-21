@@ -30,7 +30,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var MaxBottomNoteTime = timescale.BPM.ToBeatTime((float)Instance.VBMinBottomNoteTime);
                     var MaxOuterNoteTime = timescale.BPM.ToBeatTime((float)Instance.VBMaxOuterNoteTime);
                     var Overall = timescale.BPM.ToBeatTime((float)Instance.VBMinimum);
-                    var MinTimeWarning = timescale.BPM.ToBeatTime((float)((700 - 300) * Math.Pow(Math.E, -pass / 7.6 - tech * 10 * 0.04) + 260) / 1000);
+                    var MinTimeWarning = timescale.BPM.ToBeatTime((float)((800 - 300) * Math.Pow(Math.E, -pass / 7.6 - tech * 10 * 0.06) + 300) / 1000);
                     lastMidL.RemoveAll(l => note.Beats - l.Beats > MinTimeWarning);
                     lastMidR.RemoveAll(l => note.Beats - l.Beats > MinTimeWarning);
                     if (lastMidL.Count > 0)
