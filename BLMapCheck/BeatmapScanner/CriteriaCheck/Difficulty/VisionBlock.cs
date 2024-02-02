@@ -1,6 +1,6 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
+using BLMapCheck.Classes.Unity;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
@@ -37,13 +37,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 // Try to find VB links
                 foreach (var chain in chains)
                 {
-                    // Skip some non-VB
-                    if (chain.x == chain.tx && (chain.x == 0 || chain.x == 3)) continue;
-                    if (chain.y == chain.ty && (chain.y == 0 || chain.y == 2)) continue;
-                    if (chain.x == 1 && chain.tx == 0 && chain.Direction != 0 && chain.Direction != 1 && chain.Direction != 8) continue;
-                    if (chain.x == 0 && chain.tx == 1 && (chain.Direction == 0 || chain.Direction == 1 || chain.Direction == 8)) continue;
-                    if (chain.x == 2 && chain.tx == 3 && chain.Direction != 0 && chain.Direction != 1 && chain.Direction != 8) continue;
-                    if (chain.x == 3 && chain.tx == 2 && (chain.Direction == 0 || chain.Direction == 1 || chain.Direction == 8)) continue;
                     var x = Math.Abs(chain.tx - chain.x) * chain.Squish;
                     var y = Math.Abs(chain.ty - chain.y) * chain.Squish;
                     var distance = Math.Sqrt(x * x + y * y);
@@ -54,15 +47,26 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     else max = Math.Round(Instance.ChainLinkVsAir / 3 * 1.1 / value * chain.Squish, 2);
                     if (chain.Squish - 0.01 <= max) // << play with this value to change the limit
                     {
-                        if (IsPointBetween(leftVB, chain))
+                        List<Vector3> a = new();
+                        var pos = Interpolate(chain.Segment - 1, chain);
+                        foreach (var p in pos)
                         {
-                            leftVB.Beats = chain.TailInBeats;
-                            beatmapGridObjects.Add(leftVB);
-                        }
-                        if (IsPointBetween(rightVB, chain))
-                        {
-                            rightVB.Beats = chain.TailInBeats;
-                            beatmapGridObjects.Add(rightVB);
+                            x = Math.Abs(1 - p.x);
+                            y = Math.Abs(1 - p.y);
+                            distance = Math.Sqrt(x * x + y * y);
+                            if (distance <= 0.4)
+                            {
+                                leftVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x == p) / (pos.Count - 1)) + chain.Beats;
+                                beatmapGridObjects.Add(leftVB);
+                            }
+                            x = Math.Abs(2 - p.x);
+                            y = Math.Abs(1 - p.y);
+                            distance = Math.Sqrt(x * x + y * y);
+                            if (distance <= 0.4)
+                            {
+                                rightVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x == p) / (pos.Count - 1)) + chain.Beats;
+                                beatmapGridObjects.Add(rightVB);
+                            }
                         }
                     }
                 }

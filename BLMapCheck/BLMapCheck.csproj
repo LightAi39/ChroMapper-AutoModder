@@ -107,6 +107,7 @@
     <Compile Include="Classes\Results\CheckResult.cs" />
     <Compile Include="Classes\Results\CheckResults.cs" />
     <Compile Include="Classes\Unity\Vector2.cs" />
+    <Compile Include="Classes\Unity\Vector3.cs" />
     <Compile Include="Configs\Config.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

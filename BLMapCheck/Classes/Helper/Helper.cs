@@ -1,9 +1,9 @@
-﻿using Parser.Map.Difficulty.V3.Base;
+﻿using BLMapCheck.Classes.Unity;
+using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace BLMapCheck.Classes.Helper
 {
@@ -361,6 +361,92 @@ namespace BLMapCheck.Classes.Helper
 
             public int N { get; set; }
             public int D { get; set; }
+        }
+
+        public static List<Vector3> Interpolate(int n, Chain chain)
+        {
+            List<Vector3> list = new();
+            Vector3 linkSegment;
+
+            var p0 = new Vector2(chain.x, chain.y);
+            var p2 = new Vector2(chain.tx, chain.ty);
+
+            var zRads = (Math.PI * 2) / 360 * Directionalize(chain.Direction).z;
+            var headDirection = new Vector2((float)Math.Sin(zRads), (float)-Math.Cos(zRads));
+
+            var interMult = (p0 - p2).magnitude / 2;
+            var interPoint = p0 + new Vector2((interMult * headDirection.x), interMult * headDirection.y);
+
+            for (int j = 0; j < chain.Segment; j++)
+            {
+                // This is how the game displays squish
+                var gameSquish = (chain.Squish < 0.001f) ? 1f : chain.Squish;
+
+                var t = (float)j / n;
+                var tSquish = t * gameSquish;
+
+                
+                var p1 = interPoint;
+
+                var lerpZPos = 0;
+
+                var path = p2 - p0 + new Vector2(1.5f, 0);
+                var pathAngle = Vector2.SignedAngle(new Vector2(0f, -1f), path);
+                var cutAngle = Directionalize(chain.Direction).z;
+
+                var headPointsToTail = Math.Abs(pathAngle - cutAngle) < 0.01f;
+
+                if (headPointsToTail)
+                {
+                    var lerpPos = Vector3.LerpUnclamped(p0, p2, tSquish);
+                    linkSegment = new Vector3(lerpPos.x, lerpPos.y, 0);
+                }
+                else
+                {
+                    // Quadratic bezier curve
+                    // B(t) = (1-t)^2 P0 + 2(1-t)t P1 + t^2 P2, 0 < t < 1
+                    var bezierLerp = ((float)Math.Pow(1 - tSquish, 2) * p0) + (2 * (1 - tSquish) * tSquish * p1) +
+                                     ((float)Math.Pow(tSquish, 2) * p2);
+                    linkSegment = new Vector3(bezierLerp.x, bezierLerp.y, lerpZPos);
+                }
+
+                list.Add(linkSegment);
+            }
+            return list;
+        }
+
+        internal static Vector3 Directionalize(int cutDirection)
+        {
+            var directionEuler = Vector3.zero;
+            switch (cutDirection)
+            {
+                case 0:
+                    directionEuler += new Vector3(0, 0, 180);
+                    break;
+                case 1:
+                    directionEuler += new Vector3(0, 0, 0);
+                    break;
+                case 2:
+                    directionEuler += new Vector3(0, 0, -90);
+                    break;
+                case 3:
+                    directionEuler += new Vector3(0, 0, 90);
+                    break;
+                case 4:
+                    directionEuler += new Vector3(0, 0, 135);
+                    break;
+                case 5:
+                    directionEuler += new Vector3(0, 0, -135);
+                    break;
+                case 6:
+                    directionEuler += new Vector3(0, 0, -45);
+                    break;
+                case 7:
+                    directionEuler += new Vector3(0, 0, 45);
+                    break;
+            }
+
+            return directionEuler;
         }
     }
 }
