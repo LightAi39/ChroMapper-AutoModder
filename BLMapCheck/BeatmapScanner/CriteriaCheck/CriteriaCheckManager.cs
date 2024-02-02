@@ -15,9 +15,7 @@ using Parity = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Parity;
 using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
 using beatleader_analyzer.BeatmapScanner.Data;
 using beatleader_parser.Timescale;
-using Parser.Map.Difficulty.V2.Base;
 using DifficultyV3 = Parser.Map.Difficulty.V3.Base.DifficultyV3;
-using System.Diagnostics;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {

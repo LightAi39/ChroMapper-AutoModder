@@ -9,99 +9,6 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
     // Based on https://github.Colorom/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/analyzers/swing/swing.ts
     internal class Swing
     {
-        public double time { get; set; }
-        public double duration { get; set; }
-        public double minSpeed { get; set; }
-        public double maxSpeed { get; set; }
-        public double ebpm { get; set; }
-        public double ebpmSwing { get; set; }
-        public List<Note> data { get; set; }
-
-        public Swing(double time, double duration, List<Note> data, double ebpm, double ebpmSwing, double maxSpeed, double minSpeed)
-        {
-            this.time = time;
-            this.duration = duration;
-            this.data = data;
-            this.ebpm = ebpm;
-            this.ebpmSwing = ebpmSwing;
-            this.maxSpeed = maxSpeed;
-            this.minSpeed = minSpeed;
-        }
-
-        public static List<Swing> Generate(List<Note> nc, double bpm)
-        {
-            var sc = new List<Swing>();
-            var ebpm = 0d;
-            var ebpmSwing = 0d;
-            var minSpeed = 0d;
-            var maxSpeed = 0d;
-            var firstNote = new List<List<Note>>
-            {
-                new List<Note>(),
-                new List<Note>()
-            };
-            var lastNote = new List<List<Note>>
-            {
-                new List<Note>(),
-                new List<Note>()
-            };
-            var swingNoteArray = new List<List<Note>>
-            {
-                new List<Note>(),
-                new List<Note>()
-            };
-
-            foreach (var n in nc) {
-                if (n.Color != 0 && n.Color != 1)
-                {
-                    continue;
-                }
-                minSpeed = 0;
-                maxSpeed = double.MaxValue;
-                if (lastNote[n.Color].Count > 0)
-                {
-                    if (Next(n, lastNote[n.Color][0], bpm, swingNoteArray[n.Color]))
-                    {
-                        minSpeed = CalcMinSliderSpeed(swingNoteArray[n.Color], bpm);
-                        maxSpeed = CalcMaxSliderSpeed(swingNoteArray[n.Color], bpm);
-                        if (!(minSpeed > 0 && maxSpeed != double.PositiveInfinity))
-                        {
-                            minSpeed = 0;
-                            maxSpeed = 0;
-                        }
-                        ebpmSwing = CalcEBPMBetweenObject(n, firstNote[n.Color][0], bpm);
-                        ebpm = CalcEBPMBetweenObject(n, lastNote[n.Color][0], bpm);
-                        sc.Add(new(firstNote[n.Color][0].Beats, lastNote[n.Color][0].Beats - firstNote[n.Color][0].Beats, swingNoteArray[n.Color], ebpm, ebpmSwing, maxSpeed, minSpeed));
-                        firstNote[n.Color][0] = n;
-                        swingNoteArray[n.Color].Clear();
-                    }
-                }
-                else
-                {
-                    firstNote[n.Color][0] = n;
-                }
-                lastNote[n.Color][0] = n;
-                swingNoteArray[n.Color].Add(n);
-            }
-
-            for (var color = 0; color < 2; color++)
-            {
-                if (lastNote[color].Count > 0)
-                {
-                    minSpeed = CalcMinSliderSpeed(swingNoteArray[color], bpm);
-                    maxSpeed = CalcMaxSliderSpeed(swingNoteArray[color], bpm);
-                    if (!(minSpeed > 0 && maxSpeed != double.PositiveInfinity))
-                    {
-                        minSpeed = 0;
-                        maxSpeed = 0;
-                    }
-                    sc.Add(new(firstNote[color][0].Beats, lastNote[color][0].Beats - firstNote[color][0].Beats, swingNoteArray[color], ebpm, ebpmSwing, maxSpeed, minSpeed));
-                }
-            }
-
-            return sc;
-        }
-
         public static bool CheckDirection(Note n1, Note n2, double angleTol, bool equal)
         {
             if (n1 == null || n2 == null)
@@ -357,35 +264,6 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
         public static int[] Get(int cutDir)
         {
             switch(cutDir)
-            {
-                case 0: return UP;
-                case 1: return DOWN;
-                case 2: return LEFT;
-                case 3: return RIGHT;
-                case 4: return UP_LEFT;
-                case 5: return UP_RIGHT;
-                case 6: return DOWN_LEFT;
-                case 7: return DOWN_RIGHT;
-                default: return ANY;
-            }
-        }
-    }
-
-    internal static class AdjacentHandClap
-    {
-        public static int[] UP = { 1, 6, 7 };
-        public static int[] DOWN = { 0, 4, 5 };
-        public static int[] LEFT = { 3, 5, 7 };
-        public static int[] RIGHT = { 2, 4, 6 };
-        public static int[] UP_LEFT = { 1, 3, 7 };
-        public static int[] UP_RIGHT = { 1, 2, 6 };
-        public static int[] DOWN_LEFT = { 0, 3, 5 };
-        public static int[] DOWN_RIGHT = { 0, 2, 4 };
-        public static int[] ANY = { 0, 0 };
-
-        public static int[] Get(int cutDir)
-        {
-            switch (cutDir)
             {
                 case 0: return UP;
                 case 1: return DOWN;

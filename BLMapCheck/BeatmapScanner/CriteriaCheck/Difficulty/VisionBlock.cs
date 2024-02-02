@@ -48,7 +48,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (chain.Squish - 0.01 <= max) // << play with this value to change the limit
                     {
                         List<Vector3> a = new();
-                        var pos = Interpolate(chain.Segment - 1, chain);
+                        var pos = FindChainLinksPosition(chain.Segment - 1, chain);
                         foreach (var p in pos)
                         {
                             x = Math.Abs(1 - p.x);
