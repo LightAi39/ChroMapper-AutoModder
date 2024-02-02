@@ -12,19 +12,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Very basic check for stuff like Pauls, Dotspam, long chain duration, etc.
         public static CritResult Check(List<Note> notes, List<Chain> chains)
         {
-            if(Slider.AverageSliderDuration == -1)
-            {
-                Slider.Check();
-            }
-
             var duration = false;
             var head = false;
             var issue = false;
             var unsure = false;
 
+            var timescale = CriteriaCheckManager.timescale;
+
             foreach (var ch in chains)
             {
-                if (ch.TailInBeats - ch.Beats >= Slider.AverageSliderDuration * 4.2)
+                timescale.BPM.SetCurrentBPM(ch.Beats);
+                var MaxSliderDuration = timescale.BPM.ToBeatTime(0.0375f);
+                // Cap at 1/8 (200BPM)
+                if (MaxSliderDuration > 0.125) MaxSliderDuration = 0.125f;
+
+                if (ch.TailInBeats - ch.Beats >= MaxSliderDuration * 2)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -33,27 +35,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Chain Duration",
                         Severity = Severity.Error,
                         CheckType = "Chain",
-                        Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
-                        ResultData = new() { new("ChainDuration", "Current duration: " + (ch.TailInBeats - ch.Beats).ToString() + " Maximum duration: " + (Slider.AverageSliderDuration * 4.2).ToString()) },
+                        Description = "Maximum chains duration allowed is window sliders duration * 2.",
+                        ResultData = new() { new("ChainDuration", "Current duration: " + (ch.TailInBeats - ch.Beats).ToString() + " Maximum duration: " + (MaxSliderDuration * 2).ToString()) },
                         BeatmapObjects = new() { ch }
                     });
                     issue = true;
-                    duration = true;
-                }
-                else if (ch.TailInBeats - ch.Beats >= Slider.AverageSliderDuration * 3.15)
-                {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Chain Duration",
-                        Severity = Severity.Inconclusive,
-                        CheckType = "Chain",
-                        Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
-                        ResultData = new() { new("ChainDuration", "Current duration: " + (ch.TailInBeats - ch.Beats).ToString() + " Recommended maximum duration: " + (Slider.AverageSliderDuration * 3.15).ToString()) },
-                        BeatmapObjects = new() { ch }
-                    });
-                    unsure = true;
                     duration = true;
                 }
                 if (!notes.Exists(c => c.Beats == ch.Beats && c.Color == ch.Color && c.x == ch.x && c.y == ch.y))
@@ -211,6 +197,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 ResultData = new() { new("DotSpam", "Success") }
             });
 
+            timescale.BPM.ResetCurrentBPM();
             return CritResult.Success;
         }
     }

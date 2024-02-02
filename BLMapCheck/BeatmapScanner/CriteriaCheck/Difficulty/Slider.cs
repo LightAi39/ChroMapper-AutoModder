@@ -8,38 +8,74 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Slider
     {
-        public static float AverageSliderDuration { get; set; } = -1;
-
         // Get the average sliders precision and warn if it's not applied to all sliders in the map.
         // Also check if sliders is above 45 degree (that could use some work)
         public static CritResult Check()
         {
             var issue = CritResult.Success;
-            var note = NotesData.Where(c => c.Pattern && !c.Head && c.Precision != 0);
+            var note = NotesData;
+            var timescale = CriteriaCheckManager.timescale;
 
-            AverageSliderDuration = (float)Mode(note.Select(c => c.Precision / (c.Spacing + 1))).FirstOrDefault();
-            if (AverageSliderDuration == 0) AverageSliderDuration = 0.0625f;
-
-            foreach (var c in note)
-            { 
-                if (c.Pattern && !c.Head)
+            
+            if (note.Count > 2)
+            {
+                NoteData head = note[0];
+                var counter = 1;
+                for (int i = 0; i < note.Count() - 1; i++)
                 {
-                    if (!(c.Precision <= ((c.Spacing + 1) * AverageSliderDuration) + 0.01 && c.Precision >= ((c.Spacing + 1) * AverageSliderDuration) - 0.01))
+                    counter++;
+                    var n = note[i];
+                    // Calc duration
+                    timescale.BPM.SetCurrentBPM(n.Note.Beats);
+                    var MaxSliderDuration = timescale.BPM.ToBeatTime(0.0375f);
+                    // Cap at 1/8 (200BPM)
+                    if (MaxSliderDuration > 0.125) MaxSliderDuration = 0.125f;
+                    // Slider found
+                    if ((note[i + 1].Head || !note[i + 1].Pattern) && n.Precision != 0)
                     {
-                        // var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
-                        var expected = RealToFraction(((c.Spacing + 1) * AverageSliderDuration), 0.01);
-                        CheckResults.Instance.AddResult(new CheckResult()
+                        var duration = n.Note.BpmTime - head.Note.BpmTime;
+                        if (n.Spacing != 0 || counter > 2)
                         {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Slider Precision",
-                            Severity = Severity.Warning,
-                            CheckType = "Slider",
-                            Description = "Sliders must have equal spacing between notes to keep consistent swing duration.",
-                            ResultData = new() { new("SliderPrecision", "Expected " + expected.N.ToString() + "/" + expected.D.ToString()) },
-                            BeatmapObjects = new() { c.Note }
-                        });
-                        issue = CritResult.Warning;
+                            if (duration > MaxSliderDuration)
+                            {
+                                CheckResults.Instance.AddResult(new CheckResult()
+                                {
+                                    Characteristic = CriteriaCheckManager.Characteristic,
+                                    Difficulty = CriteriaCheckManager.Difficulty,
+                                    Name = "Slider Precision",
+                                    Severity = Severity.Error,
+                                    CheckType = "Slider",
+                                    Description = "Sliders duration must be fast enough to keep consistent swing speed.",
+                                    ResultData = new() { new("SliderPrecision", "Minimum: " + MaxSliderDuration + " Current: " + duration) },
+                                    BeatmapObjects = new() { head.Note }
+                                });
+                                issue = CritResult.Fail;
+                            }
+                        }
+                        else
+                        {
+                            if (duration > MaxSliderDuration / 2)
+                            {
+                                CheckResults.Instance.AddResult(new CheckResult()
+                                {
+                                    Characteristic = CriteriaCheckManager.Characteristic,
+                                    Difficulty = CriteriaCheckManager.Difficulty,
+                                    Name = "Slider Precision",
+                                    Severity = Severity.Error,
+                                    CheckType = "Slider",
+                                    Description = "Sliders duration must be fast enough to keep consistent swing speed.",
+                                    ResultData = new() { new("SliderPrecision", "Minimum: " + MaxSliderDuration / 2 + " Current: " + duration) },
+                                    BeatmapObjects = new() { head.Note }
+                                });
+                                issue = CritResult.Fail;
+                            }
+                        }
+                    }
+
+                    if (n.Head)
+                    {
+                        head = n;
+                        counter = 1;
                     }
                 }
             }
@@ -165,6 +201,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 });
             }
 
+            timescale.BPM.ResetCurrentBPM();
             return issue;
         }
     }

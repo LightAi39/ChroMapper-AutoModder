@@ -52,16 +52,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
 
             // TODO: Make this mess better idk
-            foreach (var l in chains)
+            foreach (var chain in chains)
             {
-                var chain = l;
-                var x = Math.Abs(l.tx - l.x) * chain.Squish;
-                var y = Math.Abs(l.ty - l.y) * chain.Squish;
+                var x = Math.Abs(chain.tx - chain.x) * chain.Squish;
+                var y = Math.Abs(chain.ty - chain.y) * chain.Squish;
                 var distance = Math.Sqrt(x * x + y * y);
                 var value = distance / (chain.Segment - 1);
                 // Difference between expected and current distance, multiplied by current squish to know maximum value
                 double max;
-                if (l.ty == l.y) max = Math.Round(Instance.ChainLinkVsAir / value * chain.Squish, 2);
+                if (chain.ty == chain.y) max = Math.Round(Instance.ChainLinkVsAir / value * chain.Squish, 2);
                 else max = Math.Round(Instance.ChainLinkVsAir * 1.1 / value * chain.Squish, 2);
                 if (chain.Squish - 0.01 > max)
                 {
@@ -78,8 +77,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                var newX = l.x + (l.tx - l.x) * chain.Squish;
-                var newY = l.y + (l.ty - l.y) * chain.Squish;
+                var newX = chain.x + (chain.tx - chain.x) * chain.Squish;
+                var newY = chain.y + (chain.ty - chain.y) * chain.Squish;
                 if (newX > 4 || newX < -1 || newY > 2.33 || newY < -0.33)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -91,11 +90,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         CheckType = "Chain",
                         Description = "Chain cannot lead too far off the grid.",
                         ResultData = new() { new("ChainLead", "X: " + newX.ToString() + " Y: " + newY.ToString()) },
-                        BeatmapObjects = new() { l }
+                        BeatmapObjects = new() { chain }
                     });
                     issue = CritResult.Fail;
                 }
-                if (l.TailInBeats < l.Beats)
+                if (chain.TailInBeats < chain.Beats)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -105,15 +104,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Chain",
                         Description = "Chain cannot have a reverse direction.",
-                        ResultData = new() { new("ChainReverse", "Current duration: " + (l.Beats - l.TailInBeats).ToString()) },
-                        BeatmapObjects = new() { l }
+                        ResultData = new() { new("ChainReverse", "Current duration: " + (chain.Beats - chain.TailInBeats).ToString()) },
+                        BeatmapObjects = new() { chain }
                     });
                     issue = CritResult.Fail;
                 }
-                var note = notes.FirstOrDefault(x => x.Beats >= l.TailInBeats && x.Color == l.Color);
+                var note = notes.FirstOrDefault(x => x.Beats >= chain.TailInBeats && x.Color == chain.Color);
                 if (note != null)
                 {
-                    if (note.Beats - l.TailInBeats < l.TailInBeats - l.Beats)
+                    if (note.Beats - chain.TailInBeats < chain.TailInBeats - chain.Beats)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
@@ -123,22 +122,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Chain",
                             Description = "The duration between the chain tail and next note must be at least the duration of the chain",
-                            ResultData = new() { new("ChainFlick", "Chain duration: " + (l.TailInBeats - l.Beats).ToString() + " Duration between:" + (note.Beats - l.TailInBeats).ToString()) },
-                            BeatmapObjects = new() { l }
+                            ResultData = new() { new("ChainFlick", "Chain duration: " + (chain.TailInBeats - chain.Beats).ToString() + " Duration between:" + (note.Beats - chain.TailInBeats).ToString()) },
+                            BeatmapObjects = new() { chain }
                         });
                         issue = CritResult.Fail;
                     }
                 }
                 var temp = new NoteData()
                 {
-                    Direction = Mod(DirectionToDegree[l.Direction], 360),
-                    Line = l.x,
-                    Layer = l.y
+                    Direction = Mod(DirectionToDegree[chain.Direction], 360),
+                    Line = chain.x,
+                    Layer = chain.y
                 };
                 var temp2 = new NoteData()
                 {
-                    Line = l.tx,
-                    Layer = l.ty
+                    Line = chain.tx,
+                    Layer = chain.ty
                 };
                 var temp3 = new List<NoteData>
                 {
@@ -156,7 +155,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         CheckType = "Chain",
                         Description = "Chains cannot rotate over 45 degrees.",
                         ResultData = new() { new("ChainRotation", "True") },
-                        BeatmapObjects = new() { l }
+                        BeatmapObjects = new() { chain }
                     });
                     issue = CritResult.Fail;
                 }

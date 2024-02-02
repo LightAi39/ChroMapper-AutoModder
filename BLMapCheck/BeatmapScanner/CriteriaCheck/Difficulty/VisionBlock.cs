@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
+using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
@@ -6,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
+using static BLMapCheck.Classes.Helper.Helper;
 using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
@@ -14,12 +16,59 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
         // Most of the minimum and maximum duration are configurable
-        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, double pass, double tech)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, double pass, double tech)
         {
             CritResult issue = CritResult.Success;
             var timescale = CriteriaCheckManager.timescale;
+            var beatmapGridObjects = beatmapGridObject.ToList();
             if (beatmapGridObjects.Any())
             {
+                var leftVB = new BeatmapGridObject
+                {
+                    x = 1,
+                    y = 1
+                };
+                var rightVB = new BeatmapGridObject
+                {
+                    x = 2,
+                    y = 1
+                };
+
+                // Try to find VB links
+                foreach (var chain in chains)
+                {
+                    // Skip some non-VB
+                    if (chain.x == chain.tx && (chain.x == 0 || chain.x == 3)) continue;
+                    if (chain.y == chain.ty && (chain.y == 0 || chain.y == 2)) continue;
+                    if (chain.x == 1 && chain.tx == 0 && chain.Direction != 0 && chain.Direction != 1 && chain.Direction != 8) continue;
+                    if (chain.x == 0 && chain.tx == 1 && (chain.Direction == 0 || chain.Direction == 1 || chain.Direction == 8)) continue;
+                    if (chain.x == 2 && chain.tx == 3 && chain.Direction != 0 && chain.Direction != 1 && chain.Direction != 8) continue;
+                    if (chain.x == 3 && chain.tx == 2 && (chain.Direction == 0 || chain.Direction == 1 || chain.Direction == 8)) continue;
+                    var x = Math.Abs(chain.tx - chain.x) * chain.Squish;
+                    var y = Math.Abs(chain.ty - chain.y) * chain.Squish;
+                    var distance = Math.Sqrt(x * x + y * y);
+                    var value = distance / (chain.Segment - 1);
+                    // Difference between expected and current distance, multiplied by current squish to know maximum value
+                    double max;
+                    if (chain.ty == chain.y) max = Math.Round(Instance.ChainLinkVsAir / 3 / value * chain.Squish, 2);
+                    else max = Math.Round(Instance.ChainLinkVsAir / 3 * 1.1 / value * chain.Squish, 2);
+                    if (chain.Squish - 0.01 <= max) // << play with this value to change the limit
+                    {
+                        if (IsPointBetween(leftVB, chain))
+                        {
+                            leftVB.Beats = chain.TailInBeats;
+                            beatmapGridObjects.Add(leftVB);
+                        }
+                        if (IsPointBetween(rightVB, chain))
+                        {
+                            rightVB.Beats = chain.TailInBeats;
+                            beatmapGridObjects.Add(rightVB);
+                        }
+                    }
+                }
+
+                beatmapGridObjects = beatmapGridObjects.OrderBy(x => x.Beats).ToList();
+
                 List<BeatmapGridObject> lastMidL = new();
                 List<BeatmapGridObject> lastMidR = new();
                 List<BeatmapGridObject> arr = new();
