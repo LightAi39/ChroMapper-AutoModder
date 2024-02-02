@@ -56,7 +56,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             distance = Math.Sqrt(x * x + y * y);
                             if (distance <= 0.4)
                             {
-                                leftVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x == p) / (pos.Count - 1)) + chain.Beats;
+                                leftVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x.x == p.x && x.y == p.y) / (pos.Count - 1)) + chain.Beats;
                                 beatmapGridObjects.Add(leftVB);
                             }
                             x = Math.Abs(2 - p.x);
@@ -64,7 +64,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             distance = Math.Sqrt(x * x + y * y);
                             if (distance <= 0.4)
                             {
-                                rightVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x == p) / (pos.Count - 1)) + chain.Beats;
+                                rightVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x.x == p.x && x.y == p.y) / (pos.Count - 1)) + chain.Beats;
                                 beatmapGridObjects.Add(rightVB);
                             }
                         }

@@ -398,7 +398,7 @@ namespace BLMapCheck.Classes.Helper
 
                 if (headPointsToTail)
                 {
-                    var lerpPos = Vector3.LerpUnclamped(p0, p2, tSquish);
+                    var lerpPos = Vector3.LerpUnclamped(new Vector3(p0.x, p0.y, 0), new Vector3(p2.x, p2.y, 0), tSquish);
                     linkSegment = new Vector3(lerpPos.x, lerpPos.y, 0);
                 }
                 else
@@ -417,7 +417,7 @@ namespace BLMapCheck.Classes.Helper
 
         internal static Vector3 Directionalize(int cutDirection)
         {
-            var directionEuler = Vector3.zero;
+            var directionEuler = new Vector3(0, 0, 0);
             switch (cutDirection)
             {
                 case 0:

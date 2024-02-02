@@ -13,9 +13,6 @@ namespace BLMapCheck.Classes.Unity
             this.y = y;
         }
 
-        public static Vector2 zero { get { return new Vector2(0, 0); } }
-        public static Vector2 one { get { return new Vector2(1, 1); } }
-
         public static Vector2 operator +(Vector2 a, Vector2 b)
         {
             return new Vector2(a.x + b.x, a.y + b.y);
@@ -24,21 +21,6 @@ namespace BLMapCheck.Classes.Unity
         public static Vector2 operator -(Vector2 a, Vector2 b)
         {
             return new Vector2(a.x - b.x, a.y - b.y);
-        }
-
-        public static Vector2 operator *(Vector2 a, Vector2 b)
-        {
-            return new Vector2(a.x * b.x, a.y * b.y);
-        }
-
-        public static Vector2 operator /(Vector2 a, Vector2 b)
-        {
-            return new Vector2(a.x / b.x, a.y / b.y);
-        }
-
-        public static Vector2 operator -(Vector2 a)
-        {
-            return new Vector2(0f - a.x, 0f - a.y);
         }
 
         public static Vector2 operator *(Vector2 a, float d)
@@ -51,48 +33,9 @@ namespace BLMapCheck.Classes.Unity
             return new Vector2(a.x * d, a.y * d);
         }
 
-        public static Vector2 operator /(Vector2 a, float d)
-        {
-            return new Vector2(a.x / d, a.y / d);
-        }
-
-        public static bool operator ==(Vector2 lhs, Vector2 rhs)
-        {
-            float num = lhs.x - rhs.x;
-            float num2 = lhs.y - rhs.y;
-            return num * num + num2 * num2 < 9.99999944E-11f;
-        }
-
-        public static bool operator !=(Vector2 lhs, Vector2 rhs)
-        {
-            return !(lhs == rhs);
-        }
-
-        public static implicit operator Vector2(Vector3 v)
-        {
-            return new Vector2(v.x, v.y);
-        }
-
-        public static implicit operator Vector3(Vector2 v)
-        {
-            return new Vector3(v.x, v.y, 0f);
-        }
-
         public float magnitude
         {
             get { return (float)Math.Sqrt(x * x + y * y); }
-        }
-
-        public Vector2 normalized
-        {
-            get
-            {
-                float mag = magnitude;
-                if (mag > 0)
-                    return new Vector2(x / mag, y / mag);
-                else
-                    return zero;
-            }
         }
 
         public float sqrMagnitude
