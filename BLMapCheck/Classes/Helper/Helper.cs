@@ -50,7 +50,7 @@ namespace BLMapCheck.Classes.Helper
                 NotesData.Add(new(red[0]));
                 for (int i = 1; i < red.Count; i++)
                 {
-                    if (red[i].Beats - red[i - 1].Beats <= 0.125)
+                    if (red[i].Beats - red[i - 1].Beats < 0.25)
                     {
                         var data = new NoteData()
                         {
@@ -82,7 +82,7 @@ namespace BLMapCheck.Classes.Helper
                 for (int i = 1; i < blue.Count; i++)
                 {
                     
-                    if (blue[i].Beats - blue[i - 1].Beats <= 0.125)
+                    if (blue[i].Beats - blue[i - 1].Beats < 0.25)
                     {
                         var data = new NoteData()
                         {
