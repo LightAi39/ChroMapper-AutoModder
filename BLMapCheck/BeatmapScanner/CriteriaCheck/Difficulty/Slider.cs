@@ -8,30 +8,55 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Slider
     {
+        public static float AverageSliderDuration { get; set; } = -1;
         // Get the average sliders precision and warn if it's not applied to all sliders in the map.
         // Also check if sliders is above 45 degree (that could use some work)
         public static CritResult Check()
         {
             var issue = CritResult.Success;
-            var note = NotesData;
-            var timescale = CriteriaCheckManager.timescale;
+            var notes = NotesData;
+            var sliders = notes.Where(c => c.Pattern && !c.Head && c.Precision != 0);
 
-            
-            if (note.Count > 2)
+            AverageSliderDuration = (float)Mode(sliders.Select(c => c.Precision / (c.Spacing + 1))).FirstOrDefault();
+            if (AverageSliderDuration == 0) AverageSliderDuration = 0.0625f;
+            // TODO: Add a target precision for the sliders, instead of an average
+
+            foreach (var c in sliders)
             {
-                NoteData head = note[0];
+                if (c.Pattern && !c.Head)
+                {
+                    if (!(c.Precision <= ((c.Spacing + 1) * AverageSliderDuration) + 0.01 && c.Precision >= ((c.Spacing + 1) * AverageSliderDuration) - 0.01))
+                    {
+                        // var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
+                        var expected = RealToFraction(((c.Spacing + 1) * AverageSliderDuration), 0.01);
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
+                            Name = "Slider Precision",
+                            Severity = Severity.Warning,
+                            CheckType = "Slider",
+                            Description = "Sliders must have equal spacing between notes to keep consistent swing duration.",
+                            ResultData = new() { new("SliderPrecision", "Expected " + expected.N.ToString() + "/" + expected.D.ToString()) },
+                            BeatmapObjects = new() { c.Note }
+                        });
+                        issue = CritResult.Warning;
+                    }
+                }
+            }
+
+            if (notes.Count > 2)
+            {
+                NoteData head = notes[0];
                 var counter = 1;
-                for (int i = 0; i < note.Count() - 1; i++)
+                for (int i = 0; i < notes.Count() - 1; i++)
                 {
                     counter++;
-                    var n = note[i];
-                    // Calc duration
-                    timescale.BPM.SetCurrentBPM(n.Note.Beats);
-                    var MaxSliderDuration = timescale.BPM.ToBeatTime(0.0375f);
-                    // Cap at 1/8 (200BPM)
-                    if (MaxSliderDuration > 0.125) MaxSliderDuration = 0.125f;
+                    var n = notes[i];
+                    var MaxSliderDuration = 0.125f; // 1/8
+
                     // Slider found
-                    if ((note[i + 1].Head || !note[i + 1].Pattern) && n.Precision != 0)
+                    if ((notes[i + 1].Head || !notes[i + 1].Pattern) && n.Precision != 0)
                     {
                         var duration = n.Note.BpmTime - head.Note.BpmTime;
                         if (n.Spacing != 0 || counter > 2)
@@ -201,7 +226,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 });
             }
 
-            timescale.BPM.ResetCurrentBPM();
             return issue;
         }
     }
