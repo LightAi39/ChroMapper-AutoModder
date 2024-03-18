@@ -335,6 +335,11 @@ namespace ChroMapper_LightModding.Helpers
                 message += "\n  Target RT: " + result.ResultData.Where(x => x.Key == "targetReactionTime").FirstOrDefault().Value;
             }
 
+            foreach (var item in result.ResultData.Where(x => x.Key != "currentReactionTime" && x.Key != "targetReactionTime"))
+            {
+                message += "\n  " + item.Key + ": " + item.Value;
+            }
+
             comment = new()
             {
                 Id = id,
