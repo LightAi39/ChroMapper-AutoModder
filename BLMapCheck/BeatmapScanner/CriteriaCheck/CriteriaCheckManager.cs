@@ -15,9 +15,7 @@ using Parity = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Parity;
 using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
 using beatleader_analyzer.BeatmapScanner.Data;
 using beatleader_parser.Timescale;
-using Parser.Map.Difficulty.V2.Base;
 using DifficultyV3 = Parser.Map.Difficulty.V3.Base.DifficultyV3;
-using System.Diagnostics;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -158,7 +156,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Wall = CriteriaCheck.Difficulty.Obstacle.Check(diff.Notes, diff.Walls, diff.Bombs),
                 Chain = Chains.Check(diff.Chains, diff.Notes),
                 Parity = Parity.Check(swings, diff.Notes),
-                VisionBlock = VisionBlock.Check(allNoteObjects, BeatmapScannerData[0].Pass, BeatmapScannerData[0].Tech),
+                VisionBlock = VisionBlock.Check(allNoteObjects, diff.Chains, BeatmapScannerData[0].Pass, BeatmapScannerData[0].Tech),
                 ProlongedSwing = ProlongedSwing.Check(diff.Notes, diff.Chains),
                 Loloppe = Loloppe.Check(diff.Notes),
                 SwingPath = SwingPath.Check(allNoteObjects, swings, diff.Notes),

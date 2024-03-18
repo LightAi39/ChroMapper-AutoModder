@@ -103,8 +103,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 var min = timescale.BPM.ToBeatTime((float)Instance.MinimumWallDuration);
                 var max = timescale.BPM.ToBeatTime((float)Instance.ShortWallTrailDuration);
 
-                if (w.y <= 0 && w.Height > 1 && ((w.x + w.Width == 2 && walls.Exists(wa => wa != w && wa.y == 0 && wa.Height > 0 && wa.x + wa.Width == 3 && wa.Beats <= w.Beats + w.DurationInBeats && wa.Beats >= w.Beats)) ||
-                    (w.x + w.Width == 3 && walls.Exists(wa => wa != w && wa.y == 0 && wa.Height > 0 && wa.x + wa.Width == 2 && wa.Beats <= w.Beats + w.DurationInBeats && wa.Beats >= w.Beats))))
+                if (w.y <= 1 && w.Height > 1 && ((w.x + w.Width == 3 && walls.Exists(wa => wa != w && wa.y <= 1 && wa.Height > 0 && wa.x + wa.Width >= 2 && wa.x <= 1 && wa.Beats <= w.Beats + w.DurationInBeats && wa.Beats + wa.DurationInBeats >= w.Beats)) ||
+                    (w.x + w.Width == 2 && walls.Exists(wa => wa != w && wa.y <= 1 && wa.Height > 0 && wa.x == 2 && wa.Beats <= w.Beats + w.DurationInBeats && wa.Beats + wa.DurationInBeats >= w.Beats))))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -119,7 +119,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                else if (w.y <= 0 && w.Height > 1 && ((w.Width >= 3 && (w.x + w.Width == 2 || w.x + w.Width == 3 || w.x == 1)) || (w.Width >= 2 && w.x == 1 && w.y == 0 && w.Height > 0) || (w.Width >= 4 && w.x + w.Width >= 4 && w.x <= 0 && w.y == 0)))
+                else if (w.y <= 1 && w.Height > 1 && ((w.Width >= 3 && (w.x + w.Width == 3 || w.x == 1)) || (w.Width >= 2 && w.x == 1 && w.y <= 1 && w.Height > 0) || (w.Width >= 4 && w.x + w.Width >= 4 && w.x <= 0 && w.y <= 1)))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {

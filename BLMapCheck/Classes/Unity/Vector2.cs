@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BLMapCheck.Classes.Unity
 {
@@ -17,9 +13,6 @@ namespace BLMapCheck.Classes.Unity
             this.y = y;
         }
 
-        public static Vector2 zero { get { return new Vector2(0, 0); } }
-        public static Vector2 one { get { return new Vector2(1, 1); } }
-
         public static Vector2 operator +(Vector2 a, Vector2 b)
         {
             return new Vector2(a.x + b.x, a.y + b.y);
@@ -30,35 +23,19 @@ namespace BLMapCheck.Classes.Unity
             return new Vector2(a.x - b.x, a.y - b.y);
         }
 
-        public static Vector2 operator *(Vector2 a, float scalar)
+        public static Vector2 operator *(Vector2 a, float d)
         {
-            return new Vector2(a.x * scalar, a.y * scalar);
+            return new Vector2(a.x * d, a.y * d);
         }
 
-        public static Vector2 operator /(Vector2 a, float divisor)
+        public static Vector2 operator *(float d, Vector2 a)
         {
-            if (divisor == 0)
-            {
-                throw new DivideByZeroException("Division by zero.");
-            }
-            return new Vector2(a.x / divisor, a.y / divisor);
+            return new Vector2(a.x * d, a.y * d);
         }
 
         public float magnitude
         {
             get { return (float)Math.Sqrt(x * x + y * y); }
-        }
-
-        public Vector2 normalized
-        {
-            get
-            {
-                float mag = magnitude;
-                if (mag > 0)
-                    return new Vector2(x / mag, y / mag);
-                else
-                    return zero;
-            }
         }
 
         public float sqrMagnitude
@@ -77,6 +54,33 @@ namespace BLMapCheck.Classes.Unity
             float num2 = a.y - b.y;
             return (float)Math.Sqrt(num * num + num2 * num2);
         }
-    }
 
+        public static float Angle(Vector2 from, Vector2 to)
+        {
+            float num = (float)Math.Sqrt(from.sqrMagnitude * to.sqrMagnitude);
+            if (num < 1E-15f)
+            {
+                return 0f;
+            }
+
+            float num2 = Clamp(Dot(from, to) / num, -1f, 1f);
+            return (float)Math.Acos(num2) * 57.29578f;
+        }
+
+        public static float Clamp(float value, float min, float max)
+        {
+            if (value < min)
+                value = min;
+            else if (value > max)
+                value = max;
+            return value;
+        }
+
+        public static float SignedAngle(Vector2 from, Vector2 to)
+        {
+            float num = Angle(from, to);
+            float num2 = Math.Sign(from.x * to.y - from.y * to.x);
+            return num * num2;
+        }
+    }
 }

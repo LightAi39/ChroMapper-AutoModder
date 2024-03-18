@@ -9,38 +9,53 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Slider
     {
         public static float AverageSliderDuration { get; set; } = -1;
-
         // Get the average sliders precision and warn if it's not applied to all sliders in the map.
         // Also check if sliders is above 45 degree (that could use some work)
         public static CritResult Check()
         {
             var issue = CritResult.Success;
-            var note = NotesData.Where(c => c.Pattern && !c.Head && c.Precision != 0);
+            var sliders = NotesData.Where(c => c.Pattern && !c.Head && c.Precision != 0).ToList();
 
-            AverageSliderDuration = (float)Mode(note.Select(c => c.Precision / (c.Spacing + 1))).FirstOrDefault();
-            if (AverageSliderDuration == 0) AverageSliderDuration = 0.0625f;
+            var MinSliderPrecision = 0.0625f;
+            AverageSliderDuration = (float)Mode(sliders.Select(c => c.Precision / (c.Spacing + 1))).FirstOrDefault();
+            if (AverageSliderDuration == 0) AverageSliderDuration = MinSliderPrecision;
+            // TODO: Add a target precision for the sliders, instead of an average
 
-            foreach (var c in note)
-            { 
-                if (c.Pattern && !c.Head)
+            for (int i = 0; i < sliders.Count(); i++)
+            {
+                NoteData note = sliders[i];
+                if (note.Precision > (note.Spacing + 1) * MinSliderPrecision)
                 {
-                    if (!(c.Precision <= ((c.Spacing + 1) * AverageSliderDuration) + 0.01 && c.Precision >= ((c.Spacing + 1) * AverageSliderDuration) - 0.01))
+                    CheckResults.Instance.AddResult(new CheckResult()
                     {
-                        // var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
-                        var expected = RealToFraction(((c.Spacing + 1) * AverageSliderDuration), 0.01);
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Slider Precision",
-                            Severity = Severity.Warning,
-                            CheckType = "Slider",
-                            Description = "Sliders must have equal spacing between notes to keep consistent swing duration.",
-                            ResultData = new() { new("SliderPrecision", "Expected " + expected.N.ToString() + "/" + expected.D.ToString()) },
-                            BeatmapObjects = new() { c.Note }
-                        });
-                        issue = CritResult.Warning;
-                    }
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
+                        Name = "Slider Precision",
+                        Severity = Severity.Error,
+                        CheckType = "Slider",
+                        Description = "Sliders duration must be fast enough to keep consistent swing speed.",
+                        ResultData = new() { new("SliderPrecision", "Minimum: " + MinSliderPrecision + " Current: " + note.Precision)},
+                        BeatmapObjects = new() { note.Note }
+                    });
+                    issue = CritResult.Fail;
+                }
+
+                if (!(note.Precision <= ((note.Spacing + 1) * AverageSliderDuration) + 0.01 && note.Precision >= ((note.Spacing + 1) * AverageSliderDuration) - 0.01))
+                {
+                    // var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
+                    var expected = RealToFraction(((note.Spacing + 1) * AverageSliderDuration), 0.01);
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
+                        Name = "Slider Precision",
+                        Severity = Severity.Warning,
+                        CheckType = "Slider",
+                        Description = "Sliders must have equal spacing between notes to keep consistent swing duration.",
+                        ResultData = new() { new("SliderPrecision", "Expected " + expected.N.ToString() + "/" + expected.D.ToString()) },
+                        BeatmapObjects = new() { note.Note }
+                    });
+                    issue = CritResult.Warning;
                 }
             }
 

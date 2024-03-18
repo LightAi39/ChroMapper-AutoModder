@@ -12,11 +12,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Very basic check for stuff like Pauls, Dotspam, long chain duration, etc.
         public static CritResult Check(List<Note> notes, List<Chain> chains)
         {
-            if(Slider.AverageSliderDuration == -1)
-            {
-                Slider.Check();
-            }
-
             var duration = false;
             var head = false;
             var issue = false;
@@ -24,6 +19,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             foreach (var ch in chains)
             {
+                if (Slider.AverageSliderDuration == -1)
+                {
+                    Slider.Check();
+                }
+
                 if (ch.TailInBeats - ch.Beats >= Slider.AverageSliderDuration * 4.2)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()

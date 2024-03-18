@@ -1,11 +1,13 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.Results;
+using BLMapCheck.Classes.Unity;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
+using static BLMapCheck.Classes.Helper.Helper;
 using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
@@ -14,12 +16,63 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
         // Most of the minimum and maximum duration are configurable
-        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, double pass, double tech)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, double pass, double tech)
         {
             CritResult issue = CritResult.Success;
             var timescale = CriteriaCheckManager.timescale;
+            var beatmapGridObjects = beatmapGridObject.ToList();
             if (beatmapGridObjects.Any())
             {
+                var leftVB = new BeatmapGridObject
+                {
+                    x = 1,
+                    y = 1
+                };
+                var rightVB = new BeatmapGridObject
+                {
+                    x = 2,
+                    y = 1
+                };
+
+                // Try to find VB links
+                foreach (var chain in chains)
+                {
+                    var x = Math.Abs(chain.tx - chain.x) * chain.Squish;
+                    var y = Math.Abs(chain.ty - chain.y) * chain.Squish;
+                    var distance = Math.Sqrt(x * x + y * y);
+                    var value = distance / (chain.Segment - 1);
+                    // Difference between expected and current distance, multiplied by current squish to know maximum value
+                    double max;
+                    if (chain.ty == chain.y) max = Math.Round(Instance.ChainLinkVsAir / 3 / value * chain.Squish, 2);
+                    else max = Math.Round(Instance.ChainLinkVsAir / 3 * 1.1 / value * chain.Squish, 2);
+                    if (chain.Squish - 0.01 <= max) // << play with this value to change the limit
+                    {
+                        List<Vector3> a = new();
+                        var pos = FindChainLinksPosition(chain.Segment - 1, chain);
+                        foreach (var p in pos)
+                        {
+                            x = Math.Abs(1 - p.x);
+                            y = Math.Abs(1 - p.y);
+                            distance = Math.Sqrt(x * x + y * y);
+                            if (distance <= 0.4)
+                            {
+                                leftVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x.x == p.x && x.y == p.y) / (pos.Count - 1)) + chain.Beats;
+                                beatmapGridObjects.Add(leftVB);
+                            }
+                            x = Math.Abs(2 - p.x);
+                            y = Math.Abs(1 - p.y);
+                            distance = Math.Sqrt(x * x + y * y);
+                            if (distance <= 0.4)
+                            {
+                                rightVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x.x == p.x && x.y == p.y) / (pos.Count - 1)) + chain.Beats;
+                                beatmapGridObjects.Add(rightVB);
+                            }
+                        }
+                    }
+                }
+
+                beatmapGridObjects = beatmapGridObjects.OrderBy(x => x.Beats).ToList();
+
                 List<BeatmapGridObject> lastMidL = new();
                 List<BeatmapGridObject> lastMidR = new();
                 List<BeatmapGridObject> arr = new();

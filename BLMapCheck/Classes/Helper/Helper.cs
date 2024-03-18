@@ -1,15 +1,16 @@
-﻿using Parser.Map.Difficulty.V3.Base;
+﻿using BLMapCheck.Classes.Unity;
+using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace BLMapCheck.Classes.Helper
 {
     internal class Helper
     {
         public static double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315 };
+        public static double[] ChainDirToDegree = { 180, 0, -90, 90, 135, -135, -45, 45 };
 
         public class NoteData
         {
@@ -49,7 +50,7 @@ namespace BLMapCheck.Classes.Helper
                 NotesData.Add(new(red[0]));
                 for (int i = 1; i < red.Count; i++)
                 {
-                    if (red[i].Beats - red[i - 1].Beats <= 0.125)
+                    if (red[i].Beats - red[i - 1].Beats < 0.25)
                     {
                         var data = new NoteData()
                         {
@@ -81,7 +82,7 @@ namespace BLMapCheck.Classes.Helper
                 for (int i = 1; i < blue.Count; i++)
                 {
                     
-                    if (blue[i].Beats - blue[i - 1].Beats <= 0.125)
+                    if (blue[i].Beats - blue[i - 1].Beats < 0.25)
                     {
                         var data = new NoteData()
                         {
@@ -361,6 +362,38 @@ namespace BLMapCheck.Classes.Helper
 
             public int N { get; set; }
             public int D { get; set; }
+        }
+
+        public static List<Vector3> FindChainLinksPosition(int n, Chain chain)
+        {
+            List<Vector3> list = new();
+            Vector3 linkSegment;
+            var head = new Vector2(chain.x, chain.y);
+            var tail = new Vector2(chain.tx, chain.ty);
+            var dir = (Math.PI * 2) / 360 * ChainDirToDegree[chain.Direction];
+            var headDirection = new Vector2((float)Math.Sin(dir), (float)-Math.Cos(dir));
+            var multiplier = (head - tail).magnitude / 2;
+            var next = head + new Vector2((multiplier * headDirection.x), multiplier * headDirection.y);
+
+            for (int j = 0; j < chain.Segment; j++)
+            {
+                var interval = (float)j / n * chain.Squish;
+                var path = tail - head + new Vector2(1.5f, 0);
+                if (Math.Abs(Vector2.SignedAngle(new Vector2(0f, -1f), path) - ChainDirToDegree[chain.Direction]) < 0.01f)
+                {
+                    var pos = Vector3.LerpUnclamped(new Vector3(head.x, head.y, 0), new Vector3(tail.x, tail.y, 0), interval);
+                    linkSegment = new Vector3(pos.x, pos.y, 0);
+                }
+                else
+                {
+                    var pos = ((float)Math.Pow(1 - interval, 2) * head) + (2 * (1 - interval) * interval * next) +
+                                     ((float)Math.Pow(interval, 2) * tail);
+                    linkSegment = new Vector3(pos.x, pos.y, 0);
+                }
+
+                list.Add(linkSegment);
+            }
+            return list;
         }
     }
 }

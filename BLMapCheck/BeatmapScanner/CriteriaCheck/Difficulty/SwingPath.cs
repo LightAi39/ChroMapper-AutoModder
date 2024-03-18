@@ -165,12 +165,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 continue;
                             }
                         }
-                        if (IsDiagonal)
+                        if (d >= 1.001 && d < 1.5 && IsDiagonal)
                         {
                             var pos = (curr.x, curr.y);
                             var target = (comp.x, comp.y);
                             var index = 1;
                             var rev = Reverse.Get(curr.CutDirection);
+                            var count = arr.Count;
                             if (curr.CutDirection != 8)
                             {
                                 while (!NoteDirection.IsLimit(pos, rev))
@@ -179,10 +180,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     index++;
                                     if (pos == target)
                                     {
-                                        arr2.Add(curr);
+                                        arr.Add(curr);
                                         lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
-                                        continue;
+                                        break;
                                     }
+                                }
+                                if(count != arr.Count)
+                                {
+                                    continue;
                                 }
                             }
                             if (comp.CutDirection != 8)
@@ -197,10 +202,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     index++;
                                     if (pos == target)
                                     {
-                                        arr2.Add(curr);
+                                        arr.Add(curr);
                                         lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
-                                        continue;
+                                        break;
                                     }
+                                }
+                                if (count != arr.Count)
+                                {
+                                    continue;
                                 }
                             }
                         }
