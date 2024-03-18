@@ -328,11 +328,11 @@ namespace ChroMapper_LightModding.Helpers
             Comment comment;
             if (result.ResultData.Any(x => x.Key == "currentReactionTime"))
             {
-                message += "\nCurrent RT: " + result.ResultData.Where(x => x.Key == "currentReactionTime").FirstOrDefault().Value;
+                message += "\n  Current RT: " + result.ResultData.Where(x => x.Key == "currentReactionTime").FirstOrDefault().Value;
             }
             if (result.ResultData.Any(x => x.Key == "targetReactionTime"))
             {
-                message += "\nTarget RT: " + result.ResultData.Where(x => x.Key == "targetReactionTime").FirstOrDefault().Value;
+                message += "\n  Target RT: " + result.ResultData.Where(x => x.Key == "targetReactionTime").FirstOrDefault().Value;
             }
 
             comment = new()
