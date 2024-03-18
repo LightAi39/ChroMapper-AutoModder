@@ -28,7 +28,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Duration",
                         Description = "There must be at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects.",
-                        ResultData = new() { new("HotStart", "Minimum beat is: " + limit.ToString() + " Current object is at: " + c.Beats.ToString()) },
+                        ResultData = new() { new("CurrentBeat", c.Beats.ToString()), new("MinimumBeat", limit.ToString()) },
                         BeatmapObjects = new() { c }
                     });
                     issue = CritResult.Fail;
@@ -47,7 +47,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Duration",
                         Description = "There must be at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects.",
-                        ResultData = new() { new("HotStart", "Minimum beat is: " + limit.ToString() + " Current object is at: " + w.ToString()) },
+                        ResultData = new() { new("CurrentBeat", w.ToString()), new("MinimumBeat", limit.ToString()) },
                         BeatmapObjects = new() { w }
                     });
                     issue = CritResult.Fail;
@@ -65,7 +65,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Duration",
                     Description = "There is at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects.",
-                    ResultData = new() { new("HotStart", "Success") }
+                    ResultData = new()
                 });
             }
 

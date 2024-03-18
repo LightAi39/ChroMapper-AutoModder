@@ -25,7 +25,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "Outside",
                     Description = "Object cannot exist outside of playable length.",
-                    ResultData = new() { new("Outside", "Boundary: 0 to" + end.ToString()) },
+                    ResultData = new(),
                 });
                 issue = CritResult.Fail;
             }
@@ -40,7 +40,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Outside",
                     Description = "No object detected outside of the playable length.",
-                    ResultData = new() { new("Outside", "Success") }
+                    ResultData = new()
                 });
             }
 

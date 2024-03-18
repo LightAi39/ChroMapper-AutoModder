@@ -31,7 +31,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "Parity",
                     Description = "Parity error.",
-                    ResultData = new() { new("Parity", "Reset Type: Rebound") },
+                    ResultData = new() { new("ErrorType", "Reset") },
                     BeatmapObjects = new(colornotes) { }
                 });
                 hadIssue = true;
@@ -48,7 +48,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "Parity",
                     Description = "Parity mismatch on the same beat.",
-                    ResultData = new() { new("ParityMismatch", "swingEBPM is equal PositiveInfinity") },
+                    ResultData = new() { new("ErrorType", "swingEBPM is equal PositiveInfinity") },
                     BeatmapObjects = new(colornotes) { }
                 });
                 hadIssue = true;
@@ -74,7 +74,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Warning,
                             CheckType = "Parity",
                             Description = "Parity degree difference.",
-                            ResultData = new() { new("ParityWarning", "Parity Warning - " + Math.Abs(difference) + " degree difference") },
+                            ResultData = new() { new("WarningType", Math.Abs(difference) + " degree difference") },
                             BeatmapObjects = new(colornotes) { }
                         });
                         hadWarning = true;
@@ -93,7 +93,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Inconclusive,
                                 CheckType = "Parity",
                                 Description = "Parity playing inverted.",
-                                ResultData = new() { new("ParityInverted", "Parity Warning - Playing inverted") },
+                                ResultData = new() { new("WarningType", "Playing inverted") },
                                 BeatmapObjects = new(colornotes) { }
                             });
                         }
@@ -119,7 +119,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Warning,
                             CheckType = "Parity",
                             Description = "Parity degree difference.",
-                            ResultData = new() { new("ParityWarning", "Parity Warning - " + Math.Abs(difference).ToString() + " degree difference") },
+                            ResultData = new() { new("WarningType", Math.Abs(difference).ToString() + " degree difference") },
                             BeatmapObjects = new(colornotes) { }
                         });
                         hadWarning = true;
@@ -138,7 +138,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Inconclusive,
                                 CheckType = "Parity",
                                 Description = "Parity playing inverted.",
-                                ResultData = new() { new("ParityInverted", "Parity Warning - Playing inverted") },
+                                ResultData = new() { new("WarningType", "Playing inverted") },
                                 BeatmapObjects = new(colornotes) { }
                             });
                         }
@@ -203,7 +203,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Parity",
                     Description = "No possible parity issue detected.",
-                    ResultData = new() { new("Parity", "Success") }
+                    ResultData = new()
                 });
                 return CritResult.Success;
             }

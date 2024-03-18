@@ -41,7 +41,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Loloppe",
                             Description = "Multiple notes of the same color on the same swing must flow.",
-                            ResultData = new() { new("Loloppe", "Error") },
+                            ResultData = new() { new("Type", "Loloppe Note") },
                             BeatmapObjects = new() { red[i], red[i - 1] }
                         });
                         issue = CritResult.Fail;
@@ -73,7 +73,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Loloppe",
                             Description = "Multiple notes of the same color on the same swing must flow.",
-                            ResultData = new() { new("Loloppe", "Error") },
+                            ResultData = new() { new("Type", "Loloppe Note") },
                             BeatmapObjects = new() { blue[i], blue[i - 1] }
                         });
                         issue = CritResult.Fail;
@@ -91,7 +91,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Loloppe",
                     Description = "No parallel notes of the same color on the same swing detected.",
-                    ResultData = new() { new("Loloppe", "Success") }
+                    ResultData = new()
                 });
             }
 

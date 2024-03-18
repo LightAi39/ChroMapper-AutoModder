@@ -37,7 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     Severity = Severity.Info,
                                     CheckType = "Offbeat",
                                     Description = "Uncommon precision.",
-                                    ResultData = new() { new("Offbeat", reality.N.ToString() + "/" + reality.D.ToString()) },
+                                    ResultData = new() { new("Precision", reality.N.ToString() + "/" + reality.D.ToString()) },
                                     BeatmapObjects = new() { note.Note }
                                 });
                             }
@@ -60,7 +60,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     Severity = Severity.Info,
                                     CheckType = "Offbeat",
                                     Description = "Uncommon precision.",
-                                    ResultData = new() { new("Offbeat", reality.N.ToString() + "/" + reality.D.ToString()) },
+                                    ResultData = new() { new("Precision", reality.N.ToString() + "/" + reality.D.ToString()) },
                                     BeatmapObjects = new() { note.Note }
                                 });
                             }

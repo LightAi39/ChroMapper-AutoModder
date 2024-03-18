@@ -27,7 +27,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Duration",
                         Description = "There must be at least " + Instance.ColdEndDuration.ToString() + " seconds of time after the last interactable object.",
-                        ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current object is at: " + obj.Beats.ToString()) },
+                        ResultData = new() { new("CurrentBeat", obj.Beats.ToString()), new("MaximumBeat", limit.ToString()) },
                         BeatmapObjects = new() { obj }
                     });
                     issue = CritResult.Fail;
@@ -46,7 +46,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Duration",
                         Description = "There must be at least " + Instance.ColdEndDuration.ToString() + " seconds of time after the last interactable object.",
-                        ResultData = new() { new("ColdEnd", "Maximum beat is: " + limit.ToString() + " Current obstacle is at: " + (w.Beats + w.DurationInBeats).ToString()) },
+                        ResultData = new() { new("CurrentBeat", (w.Beats + w.DurationInBeats).ToString()), new("MaximumBeat", limit.ToString()) },
                         BeatmapObjects = new() { w }
                     });
                     issue = CritResult.Fail;
@@ -63,7 +63,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Duration",
                     Description = "There is at least " + Instance.ColdEndDuration.ToString() + " seconds of time after the last interactable object.",
-                    ResultData = new() { new("ColdEnd", "Success") }
+                    ResultData = new()
                 });
             }
 

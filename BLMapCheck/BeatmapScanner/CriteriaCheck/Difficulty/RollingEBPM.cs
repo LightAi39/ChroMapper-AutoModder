@@ -127,7 +127,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     Severity = Severity.Info,
                                     CheckType = "Speed",
                                     Description = "High EBPM compared to rolling average.",
-                                    ResultData = new() { new("UnexpectedSpeed", "Swing EBPM: " + data.Swing.swingEBPM.ToString() + " Rolling Average EBPM: " + data.Average.ToString()) },
+                                    ResultData = new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) },
                                     BeatmapObjects = new() { cube }
                                 });
                             }
@@ -142,7 +142,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Info,
                                 CheckType = "Speed",
                                 Description = "High EBPM compared to rolling average.",
-                                ResultData = new() { new("UnexpectedSpeed", "Swing EBPM: " + data.Swing.swingEBPM.ToString() + " Rolling Average EBPM: " + data.Average.ToString()) },
+                                ResultData = new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) },
                                 BeatmapObjects = new() { cube }
                             });
                         }
@@ -168,7 +168,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     Severity = Severity.Info,
                                     CheckType = "Speed",
                                     Description = "High EBPM compared to rolling average.",
-                                    ResultData = new() { new("UnexpectedSpeed", "Swing EBPM: " + data.Swing.swingEBPM.ToString() + " Rolling Average EBPM: " + data.Average.ToString()) },
+                                    ResultData = new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) },
                                     BeatmapObjects = new() { cube }
                                 });
                             }
@@ -183,7 +183,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Info,
                                 CheckType = "Speed",
                                 Description = "High EBPM compared to rolling average.",
-                                ResultData = new() { new("UnexpectedSpeed", "Swing EBPM: " + data.Swing.swingEBPM.ToString() + " Rolling Average EBPM: " + data.Average.ToString()) },
+                                ResultData = new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) },
                                 BeatmapObjects = new() { cube }
                             });
                         }

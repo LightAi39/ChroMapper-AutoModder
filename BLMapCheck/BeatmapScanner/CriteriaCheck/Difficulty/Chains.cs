@@ -29,7 +29,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Chain",
                         Description = "Chains cannot be part of the first 16 notes of the map.",
-                        ResultData = new() { new("EarlyChain", "Found" )},
+                        ResultData = new(),
                         BeatmapObjects = new(link) { }
                     });
                     issue = CritResult.Fail;
@@ -45,7 +45,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "Chain",
                     Description = "Chains cannot be part of the first 16 notes of the map.",
-                    ResultData = new() { new("EarlyChain", "Found") },
+                    ResultData = new(),
                     BeatmapObjects = new(chains) { }
                 });
                 issue = CritResult.Fail;
@@ -72,7 +72,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Chain",
                         Description = "Chains must be at least 12.5% links versus air/empty-space.",
-                        ResultData = new() { new("ChainSquish", "Current squish:" + chain.Squish.ToString() + " Maximum squish for placement:" + max.ToString()) },
+                        ResultData = new() { new("CurrentSquish", chain.Squish.ToString()), new("MaxSquish", max.ToString()) },
                         BeatmapObjects = new() { chain }
                     });
                     issue = CritResult.Fail;
@@ -154,7 +154,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Chain",
                         Description = "Chains cannot rotate over 45 degrees.",
-                        ResultData = new() { new("ChainRotation", "True") },
+                        ResultData = new() { new("ChainExceedsRotation", "True") },
                         BeatmapObjects = new() { chain }
                     });
                     issue = CritResult.Fail;
@@ -171,7 +171,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Chain",
                     Description = "Chains spacing, lead, placement and rotation are all proper.",
-                    ResultData = new() { new("Chain", "Success") }
+                    ResultData = new()
                 });
             }
 

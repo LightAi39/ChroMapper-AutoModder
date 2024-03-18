@@ -48,7 +48,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "NoteJumpSpeed",
                     Description = "Note Jump Speed cannot be lower or equal to 0.",
-                    ResultData = new() { new("NoteJumpSpeed", "NJS is currently: " + njs.ToString()) }
+                    ResultData = new() { new("CurrentNoteJumpSpeed", njs.ToString()), new("MinimumNoteJumpSpeed", "0") }
                 });
                 issue = CritResult.Fail;
             }
@@ -64,7 +64,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Suggestion,
                         CheckType = "NoteJumpSpeed",
                         Description = "Note Jump Speed is outside of the recommended value.",
-                        ResultData = new() { new("NoteJumpSpeed", "Recommended NJS is: " + NJS.min.ToString() + " - " + NJS.max.ToString()) }
+                        ResultData = new() { new("CurrentNoteJumpSpeed", njs.ToString()), new("RecommendedNoteJumpSpeed", NJS.min.ToString() + " - " + NJS.max.ToString()) }
                     });
                     issue = CritResult.Warning;
                 }
@@ -81,7 +81,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Suggestion,
                         CheckType = "ReactionTime",
                         Description = "Reaction Time is outside of the recommended value.",
-                        ResultData = new() { new("ReactionTime", "Recommended RT is: " + RT.min.ToString() + " - " + RT.max.ToString()) }
+                        ResultData = new() { new("CurrentReactionTime", reactionTime.ToString()), new("RecommendedReactionTime", RT.min.ToString() + " - " + RT.max.ToString()) }
                     });
                     issue = CritResult.Warning;
                 }
@@ -97,7 +97,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Info,
                     CheckType = "NoteJumpSpeed",
                     Description = "Note Jump Speed is within the recommended value.",
-                    ResultData = new() { new("NoteJumpSpeed", "Recommended NJS is: " + NJS.min.ToString() + " - " + NJS.max.ToString()) }
+                    ResultData = new()
                 });
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -107,7 +107,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Info,
                     CheckType = "ReactionTime",
                     Description = "Reaction Time is within the recommended value.",
-                    ResultData = new() { new("ReactionTime", "Recommended RT is: " + RT.min.ToString() + " - " + RT.max.ToString()) }
+                    ResultData = new()
                 });
             }
 
@@ -123,7 +123,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "NoteJumpSpeed",
                     Description = "No issue with NJS detected.",
-                    ResultData = new() { new("NoteJumpSpeed", "Success") }
+                    ResultData = new()
                 });
                 CheckResults.Instance.AddResult(new CheckResult()
                 {
@@ -133,7 +133,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "ReactionTime",
                     Description = "No issue with RT detected.",
-                    ResultData = new() { new("ReactionTime", "Success") }
+                    ResultData = new()
                 });
             }
 

@@ -34,7 +34,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Slider",
                         Description = "Sliders duration must be fast enough to keep consistent swing speed.",
-                        ResultData = new() { new("SliderPrecision", "Minimum: " + MinSliderPrecision + " Current: " + note.Precision)},
+                        ResultData = new() { new("CurrentSliderPrecision", note.Precision.ToString()), new("MinimumSliderPrecision", MinSliderPrecision.ToString()) },
                         BeatmapObjects = new() { note.Note }
                     });
                     issue = CritResult.Fail;
@@ -52,7 +52,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Warning,
                         CheckType = "Slider",
                         Description = "Sliders must have equal spacing between notes to keep consistent swing duration.",
-                        ResultData = new() { new("SliderPrecision", "Expected " + expected.N.ToString() + "/" + expected.D.ToString()) },
+                        ResultData = new() { new("ExpectedSliderPrecision", expected.N.ToString() + "/" + expected.D.ToString()) },
                         BeatmapObjects = new() { note.Note }
                     });
                     issue = CritResult.Warning;
@@ -104,7 +104,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Slider",
                                 Description = "Multiple notes of the same color on the same swing must not differ by more than 45°.",
-                                ResultData = new() { new("SliderRotation", "Error") },
+                                ResultData = new() { new("Type", "Exceeded slider rotation limit of 45°") },
                                 BeatmapObjects = new() { n.Note }
                             });
                             issue = CritResult.Fail;
@@ -157,7 +157,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Slider",
                                 Description = "Multiple notes of the same color on the same swing must not differ by more than 45°.",
-                                ResultData = new() { new("SliderRotation", "Error") },
+                                ResultData = new() { new("Type", "Exceeded slider rotation limit of 45°") },
                                 BeatmapObjects = new() { n.Note }
                             });
                             issue = CritResult.Fail;
@@ -176,7 +176,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Slider",
                     Description = "No issue with slider precision and rotation detected.",
-                    ResultData = new() { new("Slider", "Success") }
+                    ResultData = new()
                 });
             }
 

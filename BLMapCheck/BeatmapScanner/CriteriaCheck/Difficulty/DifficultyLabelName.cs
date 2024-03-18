@@ -22,7 +22,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Label",
                         Description = "The label name cannot contain obscene content.",
-                        ResultData = new() { new("Profanity", "Error") }
+                        ResultData = new()
                     });
                     return CritResult.Fail;
                 }
@@ -35,7 +35,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Label",
                     Description = "The label name cannot contain obscene content.",
-                    ResultData = new() { new("Profanity", "Passed") }
+                    ResultData = new()
                 });
 
                 return CritResult.Success;
@@ -49,7 +49,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 Severity = Severity.Passed,
                 CheckType = "Label",
                 Description = "The label name cannot contain obscene content.",
-                ResultData = new() { new("Profanity", "Default Label") }
+                ResultData = new()
             });
 
             return CritResult.Success;

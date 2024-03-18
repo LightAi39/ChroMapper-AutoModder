@@ -34,7 +34,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Chain",
                         Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
-                        ResultData = new() { new("ChainDuration", "Current duration: " + (ch.TailInBeats - ch.Beats).ToString() + " Maximum duration: " + (Slider.AverageSliderDuration * 4.2).ToString()) },
+                        ResultData = new() { new("CurrentDuration", (ch.TailInBeats - ch.Beats).ToString()), new("MaximumDuration", (Slider.AverageSliderDuration * 4.2).ToString()) },
                         BeatmapObjects = new() { ch }
                     });
                     issue = true;
@@ -50,7 +50,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Inconclusive,
                         CheckType = "Chain",
                         Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
-                        ResultData = new() { new("ChainDuration", "Current duration: " + (ch.TailInBeats - ch.Beats).ToString() + " Recommended maximum duration: " + (Slider.AverageSliderDuration * 3.15).ToString()) },
+                        ResultData = new() { new("CurrentDuration", (ch.TailInBeats - ch.Beats).ToString()), new("MaximumDuration", (Slider.AverageSliderDuration * 3.15).ToString()) },
                         BeatmapObjects = new() { ch }
                     });
                     unsure = true;
@@ -67,7 +67,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Inconclusive,
                         CheckType = "Chain",
                         Description = "Chain must have an head note.",
-                        ResultData = new() { new("ChainHead", "No head note at: " + ch.Beats + " " + ch.x + "/" + ch.y) },
+                        ResultData = new() { new("IssueType", "No head note at: " + ch.Beats + " " + ch.x + "/" + ch.y) },
                         BeatmapObjects = new() { ch }
                     });
                     issue = true;
@@ -85,7 +85,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Chain",
                     Description = "Chains duration match the map sliders duration * 2.",
-                    ResultData = new() { new("ChainDuration", "Success") }
+                    ResultData = new()
                 });
             }
             if(!head)
@@ -98,7 +98,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Chain",
                     Description = "All chains in the map have an head note.",
-                    ResultData = new() { new("ChainHead", "Success") }
+                    ResultData = new()
                 });
             }
             
@@ -122,7 +122,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "Error") },
+                                ResultData = new() { new("Type", "Dot Spam") },
                                 BeatmapObjects = new() { left }
                             });
                             unsure = true;
@@ -137,7 +137,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "Error") },
+                                ResultData = new() { new("Type", "Dot Spam") },
                                 BeatmapObjects = new() { left }
                             });
                             issue = true;
@@ -165,7 +165,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "Error") },
+                                ResultData = new() { new("Type", "Dot Spam") },
                                 BeatmapObjects = new() { right }
                             });
                             unsure = true;
@@ -180,7 +180,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 Severity = Severity.Error,
                                 CheckType = "Swing",
                                 Description = "Swing duration should be consistent throughout the map.",
-                                ResultData = new() { new("DotSpam", "Error") },
+                                ResultData = new() { new("Type", "Dot Spam") },
                                 BeatmapObjects = new() { right }
                             });
                             issue = true;
@@ -208,7 +208,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 Severity = Severity.Passed,
                 CheckType = "Swing",
                 Description = "Map doesn't have any prolonged swing duration.",
-                ResultData = new() { new("DotSpam", "Success") }
+                ResultData = new()
             });
 
             return CritResult.Success;

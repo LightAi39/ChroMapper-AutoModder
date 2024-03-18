@@ -57,7 +57,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Error,
                     CheckType = "Light",
                     Description = "The map must have sufficient lighting throughout.",
-                    ResultData = new() { new("Light", "Error") }
+                    ResultData = new()
                 });
                 return CritResult.Fail;
             }
@@ -79,7 +79,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Light",
                         Description = "The map must have sufficient lighting throughout.",
-                        ResultData = new() { new("AverageLight", "Current average per beat: " + average.ToString() + " Required: " + Instance.AverageLightPerBeat.ToString()) }
+                        ResultData = new() { new("CurrentAvgLightPerBeat", average.ToString()), new("RequiredAvgLightPerBeat", Instance.AverageLightPerBeat.ToString()) }
                     });
                     issue = CritResult.Fail;
                 }
@@ -94,7 +94,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Passed,
                         CheckType = "Light",
                         Description = "Map has enough light per beat in average.",
-                        ResultData = new() { new("AverageLight", "Current average per beat: " + average.ToString() + " Required: " + Instance.AverageLightPerBeat.ToString()) }
+                        ResultData = new() { new("CurrentAvgLightPerBeat", average.ToString()), new("RequiredAvgLightPerBeat", Instance.AverageLightPerBeat.ToString()) }
                     });
                 }
 
@@ -189,7 +189,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Light",
                     Description = "Bombs in the map are properly lit.",
-                    ResultData = new() { new("BombLit", "Success") }
+                    ResultData = new()
                 });
             }
 

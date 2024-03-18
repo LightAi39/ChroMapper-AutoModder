@@ -65,7 +65,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Info,
                         CheckType = "Hitbox",
                         Description = "Low NJS Inline.",
-                        ResultData = new() { new("Inline", "Low NJS Inline") },
+                        ResultData = new(),
                         BeatmapObjects = new() { item }
                     });
                 }
@@ -157,7 +157,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Warning,
                         CheckType = "Staircase",
                         Description = "Potential Hitbox issue.",
-                        ResultData = new() { new("Staircase", "Warning") },
+                        ResultData = new() { new("Type", "Staircase") },
                         BeatmapObjects = new() { item }
                     });
                     issue = CritResult.Warning;
@@ -220,7 +220,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Warning,
                         CheckType = "Staircase",
                         Description = "Potential Hitbox issue.",
-                        ResultData = new() { new("ReverseStaircase", "Warning") },
+                        ResultData = new() { new("Type", "Reverse Staircase") },
                         BeatmapObjects = new() { item }
                     });
                     issue = CritResult.Warning;
@@ -237,7 +237,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Staircase",
                     Description = "No staircase issue detected.",
-                    ResultData = new() { new("Staircase", "Success") },
+                    ResultData = new(),
                 });
             }
 

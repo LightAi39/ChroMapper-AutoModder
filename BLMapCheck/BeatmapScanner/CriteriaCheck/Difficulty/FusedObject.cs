@@ -37,7 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Fused",
                             Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new() { new("FusedObject", "Error") },
+                            ResultData = new(),
                             BeatmapObjects = new() { c, w }
                         });
                         issue = CritResult.Fail;
@@ -61,7 +61,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Fused",
                             Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new() { new("FusedObject", "Error") },
+                            ResultData = new(),
                             BeatmapObjects = new() { b, w }
                         });
                         issue = CritResult.Fail;
@@ -87,7 +87,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Fused",
                             Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new() { new("FusedObject", "Error") },
+                            ResultData = new(),
                             BeatmapObjects = new() { c, w }
                         });
                         issue = CritResult.Fail;
@@ -117,7 +117,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Fused",
                             Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new() { new("FusedObject", "Error") },
+                            ResultData = new(),
                             BeatmapObjects = new() { n, n2 }
                         });
                         issue = CritResult.Fail;
@@ -141,7 +141,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Fused",
                             Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new() { new("FusedObject", "Error") },
+                            ResultData = new(),
                             BeatmapObjects = new() { n, b }
                         });
                         issue = CritResult.Fail;
@@ -172,7 +172,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Fused",
                             Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new() { new("FusedObject", "Error") },
+                            ResultData = new(),
                             BeatmapObjects = new() { n, c }
                         });
                         issue = CritResult.Fail;
@@ -202,7 +202,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Fused",
                             Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new() { new("FusedObject", "Error") },
+                            ResultData = new(),
                             BeatmapObjects = new() { b, b2 }
                         });
                         issue = CritResult.Fail;
@@ -233,7 +233,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Fused",
                             Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new() { new("FusedObject", "Error") },
+                            ResultData = new(),
                             BeatmapObjects = new() { b, c }
                         });
                         issue = CritResult.Fail;
@@ -265,7 +265,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             Severity = Severity.Error,
                             CheckType = "Fused",
                             Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new() { new("FusedObject", "Error") },
+                            ResultData = new(),
                             BeatmapObjects = new() { c, c2 }
                         });
                         issue = CritResult.Fail;
@@ -283,7 +283,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Fused",
                     Description = "No fused objects detected.",
-                    ResultData = new() { new("FusedObject", "Success") },
+                    ResultData = new(),
                 });
             }
 

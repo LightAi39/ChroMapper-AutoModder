@@ -36,7 +36,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Requirements",
                     Description = "Map doesn't have any mod requirement.",
-                    ResultData = new() { new("Requirements", "Success") }
+                    ResultData = new() { new("Requirements", "None") }
                 });
             }
 

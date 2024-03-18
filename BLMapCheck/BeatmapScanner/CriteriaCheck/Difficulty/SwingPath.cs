@@ -105,7 +105,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                                 Severity = Severity.Info,
                                                 CheckType = "Swing",
                                                 Description = "Possible swing path issue.",
-                                                ResultData = new() { new("SwingPath", "Possible swing path issue") },
+                                                ResultData = new(),
                                                 BeatmapObjects = new() { obj }
                                             });
                                         }
@@ -231,7 +231,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Swing",
                         Description = "Swing path issue.",
-                        ResultData = new() { new("SwingPath", "Error") },
+                        ResultData = new(),
                         BeatmapObjects = new() { item }
                     });
                     issue = CritResult.Fail;
@@ -248,7 +248,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Swing",
                     Description = "No issue with swing path detected.",
-                    ResultData = new() { new("SwingPath", "Success") }
+                    ResultData = new()
                 });
             }
 

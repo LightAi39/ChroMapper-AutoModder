@@ -27,7 +27,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Duration",
                         Description = "The map from first note to last note must be at least " + Instance.MinSongDuration.ToString() + " seconds in length.",
-                        ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + Instance.MinSongDuration.ToString() + "s.") },
+                        ResultData = new() { new("MappedDuration", duration.ToString() + "s"), new("MinimumDuration", Instance.MinSongDuration.ToString() + "s") },
                     });
                     return CritResult.Fail;
                 }
@@ -40,7 +40,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Duration",
                     Description = "The map from first note to last note must be at least " + Instance.MinSongDuration.ToString() + " seconds in length.",
-                    ResultData = new() { new("MappedDuration", "Current map duration is " + duration.ToString() + "s. Minimum required duration is " + Instance.MinSongDuration.ToString() + "s.") },
+                    ResultData = new() { new("MappedDuration", duration.ToString() + "s"), new("MinimumDuration", Instance.MinSongDuration.ToString() + "s") }
                 });
 
                 return CritResult.Success;
@@ -54,7 +54,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 Severity = Severity.Error,
                 CheckType = "Duration",
                 Description = "The map from first note to last note must be at least " + Instance.MinSongDuration.ToString() + " seconds in length.",
-                ResultData = new() { new("MappedDuration", "Current map duration is 0s. Minimum required duration is " + Instance.MinSongDuration.ToString() + "s.") },
+                ResultData = new() { new("MappedDuration", "0s"), new("MinimumDuration", Instance.MinSongDuration.ToString() + "s") },
             });
             return CritResult.Fail;
         }

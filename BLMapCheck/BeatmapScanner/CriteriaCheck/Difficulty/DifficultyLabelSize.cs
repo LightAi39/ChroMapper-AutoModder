@@ -26,7 +26,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Label",
                         Description = "The difficulty label is too long.",
-                        ResultData = new() { new("LabelSize", "Current is " + difficultyLabel.Count().ToString() + " characters. Maximum " + maxValue + " characters.") }
+                        ResultData = new() { new("CurrentSize", difficultyLabel.Count().ToString() + " characters"), new("MaxSize", maxValue + " characters") }
                     });
                     return CritResult.Fail;
                 }
@@ -39,7 +39,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Severity = Severity.Passed,
                     CheckType = "Label",
                     Description = "The difficulty label size is valid.",
-                    ResultData = new() { new("LabelSize", "Current is " + difficultyLabel.Count().ToString() + " characters. Maximum " + maxValue + " characters.") },
+                    ResultData = new() { new("CurrentSize", difficultyLabel.Count().ToString() + " characters"), new("MaxSize", maxValue + " characters") },
                 });
 
                 return CritResult.Success;
@@ -53,7 +53,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 Severity = Severity.Passed,
                 CheckType = "Label",
                 Description = "The difficulty label size is valid.",
-                ResultData = new() { new("LabelSize", "Default label") },
+                ResultData = new() { new("CurrentSize", difficultyLabel?.Count().ToString() ?? "Default"), new("MaxSize", maxValue + " characters") },
             });
 
             return CritResult.Success;
