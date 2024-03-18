@@ -141,6 +141,7 @@ namespace ChroMapper_LightModding.Helpers
 
         public void CreateCommentsFromNewData(List<CheckResult> checkResults)
         {
+            checkResults = checkResults.Where(x => x.Name != "Statistical Data").ToList();
             // song info comments
             if (checkResults.Where(x => x.Difficulty == null && x.Characteristic == null).ToList().Count != 0)
             {
@@ -234,7 +235,10 @@ namespace ChroMapper_LightModding.Helpers
 
                 if (item.BeatmapObjects == null || item.BeatmapObjects.Count == 0)
                 {
-                    ExtendOverallComment(item.Description);
+                    if (commentType != null)
+                    {
+                        ExtendOverallComment(item.Description);
+                    }
                 }
                 else if (item.BeatmapObjects[0] is Note note)
                 {
