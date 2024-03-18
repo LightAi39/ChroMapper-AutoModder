@@ -379,6 +379,20 @@ namespace ChroMapper_LightModding.Helpers
                 ObjectType = ObjectType.Chain
             };
 
+            if (result.ResultData.Any(x => x.Key == "currentReactionTime"))
+            {
+                message += "\n  Current RT: " + result.ResultData.Where(x => x.Key == "currentReactionTime").FirstOrDefault().Value;
+            }
+            if (result.ResultData.Any(x => x.Key == "targetReactionTime"))
+            {
+                message += "\n  Target RT: " + result.ResultData.Where(x => x.Key == "targetReactionTime").FirstOrDefault().Value;
+            }
+
+            foreach (var item in result.ResultData.Where(x => x.Key != "currentReactionTime" && x.Key != "targetReactionTime"))
+            {
+                message += "\n  " + item.Key + ": " + item.Value;
+            }
+
             Comment comment = new()
             {
                 Id = id,
@@ -418,6 +432,20 @@ namespace ChroMapper_LightModding.Helpers
                 ObjectType = ObjectType.Note
             };
 
+            if (result.ResultData.Any(x => x.Key == "currentReactionTime"))
+            {
+                message += "\n  Current RT: " + result.ResultData.Where(x => x.Key == "currentReactionTime").FirstOrDefault().Value;
+            }
+            if (result.ResultData.Any(x => x.Key == "targetReactionTime"))
+            {
+                message += "\n  Target RT: " + result.ResultData.Where(x => x.Key == "targetReactionTime").FirstOrDefault().Value;
+            }
+
+            foreach (var item in result.ResultData.Where(x => x.Key != "currentReactionTime" && x.Key != "targetReactionTime"))
+            {
+                message += "\n  " + item.Key + ": " + item.Value;
+            }
+
             Comment comment = new()
             {
                 Id = id,
@@ -456,6 +484,20 @@ namespace ChroMapper_LightModding.Helpers
                 Color = 0,
                 ObjectType = ObjectType.Obstacle
             };
+
+            if (result.ResultData.Any(x => x.Key == "currentReactionTime"))
+            {
+                message += "\n  Current RT: " + result.ResultData.Where(x => x.Key == "currentReactionTime").FirstOrDefault().Value;
+            }
+            if (result.ResultData.Any(x => x.Key == "targetReactionTime"))
+            {
+                message += "\n  Target RT: " + result.ResultData.Where(x => x.Key == "targetReactionTime").FirstOrDefault().Value;
+            }
+
+            foreach (var item in result.ResultData.Where(x => x.Key != "currentReactionTime" && x.Key != "targetReactionTime"))
+            {
+                message += "\n  " + item.Key + ": " + item.Value;
+            }
 
             Comment comment = new()
             {
