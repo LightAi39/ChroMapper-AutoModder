@@ -24,7 +24,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             for (int i = 0; i < sliders.Count(); i++)
             {
                 NoteData note = sliders[i];
-                if (note.Precision > (note.Spacing + 1) * MinSliderPrecision)
+                if (note.Precision - 0.001 > (note.Spacing + 1) * MinSliderPrecision)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
