@@ -2,6 +2,7 @@
 using BLMapCheck;
 using BLMapCheck.Classes.Results;
 using ChroMapper_LightModding.Models;
+using ChroMapper_LightModding.UI;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
@@ -86,6 +87,7 @@ namespace ChroMapper_LightModding.Helpers
             //    plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = criteriaCheck.AutoDiffCheck(characteristic, difficultyRank, difficulty);
             //}
             RunAutoCheck(false, true, false, characteristic, difficultyRank, difficulty);
+            plugin.editorUI.RunBeatmapScannerOnThisDiff(); // this is temporary
         }
 
         public (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)

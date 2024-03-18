@@ -1052,7 +1052,7 @@ namespace ChroMapper_LightModding.UI
 
         #endregion
 
-        private void RunBeatmapScannerOnThisDiff()
+        public void RunBeatmapScannerOnThisDiff() // TODO: THIS IS TEMPORARILY PUBLIC, IT SHOULD BE PRIVATE
         {
             var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
 

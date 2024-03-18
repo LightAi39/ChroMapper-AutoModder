@@ -231,7 +231,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                     new("Crouch", "0"), // TODO: remove or fix
                     new("Linear", Math.Round(beatmapScannerData[0].Linear, 2).ToString()),
                     new("SPS", diffAnalysis.GetSPS().ToString()),
-                    new("Handness", diffAnalysis.GetHandedness().ToString())
+                    new("Handness", $"{Math.Round(diffAnalysis.GetHandedness().Y, 2)}/{Math.Round(diffAnalysis.GetHandedness().X, 2)}")
                 }
             };
         }

@@ -55,7 +55,7 @@ namespace ChroMapper_LightModding
         public string currentlyLoadedFilePath = null;
         public string currentlyLoadedFolderPath = null;
 
-        private EditorUI editorUI;
+        internal EditorUI editorUI; // TODO: THIS SHOULD BE PRIVATE
         private SongInfoUI songInfoUI;
         private OutlineHelper outlineHelper;
         private FileHelper fileHelper;
