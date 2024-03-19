@@ -50,7 +50,7 @@ namespace BLMapCheck.Classes.Helper
                 NotesData.Add(new(red[0]));
                 for (int i = 1; i < red.Count; i++)
                 {
-                    if (red[i].Beats - red[i - 1].Beats < 0.25)
+                    if (red[i].Beats - red[i - 1].Beats < 0.16667)
                     {
                         var data = new NoteData()
                         {
@@ -65,7 +65,10 @@ namespace BLMapCheck.Classes.Helper
                         {
                             NotesData.Last().Head = true;
                             NotesData.Last().Pattern = true;
+                            NotesData.Last().Precision = data.Precision;
                             NotesData.Last().Note = red[i - 1];
+                            NotesData.Last().Line = red[i - 1].x;
+                            NotesData.Last().Layer = red[i - 1].y;
                         }
                         NotesData.Add(data);
                     }
@@ -81,8 +84,8 @@ namespace BLMapCheck.Classes.Helper
                 NotesData.Add(new(blue[0]));
                 for (int i = 1; i < blue.Count; i++)
                 {
-                    
-                    if (blue[i].Beats - blue[i - 1].Beats < 0.25)
+
+                    if (blue[i].Beats - blue[i - 1].Beats < 0.16667)
                     {
                         var data = new NoteData()
                         {
@@ -97,7 +100,10 @@ namespace BLMapCheck.Classes.Helper
                         {
                             NotesData.Last().Head = true;
                             NotesData.Last().Pattern = true;
+                            NotesData.Last().Precision = data.Precision;
                             NotesData.Last().Note = blue[i - 1];
+                            NotesData.Last().Line = blue[i - 1].x;
+                            NotesData.Last().Layer = blue[i - 1].y;
                         }
                         NotesData.Add(data);
                     }
@@ -107,6 +113,20 @@ namespace BLMapCheck.Classes.Helper
                     }
                 }
             }
+        }
+
+        public static bool BeforePointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
+        {
+            Vector2 direction = B - A;
+            Vector2 pointAP = P - A;
+
+            float t = Vector2.Dot(pointAP, direction) / Vector2.Dot(direction, direction);
+            if (t < 0)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)

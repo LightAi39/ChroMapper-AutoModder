@@ -59,8 +59,73 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            var red = NotesData.Where(c => c.Note.Color == 0 && c.Pattern).ToList();
-            var blue = NotesData.Where(c => c.Note.Color == 1 && c.Pattern).ToList();
+            // Check for reversed slider direction (doesn't work if it's dot notes)
+            sliders = NotesData.Where(c => c.Pattern && c.Precision != 0).ToList();
+            var red = sliders.Where(c => c.Note.Color == 0).ToList();
+            var blue = sliders.Where(c => c.Note.Color == 1).ToList();
+            for (int i = 0; i < red.Count; i++)
+            {
+                var note = red[i];
+                if(!note.Head && i != 0)
+                {
+                    var note2 = red[i - 1];
+                    if(note.Note.CutDirection != 8 && note2.Note.CutDirection != 8)
+                    {
+                        var angleOfAttack = DirectionToDegree[note2.Note.CutDirection];
+                        // Simulate the position of the line based on the new angle found
+                        var simulatedLineOfAttack = SimSwingPos(note2.Line, note2.Layer, angleOfAttack, 2);
+                        // Check if the other note is close to the line
+                        var Mismatch = BeforePointOnFiniteLine(new((float)note2.Line, (float)note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new((float)note.Line, (float)note.Layer));
+                        if (Mismatch)
+                        {
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
+                                Name = "Reversed Slider",
+                                Severity = Severity.Error,
+                                CheckType = "Slider",
+                                Description = "Slider beat doesn't match the direction",
+                                ResultData = new(),
+                                BeatmapObjects = new() { note2.Note }
+                            });
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < blue.Count; i++)
+            {
+                var note = blue[i];
+                if (!note.Head && i != 0)
+                {
+                    var note2 = blue[i - 1];
+                    if (note.Note.CutDirection != 8 && note2.Note.CutDirection != 8)
+                    {
+                        var angleOfAttack = DirectionToDegree[note2.Note.CutDirection];
+                        // Simulate the position of the line based on the new angle found
+                        var simulatedLineOfAttack = SimSwingPos(note2.Line, note2.Layer, angleOfAttack, 2);
+                        // Check if the other note is close to the line
+                        var InPath = NearestPointOnFiniteLine(new((float)note2.Line, (float)note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new((float)note.Line, (float)note.Layer));
+                        if (!InPath)
+                        {
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
+                                Name = "Reversed Slider",
+                                Severity = Severity.Info,
+                                CheckType = "Slider",
+                                Description = "Slider beat doesn't match the direction",
+                                ResultData = new(),
+                                BeatmapObjects = new() { note2.Note }
+                            });
+                        }
+                    }
+                }
+            }
+
+            red = NotesData.Where(c => c.Note.Color == 0 && c.Pattern).ToList();
+            blue = NotesData.Where(c => c.Note.Color == 1 && c.Pattern).ToList();
 
             // TODO: This could probably be done way better but idk
             for (int i = 0; i < red.Count() - 1; i++)

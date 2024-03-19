@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
-using System.Diagnostics;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -192,7 +191,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     ResultData = new()
                 });
             }
-
+            
             timescale.BPM.ResetCurrentBPM();
             return issue;
         }
