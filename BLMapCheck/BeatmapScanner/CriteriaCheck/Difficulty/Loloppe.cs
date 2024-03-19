@@ -48,11 +48,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (notes[i].Beats - notes[i - 1].Beats < 0.125)
                 {
                     // Detect slanted window
-                    /* Check if both notes have the same cutDirection.
-                    If so, it could be a slanted window.
-                    Get the line made by the two notes.
-                    Slanted window happens if the angle change for notes to align is less than than 45. 
-                    */
                     var direction = DirectionToDegree[notes[i].CutDirection];
                     if (notes[i].CutDirection == notes[i - 1].CutDirection)
                     {

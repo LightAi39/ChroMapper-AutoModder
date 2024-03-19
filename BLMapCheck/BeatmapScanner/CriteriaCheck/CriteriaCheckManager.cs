@@ -121,9 +121,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             List<Ratings> BeatmapScannerData = new();
 
+            _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == Characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == Difficulty);
+            int diffCount = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic)._difficultyBeatmaps.Count();
+
             if (diff.Notes.Count >= 20)
             {
-                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
+                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute, difficultyBeatmap._noteJumpMovementSpeed);
                 Helper.CreateNoteData(diff.Notes);
             } else
             {
@@ -134,9 +137,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             allNoteObjects.AddRange(diff.Notes);
             allNoteObjects.AddRange(diff.Bombs);
             // allNoteObjects.AddRange(diff.Chains);
-
-            _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == Characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == Difficulty);
-            int diffCount = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic)._difficultyBeatmaps.Count();
 
             // Debug.Log(JsonConvert.SerializeObject(difficultyBeatmap, Formatting.Indented));
 
@@ -200,7 +200,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             if (diff.Notes.Count >= 20)
             {
-                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
+                _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == Characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == Difficulty);
+                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute, difficultyBeatmap._noteJumpMovementSpeed);
             } else
             {
                 throw new Exception("No notes found");
@@ -225,7 +226,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                     new("Pass", Math.Round(beatmapScannerData[0].Pass, 2).ToString()),
                     new("Tech", Math.Round(beatmapScannerData[0].Tech, 2).ToString()),
                     new("EBPM", diffAnalysis.GetAverageEBPM().ToString()),
-                    new("Slider", Math.Round(beatmapScannerData[0].Pattern, 2).ToString()), // TODO: rename to pattern instead
+                    new("Slider", Math.Round(beatmapScannerData[0].Multi, 2).ToString()), // TODO: rename to pattern instead
                     new("BombReset","0"), // TODO: remove or fix
                     new("Reset", diffAnalysis.GetResetCount().ToString()),
                     new("Crouch", "0"), // TODO: remove or fix

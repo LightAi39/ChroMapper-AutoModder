@@ -3,8 +3,6 @@ using Parser.Map;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using beatleader_analyzer;
-using JoshaParity;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
@@ -19,7 +17,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
             {
                 if(difficulty.Data.Notes.Count >= 20)
                 {
-                    var data = BLMapChecker.analyzer.GetRating(difficulty.Data, difficulty.Characteristic, difficulty.Difficulty, BeatsPerMinute);
+                    _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == difficulty.Characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == difficulty.Difficulty);
+                    var data = BLMapChecker.analyzer.GetRating(difficulty.Data, difficulty.Characteristic, difficulty.Difficulty, BeatsPerMinute, difficultyBeatmap._noteJumpMovementSpeed);
                     passStandard.Add(data[0].Pass);
                 }
             }
