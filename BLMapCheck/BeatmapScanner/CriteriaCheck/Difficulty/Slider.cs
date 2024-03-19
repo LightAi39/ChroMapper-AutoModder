@@ -55,182 +55,19 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         ResultData = new() { new("ExpectedSliderPrecision", expected.N.ToString() + "/" + expected.D.ToString()) },
                         BeatmapObjects = new() { note.Note }
                     });
-                    issue = CritResult.Warning;
+                    if(issue == CritResult.Success) issue = CritResult.Warning;
                 }
             }
 
             // Check for reversed slider direction (doesn't work if it's dot notes)
             sliders = NotesData.Where(c => c.Pattern && c.Precision != 0).ToList();
-            var red = sliders.Where(c => c.Note.Color == 0).ToList();
-            var blue = sliders.Where(c => c.Note.Color == 1).ToList();
-            for (int i = 0; i < red.Count; i++)
-            {
-                var note = red[i];
-                if(!note.Head && i != 0)
-                {
-                    var note2 = red[i - 1];
-                    if(note.Note.CutDirection != 8 && note2.Note.CutDirection != 8)
-                    {
-                        var angleOfAttack = DirectionToDegree[note2.Note.CutDirection];
-                        // Simulate the position of the line based on the new angle found
-                        var simulatedLineOfAttack = SimSwingPos(note2.Line, note2.Layer, angleOfAttack, 2);
-                        // Check if the other note is close to the line
-                        var Mismatch = BeforePointOnFiniteLine(new((float)note2.Line, (float)note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new((float)note.Line, (float)note.Layer));
-                        if (Mismatch)
-                        {
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Reversed Slider",
-                                Severity = Severity.Error,
-                                CheckType = "Slider",
-                                Description = "Slider beat doesn't match the direction",
-                                ResultData = new(),
-                                BeatmapObjects = new() { note2.Note }
-                            });
-                        }
-                    }
-                }
-            }
-            for (int i = 0; i < blue.Count; i++)
-            {
-                var note = blue[i];
-                if (!note.Head && i != 0)
-                {
-                    var note2 = blue[i - 1];
-                    if (note.Note.CutDirection != 8 && note2.Note.CutDirection != 8)
-                    {
-                        var angleOfAttack = DirectionToDegree[note2.Note.CutDirection];
-                        // Simulate the position of the line based on the new angle found
-                        var simulatedLineOfAttack = SimSwingPos(note2.Line, note2.Layer, angleOfAttack, 2);
-                        // Check if the other note is close to the line
-                        var InPath = NearestPointOnFiniteLine(new((float)note2.Line, (float)note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new((float)note.Line, (float)note.Layer));
-                        if (!InPath)
-                        {
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Reversed Slider",
-                                Severity = Severity.Info,
-                                CheckType = "Slider",
-                                Description = "Slider beat doesn't match the direction",
-                                ResultData = new(),
-                                BeatmapObjects = new() { note2.Note }
-                            });
-                        }
-                    }
-                }
-            }
-
-            red = NotesData.Where(c => c.Note.Color == 0 && c.Pattern).ToList();
-            blue = NotesData.Where(c => c.Note.Color == 1 && c.Pattern).ToList();
+            if (ReversedSliderCheck(sliders.Where(c => c.Note.Color == 0).ToList())) issue = CritResult.Fail;
+            if (ReversedSliderCheck(sliders.Where(c => c.Note.Color == 1).ToList())) issue = CritResult.Fail;
 
             // TODO: This could probably be done way better but idk
-            for (int i = 0; i < red.Count() - 1; i++)
-            {
-                List<double> dir = new();
-                if (red[i].Head)
-                {
-                    if (red[i].Note.CutDirection != 8)
-                    {
-                        dir.Add(DirectionToDegree[red[i].Note.CutDirection]);
-                    }
-                    else
-                    {
-                        dir.Add(ReverseCutDirection(FindAngleViaPosition(red, i + 1, i)));
-                    }
-                    do
-                    {
-                        i++;
-                        if (red.Count() == i)
-                        {
-                            break;
-                        }
-                        if (red[i].Head || !red[i].Pattern)
-                        {
-                            break;
-                        }
-                        dir.Add(FindAngleViaPosition(red, i, i - 1));
-                    } while (!red[i].Head);
-                    i--;
-                    var degree = dir.FirstOrDefault();
-                    for (int j = 1; j < dir.Count(); j++)
-                    {
-                        if (!IsSameDirection(degree, dir[j]) && !IsSameDirection(degree, ReverseCutDirection(dir[j])))
-                        {
-                            var n = red[i - dir.Count() + j + 1];
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Slider Rotation",
-                                Severity = Severity.Error,
-                                CheckType = "Slider",
-                                Description = "Multiple notes of the same color on the same swing must not differ by more than 45°.",
-                                ResultData = new() { new("Type", "Exceeded slider rotation limit of 45°") },
-                                BeatmapObjects = new() { n.Note }
-                            });
-                            issue = CritResult.Fail;
-                        }
-                    }
-                }
-            }
-
-            for (int i = 0; i < blue.Count() - 1; i++)
-            {
-                List<double> dir = new();
-
-                if (blue[i].Head)
-                {
-                    if (blue[i].Note.CutDirection != 8)
-                    {
-                        dir.Add(DirectionToDegree[blue[i].Note.CutDirection]);
-                    }
-                    else
-                    {
-                        dir.Add(ReverseCutDirection(FindAngleViaPosition(blue, i + 1, i)));
-                    }
-
-                    do
-                    {
-                        i++;
-                        if (blue.Count() == i)
-                        {
-                            break;
-                        }
-                        if (blue[i].Head || !blue[i].Pattern)
-                        {
-                            break;
-                        }
-
-                        dir.Add(FindAngleViaPosition(blue, i, i - 1));
-                    } while (!blue[i].Head);
-                    i--;
-                    var degree = dir.FirstOrDefault();
-                    for (int j = 1; j < dir.Count(); j++)
-                    {
-                        if (!IsSameDirection(degree, dir[j]) && !IsSameDirection(degree, ReverseCutDirection(dir[j])))
-                        {
-                            var n = blue[i - dir.Count() + j + 1];
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Slider Rotation",
-                                Severity = Severity.Error,
-                                CheckType = "Slider",
-                                Description = "Multiple notes of the same color on the same swing must not differ by more than 45°.",
-                                ResultData = new() { new("Type", "Exceeded slider rotation limit of 45°") },
-                                BeatmapObjects = new() { n.Note }
-                            });
-                            issue = CritResult.Fail;
-                        }
-                    }
-                }
-            }
-
+            if (SliderAngleCheck(NotesData.Where(c => c.Note.Color == 0 && c.Pattern).ToList())) issue = CritResult.Fail;
+            if (SliderAngleCheck(NotesData.Where(c => c.Note.Color == 1 && c.Pattern).ToList())) issue = CritResult.Fail;
+            
             if (issue == CritResult.Success)
             {
                 CheckResults.Instance.AddResult(new CheckResult()
@@ -243,6 +80,106 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     Description = "No issue with slider precision and rotation detected.",
                     ResultData = new()
                 });
+            }
+
+            return issue;
+        }
+
+        public static bool ReversedSliderCheck(List<NoteData> notes)
+        {
+            bool issue = false;
+
+            for (int i = 0; i < notes.Count; i++)
+            {
+                var note = notes[i];
+                if (!note.Head && i != 0)
+                {
+                    var note2 = notes[i - 1];
+                    if (note.Note.CutDirection == 8 && note2.Note.CutDirection == 8)
+                    {
+                        continue;
+                    }
+                    // Based on one of the note direction (if it's not a dot note)
+                    double angleOfAttack;
+                    if (note2.Note.CutDirection != 8) angleOfAttack = DirectionToDegree[note2.Note.CutDirection];
+                    else angleOfAttack = DirectionToDegree[note.Note.CutDirection];
+                    // Simulate the position of the line based on the new angle found
+                    var simulatedLineOfAttack = SimSwingPos(note2.Line, note2.Layer, angleOfAttack, 2);
+                    // Check if the other note is before
+                    var Mismatch = BeforePointOnFiniteLine(new((float)note2.Line, (float)note2.Layer), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new((float)note.Line, (float)note.Layer));
+                    if (Mismatch)
+                    {
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
+                            Name = "Reversed Slider",
+                            Severity = Severity.Error,
+                            CheckType = "Slider",
+                            Description = "Slider beat doesn't match the direction",
+                            ResultData = new(),
+                            BeatmapObjects = new() { note2.Note }
+                        });
+                        issue = true;
+                    }
+                }
+            }
+
+            return issue;
+        }
+
+        public static bool SliderAngleCheck(List<NoteData> notes)
+        {
+            bool issue = false;
+
+            for (int i = 0; i < notes.Count() - 1; i++)
+            {
+                List<double> dir = new();
+                if (notes[i].Head)
+                {
+                    if (notes[i].Note.CutDirection != 8)
+                    {
+                        dir.Add(DirectionToDegree[notes[i].Note.CutDirection]);
+                    }
+                    else
+                    {
+                        dir.Add(ReverseCutDirection(FindAngleViaPosition(notes, i + 1, i)));
+                    }
+                    do
+                    {
+                        i++;
+                        if (notes.Count() == i)
+                        {
+                            break;
+                        }
+                        if (notes[i].Head || !notes[i].Pattern)
+                        {
+                            break;
+                        }
+                        dir.Add(FindAngleViaPosition(notes, i, i - 1));
+                    } while (!notes[i].Head);
+                    i--;
+                    var degree = dir.FirstOrDefault();
+                    for (int j = 1; j < dir.Count(); j++)
+                    {
+                        if (!IsSameDirection(degree, dir[j]) && !IsSameDirection(degree, ReverseCutDirection(dir[j])))
+                        {
+                            var n = notes[i - dir.Count() + j + 1];
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = CriteriaCheckManager.Characteristic,
+                                Difficulty = CriteriaCheckManager.Difficulty,
+                                Name = "Slider Rotation",
+                                Severity = Severity.Error,
+                                CheckType = "Slider",
+                                Description = "Multiple notes of the same color on the same swing must not differ by more than 45°.",
+                                ResultData = new() { new("Type", "Exceeded slider rotation limit of 45°") },
+                                BeatmapObjects = new() { n.Note }
+                            });
+                            issue = true;
+                        }
+                    }
+                }
             }
 
             return issue;
