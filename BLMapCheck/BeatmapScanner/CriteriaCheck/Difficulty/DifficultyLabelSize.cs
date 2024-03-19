@@ -1,6 +1,4 @@
 ﻿using BLMapCheck.Classes.Results;
-using BLMapCheck.Configs;
-using System.ComponentModel;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;

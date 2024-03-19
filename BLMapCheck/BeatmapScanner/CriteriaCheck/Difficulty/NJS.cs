@@ -1,5 +1,4 @@
 ﻿using BLMapCheck.BeatmapScanner.Data.Criteria;
-using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.ChroMapper;
 using BLMapCheck.Classes.Results;
 using System.Collections.Generic;

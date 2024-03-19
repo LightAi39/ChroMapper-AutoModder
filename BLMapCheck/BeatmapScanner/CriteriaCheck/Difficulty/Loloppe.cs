@@ -2,11 +2,9 @@
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Classes.Helper.Helper;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -39,7 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         public static bool DetectParallel(List<Note> notes)
         {
-            var issue = true;
+            var issue = false;
 
             for (int i = 1; i < notes.Count; i++)
             {

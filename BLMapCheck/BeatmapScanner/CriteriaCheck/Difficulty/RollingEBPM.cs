@@ -1,5 +1,4 @@
 ﻿using BLMapCheck.Classes.Results;
-using Parser.Map.Difficulty.V3.Grid;
 using JoshaParity;
 using System.Collections.Generic;
 using System.Linq;

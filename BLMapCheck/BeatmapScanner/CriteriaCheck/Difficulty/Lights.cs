@@ -1,5 +1,4 @@
-﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Event;
 using Parser.Map.Difficulty.V3.Event.V3;
 using Parser.Map.Difficulty.V3.Grid;
