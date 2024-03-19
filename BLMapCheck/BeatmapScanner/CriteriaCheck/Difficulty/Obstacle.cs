@@ -137,7 +137,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (w.Width <= 0 || w.DurationInBeats <= 0 || // Negative w or d
                     (w.Height <= 0 && w.x >= 0 && w.x <= 3 && (w.y > 0 || w.y + w.Height >= 0)) // In or above with negative h
                     || ((w.x == 1 || w.x == 2 || (w.x + w.Width >= 2 && w.x <= 3)) && w.Height < 0)  // Under middle lane with negative h
-                    || (w.x + w.Width >= 1 && w.x <= 4) && w.y + w.Height >= 0 && w.Height < 0) // Stretch above with negative h
+                    || (w.x + w.Width >= 1 && w.x <= 3) && w.y + w.Height >= 0 && w.Height < 0) // Stretch above with negative h
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
