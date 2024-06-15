@@ -52,7 +52,10 @@
         public double ParityWarningAngle { get; set; } = 180;
         public bool DisplayBadcut { get; set; } = true;
         public bool HighlightOffbeat { get; set; } = true;
+        public bool HighlightInline { get; set; } = true;
+        public double InlineBeatPrecision { get; set; } = 3;
         public bool DisplayFlick { get; set; } = true;
+        public double FlickBeatPrecision { get; set; } = 4;
         public bool ParityInvertedWarning { get; set; } = true;
         public bool ParityDebug { get; set; } = false;
     }

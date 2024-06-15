@@ -11,6 +11,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         public static readonly float[] AllowedSnap = { 0, 0.125f, 0.167f, 0.25f, 0.333f, 0.375f, 0.5f, 0.625f, 0.667f, 0.75f, 0.833f, 0.875f };
 
+        // Detect notes that are mapped to an uncommon precision.
         public static void Check(List<Note> notes)
         {
             if(Configs.Config.Instance.HighlightOffbeat)

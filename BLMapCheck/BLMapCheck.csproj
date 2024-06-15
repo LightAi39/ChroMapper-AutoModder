@@ -64,10 +64,12 @@
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\ColdEnd.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\DifficultyLabelSize.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\DifficultyLabelName.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Flick.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\FusedObject.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Handclap.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Hitbox.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\HotStart.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Inline.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Lights.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Loloppe.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\SongDuration.cs" />

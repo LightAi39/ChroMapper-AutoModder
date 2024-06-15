@@ -139,7 +139,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             // allNoteObjects.AddRange(diff.Chains);
 
             // Debug.Log(JsonConvert.SerializeObject(difficultyBeatmap, Formatting.Indented));
-
+            
             DiffCrit diffCrit = new()
             {
                 HotStart = HotStart.Check(allNoteObjects, diff.Walls),
@@ -164,7 +164,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 HandClap = Handclap.Check(diff.Notes)
             };
             Offbeat.Check(diff.Notes);
+            Inline.Check(diff.Notes, difficultyBeatmap._noteJumpMovementSpeed);
             RollingEBPM.Check(swings, diff.Notes);
+            Flick.Check(diff.Notes);
 
             CheckResults.Instance.AddResult(WriteDifficultyStatistics(BeatmapScannerData, diffAnalysis));
 
