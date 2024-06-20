@@ -996,29 +996,29 @@ namespace ChroMapper_LightModding.UI
             });
             startPosX = -80;
             startPosY = -30;
-            UIHelper.AddLabel(_settingMenu.transform, "VBSettings", "Vision Block (s)", new Vector2(startPosX + 50, startPosY), new Vector2(180, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_settingMenu.transform, "VBSettings", "Allowed Vision Block (s)", new Vector2(startPosX + 40, startPosY), new Vector2(180, 24), TextAlignmentOptions.Left);
             startPosY -= 26;
-            UIHelper.AddTextInput(_settingMenu.transform, "VBMinBottomNoteTime", "Bottom Row Allowed", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinBottomNoteTime.ToString(), (change) =>
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMinBottomNoteTime", "Bottom Row Note", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinBottomNoteTime.ToString(), (change) =>
             {
                 if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMinBottomNoteTime = result;
             });
             startPosY -= 26;
-            UIHelper.AddTextInput(_settingMenu.transform, "VBMaxOuterNoteTime", "Outer Lane Allowed", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMaxOuterNoteTime.ToString(), (change) =>
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMaxOuterNoteTime", "Outer Lane Note", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMaxOuterNoteTime.ToString(), (change) =>
             {
                 if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMaxOuterNoteTime = result;
             });
             startPosY -= 26;
-            UIHelper.AddTextInput(_settingMenu.transform, "VBMaxBombTime", "Bomb Closer Allowed", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMaxBombTime.ToString(), (change) =>
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMaxBombTime", "Outer Lane Bomb", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMaxBombTime.ToString(), (change) =>
             {
                 if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMaxBombTime = result;
             });
             startPosY -= 26;
-            UIHelper.AddTextInput(_settingMenu.transform, "VBMinBombTime", "Bomb Closer Denied", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinBombTime.ToString(), (change) =>
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMinBombTime", "Bomb Further Than", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinBombTime.ToString(), (change) =>
             {
                 if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMinBombTime = result;
             });
             startPosY -= 26;
-            UIHelper.AddTextInput(_settingMenu.transform, "VBMinimum", "Minimum Allowed", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinimum.ToString(), (change) =>
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMinimum", "Minimum", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinimum.ToString(), (change) =>
             {
                 if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMinimum = result;
             });
@@ -1057,7 +1057,7 @@ namespace ChroMapper_LightModding.UI
             });
             startPosX = 140;
             startPosY = -30;
-            UIHelper.AddTextInput(_settingMenu.transform, "LightBombReactionTime", "Light Bomb RT", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.LightBombReactionTime.ToString(), (change) =>
+            UIHelper.AddTextInput(_settingMenu.transform, "LightBombReactionTime", "Light Bomb Allowed RT", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.LightBombReactionTime.ToString(), (change) =>
             {
                 if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.LightBombReactionTime = result;
             });
