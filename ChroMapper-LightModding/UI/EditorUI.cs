@@ -569,10 +569,15 @@ namespace ChroMapper_LightModding.UI
             }
         }
 
-        public void RefreshCriteriaMenu()
+        public void RefreshCriteriaMenu(bool configMenu = false)
         {
             RemoveCriteriaMenu();
             CreateCriteriaMenu();
+            if (configMenu)
+            {
+                _criteriaMenu.SetActive(false);
+                _settingMenu.SetActive(true);
+            }
         }
 
         private void RemoveCriteriaMenu()
@@ -937,7 +942,7 @@ namespace ChroMapper_LightModding.UI
             UIHelper.AddButton(_settingMenu.transform, "ResetSettings", "Reset To Default", new Vector2(250, -44), () =>
             {
                 BLMapCheck.Configs.Config.Instance.Reset();
-                RefreshCriteriaMenu();
+                RefreshCriteriaMenu(true);
             });
 
             UIHelper.AddButton(_settingMenu.transform, "CloseSettingsMenu", "Close Menu", new Vector2(250, -70), () =>
@@ -985,18 +990,13 @@ namespace ChroMapper_LightModding.UI
                 BLMapCheck.Configs.Config.Instance.DisplayAngleOffset = check;
             });
             startPosY -= 26;
-            UIHelper.AddCheckbox(_settingMenu.transform, "ParityInvertedWarning", "Parity Warning", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ParityInvertedWarning, (check) =>
+            UIHelper.AddCheckbox(_settingMenu.transform, "ParityInvertedWarning", "Inverted Parity Warn.", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ParityInvertedWarning, (check) =>
             {
                 BLMapCheck.Configs.Config.Instance.ParityInvertedWarning = check;
             });
-            startPosY -= 26;
-            UIHelper.AddCheckbox(_settingMenu.transform, "ParityDebug", "Parity Debug", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ParityDebug, (check) =>
-            {
-                BLMapCheck.Configs.Config.Instance.ParityDebug = check;
-            });
             startPosX = -80;
             startPosY = -30;
-            UIHelper.AddLabel(_settingMenu.transform, "VBSettings", "Vision Block", new Vector2(startPosX + 70, startPosY), new Vector2(180, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_settingMenu.transform, "VBSettings", "Vision Block (s)", new Vector2(startPosX + 50, startPosY), new Vector2(180, 24), TextAlignmentOptions.Left);
             startPosY -= 26;
             UIHelper.AddTextInput(_settingMenu.transform, "VBMinBottomNoteTime", "Bottom Row Allowed", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinBottomNoteTime.ToString(), (change) =>
             {
