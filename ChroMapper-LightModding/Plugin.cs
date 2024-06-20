@@ -83,23 +83,8 @@ namespace ChroMapper_LightModding
 
             SceneManager.sceneLoaded += SceneLoaded;
 
-            // config
-            var path = AppDomain.CurrentDomain.BaseDirectory + "/Plugins/AutoModderConf.json";
-            if(File.Exists(path))
-            {
-                Config.Instance = JsonConvert.DeserializeObject<Config>(File.ReadAllText(@path));
-                if(Config.Instance.Version != configVersion) // New version, overwrite default value
-                {
-                    Config.Instance.Reset();
-                }
-                Config.Instance.Version = configVersion;
-                File.WriteAllText(@path, JsonConvert.SerializeObject(Config.Instance, Formatting.Indented));
-            }
-            else
-            {
-                Config.Instance.Version = configVersion;
-                File.WriteAllText(@path, JsonConvert.SerializeObject(Config.Instance, Formatting.Indented));
-            }
+            // Config
+            HandleConfigFile();
 
             // register a button in the side tab menu
             ExtensionButton button = ExtensionButtons.AddButton(LoadSprite("ChroMapper_LightModding.Assets.Icon.png"), "AutoModder", editorUI.ShowMainUI);
@@ -511,6 +496,27 @@ namespace ChroMapper_LightModding
                 reviewToUpdate = difficultyReview;
             }
         }
+
+        public static void HandleConfigFile(bool overwrite = false)
+        {
+            var path = AppDomain.CurrentDomain.BaseDirectory + "/Plugins/AutoModderConf.json";
+            if (File.Exists(path) && !overwrite)
+            {
+                Config.Instance = JsonConvert.DeserializeObject<Config>(File.ReadAllText(@path));
+                if (Config.Instance.Version != configVersion) // New version, overwrite default value
+                {
+                    Config.Instance.Reset();
+                }
+                Config.Instance.Version = configVersion;
+                File.WriteAllText(@path, JsonConvert.SerializeObject(Config.Instance, Formatting.Indented));
+            }
+            else
+            {
+                Config.Instance.Version = configVersion;
+                File.WriteAllText(@path, JsonConvert.SerializeObject(Config.Instance, Formatting.Indented));
+            }
+        }
+
         #endregion
 
         #region Other
