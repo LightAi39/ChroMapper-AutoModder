@@ -33,8 +33,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             {
                                 // Calculate the distance between the two closest notes in meters
                                 float distance = 0;
-                                if(i != 0) distance = 60 * (inline.Beats - inlines[i - 1].Beats) / timescale.BPM.GetValue();
-                                else distance = 60 * (inline.Beats - note.Beats) / timescale.BPM.GetValue();
+                                if(i != 0) distance = (inline.Beats - inlines[i - 1].Beats) / (timescale.BPM.GetValue() / 60) * njs;
+                                else distance = (inline.Beats - note.Beats) / (timescale.BPM.GetValue() / 60) * njs;
                                 CheckResults.Instance.AddResult(new CheckResult()
                                 {
                                     Characteristic = CriteriaCheckManager.Characteristic,
