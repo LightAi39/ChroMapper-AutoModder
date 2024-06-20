@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="BeatmapScanner\CriteriaCheck.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\CriteriaCheckManager.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\AngleOffset.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Chains.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\ColdEnd.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\DifficultyLabelSize.cs" />

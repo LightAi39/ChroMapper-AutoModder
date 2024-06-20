@@ -56,6 +56,7 @@
         public double InlineBeatPrecision { get; set; } = 3;
         public bool DisplayFlick { get; set; } = true;
         public double FlickBeatPrecision { get; set; } = 4;
+        public bool DisplayAngleOffset { get; set; } = false;
         public bool ParityInvertedWarning { get; set; } = true;
         public bool ParityDebug { get; set; } = false;
     }

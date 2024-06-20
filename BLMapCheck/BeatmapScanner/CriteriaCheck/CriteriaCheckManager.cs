@@ -167,6 +167,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             Inline.Check(diff.Notes, difficultyBeatmap._noteJumpMovementSpeed);
             RollingEBPM.Check(swings, diff.Notes);
             Flick.Check(diff.Notes);
+            AngleOffset.Check(diff.Notes);
 
             CheckResults.Instance.AddResult(WriteDifficultyStatistics(BeatmapScannerData, diffAnalysis));
 
