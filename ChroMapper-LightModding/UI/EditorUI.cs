@@ -959,12 +959,12 @@ namespace ChroMapper_LightModding.UI
             startPosY -= 26;
             UIHelper.AddCheckbox(_settingMenu.transform, "HighlightOffbeat", "Display Offbeat", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.HighlightOffbeat, (check) =>
             {
-                BLMapCheck.Configs.Config.Instance.DisplayBadcut = check;
+                BLMapCheck.Configs.Config.Instance.HighlightOffbeat = check;
             });
             startPosY -= 26;
             UIHelper.AddCheckbox(_settingMenu.transform, "HighlightInline", "Display Inline", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.HighlightInline, (check) =>
             {
-                BLMapCheck.Configs.Config.Instance.DisplayBadcut = check;
+                BLMapCheck.Configs.Config.Instance.HighlightInline = check;
             });
             UIHelper.AddTextInput(_settingMenu.transform, "InlineBeatPrecision", "1 / ", new Vector2(startPosX + 20, startPosY + 5), BLMapCheck.Configs.Config.Instance.InlineBeatPrecision.ToString(), (change) =>
             {
@@ -973,7 +973,7 @@ namespace ChroMapper_LightModding.UI
             startPosY -= 26;
             UIHelper.AddCheckbox(_settingMenu.transform, "DisplayFlick", "Display  Flick", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.DisplayFlick, (check) =>
             {
-                BLMapCheck.Configs.Config.Instance.DisplayBadcut = check;
+                BLMapCheck.Configs.Config.Instance.DisplayFlick = check;
             });
             UIHelper.AddTextInput(_settingMenu.transform, "FlickBeatPrecision", "1 / ", new Vector2(startPosX + 20, startPosY + 5), BLMapCheck.Configs.Config.Instance.FlickBeatPrecision.ToString(), (change) =>
             {
@@ -982,17 +982,17 @@ namespace ChroMapper_LightModding.UI
             startPosY -= 26;
             UIHelper.AddCheckbox(_settingMenu.transform, "DisplayAngleOffset", "Display Angle Offset", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.DisplayAngleOffset, (check) =>
             {
-                BLMapCheck.Configs.Config.Instance.DisplayBadcut = check;
+                BLMapCheck.Configs.Config.Instance.DisplayAngleOffset = check;
             });
             startPosY -= 26;
             UIHelper.AddCheckbox(_settingMenu.transform, "ParityInvertedWarning", "Parity Warning", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ParityInvertedWarning, (check) =>
             {
-                BLMapCheck.Configs.Config.Instance.DisplayBadcut = check;
+                BLMapCheck.Configs.Config.Instance.ParityInvertedWarning = check;
             });
             startPosY -= 26;
             UIHelper.AddCheckbox(_settingMenu.transform, "ParityDebug", "Parity Debug", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ParityDebug, (check) =>
             {
-                BLMapCheck.Configs.Config.Instance.DisplayBadcut = check;
+                BLMapCheck.Configs.Config.Instance.ParityDebug = check;
             });
             startPosX = -80;
             startPosY = -30;
