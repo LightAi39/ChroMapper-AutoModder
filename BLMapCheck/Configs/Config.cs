@@ -50,11 +50,11 @@
         public double VBMinBombTime { get; set; } = 0.20;
         public double VBMinimum { get; set; } = 0.025;
         public double ParityWarningAngle { get; set; } = 180;
-        public bool DisplayBadcut { get; set; } = true;
-        public bool HighlightOffbeat { get; set; } = true;
-        public bool HighlightInline { get; set; } = true;
+        public bool DisplayBadcut { get; set; } = false;
+        public bool HighlightOffbeat { get; set; } = false;
+        public bool HighlightInline { get; set; } = false;
         public double InlineBeatPrecision { get; set; } = 3;
-        public bool DisplayFlick { get; set; } = true;
+        public bool DisplayFlick { get; set; } = false;
         public double FlickBeatPrecision { get; set; } = 4;
         public bool DisplayAngleOffset { get; set; } = false;
         public bool ParityInvertedWarning { get; set; } = true;
