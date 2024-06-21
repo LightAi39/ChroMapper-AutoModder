@@ -1,4 +1,4 @@
-﻿using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
+﻿using BLMapCheck.BeatmapScanner.Data.Criteria;
 using System;
 using System.Collections.Generic;
 using System.Linq;

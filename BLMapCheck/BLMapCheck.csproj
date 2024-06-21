@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <LangVersion>10.0</LangVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{539891DA-7A54-4708-87BD-2367BECA6FA9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BLMapCheck</RootNamespace>
+    <AssemblyName>BLMapCheck</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Analyzer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\Analyzer.dll</HintPath>
+    </Reference>
+    <Reference Include="JoshaParity, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\JoshaParity.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Parser, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\Parser.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BeatmapScanner\CriteriaCheck.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\CriteriaCheckManager.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\AngleOffset.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Chains.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\ColdEnd.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\DifficultyLabelSize.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\DifficultyLabelName.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Flick.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\FusedObject.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Handclap.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Hitbox.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\HotStart.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Inline.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Lights.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Loloppe.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\SongDuration.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\NJS.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Offbeat.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Outside.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Parity.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\ProlongedSwing.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Requirements.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\RollingEBPM.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Slider.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\SwingPath.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\VisionBlock.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Obstacle.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Info\BPM.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Info\Creator.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Info\Offset.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Info\DiffOrdering.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Info\SongAuthor.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Info\SongName.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Info\SongPreview.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Info\SubName.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Criteria\DiffCrit.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Criteria\InfoCrit.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Criteria\Recommended.cs" />
+    <Compile Include="BeatmapScanner\MapCheck\Parity.cs" />
+    <Compile Include="BeatmapScanner\MapCheck\Swing.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\AllowList.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IAllowList.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\Interfaces\IProfanityFilter.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityBase.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityFilter.cs" />
+    <Compile Include="BeatmapScanner\ProfanityFilter\ProfanityList.cs" />
+    <Compile Include="BLMapChecker.cs" />
+    <Compile Include="Classes\ChroMapper\SpawnParameterHelper.cs" />
+    <Compile Include="Classes\Helper\Helper.cs" />
+    <Compile Include="Classes\Results\CheckResult.cs" />
+    <Compile Include="Classes\Results\CheckResults.cs" />
+    <Compile Include="Classes\Unity\Vector2.cs" />
+    <Compile Include="Classes\Unity\Vector3.cs" />
+    <Compile Include="Configs\Config.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="dll\Analyzer.dll" />
+    <Content Include="dll\JoshaParity.dll" />
+    <Content Include="dll\NVorbis.dll" />
+    <Content Include="dll\Parser.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /y /d  $(TargetPath) "$(ChroMapperDir)\Plugins"</PostBuildEvent>
+  </PropertyGroup>
+</Project>

@@ -1,16 +1,18 @@
-﻿using Beatmap.Base;
-using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
-using ChroMapper_LightModding.BeatmapScanner.MapCheck;
+﻿using beatleader_parser.Timescale;
+using Beatmap.Base;
+using BLMapCheck.BeatmapScanner.Data.Criteria;
+using BLMapCheck.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
+using Parser.Map.Difficulty.V3.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
+using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using Object = UnityEngine.Object;
 
 namespace ChroMapper_LightModding.UI
@@ -25,6 +27,7 @@ namespace ChroMapper_LightModding.UI
 
         private GameObject _timelineMarkers;
         private GameObject _criteriaMenu;
+        private GameObject _settingMenu;
         private GameObject _ratingsMenu;
         private GameObject _commentMenu;
         private GameObject _commentSelectMenu;
@@ -534,16 +537,27 @@ namespace ChroMapper_LightModding.UI
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
-            BeatPerMinute bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChanges, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            List<BpmEvent> bpmChangesChecker = new();
+            foreach (var bpmChange in bpmChanges)
+            {
+                BpmEvent bpmevent = new BpmEvent
+                {
+                    Beats = bpmChange.JsonTime,
+                    Bpm = bpmChange.Bpm
+                };
+                bpmChangesChecker.Add(bpmevent);
+            }
 
-            var totalBeats = bpm.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
+            Timescale timescale = Timescale.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+
+            var totalBeats = timescale.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
 
             var comments = plugin.currentReview.Comments.ToList();
             comments.Sort((x, y) => y.Type.CompareTo(x.Type));
 
             foreach (var comment in plugin.currentReview.Comments)
             {
-                double cmbeat = bpm.ToBeatTime(bpm.ToRealTime(comment.StartBeat));
+                double cmbeat = timescale.ToBeatTime(timescale.ToRealTime(comment.StartBeat));
                 Color color = Color.gray;
                 if (!comment.MarkAsSuppressed)
                 {
@@ -555,10 +569,15 @@ namespace ChroMapper_LightModding.UI
             }
         }
 
-        public void RefreshCriteriaMenu()
+        public void RefreshCriteriaMenu(bool configMenu = false)
         {
             RemoveCriteriaMenu();
             CreateCriteriaMenu();
+            if (configMenu)
+            {
+                _criteriaMenu.SetActive(false);
+                _settingMenu.SetActive(true);
+            }
         }
 
         private void RemoveCriteriaMenu()
@@ -572,6 +591,7 @@ namespace ChroMapper_LightModding.UI
             if (plugin.currentReview == null) return;
             AddCriteriaMenu(_pauseMenu);
             _criteriaMenu.SetActive(true);
+            AddSettingMenu(_pauseMenu);
             AddRatingsMenu(_criteriaMenu.transform);
             _ratingsMenu.SetActive(true);
         }
@@ -609,6 +629,19 @@ namespace ChroMapper_LightModding.UI
                 RefreshCriteriaMenu();
             });
             UIHelper.AddLabel(_criteriaMenu.transform, "FileSaveWarning", "Save the map before using these buttons!", new Vector2(0, -18), new Vector2(180, 24), TextAlignmentOptions.Left);
+            #endregion
+
+            #region Settings button
+
+            UIHelper.AddButton(_criteriaMenu.transform, "OpenSettingsMenu", "Settings", new Vector2(250, -18), () =>
+            {
+                if (_settingMenu != null)
+                {
+                    _settingMenu.SetActive(true);
+                    _criteriaMenu.SetActive(false);
+                }
+            });
+
             #endregion
 
             #region Criteria
@@ -887,6 +920,180 @@ namespace ChroMapper_LightModding.UI
 
         }
 
+        public void AddSettingMenu(Transform parent)
+        {
+            _settingMenu = new GameObject("Automodder Setting Menu");
+            _settingMenu.transform.parent = parent;
+            _settingMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_settingMenu, 572, 215, 0.05f, 1.20f, 0, 0, 0, 1);
+
+            Image image = _settingMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            #region Settings button
+            UIHelper.AddButton(_settingMenu.transform, "SaveSettings", "Save To File", new Vector2(250, -18), () =>
+            {
+                Plugin.HandleConfigFile(true); 
+            });
+
+            UIHelper.AddButton(_settingMenu.transform, "ResetSettings", "Reset To Default", new Vector2(250, -44), () =>
+            {
+                BLMapCheck.Configs.Config.Instance.Reset();
+                RefreshCriteriaMenu(true);
+            });
+
+            UIHelper.AddButton(_settingMenu.transform, "CloseSettingsMenu", "Close Menu", new Vector2(250, -70), () =>
+            {
+                _criteriaMenu.SetActive(true);
+                _settingMenu.SetActive(false);
+            });
+
+            
+            #endregion
+
+            float startPosX = -220, startPosY = -35;
+
+            #region Options
+            UIHelper.AddCheckbox(_settingMenu.transform, "DisplayBadcut", "Display Badcut", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.DisplayBadcut, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.DisplayBadcut = check;
+            });
+            startPosY -= 26;
+            UIHelper.AddCheckbox(_settingMenu.transform, "HighlightOffbeat", "Display Offbeat", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.HighlightOffbeat, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.HighlightOffbeat = check;
+            });
+            startPosY -= 26;
+            UIHelper.AddCheckbox(_settingMenu.transform, "HighlightInline", "Display Inline", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.HighlightInline, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.HighlightInline = check;
+            });
+            UIHelper.AddTextInput(_settingMenu.transform, "InlineBeatPrecision", "1 / ", new Vector2(startPosX + 20, startPosY + 5), BLMapCheck.Configs.Config.Instance.InlineBeatPrecision.ToString(), (change) =>
+            {
+                if(Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.InlineBeatPrecision = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddCheckbox(_settingMenu.transform, "DisplayFlick", "Display  Flick", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.DisplayFlick, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.DisplayFlick = check;
+            });
+            UIHelper.AddTextInput(_settingMenu.transform, "FlickBeatPrecision", "1 / ", new Vector2(startPosX + 20, startPosY + 5), BLMapCheck.Configs.Config.Instance.FlickBeatPrecision.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.FlickBeatPrecision = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddCheckbox(_settingMenu.transform, "DisplayAngleOffset", "Display Angle Offset", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.DisplayAngleOffset, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.DisplayAngleOffset = check;
+            });
+            startPosY -= 26;
+            UIHelper.AddCheckbox(_settingMenu.transform, "ParityInvertedWarning", "Inverted Parity Warn.", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ParityInvertedWarning, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.ParityInvertedWarning = check;
+            });
+            startPosX = -80;
+            startPosY = -30;
+            UIHelper.AddLabel(_settingMenu.transform, "VBSettings", "Allowed Vision Block (s)", new Vector2(startPosX + 40, startPosY), new Vector2(180, 24), TextAlignmentOptions.Left);
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMinBottomNoteTime", "Bottom Row Note", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinBottomNoteTime.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMinBottomNoteTime = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMaxOuterNoteTime", "Outer Lane Note", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMaxOuterNoteTime.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMaxOuterNoteTime = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMaxBombTime", "Outer Lane Bomb", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMaxBombTime.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMaxBombTime = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMinBombTime", "Bomb Further Than", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinBombTime.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMinBombTime = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "VBMinimum", "Minimum", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.VBMinimum.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMinimum = result;
+            });
+            startPosX = 30;
+            startPosY = -30;
+            UIHelper.AddLabel(_settingMenu.transform, "Settings", "Other Settings", new Vector2(startPosX + 70, startPosY), new Vector2(180, 24), TextAlignmentOptions.Left);
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "HotStartDuration", "Hot Start Duration", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.HotStartDuration.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.HotStartDuration = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "ColdEndDuration", "Cold End Duration", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ColdEndDuration.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.ColdEndDuration = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "MinSongDuration", "Min Song Duration", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.MinSongDuration.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.MinSongDuration = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "FusedDistance", "Fused Distance", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.FusedDistance.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.FusedDistance = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "AverageLightPerBeat", "Avg Light Per Beat", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.AverageLightPerBeat.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.AverageLightPerBeat = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "LightFadeDuration", "Light Fade Duration", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.LightFadeDuration.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.LightFadeDuration = result;
+            });
+            startPosX = 140;
+            startPosY = -30;
+            UIHelper.AddTextInput(_settingMenu.transform, "LightBombReactionTime", "Light Bomb Allowed RT", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.LightBombReactionTime.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.LightBombReactionTime = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "MinimumWallDuration", "Min Wall Duration", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.MinimumWallDuration.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.MinimumWallDuration = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "ShortWallTrailDuration", "Wall Trail Duration", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ShortWallTrailDuration.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.ShortWallTrailDuration = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "MaximumDodgeWallPerSecond", "Hard Dodge Wall/s", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.MaximumDodgeWallPerSecond.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.MaximumDodgeWallPerSecond = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "SubjectiveDodgeWallPerSecond", "Soft Dodge Wall/s", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.SubjectiveDodgeWallPerSecond.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.SubjectiveDodgeWallPerSecond = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "MaxChainRotation", "Max Chain Rotation", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.MaxChainRotation.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.MaxChainRotation = result;
+            });
+            startPosY -= 26;
+            UIHelper.AddTextInput(_settingMenu.transform, "ChainLinkVsAir", "Chain Link vs. Air", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ChainLinkVsAir.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.ChainLinkVsAir = result;
+            });
+            #endregion
+        }
+
         public void AddRatingsMenu(Transform parent)
         {
             _ratingsMenu = new GameObject("Automodder Ratings Menu");
@@ -1039,7 +1246,7 @@ namespace ChroMapper_LightModding.UI
 
         #endregion
 
-        private void RunBeatmapScannerOnThisDiff()
+        public void RunBeatmapScannerOnThisDiff() // TODO: THIS IS TEMPORARILY PUBLIC, IT SHOULD BE PRIVATE
         {
             var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
 
@@ -1054,7 +1261,7 @@ namespace ChroMapper_LightModding.UI
             plugin.CommentsUpdated.Invoke();
         }
 
-        private void CreateCriteriaStatusElement(Severity severity, string name, Vector2 pos, Transform parent = null)
+        private void CreateCriteriaStatusElement(CritResult severity, string name, Vector2 pos, Transform parent = null)
         {
             if (parent == null) parent = _criteriaMenu.transform;
             GameObject critStatusObj = GameObject.Find($"Crit_{name}_status");
@@ -1063,13 +1270,13 @@ namespace ChroMapper_LightModding.UI
             Color color;
             switch (severity)
             {
-                case Severity.Success:
+                case CritResult.Success:
                     color = Color.green;
                     break;
-                case Severity.Warning:
+                case CritResult.Warning:
                     color = Color.yellow;
                     break;
-                case Severity.Fail:
+                case CritResult.Fail:
                     color = Color.red;
                     break;
                 default:
@@ -1079,9 +1286,9 @@ namespace ChroMapper_LightModding.UI
             UIHelper.AddLabel(parent, $"Crit_{name}_status", "●", pos, new Vector2(25, 24), null, color, 12);
         }
 
-        private Severity IncrementSeverity(Severity severity)
+        private CritResult IncrementSeverity(CritResult severity)
         {
-            Severity[] enumValues = (Severity[])Enum.GetValues(typeof(Severity));
+            CritResult[] enumValues = (CritResult[])Enum.GetValues(typeof(CritResult));
             int currentIndex = Array.IndexOf(enumValues, severity);
             int nextIndex = (currentIndex + 1) % enumValues.Length;
             return enumValues[nextIndex];

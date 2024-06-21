@@ -110,7 +110,7 @@ namespace ChroMapper_LightModding.UI
             var entryLabel = new GameObject(title + " Label", typeof(TextMeshProUGUI));
             var rectTransform = ((RectTransform)entryLabel.transform);
             rectTransform.SetParent(parent);
-            MoveTransform(rectTransform, 50, 16, 0.45f, 1, pos.x + 10, pos.y + 5);
+            MoveTransform(rectTransform, 50, 16, 0.475f, 0.995f, pos.x + 10, pos.y + 5);
             var textComponent = entryLabel.GetComponent<TextMeshProUGUI>();
 
             textComponent.name = title;

@@ -1,4 +1,4 @@
-﻿using ChroMapper_LightModding.BeatmapScanner.Data.Criteria;
+﻿using BLMapCheck.BeatmapScanner.Data.Criteria;
 using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
@@ -10,7 +10,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static ChroMapper_LightModding.BeatmapScanner.Data.Criteria.InfoCrit;
+using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using Color = UnityEngine.Color;
 using Object = UnityEngine.Object;
 using Transform = UnityEngine.Transform;
@@ -364,56 +364,56 @@ namespace ChroMapper_LightModding.UI
             {
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard"))
                 {
-                    Severity severity = reviews.Where(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                    CritResult severity = reviews.Where(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                     CreateCriteriaStatusElement(severity, "AutoCheckEx+Status", new Vector2(84, -75), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx+", "Auto Check", new Vector2(116, -75), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 9, "ExpertPlus");
-                        Severity severity = reviews.Where(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CritResult severity = reviews.Where(x => x.DifficultyRank == 9 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                         CreateCriteriaStatusElement(severity, "AutoCheckEx+Status", new Vector2(84, -75), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard"))
                 {
-                    Severity severity = reviews.Where(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                    CritResult severity = reviews.Where(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                     CreateCriteriaStatusElement(severity, "AutoCheckExStatus", new Vector2(84, -100.33f), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckEx", "Auto Check", new Vector2(116, -100.33f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 7, "Expert");
-                        Severity severity = reviews.Where(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CritResult severity = reviews.Where(x => x.DifficultyRank == 7 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                         CreateCriteriaStatusElement(severity, "AutoCheckExStatus", new Vector2(84, -100.33f), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard"))
                 {
-                    Severity severity = reviews.Where(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                    CritResult severity = reviews.Where(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                     CreateCriteriaStatusElement(severity, "AutoCheckHStatus", new Vector2(84, -125.66f), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckH", "Auto Check", new Vector2(116, -125.66f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 5, "Hard");
-                        Severity severity = reviews.Where(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CritResult severity = reviews.Where(x => x.DifficultyRank == 5 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                         CreateCriteriaStatusElement(severity, "AutoCheckHStatus", new Vector2(84, -125.66f), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard"))
                 {
-                    Severity severity = reviews.Where(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                    CritResult severity = reviews.Where(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                     CreateCriteriaStatusElement(severity, "AutoCheckNStatus", new Vector2(84, -151f), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckN", "Auto Check", new Vector2(116, -151f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 3, "Normal");
-                        Severity severity = reviews.Where(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CritResult severity = reviews.Where(x => x.DifficultyRank == 3 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                         CreateCriteriaStatusElement(severity, "AutoCheckNStatus", new Vector2(84, -151f), _diffMenu.transform);
                     }, 50, 25);
                 }
                 if (plugin.currentMapsetReview.DifficultyReviews.Any(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard"))
                 {
-                    Severity severity = reviews.Where(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                    CritResult severity = reviews.Where(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                     CreateCriteriaStatusElement(severity, "AutoCheckEStatus", new Vector2(84, -176.33f), _diffMenu.transform);
                     UIHelper.AddButton(_diffMenu.transform, "AutoCheckE", "Auto Check", new Vector2(116, -176.33f), () =>
                     {
                         autocheckHelper.RunAutoCheckOnDiff("Standard", 1, "Easy");
-                        Severity severity = reviews.Where(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
+                        CritResult severity = reviews.Where(x => x.DifficultyRank == 1 && x.DifficultyCharacteristic == "Standard").FirstOrDefault().Critera.HighestSeverityCheck();
                         CreateCriteriaStatusElement(severity, "AutoCheckEStatus", new Vector2(84, -176.33f), _diffMenu.transform);
                     }, 50, 25);
                 }
@@ -550,7 +550,7 @@ namespace ChroMapper_LightModding.UI
             dialog.Open();
         }
 
-        private void CreateCriteriaStatusElement(Severity severity, string name, Vector2 pos, Transform parent = null)
+        private void CreateCriteriaStatusElement(CritResult severity, string name, Vector2 pos, Transform parent = null)
         {
             if (parent == null) parent = _infoMenu.transform;
             GameObject critStatusObj = GameObject.Find($"Crit_{name}_status");
@@ -559,13 +559,13 @@ namespace ChroMapper_LightModding.UI
             Color color;
             switch (severity)
             {
-                case Severity.Success:
+                case CritResult.Success:
                     color = Color.green;
                     break;
-                case Severity.Warning:
+                case CritResult.Warning:
                     color = Color.yellow;
                     break;
-                case Severity.Fail:
+                case CritResult.Fail:
                     color = Color.red;
                     break;
                 default:
@@ -575,9 +575,9 @@ namespace ChroMapper_LightModding.UI
             UIHelper.AddLabel(parent, $"Crit_{name}_status", "●", pos, new Vector2(25, 24), null, color, 12);
         }
 
-        private Severity IncrementSeverity(Severity severity)
+        private CritResult IncrementSeverity(CritResult severity)
         {
-            Severity[] enumValues = (Severity[])Enum.GetValues(typeof(Severity));
+            CritResult[] enumValues = (CritResult[])Enum.GetValues(typeof(CritResult));
             int currentIndex = Array.IndexOf(enumValues, severity);
             int nextIndex = (currentIndex + 1) % enumValues.Length;
             return enumValues[nextIndex];
