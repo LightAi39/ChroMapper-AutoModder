@@ -64,6 +64,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         (notes[i - 1], notes[i]) = (notes[i], notes[i - 1]);
                     }
                     var sliderAngle2 = Mod(ConvertRadiansToDegrees(Math.Atan2(notes[i].y - notes[i - 1].y, notes[i].x - notes[i - 1].x)), 360);
+                    if ((notes[i].CutDirection == 7 || notes[i].CutDirection == 3) && (notes[i - 1].CutDirection == 7 || notes[i - 1].CutDirection == 3) 
+                        && notes[i].CutDirection != notes[i - 1].CutDirection)
+                    {
+                        if ((notes[i].CutDirection == 7 && notes[i].y > notes[i - 1].y && notes[i].x < notes[i - 1].x)
+                            || (notes[i - 1].CutDirection == 7 && notes[i - 1].y > notes[i].y && notes[i - 1].x < notes[i].x))
+                        {
+                            continue;
+                        }
+                    }
                     if (Math.Abs(sliderAngle2 - direction) >= 45)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
