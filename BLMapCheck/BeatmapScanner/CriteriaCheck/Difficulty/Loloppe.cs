@@ -73,7 +73,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             continue;
                         }
                     }
-                    if (Math.Abs(sliderAngle2 - direction) >= 45)
+                    if ((sliderAngle2 == direction && notes[i].CutDirection != notes[i - 1].CutDirection) || Math.Abs(sliderAngle2 - direction) >= 45)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
