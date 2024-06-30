@@ -67,8 +67,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if ((notes[i].CutDirection == 7 || notes[i].CutDirection == 3) && (notes[i - 1].CutDirection == 7 || notes[i - 1].CutDirection == 3) 
                         && notes[i].CutDirection != notes[i - 1].CutDirection)
                     {
-                        if ((notes[i].CutDirection == 7 && notes[i].y > notes[i - 1].y && notes[i].x < notes[i - 1].x)
-                            || (notes[i - 1].CutDirection == 7 && notes[i - 1].y > notes[i].y && notes[i - 1].x < notes[i].x))
+                        if ((notes[i].CutDirection == 7 && ((notes[i].y == notes[i - 1].y + 1 && notes[i].x == notes[i - 1].x - 2) 
+                            || (notes[i].y == notes[i - 1].y + 1 && notes[i].x == notes[i - 1].x - 3)
+                            || (notes[i].y == notes[i - 1].y + 2 && notes[i].x == notes[i - 1].x - 3)))
+                            || (notes[i - 1].CutDirection == 7 && ((notes[i - 1].y == notes[i].y + 1 && notes[i - 1].x == notes[i].x - 2)
+                            || (notes[i - 1].y == notes[i].y + 1 && notes[i - 1].x == notes[i].x - 3)
+                            || (notes[i - 1].y == notes[i].y + 2 && notes[i - 1].x == notes[i].x - 3))))
                         {
                             continue;
                         }
