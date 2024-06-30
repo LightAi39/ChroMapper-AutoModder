@@ -16,6 +16,7 @@ using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
 using beatleader_analyzer.BeatmapScanner.Data;
 using beatleader_parser.Timescale;
 using DifficultyV3 = Parser.Map.Difficulty.V3.Base.DifficultyV3;
+using static JoshaParity.DiffAnalysis;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -216,6 +217,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
         private CheckResult WriteDifficultyStatistics(List<Ratings> beatmapScannerData, DiffAnalysis diffAnalysis)
         {
+            List<SwingData> source = diffAnalysis.swingContainer.LeftHandSwings.ToList();
+            source.AddRange(diffAnalysis.swingContainer.RightHandSwings.ToList());
+            var PeakEBPM = source.Max((SwingData x) => x.swingEBPM);
+
             return new CheckResult()
             {
                 Name = "Statistical Data",
@@ -228,13 +233,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 {
                     new("Pass", Math.Round(beatmapScannerData[0].Pass, 2).ToString()),
                     new("Tech", Math.Round(beatmapScannerData[0].Tech, 2).ToString()),
-                    new("EBPM", diffAnalysis.GetAverageEBPM().ToString()),
-                    new("Slider", Math.Round(beatmapScannerData[0].Multi, 2).ToString()), // TODO: rename to pattern instead
-                    new("BombReset","0"), // TODO: remove or fix
-                    new("Reset", diffAnalysis.GetResetCount().ToString()),
-                    new("Crouch", "0"), // TODO: remove or fix
                     new("Linear", Math.Round(beatmapScannerData[0].Linear, 2).ToString()),
-                    new("SPS", diffAnalysis.GetSPS().ToString()),
+                    new("Multi", Math.Round(beatmapScannerData[0].Multi, 2).ToString()),
+                    new("EBPM", Math.Round(diffAnalysis.GetAverageEBPM(), 2).ToString()),
+                    new("PEBPM", Math.Round(PeakEBPM, 2).ToString()),
                     new("Handness", $"{Math.Round(diffAnalysis.GetHandedness().Y, 2)}/{Math.Round(diffAnalysis.GetHandedness().X, 2)}")
                 }
             };

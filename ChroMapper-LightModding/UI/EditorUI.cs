@@ -42,7 +42,7 @@ namespace ChroMapper_LightModding.UI
         private bool showTimelineMarkers = true;
         private bool showGridMarkers = true;
 
-        private (double diff, double tech, double ebpm, double slider, double reset, int crouch, double linear, double sps, string handness) stats;
+        private (double pass, double tech, double linear, double multi, double ebpm, double pebpm, string handness) stats;
 
         public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter, AutocheckHelper autocheckHelper)
         {
@@ -1107,8 +1107,8 @@ namespace ChroMapper_LightModding.UI
             image.type = Image.Type.Sliced;
             image.color = new Color(0.35f, 0.35f, 0.35f);
 
-            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues", $"Difficulty: {stats.diff}☆ | Tech: {stats.tech}☆ | eBPM: {stats.ebpm} | SPS: {stats.sps} | Linear: {stats.linear}%", new Vector2(0, -12), new Vector2(392, 24), TextAlignmentOptions.Left);
-            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Bomb Reset: {stats.reset}% | Slider: {stats.slider}% | Crouch: {stats.crouch} | Left/Right: {stats.handness}%", new Vector2(0, -36), new Vector2(392, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues", $"Pass Rating: {stats.pass}☆ | Tech Rating: {stats.tech}☆ | Average eBPM: {stats.ebpm} | Peak eBPM: {stats.pebpm}", new Vector2(0, -12), new Vector2(392, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Linear: {stats.linear}% | Multi-Note Hits Rating: {stats.multi}☆ | Left/Right Handness: {stats.handness}%", new Vector2(0, -36), new Vector2(392, 24), TextAlignmentOptions.Left);
 
             
         }
