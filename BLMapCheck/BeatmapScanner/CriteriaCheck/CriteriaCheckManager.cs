@@ -105,14 +105,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             DiffAnalysis diffAnalysis;
             List<SwingData> swings;
-
+            
             if (Enum.TryParse(difficulty, true, out BeatmapDifficultyRank difficultyRank))
             {
                 string infoDat = JsonConvert.SerializeObject(BLMapChecker.map.Info);
                 string diffDat = JsonConvert.SerializeObject(diff);
 
                 diffAnalysis = new(infoDat, diffDat, difficultyRank);
-                
+
                 swings = diffAnalysis.GetSwingData();
             }
             else
@@ -140,7 +140,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             // allNoteObjects.AddRange(diff.Chains);
 
             // Debug.Log(JsonConvert.SerializeObject(difficultyBeatmap, Formatting.Indented));
-            
+
             DiffCrit diffCrit = new()
             {
                 HotStart = HotStart.Check(allNoteObjects, diff.Walls),
@@ -208,7 +208,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute, difficultyBeatmap._noteJumpMovementSpeed);
             } else
             {
-                throw new Exception("No notes found");
+                throw new Exception("Must have at least 20 notes");
             }
 
 
@@ -233,8 +233,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 {
                     new("Pass", Math.Round(beatmapScannerData[0].Pass, 2).ToString()),
                     new("Tech", Math.Round(beatmapScannerData[0].Tech, 2).ToString()),
-                    new("Linear", Math.Round(beatmapScannerData[0].Linear, 2).ToString()),
-                    new("Multi", Math.Round(beatmapScannerData[0].Multi, 2).ToString()),
                     new("EBPM", Math.Round(diffAnalysis.GetAverageEBPM(), 2).ToString()),
                     new("PEBPM", Math.Round(PeakEBPM, 2).ToString()),
                     new("Handness", $"{Math.Round(diffAnalysis.GetHandedness().Y, 2)}/{Math.Round(diffAnalysis.GetHandedness().X, 2)}")

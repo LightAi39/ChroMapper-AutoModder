@@ -19,6 +19,7 @@ namespace ChroMapper_LightModding.Helpers
         private string characteristic;
         private int difficultyRank;
         private string difficulty;
+        private string lastLoaded = "";
 
         public AutocheckHelper(Plugin plugin, FileHelper fileHelper)
         {
@@ -28,9 +29,14 @@ namespace ChroMapper_LightModding.Helpers
         }
 
         // this is temporary
-        public (double pass, double tech, double linear, double multi, double ebpm, double pebpm, string handness) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, string characteristic = "", int difficultyRank = 0, string difficulty = "")
+        public (double pass, double tech, double ebpm, double pebpm, string handness) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, string characteristic = "", int difficultyRank = 0, string difficulty = "")
         {
-            criteriaCheck.LoadMap(plugin.currentlyLoadedFolderPath);
+            // So it doesn't reload the map on every button press
+            if(lastLoaded != plugin.currentlyLoadedFolderPath)
+            {
+                lastLoaded = plugin.currentlyLoadedFolderPath;
+                criteriaCheck.LoadMap(plugin.currentlyLoadedFolderPath);
+            }
             CheckResults results; //= criteriaCheck.CheckAllCriteria();
 
             if (isAutoCheckOnInfo)
@@ -55,14 +61,12 @@ namespace ChroMapper_LightModding.Helpers
                 return (
                     Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value) * 10,
-                    Convert.ToDouble(resultData.Where(x => x.Key == "Linear").FirstOrDefault().Value) * 100,
-                    Convert.ToDouble(resultData.Where(x => x.Key == "Multi").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "EBPM").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "PEBPM").FirstOrDefault().Value),
                     resultData.Where(x => x.Key == "Handness").FirstOrDefault().Value
                     );
             }
-            return (0, 0, 0, 0, 0, 0, "");
+            return (0, 0, 0, 0, "");
 
         }
 
@@ -88,7 +92,7 @@ namespace ChroMapper_LightModding.Helpers
             plugin.editorUI.RunBeatmapScannerOnThisDiff(); // this is temporary
         }
 
-        public (double pass, double tech, double linear, double multi, double ebpm, double pebpm, string handness) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
+        public (double pass, double tech, double ebpm, double pebpm, string handness) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
         {
             //var song = plugin.BeatSaberSongContainer.Song;
             //BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
