@@ -48,6 +48,13 @@ namespace ChroMapper_LightModding.Helpers
             }
             else if (isAutoCheckOnDiff)
             {
+                // Find the diff and only overwrite that specific diff
+                if (lastLoaded == plugin.currentlyLoadedFolderPath)
+                {
+                    var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
+                    var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
+                    diff.Data = newDiff.Difficulty.Data;
+                }
                 results = criteriaCheck.CheckSingleDifficulty(characteristic, difficulty);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
