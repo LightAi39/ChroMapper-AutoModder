@@ -119,6 +119,7 @@
     <Content Include="dll\JoshaParity.dll" />
     <Content Include="dll\NVorbis.dll" />
     <Content Include="dll\Parser.dll" />
+    <Content Include="dll\System.Runtime.CompilerServices.Unsafe.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
