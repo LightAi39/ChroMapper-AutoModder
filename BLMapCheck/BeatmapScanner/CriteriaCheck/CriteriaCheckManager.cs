@@ -235,6 +235,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                     new("Tech", Math.Round(beatmapScannerData[0].Tech, 2).ToString()),
                     new("EBPM", Math.Round(diffAnalysis.GetAverageEBPM(), 2).ToString()),
                     new("PEBPM", Math.Round(PeakEBPM, 2).ToString()),
+                    new("SPS", Math.Round(diffAnalysis.GetSPS(), 2).ToString()),
                     new("Handness", $"{Math.Round(diffAnalysis.GetHandedness().Y, 2)}/{Math.Round(diffAnalysis.GetHandedness().X, 2)}")
                 }
             };

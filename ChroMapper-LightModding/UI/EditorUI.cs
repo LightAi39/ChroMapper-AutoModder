@@ -42,7 +42,7 @@ namespace ChroMapper_LightModding.UI
         private bool showTimelineMarkers = true;
         private bool showGridMarkers = true;
 
-        private (double pass, double tech, double ebpm, double pebpm, string handness) stats;
+        private (double pass, double tech, double ebpm, double pebpm, double sps, string handness) stats;
 
         public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter, AutocheckHelper autocheckHelper)
         {
@@ -1108,7 +1108,7 @@ namespace ChroMapper_LightModding.UI
             image.color = new Color(0.35f, 0.35f, 0.35f);
 
             UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues", $"Pass Rating: {stats.pass}☆ | Tech Rating: {stats.tech}☆ | Average eBPM: {stats.ebpm} | Peak eBPM: {stats.pebpm}", new Vector2(0, -12), new Vector2(392, 24), TextAlignmentOptions.Left);
-            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Left/Right Handness: {stats.handness}%", new Vector2(0, -36), new Vector2(392, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Swings Per Second: {stats.sps} | Left/Right Handness: {stats.handness}%", new Vector2(0, -36), new Vector2(392, 24), TextAlignmentOptions.Left);
 
             
         }
