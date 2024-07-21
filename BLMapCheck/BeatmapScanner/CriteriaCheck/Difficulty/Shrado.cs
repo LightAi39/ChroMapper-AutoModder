@@ -69,25 +69,25 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             switch (previous.CutDirection)
             {
                 case 4:
-                    if(next.CutDirection == 1 && previous.x == next.x - 2 && previous.y == next.y + 1)
+                    if(next.CutDirection == 1 && previous.x <= next.x - 2 && previous.y == next.y + 1)
                     {
                         return true;
                     }
                     break;
                 case 5:
-                    if (next.CutDirection == 1 && previous.x == next.x + 2 && previous.y == next.y + 1)
+                    if (next.CutDirection == 1 && previous.x >= next.x + 2 && previous.y == next.y + 1)
                     {
                         return true;
                     }
                     break;
                 case 6:
-                    if (next.CutDirection == 0 && previous.x == next.x - 2 && previous.y == next.y - 1)
+                    if (next.CutDirection == 0 && previous.x <= next.x - 2 && previous.y == next.y - 1)
                     {
                         return true;
                     }
                     break;
                 case 7:
-                    if (next.CutDirection == 0 && previous.x == next.x + 2 && previous.y == next.y - 1)
+                    if (next.CutDirection == 0 && previous.x >= next.x + 2 && previous.y == next.y - 1)
                     {
                         return true;
                     }
