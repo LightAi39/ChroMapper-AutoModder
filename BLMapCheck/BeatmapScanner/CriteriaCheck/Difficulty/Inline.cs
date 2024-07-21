@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
-using static BLMapCheck.Classes.Helper.Helper;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {

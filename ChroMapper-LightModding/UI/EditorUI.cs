@@ -985,6 +985,15 @@ namespace ChroMapper_LightModding.UI
                 if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.FlickBeatPrecision = result;
             });
             startPosY -= 26;
+            UIHelper.AddCheckbox(_settingMenu.transform, "DisplayShrado", "Display  Shrado", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.DisplayShrado, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.DisplayShrado = check;
+            });
+            UIHelper.AddTextInput(_settingMenu.transform, "ShradoMaxBeat", "", new Vector2(startPosX + 20, startPosY + 5), BLMapCheck.Configs.Config.Instance.ShradoMaxBeat.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.ShradoMaxBeat = result;
+            });
+            startPosY -= 26;
             UIHelper.AddCheckbox(_settingMenu.transform, "DisplayAngleOffset", "Display Angle Offset", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.DisplayAngleOffset, (check) =>
             {
                 BLMapCheck.Configs.Config.Instance.DisplayAngleOffset = check;

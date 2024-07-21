@@ -73,6 +73,7 @@
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Inline.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Lights.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Loloppe.cs" />
+    <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Shrado.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\SongDuration.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\NJS.cs" />
     <Compile Include="BeatmapScanner\CriteriaCheck\Difficulty\Offbeat.cs" />

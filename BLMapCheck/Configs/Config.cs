@@ -56,6 +56,8 @@
         public double InlineBeatPrecision { get; set; } = 3;
         public bool DisplayFlick { get; set; } = false;
         public double FlickBeatPrecision { get; set; } = 4;
+        public bool DisplayShrado { get; set; } = false;
+        public double ShradoMaxBeat { get; set; } = 0.75;
         public bool DisplayAngleOffset { get; set; } = false;
         public bool ParityInvertedWarning { get; set; } = true;
         public bool ParityDebug { get; set; } = false;
