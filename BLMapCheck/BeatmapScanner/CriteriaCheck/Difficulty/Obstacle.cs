@@ -21,6 +21,35 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var rightWall = walls.Where(w => w.x == 2 && w.Width == 1);
             var data = Helper.NotesData;
 
+            List<Note> above = new();
+            List<Note> toCheck = notes.ToList();
+            foreach (var wall in walls)
+            {
+                toCheck.RemoveAll(x => x.Beats < wall.Beats);
+                var found = toCheck.Where(x => x.Beats >= wall.Beats && x.Beats <= wall.Beats + wall.DurationInBeats + 0.25 &&
+                x.x >= wall.x && x.x <= wall.x + wall.Width - 1 && x.y > wall.y + wall.Height - 1);
+                foreach (var note in found)
+                {
+                    if (!above.Contains(note)) above.Add(note);
+                }
+            }
+
+            foreach (var note in above)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Visibility",
+                    Severity = Severity.Warning,
+                    CheckType = "Wall",
+                    Description = "Reduced visibility due to wall",
+                    ResultData = new(),
+                    BeatmapObjects = new() { note }
+                });
+                issue = CritResult.Warning;
+            }
+
             foreach (var w in leftWall)
             {
                 var note = notes.Where(n => n.x == 0 && !(n.y == 0 && w.y == 0 && w.Height == 1) && ((n.y >= w.y - 1 && n.y < w.y + w.Height) || (n.y >= 0 && w.y == 0 && w.Height > 1)) && n.Beats > w.Beats && n.Beats <= w.Beats + w.DurationInBeats + 0.25 && (data.FirstOrDefault(d => d.Note == n).Head || !data.FirstOrDefault(d => d.Note == n).Pattern)).ToList();
@@ -170,35 +199,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
 
                 previous = w;
-            }
-
-            List<Note> above = new();
-            List<Note> toCheck = notes.ToList();
-            foreach (var wall in walls)
-            {
-                toCheck.RemoveAll(x => x.Beats < wall.Beats);
-                var found = toCheck.Where(x => x.Beats >= wall.Beats && x.Beats <= wall.Beats + wall.DurationInBeats + 0.25 &&
-                x.x >= wall.x && x.x <= wall.x + wall.Width - 1 && x.y > wall.y + wall.Height - 1);
-                foreach (var note in found)
-                {
-                    if (!above.Contains(note)) above.Add(note);
-                }
-            }
-
-            foreach (var note in above)
-            {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Visibility",
-                    Severity = Severity.Warning,
-                    CheckType = "Wall",
-                    Description = "Reduced visibility due to wall",
-                    ResultData = new(),
-                    BeatmapObjects = new() { note }
-                });
-                issue = CritResult.Warning;
             }
 
             if (issue == CritResult.Success)
