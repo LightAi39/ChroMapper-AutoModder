@@ -25,7 +25,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     new()
                 };
                 var arr = new List<Note>();
-                var arr2 = new List<Note>();
                 for (int i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
@@ -122,15 +121,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 if (((SwingType.Up_Left.Contains(note.CutDirection) && SwingType.Up_Right.Contains(other.CutDirection) && note.Color == 1) ||
                                     (SwingType.Up_Right.Contains(note.CutDirection) && SwingType.Up_Left.Contains(other.CutDirection) && note.Color == 0)))
                                 {
-                                    arr2.Add(other);
-                                    arr2.Add(note);
+                                    arr.Add(other);
+                                    arr.Add(note);
                                     break;
                                 }
                                 if ((SwingType.Down_Left.Contains(note.CutDirection) && SwingType.Down_Right.Contains(other.CutDirection) && note.Color == 1) ||
                                 (SwingType.Down_Right.Contains(note.CutDirection) && SwingType.Down_Left.Contains(other.CutDirection) && note.Color == 0))
                                 {
-                                    arr2.Add(other);
-                                    arr2.Add(note);
+                                    arr.Add(other);
+                                    arr.Add(note);
                                     break;
                                 }
 
@@ -141,22 +140,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     swingNoteArray[note.Color].Add(note);
                 }
 
-                foreach (var item in arr2)
-                {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Hand Clap",
-                        Severity = Severity.Warning,
-                        CheckType = "Chain",
-                        Description = "Patterns must not encourage hand clapping.",
-                        ResultData = new() { new("Handclap", "Warning") },
-                        BeatmapObjects = new() { item }
-                    });
-                    issue = CritResult.Warning;
-                }
-
                 foreach (var item in arr)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
@@ -164,13 +147,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Characteristic = CriteriaCheckManager.Characteristic,
                         Difficulty = CriteriaCheckManager.Difficulty,
                         Name = "Hand Clap",
-                        Severity = Severity.Error,
+                        Severity = Severity.Warning,
                         CheckType = "Handclap",
                         Description = "Patterns must not encourage hand clapping.",
-                        ResultData = new() { new("Handclap", "Found") },
+                        ResultData = new() { new("Handclap", "Warning") },
                         BeatmapObjects = new() { item }
                     });
-                    issue = CritResult.Fail;
+                    issue = CritResult.Warning;
                 }
             }
 

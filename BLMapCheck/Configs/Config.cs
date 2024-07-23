@@ -30,8 +30,8 @@
         }
 
         public int Version { get; set; } = 0; // Do not change this
-        public int MaxChar { get; set; } = 12;
-        public double HotStartDuration { get; set; } = 1.33;
+        public int MaxChar { get; set; } = 10;
+        public double HotStartDuration { get; set; } = 1.5;
         public double ColdEndDuration { get; set; } = 2;
         public double MinSongDuration { get; set; } = 45;
         public double FusedDistance { get; set; } = 0.5;

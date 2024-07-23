@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.Classes.Results;
+using System.Collections;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
@@ -7,10 +8,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class DifficultyLabelSize
     {
-        // TODO: Check what would be a good value for MaxChar based on the numbers of difficulties in that characteristic (Count).
         public static CritResult Check(string difficultyLabel, int count = 1)
         {
-            var maxValue = Instance.MaxChar * (6 - count);
+            var maxLine = 1;
+            if (count == 2) maxLine = 2;
+            if (count >= 3) maxLine = 3;
+                
+            // Each diff remove around 5 letters
+            var maxValue = (Instance.MaxChar + (5 - count) * 5) * maxLine;
 
             if (difficultyLabel != null)
             {
