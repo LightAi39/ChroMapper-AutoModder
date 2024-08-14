@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.Classes.Results;
+using BLMapCheck.Configs;
 using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,14 +18,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var issue = false;
             var unsure = false;
 
-            if (Slider.AverageSliderDuration == -1)
-            {
-                Slider.Check();
-            }
-
             foreach (var ch in chains)
             {
-                if (ch.TailInBeats - ch.Beats >= Slider.AverageSliderDuration * 4.2)
+                if (ch.TailInBeats - ch.Beats >= Config.Instance.SliderPrecision * 4.2)
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -34,7 +30,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Chain",
                         Description = "Maximum chains duration must be similar to the average window sliders duration * 2.",
-                        ResultData = new() { new("CurrentDuration", (ch.TailInBeats - ch.Beats).ToString()), new("MaximumDuration", (Slider.AverageSliderDuration * 4.2).ToString()) },
+                        ResultData = new() { new("CurrentDuration", (ch.TailInBeats - ch.Beats).ToString()), new("MaximumDuration", (Config.Instance.SliderPrecision * 4.2).ToString()) },
                         BeatmapObjects = new() { ch }
                     });
                     issue = true;

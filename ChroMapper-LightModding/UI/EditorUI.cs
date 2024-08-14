@@ -1,7 +1,6 @@
 ﻿using beatleader_parser.Timescale;
 using Beatmap.Base;
 using BLMapCheck.BeatmapScanner.Data.Criteria;
-using BLMapCheck.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Export;
 using ChroMapper_LightModding.Helpers;
 using ChroMapper_LightModding.Models;
@@ -1031,9 +1030,14 @@ namespace ChroMapper_LightModding.UI
             {
                 if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.VBMinimum = result;
             });
+            startPosY -= 26;
+            UIHelper.AddLabel(_settingMenu.transform, "Settings", "Other Settings", new Vector2(startPosX + 60, startPosY), new Vector2(180, 24), TextAlignmentOptions.Left);
             startPosX = 30;
             startPosY = -30;
-            UIHelper.AddLabel(_settingMenu.transform, "Settings", "Other Settings", new Vector2(startPosX + 70, startPosY), new Vector2(180, 24), TextAlignmentOptions.Left);
+            UIHelper.AddTextInput(_settingMenu.transform, "SliderPrecision", "Avg Slider Precision", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.SliderPrecision.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.SliderPrecision = result;
+            });
             startPosY -= 26;
             UIHelper.AddTextInput(_settingMenu.transform, "HotStartDuration", "Hot Start Duration", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.HotStartDuration.ToString(), (change) =>
             {

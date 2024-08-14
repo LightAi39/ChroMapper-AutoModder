@@ -128,7 +128,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             if (diff.Notes.Count >= 20)
             {
                 BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute, difficultyBeatmap._noteJumpMovementSpeed);
-                Helper.CreateNoteData(diff.Notes);
+                Helper.CreateNoteData(diff.Notes, swings);
             } else
             {
                 return new(); // temporary since it also load lightshow diff, etc.

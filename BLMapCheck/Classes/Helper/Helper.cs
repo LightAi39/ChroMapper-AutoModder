@@ -38,96 +38,114 @@ namespace BLMapCheck.Classes.Helper
 
         public static List<NoteData> NotesData = new();
 
-        public static void CreateNoteData(List<Note> notes)
+        public static Note FindNote(List<Note> notes, JoshaParity.Note note)
+        {
+            return notes.FirstOrDefault(n => n.Beats == note.b && n.x == note.x && n.y == note.y && n.CutDirection == note.d && n.Color == note.c && n.AngleOffset == note.a);
+        }
+
+        public static void CreateNoteData(List<Note> notes, List<JoshaParity.SwingData> swingData)
         {
             NotesData = new();
 
-            var red = notes.Where(n => n.Color == 0).ToList();
-            var blue = notes.Where(n => n.Color == 1).ToList();
+            var red = swingData.Where(s => !s.rightHand).ToList();
+            var blue = swingData.Where(s => s.rightHand).ToList();
+            var newSwing = false;
 
-            if (red.Count > 2)
+            foreach(var r in red)
             {
-                NotesData.Add(new(red[0]));
-                for (int i = 1; i < red.Count; i++)
+                newSwing = true;
+                if ((int)r.swingType >= 1 && (int)r.swingType <= 3) // Slider, stack or window
                 {
-                    if (red[i].Beats - red[i - 1].Beats < 0.16667)
+                    for (int i = 1; i < r.notes.Count; i++)
                     {
-                        var data = new NoteData()
+                        var prev = r.notes[i - 1];
+                        var note = r.notes[i];
+                        var n = FindNote(notes, note);
+                        if (n != null)
                         {
-                            Note = red[i],
-                            Pattern = true,
-                            Precision = red[i].Beats - red[i - 1].Beats,
-                            Spacing = Math.Max(Math.Max(Math.Abs(red[i].x - red[i - 1].x), Math.Abs(red[i].y - red[i - 1].y)) - 1, 0),
-                            Line = red[i].x,
-                            Layer = red[i].y
-                        };
-                        if (!NotesData.Last().Pattern)
-                        {
-                            NotesData.Last().Head = true;
-                            NotesData.Last().Pattern = true;
-                            NotesData.Last().Precision = data.Precision;
-                            NotesData.Last().Note = red[i - 1];
-                            NotesData.Last().Line = red[i - 1].x;
-                            NotesData.Last().Layer = red[i - 1].y;
+                            var data = new NoteData()
+                            {
+                                Note = n,
+                                Pattern = true,
+                                Precision = note.b - prev.b,
+                                Spacing = Math.Max(Math.Max(Math.Abs(note.x - prev.x), Math.Abs(note.y - prev.y)) - 1, 0),
+                                Line = note.x,
+                                Layer = note.y
+                            };
+                            if (newSwing)
+                            {
+                                var no = FindNote(notes, prev);
+                                if (no != null) NotesData.Add(new(no));
+                                NotesData.Last().Head = true;
+                                NotesData.Last().Pattern = true;
+                                NotesData.Last().Precision = data.Precision;
+                                NotesData.Last().Note = FindNote(notes, prev);
+                                NotesData.Last().Line = prev.x;
+                                NotesData.Last().Layer = prev.y;
+                                newSwing = false;
+                            }
+                            NotesData.Add(data);
                         }
-                        NotesData.Add(data);
                     }
-                    else
+                }
+                else // Everything else
+                {
+                    foreach (var note in r.notes)
                     {
-                        NotesData.Add(new(red[i]));
+                        var n = FindNote(notes, note);
+                        if (n != null) NotesData.Add(new(n));
                     }
                 }
             }
 
-            if (blue.Count > 2)
+            foreach (var b in blue)
             {
-                NotesData.Add(new(blue[0]));
-                for (int i = 1; i < blue.Count; i++)
+                newSwing = true;
+                if ((int)b.swingType >= 1 && (int)b.swingType <= 3) // Slider, stack or window
                 {
-
-                    if (blue[i].Beats - blue[i - 1].Beats < 0.16667)
+                    for (int i = 1; i < b.notes.Count; i++)
                     {
-                        var data = new NoteData()
+                        var prev = b.notes[i - 1];
+                        var note = b.notes[i];
+                        var n = FindNote(notes, note);
+                        if (n != null)
                         {
-                            Note = blue[i],
-                            Pattern = true,
-                            Precision = blue[i].Beats - blue[i - 1].Beats,
-                            Spacing = Math.Max(Math.Max(Math.Abs(blue[i].x - blue[i - 1].x), Math.Abs(blue[i].y - blue[i - 1].y)) - 1, 0),
-                            Line = blue[i].x,
-                            Layer = blue[i].y
-                        };
-                        if (!NotesData.Last().Pattern)
-                        {
-                            NotesData.Last().Head = true;
-                            NotesData.Last().Pattern = true;
-                            NotesData.Last().Precision = data.Precision;
-                            NotesData.Last().Note = blue[i - 1];
-                            NotesData.Last().Line = blue[i - 1].x;
-                            NotesData.Last().Layer = blue[i - 1].y;
+                            var data = new NoteData()
+                            {
+                                Note = n,
+                                Pattern = true,
+                                Precision = note.b - prev.b,
+                                Spacing = Math.Max(Math.Max(Math.Abs(note.x - prev.x), Math.Abs(note.y - prev.y)) - 1, 0),
+                                Line = note.x,
+                                Layer = note.y
+                            };
+                            if (newSwing)
+                            {
+                                var no = FindNote(notes, prev);
+                                if (no != null) NotesData.Add(new(no));
+                                NotesData.Last().Head = true;
+                                NotesData.Last().Pattern = true;
+                                NotesData.Last().Precision = data.Precision;
+                                NotesData.Last().Note = FindNote(notes, prev);
+                                NotesData.Last().Line = prev.x;
+                                NotesData.Last().Layer = prev.y;
+                                newSwing = false;
+                            }
+                            NotesData.Add(data);
                         }
-                        NotesData.Add(data);
                     }
-                    else
+                }
+                else // Everything else
+                {
+                    foreach (var note in b.notes)
                     {
-                        NotesData.Add(new(blue[i]));
+                        var n = FindNote(notes, note);
+                        if (n != null) NotesData.Add(new(n));
                     }
                 }
             }
         }
 
-        public static bool BeforePointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
-        {
-            Vector2 direction = B - A;
-            Vector2 pointAP = P - A;
-
-            float t = Vector2.Dot(pointAP, direction) / Vector2.Dot(direction, direction);
-            if (t < 0)
-            {
-                return true;
-            }
-
-            return false;
-        }
 
         public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
         {
@@ -273,15 +291,6 @@ namespace BLMapCheck.Classes.Helper
             }
 
             return false;
-        }
-
-        public static IEnumerable<T> Mode<T>(IEnumerable<T> input)
-        {
-            var dict = input.ToLookup(x => x);
-            if (dict.Count == 0)
-                return Enumerable.Empty<T>();
-            var maxCount = dict.Max(x => x.Count());
-            return dict.Where(x => x.Count() == maxCount).Select(x => x.Key);
         }
 
         public static double ConvertDegreesToRadians(double degrees)
