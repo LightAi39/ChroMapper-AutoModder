@@ -75,7 +75,8 @@ namespace BLMapCheck.Classes.Helper
                             if (newSwing)
                             {
                                 var no = FindNote(notes, prev);
-                                if (no != null) NotesData.Add(new(no));
+                                if (no == null) break; // Couldn't find head note, ignore that swing.
+                                NotesData.Add(new(no));
                                 NotesData.Last().Head = true;
                                 NotesData.Last().Pattern = true;
                                 NotesData.Last().Precision = data.Precision;
@@ -122,7 +123,8 @@ namespace BLMapCheck.Classes.Helper
                             if (newSwing)
                             {
                                 var no = FindNote(notes, prev);
-                                if (no != null) NotesData.Add(new(no));
+                                if (no == null) break; // Couldn't find head note, ignore that swing.
+                                NotesData.Add(new(no));
                                 NotesData.Last().Head = true;
                                 NotesData.Last().Pattern = true;
                                 NotesData.Last().Precision = data.Precision;
