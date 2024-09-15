@@ -15,6 +15,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var issue = CritResult.Success;
             var sliders = NotesData.Where(c => c.Pattern && !c.Head && c.Precision != 0).ToList();
 
+            if (Config.Instance.AutomaticSliderPrecision)
+            {
+               SetAutoSliderPrecision();
+            }
+
             for (int i = 0; i < sliders.Count(); i++)
             {
                 NoteData note = sliders[i];
@@ -34,9 +39,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     issue = CritResult.Fail;
                 }
 
-                if (!(note.Precision <= ((note.Spacing + 1) * Config.Instance.SliderPrecision) + 0.01 && note.Precision >= ((note.Spacing + 1) * Config.Instance.SliderPrecision) - 0.01))
+                if (!(note.Precision <= ((note.Spacing + 1) * Config.Instance.SliderPrecision) + 0.02 && note.Precision >= ((note.Spacing + 1) * Config.Instance.SliderPrecision) - 0.02))
                 {
-                    // var reality = ScanMethod.RealToFraction(c.Precision, 0.01);
+                    // var reality = RealToFraction(note.Precision, 0.01);
                     var expected = RealToFraction(((note.Spacing + 1) * Config.Instance.SliderPrecision), 0.01);
                     CheckResults.Instance.AddResult(new CheckResult()
                     {

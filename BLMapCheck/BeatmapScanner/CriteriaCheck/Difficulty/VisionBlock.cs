@@ -210,25 +210,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     {
                                         if (left.CutDirection == 8)
                                         {
-                                            var di = Math.Sqrt(Math.Pow(bomb.x - left.x, 2) + Math.Pow(bomb.y - left.y, 2));
-                                            if (di >= 0 && di < 1.001)
+                                            if(left.y == 1 && (left.x == 1 || left.x == 2))
                                             {
-                                                CheckResults.Instance.AddResult(new CheckResult()
+                                                var di = Math.Sqrt(Math.Pow(bomb.x - left.x, 2) + Math.Pow(bomb.y - left.y, 2));
+                                                if (di >= 0 && di < 1.001)
                                                 {
-                                                    Characteristic = CriteriaCheckManager.Characteristic,
-                                                    Difficulty = CriteriaCheckManager.Difficulty,
-                                                    Name = "Vision Block",
-                                                    Severity = Severity.Error,
-                                                    CheckType = "Vision",
-                                                    Description = "Bombs must be placed to give the player acceptable time to react.",
-                                                    ResultData = new() {
+                                                    CheckResults.Instance.AddResult(new CheckResult()
+                                                    {
+                                                        Characteristic = CriteriaCheckManager.Characteristic,
+                                                        Difficulty = CriteriaCheckManager.Difficulty,
+                                                        Name = "Vision Block",
+                                                        Severity = Severity.Error,
+                                                        CheckType = "Vision",
+                                                        Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                        ResultData = new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     },
-                                                    BeatmapObjects = new() { bomb }
-                                                });
-                                                issue = CritResult.Fail;
+                                                        BeatmapObjects = new() { bomb }
+                                                    });
+                                                    issue = CritResult.Fail;
+                                                }
                                             }
+                                            
                                             continue;
                                         }
 
@@ -265,25 +269,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     {
                                         if (right.CutDirection == 8)
                                         {
-                                            var di = Math.Sqrt(Math.Pow(bomb.x - right.x, 2) + Math.Pow(bomb.y - right.y, 2));
-                                            if (di >= 0 && di < 1.001)
+                                            if (right.y == 1 && (right.x == 1 || right.x == 2))
                                             {
-                                                CheckResults.Instance.AddResult(new CheckResult()
+                                                var di = Math.Sqrt(Math.Pow(bomb.x - right.x, 2) + Math.Pow(bomb.y - right.y, 2));
+                                                if (di >= 0 && di < 1.001)
                                                 {
-                                                    Characteristic = CriteriaCheckManager.Characteristic,
-                                                    Difficulty = CriteriaCheckManager.Difficulty,
-                                                    Name = "Vision Block",
-                                                    Severity = Severity.Error,
-                                                    CheckType = "Vision",
-                                                    Description = "Bombs must be placed to give the player acceptable time to react.",
-                                                    ResultData = new() {
+                                                    CheckResults.Instance.AddResult(new CheckResult()
+                                                    {
+                                                        Characteristic = CriteriaCheckManager.Characteristic,
+                                                        Difficulty = CriteriaCheckManager.Difficulty,
+                                                        Name = "Vision Block",
+                                                        Severity = Severity.Error,
+                                                        CheckType = "Vision",
+                                                        Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                        ResultData = new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     },
-                                                    BeatmapObjects = new() { bomb }
-                                                });
-                                                issue = CritResult.Fail;
+                                                        BeatmapObjects = new() { bomb }
+                                                    });
+                                                    issue = CritResult.Fail;
+                                                }
                                             }
+                                            
                                             continue;
                                         }
 
@@ -337,25 +345,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     {
                                         if (left.CutDirection == 8)
                                         {
-                                            var di = Math.Sqrt(Math.Pow(bomb.x - left.x, 2) + Math.Pow(bomb.y - left.y, 2));
-                                            if (di >= 0 && di < 1.001)
+                                            if (left.y == 1 && (left.x == 1 || left.x == 2))
                                             {
-                                                CheckResults.Instance.AddResult(new CheckResult()
+                                                var di = Math.Sqrt(Math.Pow(bomb.x - left.x, 2) + Math.Pow(bomb.y - left.y, 2));
+                                                if (di >= 0 && di < 1.001)
                                                 {
-                                                    Characteristic = CriteriaCheckManager.Characteristic,
-                                                    Difficulty = CriteriaCheckManager.Difficulty,
-                                                    Name = "Vision Block",
-                                                    Severity = Severity.Error,
-                                                    CheckType = "Vision",
-                                                    Description = "Bombs must be placed to give the player acceptable time to react.",
-                                                    ResultData = new() {
+                                                    CheckResults.Instance.AddResult(new CheckResult()
+                                                    {
+                                                        Characteristic = CriteriaCheckManager.Characteristic,
+                                                        Difficulty = CriteriaCheckManager.Difficulty,
+                                                        Name = "Vision Block",
+                                                        Severity = Severity.Error,
+                                                        CheckType = "Vision",
+                                                        Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                        ResultData = new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     },
-                                                    BeatmapObjects = new() { bomb }
-                                                });
-                                                issue = CritResult.Fail;
+                                                        BeatmapObjects = new() { bomb }
+                                                    });
+                                                    issue = CritResult.Fail;
+                                                }
                                             }
+                                                
                                             continue;
                                         }
 
@@ -392,25 +404,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     {
                                         if (right.CutDirection == 8)
                                         {
-                                            var di = Math.Sqrt(Math.Pow(bomb.x - right.x, 2) + Math.Pow(bomb.y - right.y, 2));
-                                            if (di >= 0 && di < 1.001)
+                                            if (right.y == 1 && (right.x == 1 || right.x == 2))
                                             {
-                                                CheckResults.Instance.AddResult(new CheckResult()
+                                                var di = Math.Sqrt(Math.Pow(bomb.x - right.x, 2) + Math.Pow(bomb.y - right.y, 2));
+                                                if (di >= 0 && di < 1.001)
                                                 {
-                                                    Characteristic = CriteriaCheckManager.Characteristic,
-                                                    Difficulty = CriteriaCheckManager.Difficulty,
-                                                    Name = "Vision Block",
-                                                    Severity = Severity.Error,
-                                                    CheckType = "Vision",
-                                                    Description = "Bombs must be placed to give the player acceptable time to react.",
-                                                    ResultData = new() {
+                                                    CheckResults.Instance.AddResult(new CheckResult()
+                                                    {
+                                                        Characteristic = CriteriaCheckManager.Characteristic,
+                                                        Difficulty = CriteriaCheckManager.Difficulty,
+                                                        Name = "Vision Block",
+                                                        Severity = Severity.Error,
+                                                        CheckType = "Vision",
+                                                        Description = "Bombs must be placed to give the player acceptable time to react.",
+                                                        ResultData = new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     },
-                                                    BeatmapObjects = new() { bomb }
-                                                });
-                                                issue = CritResult.Fail;
+                                                        BeatmapObjects = new() { bomb }
+                                                    });
+                                                    issue = CritResult.Fail;
+                                                }
                                             }
+                                                
                                             continue;
                                         }
 

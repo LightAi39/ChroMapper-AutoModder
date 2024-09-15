@@ -960,6 +960,10 @@ namespace ChroMapper_LightModding.UI
             {
                 BLMapCheck.Configs.Config.Instance.DisplayBadcut = check;
             });
+            UIHelper.AddCheckbox(_settingMenu.transform, "AutomaticSliderPrecision", "Auto Slider Precision", new Vector2(startPosX + 60, startPosY), BLMapCheck.Configs.Config.Instance.AutomaticSliderPrecision, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.AutomaticSliderPrecision = check;
+            });
             startPosY -= 26;
             UIHelper.AddCheckbox(_settingMenu.transform, "HighlightOffbeat", "Display Offbeat", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.HighlightOffbeat, (check) =>
             {

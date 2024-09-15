@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.Classes.Unity;
+using BLMapCheck.Configs;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
@@ -46,68 +47,30 @@ namespace BLMapCheck.Classes.Helper
         public static void CreateNoteData(List<Note> notes, List<JoshaParity.SwingData> swingData)
         {
             NotesData = new();
-
             var red = swingData.Where(s => !s.rightHand).ToList();
             var blue = swingData.Where(s => s.rightHand).ToList();
+            HandleSwings(notes, red);
+            HandleSwings(notes, blue);
+        }
+
+        public static void HandleSwings(List<Note> notes, List<JoshaParity.SwingData> swings)
+        {
             var newSwing = false;
 
-            foreach(var r in red)
+            for (int i = 0; i < swings.Count; i++)
             {
                 newSwing = true;
-                if ((int)r.swingType >= 1 && (int)r.swingType <= 3) // Slider, stack or window
-                {
-                    for (int i = 1; i < r.notes.Count; i++)
-                    {
-                        var prev = r.notes[i - 1];
-                        var note = r.notes[i];
-                        var n = FindNote(notes, note);
-                        if (n != null)
-                        {
-                            var data = new NoteData()
-                            {
-                                Note = n,
-                                Pattern = true,
-                                Precision = note.b - prev.b,
-                                Spacing = Math.Max(Math.Max(Math.Abs(note.x - prev.x), Math.Abs(note.y - prev.y)) - 1, 0),
-                                Line = note.x,
-                                Layer = note.y
-                            };
-                            if (newSwing)
-                            {
-                                var no = FindNote(notes, prev);
-                                if (no == null) break; // Couldn't find head note, ignore that swing.
-                                NotesData.Add(new(no));
-                                NotesData.Last().Head = true;
-                                NotesData.Last().Pattern = true;
-                                NotesData.Last().Precision = data.Precision;
-                                NotesData.Last().Note = FindNote(notes, prev);
-                                NotesData.Last().Line = prev.x;
-                                NotesData.Last().Layer = prev.y;
-                                newSwing = false;
-                            }
-                            NotesData.Add(data);
-                        }
-                    }
-                }
-                else // Everything else
-                {
-                    foreach (var note in r.notes)
-                    {
-                        var n = FindNote(notes, note);
-                        if (n != null) NotesData.Add(new(n));
-                    }
-                }
-            }
+                var swing = swings[i];
 
-            foreach (var b in blue)
-            {
-                newSwing = true;
-                if ((int)b.swingType >= 1 && (int)b.swingType <= 3) // Slider, stack or window
+                if ((int)swing.swingType >= 1 && (int)swing.swingType <= 3) // Slider, stack or window
                 {
-                    for (int i = 1; i < b.notes.Count; i++)
+                    // There's a bug with arrow-less swings in JoshaParity, notes need to be re-ordered
+                    swing.notes = swing.notes.OrderBy(x => x.b).ToList();
+
+                    for (int j = 1; j < swing.notes.Count; j++)
                     {
-                        var prev = b.notes[i - 1];
-                        var note = b.notes[i];
+                        var prev = swing.notes[j - 1];
+                        var note = swing.notes[j];
                         var n = FindNote(notes, note);
                         if (n != null)
                         {
@@ -128,6 +91,7 @@ namespace BLMapCheck.Classes.Helper
                                 NotesData.Last().Head = true;
                                 NotesData.Last().Pattern = true;
                                 NotesData.Last().Precision = data.Precision;
+                                NotesData.Last().Spacing = data.Spacing;
                                 NotesData.Last().Note = FindNote(notes, prev);
                                 NotesData.Last().Line = prev.x;
                                 NotesData.Last().Layer = prev.y;
@@ -139,7 +103,7 @@ namespace BLMapCheck.Classes.Helper
                 }
                 else // Everything else
                 {
-                    foreach (var note in b.notes)
+                    foreach (var note in swing.notes)
                     {
                         var n = FindNote(notes, note);
                         if (n != null) NotesData.Add(new(n));
@@ -148,6 +112,14 @@ namespace BLMapCheck.Classes.Helper
             }
         }
 
+        public static void SetAutoSliderPrecision()
+        {
+            var averageSliderDuration = NotesData.GroupBy(c => c.Precision / (c.Spacing + 1))
+            .OrderByDescending(g => g.Count())
+            .Last()
+            .Key;
+            if (averageSliderDuration != 0) Config.Instance.SliderPrecision = averageSliderDuration;
+        }
 
         public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
         {

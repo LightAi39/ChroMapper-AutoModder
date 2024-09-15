@@ -18,6 +18,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var issue = false;
             var unsure = false;
 
+            if (Config.Instance.AutomaticSliderPrecision)
+            {
+                SetAutoSliderPrecision();
+            }
+
             foreach (var ch in chains)
             {
                 if (ch.TailInBeats - ch.Beats >= Config.Instance.SliderPrecision * 4.2)

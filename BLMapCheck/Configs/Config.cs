@@ -58,6 +58,7 @@
         public double FlickBeatPrecision { get; set; } = 4;
         public bool DisplayShrado { get; set; } = false;
         public double ShradoMaxBeat { get; set; } = 0.75;
+        public bool AutomaticSliderPrecision { get; set; } = true;
         public double SliderPrecision { get; set; } = 0.0625;
         public bool DisplayAngleOffset { get; set; } = false;
         public bool ParityInvertedWarning { get; set; } = true;
