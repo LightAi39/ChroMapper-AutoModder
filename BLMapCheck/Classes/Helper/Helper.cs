@@ -119,6 +119,7 @@ namespace BLMapCheck.Classes.Helper
             .Last()
             .Key;
             if (averageSliderDuration != 0) Config.Instance.SliderPrecision = averageSliderDuration;
+            else Config.Instance.SliderPrecision = 0.0625;
         }
 
         public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
