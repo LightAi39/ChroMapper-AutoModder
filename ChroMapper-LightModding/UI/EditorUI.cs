@@ -969,6 +969,10 @@ namespace ChroMapper_LightModding.UI
             {
                 BLMapCheck.Configs.Config.Instance.HighlightOffbeat = check;
             });
+            UIHelper.AddCheckbox(_settingMenu.transform, "UseMapRT", "Use Map RT For VB", new Vector2(startPosX + 60, startPosY), BLMapCheck.Configs.Config.Instance.UseMapRT, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.UseMapRT = check;
+            });
             startPosY -= 26;
             UIHelper.AddCheckbox(_settingMenu.transform, "HighlightInline", "Display Inline", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.HighlightInline, (check) =>
             {

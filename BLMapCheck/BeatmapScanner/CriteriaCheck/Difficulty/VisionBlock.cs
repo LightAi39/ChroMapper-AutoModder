@@ -1,4 +1,5 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
+using BLMapCheck.Classes.ChroMapper;
 using BLMapCheck.Classes.Results;
 using BLMapCheck.Classes.Unity;
 using Parser.Map.Difficulty.V3.Base;
@@ -16,13 +17,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
         // Most of the minimum and maximum duration are configurable
-        public static CritResult Check(List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, double pass, double tech)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, double pass, double tech, float njs, float noteJumpStartBeatOffset)
         {
             CritResult issue = CritResult.Success;
             var timescale = CriteriaCheckManager.timescale;
             var beatmapGridObjects = beatmapGridObject.ToList();
             if (beatmapGridObjects.Any())
             {
+                var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(njs, noteJumpStartBeatOffset, timescale.BPM.GetValue());
+                var beatms = 60000 / timescale.BPM.GetValue();
+                var reactionTime = beatms * halfJumpDuration;
+
                 var leftVB = new BeatmapGridObject
                 {
                     x = 1,
@@ -85,6 +90,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var MaxOuterNoteTime = timescale.BPM.ToBeatTime((float)Instance.VBMaxOuterNoteTime);
                     var Overall = timescale.BPM.ToBeatTime((float)Instance.VBMinimum);
                     var MinTimeWarning = timescale.BPM.ToBeatTime((float)((750 - 300) * Math.Pow(Math.E, -pass / 7.6 - tech * 10 * 0.06) + 325) / 1000);
+                    if (Instance.UseMapRT) MinTimeWarning = timescale.BPM.ToBeatTime(reactionTime / 1000);
                     lastMidL.RemoveAll(l => note.Beats - l.Beats > MinTimeWarning);
                     lastMidR.RemoveAll(l => note.Beats - l.Beats > MinTimeWarning);
                     if (lastMidL.Count > 0)
@@ -187,6 +193,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         timescale.BPM.SetCurrentBPM(bomb.Beats);
                         var MaxTimeBomb = timescale.BPM.ToBeatTime((float)Instance.VBMaxBombTime);
                         var MinTimeBomb = timescale.BPM.ToBeatTime((float)Instance.VBMinBombTime);
+                        if (Instance.UseMapRT) MinTimeBomb = timescale.BPM.ToBeatTime(reactionTime / 1000);
                         var Overall = timescale.BPM.ToBeatTime((float)Instance.VBMinimum);
                         var left = (Note)beatmapGridObjects.Where(x => x.Beats < bomb.Beats && x is Note no && no.Color == 0).OrderBy(o => o.Beats).LastOrDefault();
                         var right = (Note)beatmapGridObjects.Where(x => x.Beats < bomb.Beats && x is Note no && no.Color == 1).OrderBy(o => o.Beats).LastOrDefault();

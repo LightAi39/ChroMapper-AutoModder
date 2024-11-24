@@ -49,6 +49,7 @@
         public double VBMaxBombTime { get; set; } = 0.15;
         public double VBMinBombTime { get; set; } = 0.20;
         public double VBMinimum { get; set; } = 0.025;
+        public bool UseMapRT { get; set; } = false;
         public double ParityWarningAngle { get; set; } = 180;
         public bool DisplayBadcut { get; set; } = false;
         public bool HighlightOffbeat { get; set; } = false;
