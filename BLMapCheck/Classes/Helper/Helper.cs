@@ -375,18 +375,18 @@ namespace BLMapCheck.Classes.Helper
             Vector3 linkSegment;
             var head = new Vector2(chain.x, chain.y);
             var tail = new Vector2(chain.tx, chain.ty);
-            var dir = (Math.PI * 2) / 360 * ChainDirToDegree[chain.CutDirection];
+            var dir = (Math.PI * 2) / 360 * ChainDirToDegree[chain.Direction];
             var headDirection = new Vector2((float)Math.Sin(dir), (float)-Math.Cos(dir));
             var multiplier = (head - tail).magnitude / 2;
             var next = head + new Vector2((multiplier * headDirection.x), multiplier * headDirection.y);
 
-            for (int j = 0; j < chain.SliceCount; j++)
+            for (int j = 0; j < chain.Segment; j++)
             {
                 float squish = 1;
                 if (chain.Squish != 0) squish = chain.Squish;
                 var interval = (float)j / n * squish;
                 var path = tail - head + new Vector2(1.5f, 0);
-                if (Math.Abs(Vector2.SignedAngle(new Vector2(0f, -1f), path) - ChainDirToDegree[chain.CutDirection]) < 0.01f)
+                if (Math.Abs(Vector2.SignedAngle(new Vector2(0f, -1f), path) - ChainDirToDegree[chain.Direction]) < 0.01f)
                 {
                     var pos = Vector3.LerpUnclamped(new Vector3(head.x, head.y, 0), new Vector3(tail.x, tail.y, 0), interval);
                     linkSegment = new Vector3(pos.x, pos.y, 0);

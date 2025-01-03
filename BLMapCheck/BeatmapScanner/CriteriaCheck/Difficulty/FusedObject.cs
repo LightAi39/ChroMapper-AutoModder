@@ -161,7 +161,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     var pre = n.Beats - max;
                     var post = n.Beats + max;
-                    var dir = c.CutDirection;
+                    var dir = c.Direction;
                     if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && IsPointBetween(n, c))
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
@@ -222,7 +222,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     var pre = b.Beats - max;
                     var post = b.Beats + max;
-                    var dir = c.CutDirection;
+                    var dir = c.Direction;
                     if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && IsPointBetween(b, c))
                     {
                         CheckResults.Instance.AddResult(new CheckResult()

@@ -46,7 +46,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var y = Math.Abs(chain.ty - chain.y) * chain.Squish;
                     var distance = Math.Sqrt(x * x + y * y);
                     double value = 1;
-                    if(chain.SliceCount >= 2) value = distance / (chain.SliceCount - 1);
+                    if(chain.Segment >= 2) value = distance / (chain.Segment - 1);
                     // Difference between expected and current distance, multiplied by current squish to know maximum value
                     double max;
                     if (chain.ty == chain.y) max = Math.Round(Instance.ChainLinkVsAir / 3 / value * chain.Squish, 2);
@@ -54,7 +54,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (chain.Squish - 0.01 <= max) // << play with this value to change the limit
                     {
                         List<Vector3> a = new();
-                        var pos = FindChainLinksPosition(chain.SliceCount - 1, chain);
+                        var pos = FindChainLinksPosition(chain.Segment - 1, chain);
                         foreach (var p in pos)
                         {
                             x = Math.Abs(1 - p.x);
