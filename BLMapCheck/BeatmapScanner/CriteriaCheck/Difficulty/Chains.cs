@@ -54,12 +54,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             // TODO: Make this mess better idk
             foreach (var chain in chains)
             {
-                if(chain.Segment >= 2)
+                if(chain.SliceCount >= 2)
                 {
                     var x = Math.Abs(chain.tx - chain.x) * chain.Squish;
                     var y = Math.Abs(chain.ty - chain.y) * chain.Squish;
                     var distance = Math.Sqrt(x * x + y * y);
-                    var value = distance / (chain.Segment - 1);
+                    var value = distance / (chain.SliceCount - 1);
                     // Difference between expected and current distance, multiplied by current squish to know maximum value
                     double max;
                     if (chain.ty == chain.y) max = Math.Round(Instance.ChainLinkVsAir / value * chain.Squish, 2);
@@ -132,7 +132,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     var temp = new NoteData()
                     {
-                        Direction = Mod(DirectionToDegree[chain.Direction], 360),
+                        Direction = Mod(DirectionToDegree[chain.CutDirection], 360),
                         Line = chain.x,
                         Layer = chain.y
                     };
@@ -172,7 +172,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Chain",
                         Description = "Chains must have at least two SliceCount",
-                        ResultData = new() { new("CurrentSliceCount:", chain.Segment.ToString()) },
+                        ResultData = new() { new("CurrentSliceCount:", chain.SliceCount.ToString()) },
                         BeatmapObjects = new() { chain }
                     });
                     issue = CritResult.Fail;
