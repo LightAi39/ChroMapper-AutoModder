@@ -2,7 +2,7 @@
   "id": "ChroMapper-AutoModder",
   "name": "AutoModder",
   "author": "Light Ai & Loloppe",
-  "version": "v1.6.2",
+  "version": "v1.6.3",
   "description": "A Plugin that assists mappers and modders by implementing auto-checking features as well as comments and replies, with a seamless in-editor experience.",
   "git": "https://github.com/LightAi39/ChroMapper-AutoModder"
 }
