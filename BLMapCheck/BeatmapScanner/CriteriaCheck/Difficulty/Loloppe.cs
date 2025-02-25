@@ -58,6 +58,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             continue;
                         }
                     }
+                    direction = DirectionToDegree[notes[i].CutDirection] + notes[i].AngleOffset;
+                    var previous = DirectionToDegree[notes[i - 1].CutDirection] + notes[i - 1].AngleOffset;
                     var sliderAngle = Mod(ConvertRadiansToDegrees(Math.Atan2(notes[i].y - notes[i - 1].y, notes[i].x - notes[i - 1].x)), 360);
                     if (Math.Abs(sliderAngle - direction) >= 90)
                     {
@@ -77,7 +79,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             continue;
                         }
                     }
-                    if ((sliderAngle2 == direction && notes[i].CutDirection != notes[i - 1].CutDirection) || Math.Abs(sliderAngle2 - direction) >= 45)
+                    if ((sliderAngle2 == direction && direction != previous) || Math.Abs(sliderAngle2 - direction) >= 22.5)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
