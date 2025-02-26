@@ -61,6 +61,8 @@
         public double ShradoMaxBeat { get; set; } = 0.75;
         public bool AutomaticSliderPrecision { get; set; } = true;
         public double SliderPrecision { get; set; } = 0.0625;
+        public bool ChainConsistency { get; set; } = false;
+        public double ChainPrecision { get; set; } = 16;
         public bool DisplayAngleOffset { get; set; } = false;
         public bool ParityInvertedWarning { get; set; } = true;
         public bool ParityDebug { get; set; } = false;

@@ -6,6 +6,7 @@ using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Configs.Config;
 using static BLMapCheck.Classes.Helper.Helper;
+using BLMapCheck.Configs;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -194,6 +195,38 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
 
             return issue;
+        }
+
+        public static void Consistency(List<Chain> chains)
+        {
+            if (Config.Instance.ChainConsistency)
+            {
+                if (chains.Any())
+                {
+                    double expected = 0.0625;
+                    if (Config.Instance.ChainPrecision != 0) expected = 1 / Config.Instance.ChainPrecision;
+                    foreach (Chain chain in chains)
+                    {
+                        double current = chain.TailInBeats - chain.Beats;
+                        if (current >= expected - 0.001 && current <= expected + 0.001)
+                        {
+                            continue;
+                        }
+
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = CriteriaCheckManager.Characteristic,
+                            Difficulty = CriteriaCheckManager.Difficulty,
+                            Name = "Chain Consistency",
+                            Severity = Severity.Info,
+                            CheckType = "Chain",
+                            Description = "Chain duration doesn't match expected value",
+                            ResultData = new() { new("CurrentPrecision:", current.ToString()) },
+                            BeatmapObjects = new() { chain }
+                        });
+                    }
+                }
+            }
         }
     }
 }

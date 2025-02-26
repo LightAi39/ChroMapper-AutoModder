@@ -170,6 +170,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             Flick.Check(diff.Notes);
             AngleOffset.Check(diff.Notes);
             Shrado.Check(diff.Notes);
+            Chains.Consistency(diff.Chains);
 
             CheckResults.Instance.AddResult(WriteDifficultyStatistics(BeatmapScannerData, diffAnalysis));
 

@@ -1001,14 +1001,22 @@ namespace ChroMapper_LightModding.UI
                 if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.ShradoMaxBeat = result;
             });
             startPosY -= 26;
-            UIHelper.AddCheckbox(_settingMenu.transform, "DisplayAngleOffset", "Display Angle Offset", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.DisplayAngleOffset, (check) =>
+            UIHelper.AddCheckbox(_settingMenu.transform, "DisplayAngleOffset", "Angle   Offset", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.DisplayAngleOffset, (check) =>
             {
                 BLMapCheck.Configs.Config.Instance.DisplayAngleOffset = check;
             });
-            startPosY -= 26;
-            UIHelper.AddCheckbox(_settingMenu.transform, "ParityInvertedWarning", "Inverted Parity Warn.", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ParityInvertedWarning, (check) =>
+            UIHelper.AddCheckbox(_settingMenu.transform, "ParityInvertedWarning", "Parity Warning", new Vector2(startPosX + 60, startPosY), BLMapCheck.Configs.Config.Instance.ParityInvertedWarning, (check) =>
             {
                 BLMapCheck.Configs.Config.Instance.ParityInvertedWarning = check;
+            });
+            startPosY -= 26;
+            UIHelper.AddCheckbox(_settingMenu.transform, "ChainConsistency", "Display  Chain", new Vector2(startPosX, startPosY), BLMapCheck.Configs.Config.Instance.ChainConsistency, (check) =>
+            {
+                BLMapCheck.Configs.Config.Instance.ChainConsistency = check;
+            });
+            UIHelper.AddTextInput(_settingMenu.transform, "ChainPrecision", "1 / ", new Vector2(startPosX + 20, startPosY + 5), BLMapCheck.Configs.Config.Instance.ChainPrecision.ToString(), (change) =>
+            {
+                if (Double.TryParse(change, out double result)) BLMapCheck.Configs.Config.Instance.ChainPrecision = result;
             });
             startPosX = -80;
             startPosY = -30;
