@@ -16,7 +16,6 @@ using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
 using beatleader_analyzer.BeatmapScanner.Data;
 using beatleader_parser.Timescale;
 using DifficultyV3 = Parser.Map.Difficulty.V3.Base.DifficultyV3;
-using static JoshaParity.DiffAnalysis;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -44,6 +43,39 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             CheckResults.Instance.CheckFinished = true;
             // Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
+        }
+
+        public DiffCrit CompareTimings(string characteristic, string difficulty)
+        {
+            Characteristic = characteristic;
+            Difficulty = difficulty;
+            DiffCrit diffCrit = new();
+
+            DifficultyV3 target = BLMapChecker.map.Difficulties.OrderBy(x => DiffOrder.IndexOf(x.Difficulty)).Last().Data;
+            DifficultyV3 current = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
+
+            foreach (var note in current.Notes)
+            {
+                if (target.Notes.Exists(x => x.Beats == note.Beats)) continue;
+                var previous = target.Notes.Where(x => x.Beats < note.Beats).Select(x => x.Beats).Aggregate((x, y) => Math.Abs(x - note.Beats) < Math.Abs(y - note.Beats) ? x : y);
+                var next = target.Notes.Where(x => x.Beats > note.Beats).Select(x => x.Beats).Aggregate((x, y) => Math.Abs(x - note.Beats) < Math.Abs(y - note.Beats) ? x : y);
+
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = Characteristic,
+                    Difficulty = Difficulty,
+                    Name = "Timing",
+                    Severity = Severity.Info,
+                    CheckType = "Timing",
+                    Description = "Timing doesn't exist in top diff",
+                    ResultData = new() { new("Previous:", previous.ToString()), new("Next:", next.ToString()) },
+                    BeatmapObjects = new() { note }
+                });
+            }
+
+            CheckResults.Instance.CheckFinished = true;
+
+            return diffCrit;
         }
 
         public void CheckSongInfo()

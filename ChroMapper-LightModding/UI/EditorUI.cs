@@ -630,6 +630,15 @@ namespace ChroMapper_LightModding.UI
             UIHelper.AddLabel(_criteriaMenu.transform, "FileSaveWarning", "Save the map before using these buttons!", new Vector2(0, -18), new Vector2(180, 24), TextAlignmentOptions.Left);
             #endregion
 
+            #region Timings button
+            UIHelper.AddButton(_criteriaMenu.transform, "CompareTimings", "Compare Timings", new Vector2(188, -18), () =>
+            {
+                CompareTimingsOnThisDiff();
+                outlineHelper.RefreshOutlines();
+                RefreshTimelineMarkers();
+            });
+            #endregion
+
             #region Settings button
 
             UIHelper.AddButton(_criteriaMenu.transform, "OpenSettingsMenu", "Settings", new Vector2(250, -18), () =>
@@ -950,7 +959,6 @@ namespace ChroMapper_LightModding.UI
                 _settingMenu.SetActive(false);
             });
 
-            
             #endregion
 
             float startPosX = -220, startPosY = -35;
@@ -1287,6 +1295,14 @@ namespace ChroMapper_LightModding.UI
             var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
 
             autocheckHelper.RunAutoCheckOnDiff(difficultyData.ParentBeatmapSet.BeatmapCharacteristicName, difficultyData.DifficultyRank, difficultyData.Difficulty);
+            plugin.CommentsUpdated.Invoke();
+        }
+
+        private void CompareTimingsOnThisDiff()
+        {
+            var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
+
+            autocheckHelper.RunCompareTimings(difficultyData.ParentBeatmapSet.BeatmapCharacteristicName, difficultyData.DifficultyRank, difficultyData.Difficulty);
             plugin.CommentsUpdated.Invoke();
         }
 

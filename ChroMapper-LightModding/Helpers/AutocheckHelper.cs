@@ -2,7 +2,6 @@
 using BLMapCheck;
 using BLMapCheck.Classes.Results;
 using ChroMapper_LightModding.Models;
-using ChroMapper_LightModding.UI;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
@@ -29,7 +28,7 @@ namespace ChroMapper_LightModding.Helpers
         }
 
         // this is temporary
-        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, string characteristic = "", int difficultyRank = 0, string difficulty = "")
+        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, bool isTimingCheck, string characteristic = "", int difficultyRank = 0, string difficulty = "")
         {
             // So it doesn't reload the map on every button press
             if(lastLoaded != plugin.currentlyLoadedFolderPath)
@@ -39,7 +38,21 @@ namespace ChroMapper_LightModding.Helpers
             }
             CheckResults results; //= criteriaCheck.CheckAllCriteria();
 
-            if (isAutoCheckOnInfo)
+            if (isTimingCheck)
+            {
+                // Find the diff and only overwrite that specific diff
+                if (lastLoaded == plugin.currentlyLoadedFolderPath)
+                {
+                    var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
+                    var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
+                    diff.Data = newDiff.Difficulty.Data;
+                }
+                results = criteriaCheck.CompareTimings(characteristic, difficulty);
+                fileHelper.CheckDifficultyReviewsExist();
+                RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
+                CreateCommentsFromNewData(results.Results.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).ToList());
+            }
+            else if (isAutoCheckOnInfo)
             {
                 results = criteriaCheck.CheckSongInfo();
                 RemovePastAutoCheckCommentsSongInfo();
@@ -78,11 +91,16 @@ namespace ChroMapper_LightModding.Helpers
 
         }
 
+        public void RunCompareTimings(string characteristic, int difficultyRank, string difficulty)
+        {
+            RunAutoCheck(false, false, false, true, characteristic, difficultyRank, difficulty);
+        }
+
         public void RunAutoCheckOnInfo()
         {
             //RemovePastAutoCheckCommentsSongInfo();
             //plugin.currentMapsetReview.Criteria = criteriaCheck.AutoInfoCheck();
-            RunAutoCheck(true, false, false);
+            RunAutoCheck(true, false, false, false);
         }
 
         public void RunAutoCheckOnDiff(string characteristic, int difficultyRank, string difficulty)
@@ -96,7 +114,7 @@ namespace ChroMapper_LightModding.Helpers
             //    RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
             //    plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = criteriaCheck.AutoDiffCheck(characteristic, difficultyRank, difficulty);
             //}
-            RunAutoCheck(false, true, false, characteristic, difficultyRank, difficulty);
+            RunAutoCheck(false, true, false, false, characteristic, difficultyRank, difficulty);
             plugin.editorUI.RunBeatmapScannerOnThisDiff(); // this is temporary
         }
 
@@ -136,7 +154,7 @@ namespace ChroMapper_LightModding.Helpers
             //}
             //return (-1, -1, -1, -1, -1, -1, -1, -1, "-1");
 
-            return RunAutoCheck(false, false, true, characteristic, difficultyRank, difficulty);
+            return RunAutoCheck(false, false, true, false, characteristic, difficultyRank, difficulty);
         }
 
         public void RemovePastAutoCheckCommentsSongInfo()
