@@ -114,6 +114,7 @@ namespace BLMapCheck.Classes.Helper
 
         public static void SetAutoSliderPrecision()
         {
+            // Not really sure how to deal with rounding issue. Doesn't really matter as long as it's close enough I guess.
             var averageSliderDuration = NotesData.GroupBy(c => c.Precision / (c.Spacing + 1))
             .OrderByDescending(g => g.Count())
             .Last()

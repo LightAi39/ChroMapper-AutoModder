@@ -23,8 +23,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             for (int i = 0; i < sliders.Count(); i++)
             {
                 NoteData note = sliders[i];
-                if (note.Precision - 0.001 > (note.Spacing + 1) * Config.Instance.SliderPrecision)
+                if (note.Precision - 0.01 > (note.Spacing + 1) * Config.Instance.SliderPrecision)
                 {
+                    var expected = RealToFraction(((note.Spacing + 1) * Config.Instance.SliderPrecision), 0.05);
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
                         Characteristic = CriteriaCheckManager.Characteristic,
@@ -33,16 +34,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Severity = Severity.Error,
                         CheckType = "Slider",
                         Description = "Sliders duration must be fast enough to keep consistent swing speed.",
-                        ResultData = new() { new("CurrentSliderPrecision", note.Precision.ToString()), new("MinimumSliderPrecision", Config.Instance.SliderPrecision.ToString()) },
+                        ResultData = new() { new("ExpectedSliderPrecision", expected.N.ToString() + "/" + expected.D.ToString()) },
                         BeatmapObjects = new() { note.Note }
                     });
                     issue = CritResult.Fail;
+                    continue;
                 }
 
-                if (!(note.Precision <= ((note.Spacing + 1) * Config.Instance.SliderPrecision) + 0.02 && note.Precision >= ((note.Spacing + 1) * Config.Instance.SliderPrecision) - 0.02))
+                if (!(note.Precision <= ((note.Spacing + 1) * Config.Instance.SliderPrecision) + 0.01 && note.Precision >= ((note.Spacing + 1) * Config.Instance.SliderPrecision) - 0.01))
                 {
-                    // var reality = RealToFraction(note.Precision, 0.01);
-                    var expected = RealToFraction(((note.Spacing + 1) * Config.Instance.SliderPrecision), 0.01);
+                    var expected = RealToFraction(((note.Spacing + 1) * Config.Instance.SliderPrecision), 0.05);
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
                         Characteristic = CriteriaCheckManager.Characteristic,
