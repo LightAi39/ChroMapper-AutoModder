@@ -47,39 +47,52 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 if (notes[i].Beats - notes[i - 1].Beats < 0.125)
                 {
-                    // Detect slanted window
                     var direction = DirectionToDegree[notes[i].CutDirection];
+                    var lineAngle = Mod(ConvertRadiansToDegrees(Math.Atan2(notes[i].y - notes[i - 1].y, notes[i].x - notes[i - 1].x)), 360);
+                    double angle;
+
+                    // Detect slanted window
                     if (notes[i].CutDirection == notes[i - 1].CutDirection)
                     {
-                        var lineAngle = Mod(ConvertRadiansToDegrees(Math.Atan2(notes[i].y - notes[i - 1].y, notes[i].x - notes[i - 1].x)), 360);
-                        var angle = Math.Abs(lineAngle - direction);
+                        angle = Math.Abs(lineAngle - direction);
+                        if (angle >= 90)
+                        {
+                            (notes[i - 1], notes[i]) = (notes[i], notes[i - 1]);
+                        }
+                        lineAngle = Mod(ConvertRadiansToDegrees(Math.Atan2(notes[i].y - notes[i - 1].y, notes[i].x - notes[i - 1].x)), 360);
+                        angle = Math.Abs(lineAngle - direction);
                         if (Math.Abs((angle + 180) % 360 - 180) < 45)
                         {
                             continue;
                         }
                     }
-                    direction = DirectionToDegree[notes[i].CutDirection] + notes[i].AngleOffset;
-                    var previous = DirectionToDegree[notes[i - 1].CutDirection] + notes[i - 1].AngleOffset;
-                    var sliderAngle = Mod(ConvertRadiansToDegrees(Math.Atan2(notes[i].y - notes[i - 1].y, notes[i].x - notes[i - 1].x)), 360);
-                    if (Math.Abs(sliderAngle - direction) >= 90)
+                    
+                    direction = Mod(DirectionToDegree[notes[i].CutDirection] + notes[i].AngleOffset, 360);
+                    var previous = Mod(DirectionToDegree[notes[i - 1].CutDirection] + notes[i - 1].AngleOffset, 360);
+
+                    if (Math.Abs(lineAngle - direction) >= 90)
                     {
                         (notes[i - 1], notes[i]) = (notes[i], notes[i - 1]);
                     }
-                    var sliderAngle2 = Mod(ConvertRadiansToDegrees(Math.Atan2(notes[i].y - notes[i - 1].y, notes[i].x - notes[i - 1].x)), 360);
-                    if ((notes[i].CutDirection == 7 || notes[i].CutDirection == 3) && (notes[i - 1].CutDirection == 7 || notes[i - 1].CutDirection == 3)
-                        && notes[i].CutDirection != notes[i - 1].CutDirection)
+
+                    lineAngle = Mod(ConvertRadiansToDegrees(Math.Atan2(notes[i].y - notes[i - 1].y, notes[i].x - notes[i - 1].x)), 360);
+
+                    var total = Math.Abs(lineAngle - direction) + Math.Abs(lineAngle - previous);
+
+                    var window = false;
+                    if (Math.Abs(notes[i].x - notes[i - 1].x) >= 2 || Math.Abs(notes[i].y - notes[i - 1].y) >= 2)
                     {
-                        if ((notes[i].CutDirection == 7 && ((notes[i].y == notes[i - 1].y + 1 && notes[i].x == notes[i - 1].x - 2)
-                            || (notes[i].y == notes[i - 1].y + 1 && notes[i].x == notes[i - 1].x - 3)
-                            || (notes[i].y == notes[i - 1].y + 2 && notes[i].x == notes[i - 1].x - 3)))
-                            || (notes[i - 1].CutDirection == 7 && ((notes[i - 1].y == notes[i].y + 1 && notes[i - 1].x == notes[i].x - 2)
-                            || (notes[i - 1].y == notes[i].y + 1 && notes[i - 1].x == notes[i].x - 3)
-                            || (notes[i - 1].y == notes[i].y + 2 && notes[i - 1].x == notes[i].x - 3))))
-                        {
-                            continue;
-                        }
+                        window = true;
                     }
-                    if ((sliderAngle2 == direction && direction != previous) || Math.Abs(sliderAngle2 - direction) >= 22.5)
+
+                    var check = ((lineAngle == direction) || (lineAngle == previous) && direction != previous);
+
+                    if (window && total <= 45 && !check)
+                    {
+                        continue;
+                    }
+
+                    if (check || total > 22.5)
                     {
                         CheckResults.Instance.AddResult(new CheckResult()
                         {
