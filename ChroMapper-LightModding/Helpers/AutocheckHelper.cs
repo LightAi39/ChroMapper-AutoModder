@@ -19,6 +19,7 @@ namespace ChroMapper_LightModding.Helpers
         private int difficultyRank;
         private string difficulty;
         private string lastLoaded = "";
+        private Comment lastFoundBombFusedComment = null;
 
         public AutocheckHelper(Plugin plugin, FileHelper fileHelper)
         {
@@ -304,8 +305,6 @@ namespace ChroMapper_LightModding.Helpers
                     }
                 }
             }
-
-            //FuseBombComments(); TODO: THIS DOESNT WORK ANYMORE IDK WHY
         }
 
 
@@ -488,7 +487,29 @@ namespace ChroMapper_LightModding.Helpers
 
             if (!CheckIfCommentAlreadyExists(comment))
             {
-                List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+                List<Comment> comments = plugin.currentMapsetReview?.DifficultyReviews?.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+                // Preferably this would be Message instead of Type, but message currently include Response, which can have different values.
+                bool found = false;
+                if (lastFoundBombFusedComment == null)
+                {
+                    found = comments.Exists(x => x.Type == comment.Type && x.StartBeat <= comment.StartBeat && x.StartBeat >= comment.StartBeat - 0.25 && x.Objects.Exists(o => o.Color == 3));
+                    lastFoundBombFusedComment = comment;
+                }
+                else
+                {
+                    if (lastFoundBombFusedComment.Type == comment.Type && lastFoundBombFusedComment.StartBeat <= comment.StartBeat && lastFoundBombFusedComment.StartBeat >= comment.StartBeat - 0.25)
+                    {
+                        found = true;
+                        lastFoundBombFusedComment = comment;
+                    }
+                    else
+                    {
+                        lastFoundBombFusedComment = null;
+                    }
+                }
+                
+                // Skip that comment if already found on a previous bomb.
+                if (found) return;
                 comments.Add(comment);
                 comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
             }
@@ -563,22 +584,6 @@ namespace ChroMapper_LightModding.Helpers
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
             return comments.Any(c => comment.Message == c.Message && c.Objects.Any(o => String.Equals(o.ToStringFull().ToLower(), comment.Objects.FirstOrDefault().ToStringFull().ToLower(), StringComparison.InvariantCulture)));
-        }
-
-        private void FuseBombComments()
-        {
-            List<Comment> comments = plugin.currentMapsetReview?.DifficultyReviews?.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-            if (comments?.Count == 0) return;
-            
-            var bombComments = comments.Where(c => c.Objects.All(o => o.Color == 3)).ToList(); // Only bombs comments
-            for (int i = bombComments.Count() - 2; i >= 0; i--)
-            {
-                if (bombComments[i + 1].Message == bombComments[i].Message && bombComments[i + 1].StartBeat >= bombComments[i].StartBeat && bombComments[i + 1].StartBeat <= bombComments[i].StartBeat + 0.25)
-                {
-                    bombComments[i + 1].Objects.ForEach(o => bombComments[i].Objects.Add(o));
-                    comments.Remove(bombComments[i + 1]);
-                }
-            }
         }
 
         private void CreateDiffCommentNotes(string message, CommentTypesEnum type, CheckResult result )
