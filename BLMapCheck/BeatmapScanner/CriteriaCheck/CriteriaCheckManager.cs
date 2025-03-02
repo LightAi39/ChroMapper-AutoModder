@@ -172,11 +172,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             // allNoteObjects.AddRange(diff.Chains);
 
             // Debug.Log(JsonConvert.SerializeObject(difficultyBeatmap, Formatting.Indented));
-
+            
             DiffCrit diffCrit = new()
             {
                 HotStart = HotStart.Check(allNoteObjects, diff.Walls),
                 ColdEnd = ColdEnd.Check(allNoteObjects, diff.Walls, (float)BLMapChecker.map.SongLength),
+                Outside = Outside.Check((float)BLMapChecker.map.SongLength, diff.Notes, diff.Chains, diff.Bombs, diff.Walls),
                 MinSongDuration = SongDuration.Check(diff.Notes),
                 Slider = Slider.Check(),
                 DifficultyLabelSize = DifficultyLabelSize.Check(difficultyBeatmap._customData?._difficultyLabel, diffCount),
@@ -184,7 +185,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Requirement = Requirements.Check(difficultyBeatmap._customData?._requirements),
                 NJS = NJS.Check(swings, (float)BLMapChecker.map.SongLength, difficultyBeatmap._noteJumpMovementSpeed, difficultyBeatmap._noteJumpStartBeatOffset),
                 FusedObject = FusedObject.Check(diff.Notes, diff.Bombs, diff.Walls, diff.Chains, difficultyBeatmap._noteJumpMovementSpeed),
-                Outside = Outside.Check((float)BLMapChecker.map.SongLength, diff.Notes, diff.Chains, diff.Bombs, diff.Walls),
                 Light = Lights.Check((float)BLMapChecker.map.SongLength, diff.Lights, diff.lightColorEventBoxGroups, diff.Bombs),
                 Wall = CriteriaCheck.Difficulty.Obstacle.Check(diff.Notes, diff.Walls, diff.Bombs),
                 Chain = Chains.Check(diff.Chains, diff.Notes),
