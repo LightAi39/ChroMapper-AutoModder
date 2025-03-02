@@ -29,7 +29,7 @@ namespace ChroMapper_LightModding.Helpers
         }
 
         // this is temporary
-        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, bool isTimingCheck, string characteristic = "", int difficultyRank = 0, string difficulty = "")
+        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness, double duration) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, bool isTimingCheck, string characteristic = "", int difficultyRank = 0, string difficulty = "")
         {
             // So it doesn't reload the map on every button press
             if(lastLoaded != plugin.currentlyLoadedFolderPath)
@@ -85,10 +85,11 @@ namespace ChroMapper_LightModding.Helpers
                     Convert.ToDouble(resultData.Where(x => x.Key == "EBPM").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "PEBPM").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "SPS").FirstOrDefault().Value),
-                    resultData.Where(x => x.Key == "Handness").FirstOrDefault().Value
+                    resultData.Where(x => x.Key == "Handness").FirstOrDefault().Value,
+                    Convert.ToDouble(resultData.Where(x => x.Key == "Duration").FirstOrDefault().Value)
                     );
             }
-            return (0, 0, 0, 0, 0, "");
+            return (0, 0, 0, 0, 0, "", 0);
 
         }
 
@@ -119,7 +120,7 @@ namespace ChroMapper_LightModding.Helpers
             plugin.editorUI.RunBeatmapScannerOnThisDiff(); // this is temporary
         }
 
-        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
+        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness, double duration) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
         {
             //var song = plugin.BeatSaberSongContainer.Song;
             //BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
