@@ -53,26 +53,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             DifficultyV3 target = BLMapChecker.map.Difficulties.OrderBy(x => DiffOrder.IndexOf(x.Difficulty)).Last().Data;
             DifficultyV3 current = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
-
-            foreach (var note in current.Notes)
-            {
-                if (target.Notes.Exists(x => x.Beats == note.Beats)) continue;
-                var previous = target.Notes.Where(x => x.Beats < note.Beats).Select(x => x.Beats).Aggregate((x, y) => Math.Abs(x - note.Beats) < Math.Abs(y - note.Beats) ? x : y);
-                var next = target.Notes.Where(x => x.Beats > note.Beats).Select(x => x.Beats).Aggregate((x, y) => Math.Abs(x - note.Beats) < Math.Abs(y - note.Beats) ? x : y);
-
-                CheckResults.Instance.AddResult(new CheckResult()
+            if (current != null && target != null) {
+                foreach (var note in current.Notes)
                 {
-                    Characteristic = Characteristic,
-                    Difficulty = Difficulty,
-                    Name = "Timing",
-                    Severity = Severity.Info,
-                    CheckType = "Timing",
-                    Description = "Timing doesn't exist in top diff",
-                    ResultData = new() { new("Previous:", previous.ToString()), new("Next:", next.ToString()) },
-                    BeatmapObjects = new() { note }
-                });
-            }
+                    if (target.Notes.Exists(x => x.Beats == note.Beats)) continue;
+                    var previous = target.Notes.Where(x => x.Beats < note.Beats)?.Select(x => x.Beats).DefaultIfEmpty().Aggregate((x, y) => Math.Abs(x - note.Beats) < Math.Abs(y - note.Beats) ? x : y);
+                    var next = target.Notes.Where(x => x.Beats > note.Beats)?.Select(x => x.Beats).DefaultIfEmpty().Aggregate((x, y) => Math.Abs(x - note.Beats) < Math.Abs(y - note.Beats) ? x : y);
+                    List<KeyValuePair> results = new();
+                    if (previous != null) results.Add(new("Previous:", previous.ToString()));
+                    if (next != null) results.Add(new("Next:", next.ToString()));
 
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = Characteristic,
+                        Difficulty = Difficulty,
+                        Name = "Timing",
+                        Severity = Severity.Info,
+                        CheckType = "Timing",
+                        Description = "Timing doesn't exist in top diff",
+                        ResultData = results,
+                        BeatmapObjects = new() { note }
+                    });
+                }
+            }
             CheckResults.Instance.CheckFinished = true;
 
             return diffCrit;
