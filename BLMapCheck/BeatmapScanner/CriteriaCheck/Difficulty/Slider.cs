@@ -23,6 +23,23 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             for (int i = 0; i < sliders.Count(); i++)
             {
                 NoteData note = sliders[i];
+
+                if (note.Precision - 0.01 > (note.Spacing + 1) * 0.0625)
+                {
+                    CheckResults.Instance.AddResult(new CheckResult()
+                    {
+                        Characteristic = CriteriaCheckManager.Characteristic,
+                        Difficulty = CriteriaCheckManager.Difficulty,
+                        Name = "Slider Precision",
+                        Severity = Severity.Error,
+                        CheckType = "Slider",
+                        Description = "Slider cannot be slower than 1/16.",
+                        ResultData = new(),
+                        BeatmapObjects = new() { note.Note }
+                    });
+                    issue = CritResult.Fail;
+                }
+
                 if (note.Precision - 0.01 > (note.Spacing + 1) * Config.Instance.SliderPrecision)
                 {
                     var expected = RealToFraction(((note.Spacing + 1) * Config.Instance.SliderPrecision), 0.05);
@@ -56,6 +73,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         BeatmapObjects = new() { note.Note }
                     });
                     if(issue == CritResult.Success) issue = CritResult.Warning;
+                    continue;
                 }
             }
 
