@@ -13,6 +13,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var issue = CritResult.Success;
             var timescale = CriteriaCheckManager.timescale;
 
+            if (songLength == 0)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Outside",
+                    Severity = Severity.Error,
+                    CheckType = "Outside",
+                    Description = "Outside check error, SongLength is 0. Make sure to use an ogg file.",
+                    ResultData = new(),
+                });
+                return CritResult.Fail;
+            }
+
             var end = timescale.BPM.ToBeatTime(songLength, true);
             if (notes.Exists(c => c.Beats < 0 || c.Beats > end) || chains.Exists(c => c.Beats < 0 || c.TailInBeats < 0 || c.Beats > end || c.TailInBeats > end)
                 || bombs.Exists(b => b.Beats < 0 || b.Beats > end) || walls.Exists(w => w.Beats < 0 || w.Beats + w.DurationInBeats > end))

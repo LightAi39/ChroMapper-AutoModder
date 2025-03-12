@@ -16,6 +16,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var timescale = CriteriaCheckManager.timescale;
             List<double> sps = new();
 
+            if (songLength == 0)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Note Jump Speed",
+                    Severity = Severity.Error,
+                    CheckType = "NoteJumpSpeed",
+                    Description = "NJS check error, SongLength is 0. Make sure to use an ogg file.",
+                    ResultData = new(),
+                });
+                return CritResult.Fail;
+            }
+
             for (int i = 0; i < songLength - 1; i++)
             {
                 timescale.BPM.SetCurrentBPM(timescale.BPM.ToRealTime(i, true));

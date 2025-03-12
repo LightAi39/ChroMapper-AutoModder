@@ -13,6 +13,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         {
             var issue = CritResult.Success;
             var timescale = CriteriaCheckManager.timescale;
+
+            if (songLength == 0)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Cold End",
+                    Severity = Severity.Error,
+                    CheckType = "Duration",
+                    Description = "Cold End check error, SongLength is 0. Make sure to use an ogg file.",
+                    ResultData = new(),
+                });
+                return CritResult.Fail;
+            }
             var limit = timescale.BPM.ToBeatTime(songLength - (float)Instance.ColdEndDuration, true);
 
             foreach (var obj in objects)

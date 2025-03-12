@@ -43,6 +43,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var timescale = CriteriaCheckManager.timescale;
 
             var issue = CritResult.Success;
+            if (songLength == 0)
+            {
+                CheckResults.Instance.AddResult(new CheckResult()
+                {
+                    Characteristic = CriteriaCheckManager.Characteristic,
+                    Difficulty = CriteriaCheckManager.Difficulty,
+                    Name = "Light",
+                    Severity = Severity.Error,
+                    CheckType = "Light",
+                    Description = "Light check error, SongLength is 0. Make sure to use an ogg file.",
+                    ResultData = new(),
+                });
+                return CritResult.Fail;
+            }
             var end = timescale.BPM.ToBeatTime(songLength, true);
             var lit = true;
             if ((!events.Any() || !events.Exists(e => e.Type >= 0 && e.Type <= 5)) && !v3events.Any())
