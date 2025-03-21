@@ -181,8 +181,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     });
                     issue = CritResult.Fail;
                 }
-                if (w.DurationInBeats < min && (w.x + w.Width == 2 || w.x + w.Width == 3) && w.y + w.Height > 1 &&
-                    !walls.Exists(wa => wa != w && wa.x + wa.Width >= w.x + w.Width && wa.x <= w.x + w.Width && wa.DurationInBeats >= min && w.Beats >= wa.Beats && w.Beats <= wa.Beats + wa.DurationInBeats + max))
+
+                if (w.DurationInBeats < min &&
+                    !walls.Exists(wa => wa != w && wa.x + wa.Width >= w.x + w.Width && wa.x <= w.x && wa.DurationInBeats >= min && w.Beats >= wa.Beats && w.Beats <= wa.Beats + wa.DurationInBeats + max))
                 {
                     CheckResults.Instance.AddResult(new CheckResult()
                     {
@@ -191,7 +192,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         Name = "Wall Length",
                         Severity = Severity.Error,
                         CheckType = "Wall",
-                        Description = "Walls cannot be shorter than 13.8ms in the middle two lanes.",
+                        Description = "Walls cannot be shorter than 13.8ms.",
                         ResultData = new() { new("CurrentLength", w.DurationInBeats.ToString()), new("MinimumLength", min.ToString()) },
                         BeatmapObjects = new() { w }
                     });
