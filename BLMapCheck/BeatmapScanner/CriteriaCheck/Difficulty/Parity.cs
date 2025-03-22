@@ -60,6 +60,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (i != 0)
                 {
+                    if (i == rightHandSwings.Count - 1 && rightHandSwings[i].notes.Last().d == 8) break;
                     float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
@@ -105,6 +106,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (i != 0)
                 {
+                    if (i == leftHandSwings.Count - 1 && leftHandSwings[i].notes.Last().d == 8) break;
                     float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
