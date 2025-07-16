@@ -246,7 +246,7 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y /d  $(TargetPath) "$(ChroMapperDir)\Plugins"</PostBuildEvent>
+    <PostBuildEvent>xcopy /y /d  "$(TargetPath)" "$(ChroMapperDir)\Plugins"</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Fody.6.5.5\build\Fody.targets" Condition="Exists('..\packages\Fody.6.5.5\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
