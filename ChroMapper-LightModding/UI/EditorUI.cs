@@ -1,4 +1,4 @@
-using beatleader_parser.Timescale;
+﻿using beatleader_parser.Timescale;
 using Beatmap.Base;
 using BLMapCheck.BeatmapScanner.Data.Criteria;
 using ChroMapper_LightModding.Export;
@@ -528,7 +528,7 @@ namespace ChroMapper_LightModding.UI
             //image.type = Image.Type.Sliced;
             //image.color = new Color(0.35f, 0.35f, 0.35f);
 
-            var bpmChanges = plugin.BPMChangeGridContainer.LoadedObjects.Cast<BaseBpmEvent>().ToList();
+            var bpmChanges = plugin.BPMChangeGridContainer.MapObjects.ToList();
             if (bpmChanges.Count == 0) // apparently on intial load we are getting no bpm changes, so doing this for now to try and get them from the saved file anyway
             {
                 var diff = plugin.BeatSaberSongContainer.Info.DifficultySets
