@@ -195,7 +195,7 @@ namespace ChroMapper_LightModding
                 MapEditorUI mapEditorUI = UnityEngine.Object.FindObjectOfType<MapEditorUI>();
                 editorUI.Enable(mapEditorUI.transform.Find("Timeline Canvas").transform.Find("Song Timeline"), mapEditorUI.transform.Find("Pause Menu Canvas").transform.Find("Extras Menu"), mapEditorUI.transform.Find("Right Bar Canvas"));
             }
-            currentlyLoadedFolderPath = BeatSaberSongContainer.Song.Directory;
+            currentlyLoadedFolderPath = BeatSaberSongContainer.Info.Directory;
         }
 
         public void LoadedIntoSongInfo()
@@ -205,7 +205,7 @@ namespace ChroMapper_LightModding
             GameObject songInfoPanel = GameObject.Find("SongInfoPanel");
             GameObject difficultyPanel = GameObject.Find("DifficultyPanel");
             songInfoUI.Enable(songInfoPanel.transform.Find("Header"), songInfoPanel.transform.Find("Save"), difficultyPanel.transform.Find("Save"));
-            currentlyLoadedFolderPath = BeatSaberSongContainer.Song.Directory;
+            currentlyLoadedFolderPath = BeatSaberSongContainer.Info.Directory;
 
             ResetAfterLeavingEditor();
         }
@@ -458,22 +458,24 @@ namespace ChroMapper_LightModding
                 return null;
             }
 
-            var difficultyData = _beatSaberSongContainer.DifficultyData;
+            var difficultyInfo = _beatSaberSongContainer.MapDifficultyInfo;
             try
             {
-                return currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyRank == difficultyData.DifficultyRank && x.DifficultyCharacteristic == difficultyData.ParentBeatmapSet.BeatmapCharacteristicName).First();
+                return currentMapsetReview.DifficultyReviews
+                    .First(x => x.DifficultyRank == difficultyInfo.DifficultyRank 
+                                && x.DifficultyCharacteristic == difficultyInfo.Characteristic);
             }
             catch (InvalidOperationException)
             {
                 currentMapsetReview.DifficultyReviews.Add(new DifficultyReview
                 {
-                    DifficultyCharacteristic = difficultyData.ParentBeatmapSet.BeatmapCharacteristicName,
-                    Difficulty = difficultyData.Difficulty,
-                    DifficultyRank = difficultyData.DifficultyRank,
+                    DifficultyCharacteristic = difficultyInfo.Characteristic,
+                    Difficulty = difficultyInfo.Difficulty,
+                    DifficultyRank = difficultyInfo.DifficultyRank,
                 });
                 currentMapsetReview.DifficultyReviews = currentMapsetReview.DifficultyReviews.OrderByDescending(x => x.DifficultyRank).ToList();
 
-                return currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyRank == difficultyData.DifficultyRank).First();
+                return currentMapsetReview.DifficultyReviews.First(x => x.DifficultyRank == difficultyInfo.DifficultyRank);
             }
 
         }
@@ -488,8 +490,10 @@ namespace ChroMapper_LightModding
                 return;
             }
 
-            var difficultyData = _beatSaberSongContainer.DifficultyData;
-            DifficultyReview reviewToUpdate = currentMapsetReview.DifficultyReviews.FirstOrDefault(x => x.DifficultyRank == difficultyData.DifficultyRank && x.DifficultyCharacteristic == difficultyData.ParentBeatmapSet.BeatmapCharacteristicName);
+            var difficultyInfo = _beatSaberSongContainer.MapDifficultyInfo;
+            DifficultyReview reviewToUpdate = currentMapsetReview.DifficultyReviews
+                .FirstOrDefault(x => x.DifficultyRank == difficultyInfo.DifficultyRank 
+                                     && x.DifficultyCharacteristic == difficultyInfo.Characteristic);
 
             if (reviewToUpdate != null)
             {

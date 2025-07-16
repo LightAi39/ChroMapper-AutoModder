@@ -66,11 +66,11 @@ namespace BLMapCheck.BeatmapScanner
             this.difficulty = difficulty;
 
             *//* TODO: Rewrite this song loading code
-            var song = plugin.BeatSaberSongContainer.Song;
+            var song = plugin.BeatSaberSongContainer.Info;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
-            songOffset = BeatSaberSongContainer.Instance.Song.SongTimeOffset;
-            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, baseDifficulty.BpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), songOffset);
+            songOffset = BeatSaberSongContainer.Instance.Info.SongTimeOffset;
+            bpm = BeatPerMinute.Create(BeatSaberSongContainer.Instance.Info.BeatsPerMinute, baseDifficulty.BpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), songOffset);
             analysedMap = new(song.Directory);
             swings = analysedMap.GetSwingData((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower());
 
@@ -90,7 +90,7 @@ namespace BLMapCheck.BeatmapScanner
                     List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
                     obstacles = obstacles.OrderBy(o => o.JsonTime).ToList();
 
-                    BeatmapScannerData = BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+                    BeatmapScannerData = BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Info.BeatsPerMinute);
                 }
             }
             *//*
@@ -168,8 +168,8 @@ namespace BLMapCheck.BeatmapScanner
         public CritSeverity LightCheck()
         {
             var issue = CritSeverity.Success;
-            var diff = BeatSaberSongContainer.Instance.Song.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
-            BaseDifficulty baseDifficulty = BeatSaberSongContainer.Instance.Song.GetMapFromDifficultyBeatmap(diff);
+            var diff = BeatSaberSongContainer.Instance.Info.DifficultyBeatmapSets.Where(d => d.BeatmapCharacteristicName == characteristic).SelectMany(d => d.DifficultyBeatmaps).Where(d => d.Difficulty == difficulty).FirstOrDefault();
+            BaseDifficulty baseDifficulty = BeatSaberSongContainer.Instance.Info.GetMapFromDifficultyBeatmap(diff);
             var v3events = baseDifficulty.LightColorEventBoxGroups.OrderBy(e => e.JsonTime).ToList();
             var events = baseDifficulty.Events.OrderBy(e => e.JsonTime).ToList();
             var end = bpm.ToBeatTime(BeatSaberSongContainer.Instance.LoadedSongLength, true);
@@ -615,7 +615,7 @@ namespace BLMapCheck.BeatmapScanner
         public CritSeverity VisionBlockCheck()
         {
             var issue = CritSeverity.Success;
-            var song = plugin.BeatSaberSongContainer.Song;
+            var song = plugin.BeatSaberSongContainer.Info;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             BaseDifficulty baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
             if (baseDifficulty.Notes.Any())
@@ -1104,8 +1104,8 @@ namespace BLMapCheck.BeatmapScanner
         {
             var issue = CritSeverity.Success;
 
-            var song = plugin.BeatSaberSongContainer.Song;
-            var bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
+            var song = plugin.BeatSaberSongContainer.Info;
+            var bpm = BeatSaberSongContainer.Instance.Info.BeatsPerMinute;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             BaseDifficulty baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
             if (baseDifficulty.Notes.Any())
@@ -1302,8 +1302,8 @@ namespace BLMapCheck.BeatmapScanner
         {
             var issue = CritSeverity.Success;
 
-            var song = plugin.BeatSaberSongContainer.Song;
-            var bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
+            var song = plugin.BeatSaberSongContainer.Info;
+            var bpm = BeatSaberSongContainer.Instance.Info.BeatsPerMinute;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             BaseDifficulty baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
 
@@ -1522,8 +1522,8 @@ namespace BLMapCheck.BeatmapScanner
         public CritSeverity HandClapCheck()
         {
             var issue = CritSeverity.Success;
-            var song = plugin.BeatSaberSongContainer.Song;
-            var bpm = BeatSaberSongContainer.Instance.Song.BeatsPerMinute;
+            var song = plugin.BeatSaberSongContainer.Info;
+            var bpm = BeatSaberSongContainer.Instance.Info.BeatsPerMinute;
             BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
             BaseDifficulty baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
             if (baseDifficulty.Notes.Any())

@@ -122,7 +122,7 @@ namespace ChroMapper_LightModding.Helpers
 
         public (double pass, double tech, double ebpm, double pebpm, double sps, string handness, double duration) RunBeatmapScanner(string characteristic, int difficultyRank, string difficulty)
         {
-            //var song = plugin.BeatSaberSongContainer.Song;
+            //var song = plugin.BeatSaberSongContainer.Info;
             //BeatSaberSong.DifficultyBeatmap diff = song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == characteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == difficulty && y.DifficultyRank == difficultyRank).FirstOrDefault();
 
             //BaseDifficulty baseDifficulty = song.GetMapFromDifficultyBeatmap(diff);
@@ -143,7 +143,7 @@ namespace ChroMapper_LightModding.Helpers
             //        List<BaseObstacle> obstacles = baseDifficulty.Obstacles.ToList();
             //        obstacles = obstacles.OrderBy(o => o.JsonTime).ToList();
 
-            //        var data = BeatmapScanner.BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Song.BeatsPerMinute);
+            //        var data = BeatmapScanner.BeatmapScanner.Analyzer(notes, chains, bombs, obstacles, BeatSaberSongContainer.Instance.Info.BeatsPerMinute);
             //        var analysedMap = new MapAnalyser(song.Directory);
             //        var swings = analysedMap.GetSwingData((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower());
             //        data.sps = Math.Round(analysedMap.GetSPS((BeatmapDifficultyRank)difficultyRank, characteristic.ToLower()), 2);
