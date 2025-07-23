@@ -28,12 +28,12 @@ namespace ChroMapper_LightModding.Helpers
         /// <returns>true if a file was loaded, false if a file was not loaded</returns>
         public bool MapsetReviewLoader()
         {
-            if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews"))
+            if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Info.Directory}/reviews"))
             {
                 return false;
             }
 
-            List<string> files = Directory.GetFiles($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews", "*" + fileExtension).ToList();
+            List<string> files = Directory.GetFiles($"{plugin.BeatSaberSongContainer.Info.Directory}/reviews", "*" + fileExtension).ToList();
             if (files.Count == 0) return false;
 
             List<(MapsetReview, string)> reviews = new();
@@ -55,7 +55,7 @@ namespace ChroMapper_LightModding.Helpers
             // If any of these are true then we can assume this is probably a valid map-review pair without invalidating when any change is made.
             var correctReviewFilePair = reviews.FirstOrDefault(x =>
             {
-                return x.Item1.SongName == plugin.BeatSaberSongContainer.Song.SongName || x.Item1.SongAuthor == plugin.BeatSaberSongContainer.Song.SongAuthorName || x.Item1.Creator == plugin.BeatSaberSongContainer.Song.LevelAuthorName || x.Item1.SongLength == plugin.BeatSaberSongContainer.LoadedSongLength;
+                return x.Item1.SongName == plugin.BeatSaberSongContainer.Info.SongName || x.Item1.SongAuthor == plugin.BeatSaberSongContainer.Info.SongAuthorName || x.Item1.Creator == plugin.BeatSaberSongContainer.Info.LevelAuthorName || x.Item1.SongLength == plugin.BeatSaberSongContainer.LoadedSongLength;
             });
 
             if (correctReviewFilePair.Item1 == null) return false;
@@ -72,13 +72,13 @@ namespace ChroMapper_LightModding.Helpers
         /// <param name="overrideExisting">Wether to override the existing file (delete it) or keep it.</param>
         public void MapsetReviewSaver(bool overrideExisting = true)
         {
-            if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews"))
+            if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Info.Directory}/reviews"))
             {
-                Directory.CreateDirectory($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews");
+                Directory.CreateDirectory($"{plugin.BeatSaberSongContainer.Info.Directory}/reviews");
             }
 
             if (plugin.currentlyLoadedFilePath == "external") overrideExisting = false;
-            var song = plugin.BeatSaberSongContainer.Song;
+            var song = plugin.BeatSaberSongContainer.Info;
             var review = plugin.currentMapsetReview;
 
             // updating song details
@@ -89,7 +89,7 @@ namespace ChroMapper_LightModding.Helpers
             review.SongLength = plugin.BeatSaberSongContainer.LoadedSongLength;
             review.LastEdited = DateTime.UtcNow;
 
-            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{CleanFileName($"{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}")}" + fileExtension;
+            string newFilePath = $"{plugin.BeatSaberSongContainer.Info.Directory}/reviews/{CleanFileName($"{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}")}" + fileExtension;
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
 
             if (overrideExisting)
@@ -105,18 +105,16 @@ namespace ChroMapper_LightModding.Helpers
         /// </summary>
         public void MapsetReviewCreator()
         {
-            var song = plugin.BeatSaberSongContainer.Song;
-            var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
-
+            var info = plugin.BeatSaberSongContainer.Info;
 
             List<DifficultyReview> difficultyReviews = new List<DifficultyReview>();
-            foreach (var diffSet in song.DifficultyBeatmapSets)
+            foreach (var diffSet in info.DifficultySets)
             {
-                foreach (var diff in diffSet.DifficultyBeatmaps)
+                foreach (var diff in diffSet.Difficulties)
                 {
                     difficultyReviews.Add(new()
                     {
-                        DifficultyCharacteristic = diffSet.BeatmapCharacteristicName,
+                        DifficultyCharacteristic = diffSet.Characteristic,
                         Difficulty = diff.Difficulty,
                         DifficultyRank = diff.DifficultyRank
                     });
@@ -126,10 +124,10 @@ namespace ChroMapper_LightModding.Helpers
 
             MapsetReview review = new()
             {
-                SongName = song.SongName,
-                SubName = song.SongSubName,
-                SongAuthor = song.SongAuthorName,
-                Creator = song.LevelAuthorName,
+                SongName = info.SongName,
+                SubName = info.SongSubName,
+                SongAuthor = info.SongAuthorName,
+                Creator = info.LevelAuthorName,
                 SongLength = plugin.BeatSaberSongContainer.LoadedSongLength,
                 ReviewType = ReviewTypeEnum.Feedback,
                 FileVersion = Plugin.fileVersion,
@@ -138,12 +136,12 @@ namespace ChroMapper_LightModding.Helpers
 
             plugin.currentMapsetReview = review;
 
-            if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews"))
+            if (!Directory.Exists($"{plugin.BeatSaberSongContainer.Info.Directory}/reviews"))
             {
-                Directory.CreateDirectory($"{plugin.BeatSaberSongContainer.Song.Directory}/reviews");
+                Directory.CreateDirectory($"{plugin.BeatSaberSongContainer.Info.Directory}/reviews");
             }
 
-            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{CleanFileName($"{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}")}" + fileExtension;
+            string newFilePath = $"{plugin.BeatSaberSongContainer.Info.Directory}/reviews/{CleanFileName($"{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}")}" + fileExtension;
             Debug.Log(newFilePath);
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
             plugin.currentlyLoadedFilePath = newFilePath;
@@ -155,7 +153,7 @@ namespace ChroMapper_LightModding.Helpers
         public void MapsetReviewBackupSaver()
         {
             // preparation for the backup limit
-            List<string> files = Directory.GetFiles(plugin.BeatSaberSongContainer.Song.Directory + "/reviews", "*" + backupText + fileExtension).ToList();
+            List<string> files = Directory.GetFiles(plugin.BeatSaberSongContainer.Info.Directory + "/reviews", "*" + backupText + fileExtension).ToList();
 
             List<(MapsetReview, string)> reviews = new();
 
@@ -172,7 +170,7 @@ namespace ChroMapper_LightModding.Helpers
                 File.Delete(reviews[0].Item2);
             }
 
-            var song = plugin.BeatSaberSongContainer.Song;
+            var song = plugin.BeatSaberSongContainer.Info;
             var review = plugin.currentMapsetReview;
 
             // updating song details
@@ -183,7 +181,7 @@ namespace ChroMapper_LightModding.Helpers
             review.SongLength = plugin.BeatSaberSongContainer.LoadedSongLength;
             review.LastEdited = DateTime.UtcNow;
 
-            string newFilePath = $"{plugin.BeatSaberSongContainer.Song.Directory}/reviews/{CleanFileName($"{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}")}" + backupText + fileExtension;
+            string newFilePath = $"{plugin.BeatSaberSongContainer.Info.Directory}/reviews/{CleanFileName($"{review.SongName} {review.ReviewType} {review.LastEdited.Day}-{review.LastEdited.Month}-{review.LastEdited.Year} {review.LastEdited.Hour}.{review.LastEdited.Minute}.{review.LastEdited.Second}")}" + backupText + fileExtension;
             File.WriteAllText(newFilePath, JsonConvert.SerializeObject(review, Formatting.Indented));
 
             plugin.currentlyLoadedFilePath = newFilePath;
@@ -223,20 +221,20 @@ namespace ChroMapper_LightModding.Helpers
         /// </summary>
         public void CheckDifficultyReviewsExist()
         {
-            var song = plugin.BeatSaberSongContainer.Song;
+            var info = plugin.BeatSaberSongContainer.Info;
 
             List<DifficultyReview> difficultyReviews = plugin.currentMapsetReview.DifficultyReviews;
 
             // is there a file for every difficulty
-            foreach (var diffSet in song.DifficultyBeatmapSets)
+            foreach (var diffSet in info.DifficultySets)
             {
-                foreach (var diff in diffSet.DifficultyBeatmaps)
+                foreach (var diff in diffSet.Difficulties)
                 {
-                    if (!difficultyReviews.Any(x => x.DifficultyCharacteristic == diffSet.BeatmapCharacteristicName && x.Difficulty == diff.Difficulty && x.DifficultyRank == diff.DifficultyRank))
+                    if (!difficultyReviews.Any(x => x.DifficultyCharacteristic == diffSet.Characteristic && x.Difficulty == diff.Difficulty && x.DifficultyRank == diff.DifficultyRank))
                     {
                         difficultyReviews.Add(new()
                         {
-                            DifficultyCharacteristic = diffSet.BeatmapCharacteristicName,
+                            DifficultyCharacteristic = diffSet.Characteristic,
                             Difficulty = diff.Difficulty,
                             DifficultyRank = diff.DifficultyRank
                         });
@@ -247,12 +245,13 @@ namespace ChroMapper_LightModding.Helpers
             // are there any review files for difficulties that dont exist
             foreach (var diff in difficultyReviews)
             {
-                if (!song.DifficultyBeatmapSets.Any(x => x.BeatmapCharacteristicName == diff.DifficultyCharacteristic))
+                if (!info.DifficultySets.Any(x => x.Characteristic == diff.DifficultyCharacteristic))
                 {
                     difficultyReviews.Remove(diff);
                     return;
                 }
-                if (!song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == diff.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Any(y => y.Difficulty == diff.Difficulty && y.DifficultyRank == diff.DifficultyRank))
+                if (!info.DifficultySets.FirstOrDefault(x => x.Characteristic == diff.DifficultyCharacteristic)
+                        .Difficulties.Any(y => y.Difficulty == diff.Difficulty && y.DifficultyRank == diff.DifficultyRank))
                 {
                     difficultyReviews.Remove(diff);
                     return;

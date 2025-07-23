@@ -528,11 +528,14 @@ namespace ChroMapper_LightModding.UI
             //image.type = Image.Type.Sliced;
             //image.color = new Color(0.35f, 0.35f, 0.35f);
 
-            var bpmChanges = plugin.BPMChangeGridContainer.LoadedObjects.Cast<BaseBpmEvent>().ToList();
+            var bpmChanges = plugin.BPMChangeGridContainer.MapObjects.ToList();
             if (bpmChanges.Count == 0) // apparently on intial load we are getting no bpm changes, so doing this for now to try and get them from the saved file anyway
             {
-                BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
-                BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
+                var diff = plugin.BeatSaberSongContainer.Info.DifficultySets
+                    .FirstOrDefault(x => x.Characteristic == plugin.currentReview.DifficultyCharacteristic)
+                    .Difficulties
+                    .FirstOrDefault(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank);
+                BaseDifficulty baseDifficulty = BeatSaberSongUtils.GetMapFromInfoFiles(plugin.BeatSaberSongContainer.Info, plugin.BeatSaberSongContainer.MapDifficultyInfo);
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
@@ -547,7 +550,7 @@ namespace ChroMapper_LightModding.UI
                 bpmChangesChecker.Add(bpmevent);
             }
 
-            Timescale timescale = Timescale.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            Timescale timescale = Timescale.Create(BeatSaberSongContainer.Instance.Info.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Info.SongTimeOffset);
 
             var totalBeats = timescale.ToBeatTime(plugin.BeatSaberSongContainer.LoadedSongLength);
 
@@ -1283,24 +1286,24 @@ namespace ChroMapper_LightModding.UI
 
         public void RunBeatmapScannerOnThisDiff() // TODO: THIS IS TEMPORARILY PUBLIC, IT SHOULD BE PRIVATE
         {
-            var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
+            var difficultyInfo = plugin.BeatSaberSongContainer.MapDifficultyInfo;
 
-            stats = autocheckHelper.RunBeatmapScanner(difficultyData.ParentBeatmapSet.BeatmapCharacteristicName, difficultyData.DifficultyRank, difficultyData.Difficulty);
+            stats = autocheckHelper.RunBeatmapScanner(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty);
         }
 
         private void RunAutoCheckOnThisDiff()
         {
-            var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
+            var difficultyInfo = plugin.BeatSaberSongContainer.MapDifficultyInfo;
 
-            autocheckHelper.RunAutoCheckOnDiff(difficultyData.ParentBeatmapSet.BeatmapCharacteristicName, difficultyData.DifficultyRank, difficultyData.Difficulty);
+            autocheckHelper.RunAutoCheckOnDiff(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty);
             plugin.CommentsUpdated.Invoke();
         }
 
         private void CompareTimingsOnThisDiff()
         {
-            var difficultyData = plugin.BeatSaberSongContainer.DifficultyData;
+            var difficultyInfo = plugin.BeatSaberSongContainer.MapDifficultyInfo;
 
-            autocheckHelper.RunCompareTimings(difficultyData.ParentBeatmapSet.BeatmapCharacteristicName, difficultyData.DifficultyRank, difficultyData.Difficulty);
+            autocheckHelper.RunCompareTimings(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty);
             plugin.CommentsUpdated.Invoke();
         }
 

@@ -7,6 +7,8 @@ using Parser.Map.Difficulty.V3.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Beatmap.Helper;
+using Beatmap.Info;
 using TMPro;
 using UnityEngine;
 
@@ -196,11 +198,14 @@ namespace ChroMapper_LightModding.Helpers
 
         private void UpdateBpmChanges()
         {
-            bpmChanges = plugin.BPMChangeGridContainer.LoadedObjects.Cast<BaseBpmEvent>().ToList();
+            bpmChanges = plugin.BPMChangeGridContainer.MapObjects.ToList();
             if (bpmChanges.Count == 0) // apparently on intial load we are getting no bpm changes, so doing this for now to try and get them from the saved file anyway
             {
-                BeatSaberSong.DifficultyBeatmap diff = plugin.BeatSaberSongContainer.Song.DifficultyBeatmapSets.Where(x => x.BeatmapCharacteristicName == plugin.currentReview.DifficultyCharacteristic).FirstOrDefault().DifficultyBeatmaps.Where(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank).FirstOrDefault();
-                BaseDifficulty baseDifficulty = plugin.BeatSaberSongContainer.Song.GetMapFromDifficultyBeatmap(diff);
+                InfoDifficulty diff = plugin.BeatSaberSongContainer.Info.DifficultySets
+                    .FirstOrDefault(x => x.Characteristic == plugin.currentReview.DifficultyCharacteristic)
+                    .Difficulties
+                    .FirstOrDefault(y => y.Difficulty == plugin.currentReview.Difficulty && y.DifficultyRank == plugin.currentReview.DifficultyRank);
+                BaseDifficulty baseDifficulty = BeatSaberSongUtils.GetMapFromInfoFiles(plugin.BeatSaberSongContainer.Info, plugin.BeatSaberSongContainer.MapDifficultyInfo);
                 bpmChanges = baseDifficulty.BpmEvents;
             }
 
@@ -214,7 +219,7 @@ namespace ChroMapper_LightModding.Helpers
                 };
                 bpmChangesChecker.Add(bpmevent);
             }
-            timescale = Timescale.Create(BeatSaberSongContainer.Instance.Song.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Song.SongTimeOffset);
+            timescale = Timescale.Create(BeatSaberSongContainer.Instance.Info.BeatsPerMinute, bpmChangesChecker, BeatSaberSongContainer.Instance.Info.SongTimeOffset);
         }
 
         public void Dispose()
