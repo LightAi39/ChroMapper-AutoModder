@@ -1,4 +1,4 @@
-﻿using beatleader_parser.Timescale;
+using beatleader_parser.Timescale;
 using Beatmap.Base;
 using BLMapCheck.BeatmapScanner.Data.Criteria;
 using ChroMapper_LightModding.Export;
@@ -50,6 +50,8 @@ namespace ChroMapper_LightModding.UI
             this.fileHelper = fileHelper;
             this.exporter = exporter;
             this.autocheckHelper = autocheckHelper;
+
+            LoadedDifficultySelectController.LoadedDifficultyChangedEvent += OnLoadedDifficultyChanged;
         }
 
         #region CMUI
@@ -1284,6 +1286,12 @@ namespace ChroMapper_LightModding.UI
 
         #endregion
 
+        private void OnLoadedDifficultyChanged()
+        {
+            RefreshTimelineMarkers();
+            CheckBeatForComment();
+        }
+        
         public void RunBeatmapScannerOnThisDiff() // TODO: THIS IS TEMPORARILY PUBLIC, IT SHOULD BE PRIVATE
         {
             var difficultyInfo = plugin.BeatSaberSongContainer.MapDifficultyInfo;

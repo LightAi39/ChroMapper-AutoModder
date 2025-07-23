@@ -1,4 +1,4 @@
-﻿using beatleader_parser.Timescale;
+using beatleader_parser.Timescale;
 using Beatmap.Base;
 using BLMapCheck.BeatmapScanner.CriteriaCheck;
 using BLMapCheck.BeatmapScanner.MapCheck;
@@ -47,6 +47,7 @@ namespace ChroMapper_LightModding.Helpers
             gridBookmarksParent = GameObject.Find("Measure Lines Canvas").transform;
             plugin.CommentsUpdated += UpdateRenderedBookmarks;
             EditorScaleController.EditorScaleChangedEvent += OnEditorScaleChange;
+            LoadedDifficultySelectController.LoadedDifficultyChangedEvent += RefreshBookmarks;
             Settings.NotifyBySettingName(nameof(Settings.DisplayGridBookmarks), DisplayRenderedBookmarks);
             Settings.NotifyBySettingName(nameof(Settings.GridBookmarksHasLine), RefreshBookmarkGridLine);
 
@@ -54,6 +55,26 @@ namespace ChroMapper_LightModding.Helpers
         }
 
         private void DisplayRenderedBookmarks(object _) => UpdateRenderedBookmarks();
+        
+        
+        private void RefreshBookmarks()
+        {
+            for (var i = renderedComments.Count - 1; i >= 0; i--)
+            {
+                var bookmark = renderedComments[i];
+                try
+                {
+                    GameObject.Destroy(bookmark.Text.gameObject);
+                }
+                catch (NullReferenceException)
+                {
+                    // Don't know how this is already null but it happens
+                }
+                renderedComments.Remove(bookmark);
+            }
+
+            UpdateRenderedBookmarks();
+        }
 
         private void UpdateRenderedBookmarks()
         {
