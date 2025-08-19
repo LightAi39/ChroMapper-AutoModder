@@ -220,6 +220,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
 
+            timescale = Timescale.Create(BLMapChecker.map.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), BLMapChecker.map.Info._songTimeOffset);
+
             DiffAnalysis diffAnalysis;
             List<SwingData> swings;
 
@@ -257,7 +259,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             List<SwingData> source = diffAnalysis.swingContainer.LeftHandSwings.ToList();
             source.AddRange(diffAnalysis.swingContainer.RightHandSwings.ToList());
             var PeakEBPM = source.Max((SwingData x) => x.swingEBPM);
-
             return new CheckResult()
             {
                 Name = "Statistical Data",
