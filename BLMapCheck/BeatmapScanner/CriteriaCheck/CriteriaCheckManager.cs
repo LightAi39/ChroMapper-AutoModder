@@ -51,7 +51,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             Difficulty = difficulty;
             DiffCrit diffCrit = new();
 
-            DifficultyV3 target = BLMapChecker.map.Difficulties.OrderBy(x => DiffOrder.IndexOf(x.Difficulty)).Last().Data;
+            DifficultyV3 target = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic).OrderBy(x => DiffOrder.IndexOf(x.Difficulty)).Last().Data;
             DifficultyV3 current = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
             if (current != null && target != null) {
                 foreach (var note in current.Notes)
