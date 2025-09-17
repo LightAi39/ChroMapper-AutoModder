@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.Events;
+﻿using UnityEngine.Events;
 using UnityEngine.UI;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -13,8 +8,7 @@ namespace ChroMapper_LightModding.UI
 {
     internal class UIHelper
     {
-        // i ended up copying Top_Cat's CM-JS UI helper, too useful to make my own tho
-        // after askin TC if it's one of the only way, he let me use this
+        // Credit goes to Top_Cat's CM-JS UI for this source code
         public static void AddButton(Transform parent, string title, string text, Vector2 pos, UnityAction onClick, float width = 60, float height = 25, float fontSize = 12)
         {
             var button = Object.Instantiate(PersistentUI.Instance.ButtonPrefab, parent);
@@ -79,7 +73,7 @@ namespace ChroMapper_LightModding.UI
             textComponent.text = text;
         }
 
-        public static void AddTextInput(Transform parent, string title, string text, Vector2 pos, string value, UnityAction<string> onChange)
+        public static void AddTextInput(Transform parent, string title, string text, Vector2 pos, string value, UnityAction<string> onChange, float sizeX = 55, float sizeY = 20)
         {
             var entryLabel = new GameObject(title + " Label", typeof(TextMeshProUGUI));
             var rectTransform = ((RectTransform)entryLabel.transform);
@@ -95,7 +89,7 @@ namespace ChroMapper_LightModding.UI
             textComponent.text = text;
 
             var textInput = Object.Instantiate(PersistentUI.Instance.TextInputPrefab, parent);
-            MoveTransform(textInput.transform, 55, 20, 0.5f, 1, pos.x + 27.5f, pos.y);
+            MoveTransform(textInput.transform, sizeX, sizeY, 0.5f, 1, pos.x + 27.5f, pos.y);
             textInput.GetComponent<Image>().pixelsPerUnitMultiplier = 3;
             textInput.InputField.text = value;
             textInput.InputField.onFocusSelectAll = false;

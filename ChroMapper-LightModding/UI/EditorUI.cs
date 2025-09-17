@@ -27,11 +27,13 @@ namespace ChroMapper_LightModding.UI
         private GameObject _timelineMarkers;
         private GameObject _criteriaMenu;
         private GameObject _settingMenu;
+        private GameObject _modMenu;
         private GameObject _ratingsMenu;
         private GameObject _commentMenu;
         private GameObject _commentSelectMenu;
 
         private string currentCommentMenuId;
+        private string currentLoadedMod = null;
 
         private Transform _songTimeline;
         private Transform _pauseMenu;
@@ -594,6 +596,7 @@ namespace ChroMapper_LightModding.UI
             AddCriteriaMenu(_pauseMenu);
             _criteriaMenu.SetActive(true);
             AddSettingMenu(_pauseMenu);
+            AddModMenu(_pauseMenu);
             AddRatingsMenu(_criteriaMenu.transform);
             _ratingsMenu.SetActive(true);
         }
@@ -631,6 +634,17 @@ namespace ChroMapper_LightModding.UI
                 RefreshCriteriaMenu();
             });
             UIHelper.AddLabel(_criteriaMenu.transform, "FileSaveWarning", "Save the map before using these buttons!", new Vector2(0, -18), new Vector2(180, 24), TextAlignmentOptions.Left);
+            #endregion
+
+            #region Mod button
+            UIHelper.AddButton(_criteriaMenu.transform, "ImportMod", "Import Mod", new Vector2(126, -18), () =>
+            {
+                if (_modMenu != null)
+                {
+                    _modMenu.SetActive(true);
+                    _criteriaMenu.SetActive(false);
+                }
+            });
             #endregion
 
             #region Timings button
@@ -929,6 +943,45 @@ namespace ChroMapper_LightModding.UI
             #endregion
             #endregion
 
+        }
+
+        public void AddModMenu(Transform parent)
+        {
+            _modMenu = new GameObject("Automodder Mod Menu");
+            _modMenu.transform.parent = parent;
+            _modMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_modMenu, 572, 215, 0.05f, 1.20f, 0, 0, 0, 1);
+
+            Image image = _modMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            #region Settings button
+            UIHelper.AddButton(_modMenu.transform, "ImportMod", "Import Mod", new Vector2(250, -18), () =>
+            {
+                if (currentLoadedMod != null && currentLoadedMod.Length > 0)
+                {
+                    List<string> mod = currentLoadedMod.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).ToList();
+                    ImportModOnThisDiff(mod);
+                    outlineHelper.RefreshOutlines();
+                    RefreshTimelineMarkers();
+                }
+            });
+
+            UIHelper.AddTextInput(_modMenu.transform, "ModTextbox", "", new Vector2(-60, -107), "Paste mod here", (change) =>
+            {
+                currentLoadedMod = change;
+            }, 500, 200);
+
+            UIHelper.AddButton(_modMenu.transform, "CloseSettingsMenu", "Close Menu", new Vector2(250, -44), () =>
+            {
+                _criteriaMenu.SetActive(true);
+                _modMenu.SetActive(false);
+            });
+
+            #endregion
         }
 
         public void AddSettingMenu(Transform parent)
@@ -1296,6 +1349,14 @@ namespace ChroMapper_LightModding.UI
             var difficultyInfo = plugin.BeatSaberSongContainer.MapDifficultyInfo;
 
             autocheckHelper.RunAutoCheckOnDiff(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty);
+            plugin.CommentsUpdated.Invoke();
+        }
+
+        private void ImportModOnThisDiff(List<string> mod)
+        {
+            var difficultyInfo = plugin.BeatSaberSongContainer.MapDifficultyInfo;
+
+            autocheckHelper.RunImportMod(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty, mod);
             plugin.CommentsUpdated.Invoke();
         }
 

@@ -96,6 +96,24 @@ namespace BLMapCheck
             throw new Exception("Check was not finished correctly");
         }
 
+        public CheckResults ImportMod(string characteristic, string difficulty, List<string> mod)
+        {
+            CheckResults.Reset();
+            if (!mapLoaded)
+            {
+                throw new Exception("Map not loaded");
+            }
+
+            CriteriaCheckManager manager = new();
+            manager.ImportMod(characteristic, difficulty, mod);
+
+            if (CheckResults.Instance.CheckFinished)
+            {
+                return CheckResults.Instance;
+            }
+            throw new Exception("Check was not finished correctly");
+        }
+
         public CheckResults CompareTimings(string characteristic, string difficulty)
         {
             CheckResults.Reset();

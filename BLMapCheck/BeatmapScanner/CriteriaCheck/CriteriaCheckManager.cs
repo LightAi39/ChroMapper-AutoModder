@@ -1,21 +1,22 @@
-﻿using BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty;
+﻿using beatleader_analyzer.BeatmapScanner.Data;
+using beatleader_parser.Timescale;
+using BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty;
 using BLMapCheck.BeatmapScanner.CriteriaCheck.Info;
 using BLMapCheck.BeatmapScanner.Data.Criteria;
 using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
-using Parser.Map;
-using Parser.Map.Difficulty.V3.Base;
 using JoshaParity;
 using Newtonsoft.Json;
+using Parser.Map;
+using Parser.Map.Difficulty.V3.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using DifficultyV3 = Parser.Map.Difficulty.V3.Base.DifficultyV3;
 using Lights = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Lights;
 using Parity = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Parity;
 using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
-using beatleader_analyzer.BeatmapScanner.Data;
-using beatleader_parser.Timescale;
-using DifficultyV3 = Parser.Map.Difficulty.V3.Base.DifficultyV3;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
@@ -43,6 +44,92 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             CheckResults.Instance.CheckFinished = true;
             // Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
+        }
+
+        static public readonly string pattern = @"[-+]?\d*\.?\d+([eE][-+]?\d+)?";
+
+        public DiffCrit ImportMod(string characteristic, string difficulty, List<string> mod)
+        {
+            Characteristic = characteristic;
+            Difficulty = difficulty;
+            DiffCrit diffCrit = new();
+
+            bool loop;
+            int endIndex;
+            string comment;
+            string type;
+            string substring;
+            List<float> beats = new();
+
+            foreach (var line in mod)
+            {
+                substring = line.Trim();
+
+                comment = "";
+                type = "";
+
+                if (line.StartsWith("- Removed"))
+                {
+                    type = "Removed ";
+                }
+                else if (line.StartsWith("+ Added"))
+                {
+                    type = "Added ";
+                }
+                else if (line.StartsWith("/ Modified"))
+                {
+                    type = "Modified ";
+                }
+
+                Match match = Regex.Match(line, pattern, RegexOptions.Compiled);
+                if (match.Success)
+                {
+                    if (float.TryParse(match.Value, out float result))
+                    {
+                        do
+                        {
+                            loop = false;
+
+                            beats.Add(result);
+                            endIndex = match.Index + match.Length;
+                            substring = substring.Substring(endIndex);
+
+                            match = Regex.Match(substring, pattern, RegexOptions.Compiled);
+                            if (match.Success && float.TryParse(match.Value, out result))
+                            {
+                                if (match.Index <= 2) loop = true;
+                            }
+                        } while (loop);
+
+                        comment += substring.TrimStart();
+                        foreach (var beat in beats)
+                        {
+                            Parser.Map.Difficulty.V3.Grid.Note note = new()
+                            {
+                                Beats = beat
+                            };
+
+                            List<KeyValuePair> results = new();
+                            results.Add(new(type, comment));
+                            CheckResults.Instance.AddResult(new CheckResult()
+                            {
+                                Characteristic = Characteristic,
+                                Difficulty = Difficulty,
+                                Name = "Mod",
+                                Severity = Severity.Info,
+                                CheckType = "Mod",
+                                Description = "Mod",
+                                ResultData = results,
+                                BeatmapObjects = new() { note }
+                            });
+                        }
+                        beats.Clear();
+                    }
+                }
+            }
+
+            CheckResults.Instance.CheckFinished = true;
+            return diffCrit;
         }
 
         public DiffCrit CompareTimings(string characteristic, string difficulty)
