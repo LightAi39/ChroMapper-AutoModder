@@ -11,6 +11,7 @@ using Parser.Map;
 using Parser.Map.Difficulty.V3.Base;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DifficultyV3 = Parser.Map.Difficulty.V3.Base.DifficultyV3;
@@ -46,90 +47,198 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             // Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
         }
 
-        static public readonly string pattern = @"[-+]?\d*\.?\d+([eE][-+]?\d+)?";
+        static public readonly string NumberPattern = @"^\d+([.,]\d+)?";
+        static public readonly string NumberPattern2 = @"\d+([.,]\d+)?";
+        static public readonly string SpecialCharPattern = @"^[\s\W-]+";
 
         public DiffCrit ImportMod(string characteristic, string difficulty, List<string> mod)
         {
             Characteristic = characteristic;
             Difficulty = difficulty;
             DiffCrit diffCrit = new();
+            Severity severity = Severity.Info;
 
             bool loop;
+            bool keyword;
+            float beat;
             int endIndex;
             string comment;
-            string type;
             string substring;
             List<float> beats = new();
 
             foreach (var line in mod)
             {
                 substring = line.Trim();
-
+                keyword = false;
                 comment = "";
-                type = "";
 
-                if (line.StartsWith("- Removed"))
+                // SS-style format
+                if (line.StartsWith("(X)"))
                 {
-                    type = "Removed ";
+                    severity = Severity.Error;
                 }
-                else if (line.StartsWith("+ Added"))
+                else if (line.StartsWith("(?)"))
                 {
-                    type = "Added ";
+                    severity = Severity.Inconclusive;
                 }
-                else if (line.StartsWith("/ Modified"))
+                else if (line.StartsWith("(S)"))
                 {
-                    type = "Modified ";
+                    severity = Severity.Suggestion;
                 }
 
-                Match match = Regex.Match(line, pattern, RegexOptions.Compiled);
+                // Search for first beat
+                Match match = Regex.Match(line, NumberPattern2, RegexOptions.Compiled);
                 if (match.Success)
                 {
-                    if (float.TryParse(match.Value, out float result))
+                    beat = TryParseFloat(match.Value);
+                    if (beat >= 0)
                     {
                         do
                         {
                             loop = false;
-
-                            beats.Add(result);
+                            beats.Add(beat);
                             endIndex = match.Index + match.Length;
-                            substring = substring.Substring(endIndex);
+                            substring = substring.Substring(endIndex).TrimStart(',', '.').Trim();
 
-                            match = Regex.Match(substring, pattern, RegexOptions.Compiled);
-                            if (match.Success && float.TryParse(match.Value, out result))
+                            // If the word "and" is found, get the second number and end loop
+                            if (substring.StartsWith("and"))
                             {
-                                if (match.Index <= 2) loop = true;
+                                // Remove and and white space
+                                substring = substring.Substring(3).Trim();
+                                match = Regex.Match(substring, NumberPattern, RegexOptions.Compiled);
+                                if (match.Success)
+                                {
+                                    keyword = true;
+                                    beats.Add(TryParseFloat(match.Value));
+                                    endIndex = match.Index + match.Length;
+                                    substring = substring.Substring(endIndex).TrimStart(',', '.').Trim();
+                                }
+                            }
+                            else
+                            {
+                                // Search for more beats on same line
+                                match = Regex.Match(substring, NumberPattern, RegexOptions.Compiled);
+                                if (match.Success)
+                                {
+                                    beat = TryParseFloat(match.Value);
+                                    if (beat >= 0 && match.Index <= 2) loop = true;
+                                }
                             }
                         } while (loop);
-
-                        comment += substring.TrimStart();
-                        foreach (var beat in beats)
-                        {
-                            Parser.Map.Difficulty.V3.Grid.Note note = new()
-                            {
-                                Beats = beat
-                            };
-
-                            List<KeyValuePair> results = new();
-                            results.Add(new(type, comment));
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = Characteristic,
-                                Difficulty = Difficulty,
-                                Name = "Mod",
-                                Severity = Severity.Info,
-                                CheckType = "Mod",
-                                Description = "Mod",
-                                ResultData = results,
-                                BeatmapObjects = new() { note }
-                            });
-                        }
-                        beats.Clear();
                     }
+
+                    // Check for range
+                    if (!keyword && substring.StartsWith("to"))
+                    {
+                        // Remove to and white space
+                        string sub = substring.Substring(2).Trim();
+                        // Write the whole thing on both beat
+                        match = Regex.Match(sub, NumberPattern, RegexOptions.Compiled);
+                        if (match.Success)
+                        {
+                            beats.Add(TryParseFloat(match.Value));
+                        }
+                        comment = line;
+                    }
+                    else if (!keyword && substring.StartsWith("-"))
+                    {
+                        // Remove to and white space
+                        string sub = substring.Substring(1).Trim();
+                        // Write the whole thing on both beat
+                        match = Regex.Match(sub, NumberPattern, RegexOptions.Compiled);
+                        if (match.Success)
+                        {
+                            beats.Add(TryParseFloat(match.Value));
+                            comment = line;
+                        }
+                    }
+                    else comment = substring.Trim();
+
+                    // Remove special symbol and white space
+                    comment = Regex.Replace(comment, SpecialCharPattern, "");
+
+                    // BeatLeader difficulty compare format
+                    if (line.StartsWith("- Removed"))
+                    {
+                        comment = comment.Insert(0, "Removed ");
+                    }
+                    else if (line.StartsWith("+ Added"))
+                    {
+                        comment = comment.Insert(0, "Added ");
+                    }
+                    else if (line.StartsWith("/ Modified"))
+                    {
+                        comment = comment.Insert(0, "Modified ");
+                    }
+
+                    DifficultyV3 current = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
+
+                    foreach (var b in beats)
+                    {
+                        // Highlight all objects on beat
+                        List<BeatmapObject> beatmapObject = new();
+                        beatmapObject.AddRange(current.Notes.Where(x => x.Beats == b));
+                        beatmapObject.AddRange(current.Bombs.Where(x => x.Beats == b));
+                        beatmapObject.AddRange(current.Arcs.Where(x => x.Beats == b));
+                        beatmapObject.AddRange(current.Chains.Where(x => x.Beats == b));
+                        beatmapObject.AddRange(current.Walls.Where(x => x.Beats == b));
+                        // Create a fake object if necessary, otherwise there won't be any comment
+                        if (beatmapObject.Count == 0)
+                        {
+                            Parser.Map.Difficulty.V3.Grid.Note obj = new()
+                            {
+                                Beats = b,
+                                x = 0,
+                                y = 0,
+                                Color = 0
+                            };
+                            beatmapObject.Add(obj);
+                        }
+
+                        // This only highlight the first object of the list, better than nothing.
+                        CheckResults.Instance.AddResult(new CheckResult()
+                        {
+                            Characteristic = Characteristic,
+                            Difficulty = Difficulty,
+                            Name = "Mod",
+                            Severity = severity,
+                            CheckType = "Mod",
+                            Description = comment,
+                            ResultData = new(),
+                            BeatmapObjects = beatmapObject
+                        });
+                    }
+                    beats.Clear();
                 }
             }
 
             CheckResults.Instance.CheckFinished = true;
             return diffCrit;
+        }
+
+        public float TryParseFloat(string line)
+        {
+            CultureInfo frenchCulture = new CultureInfo("fr-FR");
+            if (float.TryParse(line, NumberStyles.Float, frenchCulture, out float result))
+            {
+                return result;
+            }
+            else if (float.TryParse(line, NumberStyles.Float, CultureInfo.InvariantCulture, out result))
+            {
+                return result;
+            }
+            else
+            {
+                string periodSeparatedNumber = line.Replace(',', '.');
+                if (float.TryParse(periodSeparatedNumber, NumberStyles.Float, CultureInfo.InvariantCulture, out result))
+                {
+                    return result;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
         }
 
         public DiffCrit CompareTimings(string characteristic, string difficulty)
