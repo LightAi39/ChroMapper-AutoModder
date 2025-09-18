@@ -273,6 +273,8 @@ namespace ChroMapper_LightModding.UI
             dialog.Open();
         }
 
+        public static CommentTypesEnum lastSelectedType = CommentTypesEnum.Suggestion;
+
         public void ShowCreateCommentUI(List<SelectedObject> selectedObjects)
         {
             CommentTypesEnum type = CommentTypesEnum.Suggestion;
@@ -295,13 +297,19 @@ namespace ChroMapper_LightModding.UI
                 .WithInitialValue(message)
                 .OnChanged((string s) => { message = s; });
 
-            dialog.AddComponent<DropdownComponent>()
+            var dropdown = dialog.AddComponent<DropdownComponent>()
                 .WithLabel("Type")
-                .WithOptions<CommentTypesEnum>()
-                .OnChanged((int i) => { type = (CommentTypesEnum)i; });
+                .WithOptions(Enum.GetValues(typeof(CommentTypesEnum)).Cast<CommentTypesEnum>().Select(t => Exporter.CommentTypeName(t)).ToList())
+                .OnChanged((int i) => { type = lastSelectedType = (CommentTypesEnum)i; });
 
-            dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(() => { plugin.HandleCreateComment(type, message, selectedObjects); }, "Create");
+            dropdown.Value = (int)lastSelectedType;
+
+			dialog.AddFooterButton(null, "Cancel");
+			dialog.AddFooterButton(() => { plugin.HandleCreateComment(type, message, selectedObjects); }, "Create");
+			if (plugin.HasCommentClipboard)
+			{
+				dialog.AddFooterButton(() => { plugin.PasteClipboardToSelection(selectedObjects); dialog.Close(); }, "Paste");
+			}
 
             dialog.Open();
         }
@@ -417,24 +425,24 @@ namespace ChroMapper_LightModding.UI
                 .WithInitialValue(message)
                 .OnChanged((string s) => { message = s; });
 
-            dialog.AddComponent<DropdownComponent>()
+            var typeSelector = dialog.AddComponent<DropdownComponent>()
                 .WithLabel("Type")
-                .WithOptions<CommentTypesEnum>()
-                .WithInitialValue(Convert.ToInt32(comment.Type))
+                .WithOptions(Enum.GetValues(typeof(CommentTypesEnum)).Cast<CommentTypesEnum>().Select(t => Exporter.CommentTypeName(t)).ToList())
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
+            typeSelector.Value = (int)comment.Type;
 
             dialog.AddFooterButton(null, "Cancel");
             dialog.AddFooterButton(() =>
             {
                 ShowDeleteCommentUI(comment);
             }, "Delete comment");
-            dialog.AddFooterButton(() =>
-            {
-                comment.Message = message;
-                comment.Type = type;
-                comment.MarkAsSuppressed = false;
-                plugin.HandleUpdateComment(comment);
-            }, "Save edit");
+			dialog.AddFooterButton(() =>
+			{
+				comment.Message = message;
+				comment.Type = type;
+				comment.MarkAsSuppressed = false;
+				plugin.HandleUpdateComment(comment);
+			}, "Save edit");
 
             dialog.Open();
         }
@@ -1277,7 +1285,10 @@ namespace ChroMapper_LightModding.UI
                 RefreshCommentMenu(comment);
             });
 
-
+			UIHelper.AddButton(_commentMenu.transform, "CopyComment", "Copy", new Vector2(57.5f, -159), () =>
+			{
+				plugin.SetCommentClipboard(comment.Type, comment.Message);
+			});
         }
 
         public void RefreshCommentSelectMenu(List<Comment> comments)
