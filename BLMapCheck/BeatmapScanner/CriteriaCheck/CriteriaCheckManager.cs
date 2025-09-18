@@ -47,9 +47,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             // Debug.Log(JsonConvert.SerializeObject(CheckResults.Instance, Formatting.Indented));
         }
 
-        static public readonly string NumberPattern = @"^\d+([.,]\d+)?";
-        static public readonly string NumberPattern2 = @"\d+([.,]\d+)?";
-        static public readonly string SpecialCharPattern = @"^[\s\W-]+";
+        static public readonly string NumberPattern = @"^\d+([.,])?(\d+)?";
+        static public readonly string NumberPattern2 = @"\d+([.,])?(\d+)?";
+        static public readonly string SpecialCharPattern = @"^[^\w]+";
 
         public DiffCrit ImportMod(string characteristic, string difficulty, List<string> mod)
         {
@@ -63,12 +63,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             float beat;
             int endIndex;
             string comment;
+            string str;
             string substring;
             List<float> beats = new();
 
             foreach (var line in mod)
             {
-                substring = line.Trim();
+                str = line.Trim();
                 keyword = false;
                 comment = "";
 
@@ -76,18 +77,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 if (line.StartsWith("(X)"))
                 {
                     severity = Severity.Error;
+                    str = str.Remove(0, 3).Trim();
                 }
                 else if (line.StartsWith("(?)"))
                 {
                     severity = Severity.Inconclusive;
+                    str = str.Remove(0, 3).Trim();
                 }
                 else if (line.StartsWith("(S)"))
                 {
                     severity = Severity.Suggestion;
+                    str = str.Remove(0, 3).Trim();
                 }
-
+                substring = str;
                 // Search for first beat
-                Match match = Regex.Match(line, NumberPattern2, RegexOptions.Compiled);
+                Match match = Regex.Match(str, NumberPattern2, RegexOptions.Compiled);
                 if (match.Success)
                 {
                     beat = TryParseFloat(match.Value);
@@ -137,20 +141,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                         if (match.Success)
                         {
                             beats.Add(TryParseFloat(match.Value));
+                            comment = str;
                         }
-                        comment = line;
+                        else comment = substring.Trim();
                     }
                     else if (!keyword && substring.StartsWith("-"))
                     {
-                        // Remove to and white space
+                        // Remove - and white space
                         string sub = substring.Substring(1).Trim();
                         // Write the whole thing on both beat
                         match = Regex.Match(sub, NumberPattern, RegexOptions.Compiled);
                         if (match.Success)
                         {
                             beats.Add(TryParseFloat(match.Value));
-                            comment = line;
+                            comment = str;
                         }
+                        else comment = substring.Trim();
                     }
                     else comment = substring.Trim();
 
