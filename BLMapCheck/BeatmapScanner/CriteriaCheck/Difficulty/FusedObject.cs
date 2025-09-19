@@ -1,294 +1,214 @@
 ﻿using BLMapCheck.Classes.Results;
+using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Configs.Config;
 using static BLMapCheck.Classes.Helper.Helper;
+using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class FusedObject
     {
-        // Detect if objects are too close. Configurable margin (in ms)
-        // TODO: There's probably a way better way to do this, can someone clean this mess
-        public static CritResult Check(List<Note> notes, List<Bomb> bombs, List<Wall> obstacles, List<Chain> chains, float njs)
+        // Objects may not be placed in a way where they intersect in the Z dimension.
+        // Objects that are placed within 0.5m of one another in the Z dimension on the same grid cell are considered to intersect.
+        public static CritResult Check(List<Note> notes, List<Bomb> bombs, List<Wall> obstacles, List<Chain> chains)
         {
-            var issue = CritResult.Success;
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            string name = "Fused Object";
+            string checkType = "Fused";
+            CritResult criteria = CritResult.Success;
             var timescale = CriteriaCheckManager.timescale;
 
-            foreach (var w in obstacles)
+            // Notes and bombs can be considered the same for this
+            List<BeatmapGridObject> objects = new();
+            objects.AddRange(notes);
+            objects.AddRange(bombs);
+            objects = objects.OrderBy(x => x.Beats).ToList();
+
+            // Compare walls
+            foreach (var o in obstacles)
             {
-                foreach (var c in notes)
+                // to all notes and bombs
+                foreach (var n in objects)
                 {
-                    timescale.BPM.SetCurrentBPM(c.Beats);
-                    var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (c.Beats - (w.Beats + w.DurationInBeats) >= max)
+                    // Need to calculate 0.5m based on the NJS and BPM
+                    var max = CalculateMeter(n.Beats, n.njs);
+
+                    // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
+                    if (n.Beats - (o.Beats + o.DurationInBeats) >= max)
                     {
                         break;
                     }
-                    if (c.Beats >= w.Beats - max && c.Beats <= w.Beats + w.DurationInBeats + max && c.x <= w.x + w.Width - 1 && c.x >= w.x && c.y < w.y + w.Height && c.y >= w.y - 1)
+
+                    // Need to take into account wall height and duration
+                    if (n.Beats >= o.Beats - max && n.Beats <= o.Beats + o.DurationInBeats + max && n.x <= o.x + o.Width - 1 && n.x >= o.x && n.y < o.y + o.Height && n.y >= o.y - 1)
                     {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Fused Object",
-                            Severity = Severity.Error,
-                            CheckType = "Fused",
-                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new(),
-                            BeatmapObjects = new() { c, w }
-                        });
-                        issue = CritResult.Fail;
+                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { n, o });
+                        criteria = CritResult.Fail;
                     }
                 }
-                foreach (var b in bombs)
-                {
-                    timescale.BPM.SetCurrentBPM(b.Beats);
-                    var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (b.Beats - (w.Beats + w.DurationInBeats) >= max)
-                    {
-                        break;
-                    }
-                    if (b.Beats >= w.Beats - max && b.Beats <= w.Beats + w.DurationInBeats + max && b.x <= w.x + w.Width - 1 && b.x >= w.x && b.y < w.y + w.Height && b.y >= w.y - 1)
-                    {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Fused Object",
-                            Severity = Severity.Error,
-                            CheckType = "Fused",
-                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new(),
-                            BeatmapObjects = new() { b, w }
-                        });
-                        issue = CritResult.Fail;
-                    }
-                }
+
+                // to all chains (links)
                 foreach (var c in chains)
                 {
-                    timescale.BPM.SetCurrentBPM(c.Beats);
-                    var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (c.TailInBeats - (w.Beats + w.DurationInBeats) >= max)
+                    // Need to calculate 0.5m based on the NJS and BPM
+                    var max = CalculateMeter(c.Beats, c.njs);
+
+                    // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
+                    if (c.TailInBeats - (o.Beats + o.DurationInBeats) >= max)
                     {
                         break;
                     }
-                    var pre = w.Beats - max;
-                    var post = w.Beats + w.DurationInBeats + max;
-                    if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && c.tx <= w.x + w.Width - 1 && c.tx >= w.x && c.ty < w.y + w.Height && c.ty >= w.y - 1)
+
+                    // Need to take into account wall height, duration and chain duration
+                    var pre = o.Beats - max;
+                    var post = o.Beats + o.DurationInBeats + max;
+                    if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && c.tx <= o.x + o.Width - 1 && c.tx >= o.x && c.ty < o.y + o.Height && c.ty >= o.y - 1)
                     {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Fused Object",
-                            Severity = Severity.Error,
-                            CheckType = "Fused",
-                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new(),
-                            BeatmapObjects = new() { c, w }
-                        });
-                        issue = CritResult.Fail;
+                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { c, o });
+                        criteria = CritResult.Fail;
                     }
                 }
             }
 
-            for (int i = 0; i < notes.Count; i++)
+            // Compare notes and bombs
+            for (int i = 0; i < objects.Count; i++)
             {
-                var n = notes[i];
-                for (int j = i + 1; j < notes.Count; j++)
+                var n = objects[i];
+                // to notes and bombs
+                for (int j = i + 1; j < objects.Count; j++)
                 {
-                    var n2 = notes[j];
-                    timescale.BPM.SetCurrentBPM(n2.Beats);
-                    var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (n2.Beats - n.Beats >= max)
+                    var next = objects[j];
+                    // Need to calculate 0.5m based on the NJS and BPM
+                    var max = CalculateMeter(next.Beats, next.njs);
+
+                    // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
+                    if (next.Beats - n.Beats >= max)
                     {
                         break;
                     }
-                    if (n.Beats >= n2.Beats - max && n.Beats <= n2.Beats + max && n.x == n2.x && n.y == n2.y)
+
+                    // Compare beat, x and y position
+                    if (n.Beats >= next.Beats - max && n.Beats <= next.Beats + max && n.x == next.x && n.y == next.y)
                     {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Fused Object",
-                            Severity = Severity.Error,
-                            CheckType = "Fused",
-                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new(),
-                            BeatmapObjects = new() { n, n2 }
-                        });
-                        issue = CritResult.Fail;
+                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { n, next });
+                        criteria = CritResult.Fail;
                     }
                 }
-                foreach (var b in bombs)
-                {
-                    timescale.BPM.SetCurrentBPM(b.Beats);
-                    var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (b.Beats - n.Beats >= max)
-                    {
-                        break;
-                    }
-                    if (n.Beats >= b.Beats - max && n.Beats <= b.Beats + max && n.x == b.x && n.y == b.y)
-                    {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Fused Object",
-                            Severity = Severity.Error,
-                            CheckType = "Fused",
-                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new(),
-                            BeatmapObjects = new() { n, b }
-                        });
-                        issue = CritResult.Fail;
-                    }
-                }
+            }
+
+            // Compare notes
+            foreach (var n in notes)
+            {
+                // to chains
                 foreach (var c in chains)
                 {
-                    timescale.BPM.SetCurrentBPM(c.Beats);
-                    var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
+                    // Need to calculate 0.5m based on the NJS and BPM
+                    var max = CalculateMeter(c.Beats, c.njs);
+
+                    // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
                     if (c.TailInBeats - n.Beats >= max)
                     {
                         break;
                     }
-                    if (n.x == c.x && n.y == c.y) // Head
+
+                    // Head note, break loop
+                    if (n.Beats == c.Beats && n.x == c.x && n.y == c.y && n.Color == c.Color)
                     {
                         break;
                     }
+
+                    // Need to take into account chain duration
                     var pre = n.Beats - max;
                     var post = n.Beats + max;
-                    var dir = c.CutDirection;
                     if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && IsPointBetween(n, c))
                     {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Fused Object",
-                            Severity = Severity.Error,
-                            CheckType = "Fused",
-                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new(),
-                            BeatmapObjects = new() { n, c }
-                        });
-                        issue = CritResult.Fail;
+                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { n, c });
+                        criteria = CritResult.Fail;
                     }
                 }
             }
 
+            // Compare bombs
             for (int i = 0; i < bombs.Count; i++)
             {
                 var b = bombs[i];
-                for (int j = i + 1; j < bombs.Count; j++)
-                {
-                    var b2 = bombs[j];
-                    timescale.BPM.SetCurrentBPM(b2.Beats);
-                    var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
-                    if (b2.Beats - b.Beats >= max)
-                    {
-                        break;
-                    }
-                    if (b.Beats >= b2.Beats - max && b.Beats <= b2.Beats + max && b.x == b2.x && b.y == b2.y)
-                    {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Fused Object",
-                            Severity = Severity.Error,
-                            CheckType = "Fused",
-                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new(),
-                            BeatmapObjects = new() { b, b2 }
-                        });
-                        issue = CritResult.Fail;
-                    }
-                }
+                // to chains
                 foreach (var c in chains)
                 {
-                    timescale.BPM.SetCurrentBPM(c.Beats);
-                    var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
+                    // Need to calculate 0.5m based on the NJS and BPM
+                    var max = CalculateMeter(c.Beats, c.njs);
+
+                    // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
                     if (c.TailInBeats - b.Beats >= max)
                     {
                         break;
                     }
-                    if (b.x == c.x && b.y == c.y) // Head
-                    {
-                        break;
-                    }
+
+                    // Need to take into account chain duration
                     var pre = b.Beats - max;
                     var post = b.Beats + max;
-                    var dir = c.CutDirection;
                     if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && IsPointBetween(b, c))
                     {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Fused Object",
-                            Severity = Severity.Error,
-                            CheckType = "Fused",
-                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new(),
-                            BeatmapObjects = new() { b, c }
-                        });
-                        issue = CritResult.Fail;
+                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { b, c });
+                        criteria = CritResult.Fail;
                     }
                 }
             }
 
+            // Compare chains
             for (int i = 0; i < chains.Count; i++)
             {
                 var c = chains[i];
+                // to chains
                 for (int j = i + 1; j < chains.Count; j++)
                 {
                     var c2 = chains[j];
-                    timescale.BPM.SetCurrentBPM(c2.Beats);
-                    var max = Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
+                    // Need to calculate 0.5m based on the NJS and BPM
+                    var max = CalculateMeter(c.Beats, c.njs);
+
+                    // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
                     if (Math.Abs(c2.TailInBeats - c.Beats) >= max || Math.Abs(c2.TailInBeats - c.TailInBeats) >= max || Math.Abs(c2.Beats - c.Beats) >= max || Math.Abs(c2.Beats - c.TailInBeats) >= max)
                     {
                         break;
                     }
+
+                    // Need to take into account chain duration
                     var pre = c.Beats - max;
                     var post = c.Beats + max;
                     if ((c2.Beats >= pre || c2.TailInBeats >= pre) && (c2.Beats <= post || c2.TailInBeats <= post) && DoLinesIntersect(c, c2))
                     {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Fused Object",
-                            Severity = Severity.Error,
-                            CheckType = "Fused",
-                            Description = "Objects cannot collide within " + max.ToString() + " in the same line",
-                            ResultData = new(),
-                            BeatmapObjects = new() { c, c2 }
-                        });
-                        issue = CritResult.Fail;
+                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { c, c2 });
+                        criteria = CritResult.Fail;
                     }
                 }
             }
 
-            if (issue == CritResult.Success)
+            if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Fused Object",
-                    Severity = Severity.Passed,
-                    CheckType = "Fused",
-                    Description = "No fused objects detected.",
-                    ResultData = new(),
-                });
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                    name, Severity.Passed, checkType, "No fused objects detected");
             }
 
             timescale.BPM.ResetCurrentBPM();
-            return issue;
+
+            return criteria;
+        }
+
+        public static double CalculateMeter(float beat, float njs)
+        {
+            CriteriaCheckManager.timescale.BPM.SetCurrentBPM(beat);
+            return Math.Round(CriteriaCheckManager.timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using System.Collections.Generic;
-using System.Linq;
-using System;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Classes.Helper.Helper;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
@@ -14,18 +14,23 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Implementation of Kival Evan hitboxInline.ts, hitboxStair.ts and hitboxReverseStaircase.ts
         public static CritResult HitboxCheck(List<Note> notes, float njs)
         {
-            var issue = CritResult.Success;
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            CritResult criteria = CritResult.Success;
             var timescale = CriteriaCheckManager.timescale;
 
             if (notes.Any())
             {
+                // Store last left and right note
                 Note[] lastNote = { null, null };
                 List<List<Note>> swingNoteArray = new()
                 {
                     new(),
                     new()
                 };
-                var arr = new List<Note>();
+
+                // Store potential hitbox issue
+                var hitbox = new List<Note>();
 
                 for (int i = 0; i < notes.Count; i++)
                 {
@@ -47,7 +52,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         }
                         if (njs < 1.425 / ((60 * (note.Beats - other.Beats)) / timescale.BPM.GetValue()) && isInline)
                         {
-                            arr.Add(note);
+                            hitbox.Add(note);
                             break;
                         }
                     }
@@ -55,19 +60,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     swingNoteArray[note.Color].Add(note);
                 }
 
-                foreach (var item in arr)
+                foreach (var item in hitbox)
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Inline",
-                        Severity = Severity.Info,
-                        CheckType = "Hitbox",
-                        Description = "Low NJS Inline.",
-                        ResultData = new(),
-                        BeatmapObjects = new() { item }
-                    });
+                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        "Inline", Severity.Warning, "Hitbox", "Low NJS Inline", new(), new() { item });
+                    criteria = CritResult.Warning;
                 }
 
                 var hitboxTime = (0.15 * timescale.BPM.GetValue()) / 60;
@@ -81,7 +78,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     new()
                 };
                 NoteData[] noteOccupy = { new(), new() };
-                arr.Clear();
+                hitbox.Clear();
+
                 for (int i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
@@ -124,7 +122,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             {
                                 if (note.x == noteOccupy[(note.Color + 1) % 2].Line && note.y == noteOccupy[(note.Color + 1) % 2].Layer && !Swing.IsDouble(note, notes, i))
                                 {
-                                    arr.Add(note);
+                                    hitbox.Add(note);
                                 }
                             }
                         }
@@ -147,20 +145,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     swingNoteArray[note.Color].Add(note);
                 }
 
-                foreach (var item in arr)
+                foreach (var item in hitbox)
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Staircase",
-                        Severity = Severity.Warning,
-                        CheckType = "Staircase",
-                        Description = "Potential Hitbox issue.",
-                        ResultData = new() { new("Type", "Staircase") },
-                        BeatmapObjects = new() { item }
-                    });
-                    issue = CritResult.Warning;
+                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        "Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue",
+                        new List<Classes.Results.KeyValuePair>() { new("Type", "Staircase") }, new() { item });
+                    criteria = CritResult.Warning;
                 }
 
                 var constant = 0.03414823529;
@@ -172,7 +162,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     new(),
                     new()
                 };
-                arr.Clear();
+                hitbox.Clear();
+
                 for (int i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
@@ -200,49 +191,33 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             if (njs < 1.425 / ((60 * (note.Beats - other.Beats)) / timescale.BPM.GetValue() + (isDiagonal ? constantDiagonal : constant)) &&
                                 Swing.IsIntersect(note, other, value, 1))
                             {
-                                arr.Add(other);
+                                hitbox.Add(other);
                                 break;
                             }
                         }
 
                     }
+
                     lastNote[note.Color] = note;
                     swingNoteArray[note.Color].Add(note);
                 }
 
-                foreach (var item in arr)
+                foreach (var item in hitbox)
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Reverse Staircase",
-                        Severity = Severity.Warning,
-                        CheckType = "Staircase",
-                        Description = "Potential Hitbox issue.",
-                        ResultData = new() { new("Type", "Reverse Staircase") },
-                        BeatmapObjects = new() { item }
-                    });
-                    issue = CritResult.Warning;
+                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        "Reverse Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue", 
+                        new List<Classes.Results.KeyValuePair>() { new("Type", "Reverse Staircase") }, new() { item });
+                    criteria = CritResult.Warning;
                 }
             }
 
-            if(issue == CritResult.Success)
+            if(criteria == CritResult.Success)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Staircase",
-                    Severity = Severity.Passed,
-                    CheckType = "Staircase",
-                    Description = "No staircase issue detected.",
-                    ResultData = new(),
-                });
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        "Staircase", Severity.Passed, "Staircase", "No hitbox issue detected");
             }
 
-            return issue;
+            return criteria;
         }
-
     }
 }

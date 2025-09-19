@@ -18,7 +18,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Check if a note block the swing path of another note of a different color
         public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Note> notes)
         {
-            var issue = CritResult.Success;
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            string name = "Swing Path";
+            string checkType = "Swing";
+            CritResult criteria = CritResult.Success;
             var timescale = CriteriaCheckManager.timescale;
 
             if (beatmapGridObjects.Any())
@@ -44,7 +48,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
 
                 // No dot support for now
-                if(Configs.Config.Instance.DisplayBadcut)
+                if (Configs.Config.Instance.DisplayBadcut)
                 {
                     foreach (var group in doubleNotes)
                     {
@@ -57,7 +61,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 var note2 = group[j];
                                 if (note.Beats != note2.Beats) break; // Not a double anymore
                                 if (note.Color == note2.Color) continue; // Same color
-                                                                         // Fetch previous note, simulate swing
+                                // Fetch previous note, simulate swing
                                 var previous = notes.Where(c => c.Beats < note2.Beats && c.Color == note2.Color).LastOrDefault();
                                 if (previous != null)
                                 {
@@ -97,17 +101,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         if (InPath)
                                         {
                                             var obj = beatmapGridObjects.Where(c => c.Beats == note.Beats && note.x == c.x && note.y == c.y).FirstOrDefault();
-                                            CheckResults.Instance.AddResult(new CheckResult()
-                                            {
-                                                Characteristic = CriteriaCheckManager.Characteristic,
-                                                Difficulty = CriteriaCheckManager.Difficulty,
-                                                Name = "Swing Path",
-                                                Severity = Severity.Info,
-                                                CheckType = "Swing",
-                                                Description = "Possible swing path issue.",
-                                                ResultData = new(),
-                                                BeatmapObjects = new() { obj }
-                                            });
+
+                                            CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                                                name, Severity.Info, checkType, "Possible swing path issue", new(), new() { obj });
                                         }
                                     }
                                 }
@@ -116,10 +112,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                 }
 
-                List<Note> arr = new();
-                List<Note> arr2 = new();
+                // List to store found notes that are possible swing path issue
+                List<Note> found = new();
                 var lastTime = 0d;
 
+                // TODO: Add comments to this, or come up with a better algo
                 for (int i = 0; i < beatmapGridObjects.Count; i++)
                 {
                     var current = beatmapGridObjects[i];
@@ -153,14 +150,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             IsDiagonal = true;
                         }
-                        var a = swings.Where(x => x.notes.Any(y => y.b == curr.Beats && y.c == curr.Color && y.d == curr.CutDirection && y.x == curr.x && y.y == curr.y)).FirstOrDefault();
-                        var b = swings.Where(x => x.notes.Any(y => y.b == comp.Beats && y.c == comp.Color && y.d == comp.CutDirection && y.x == comp.x && y.y == comp.y)).FirstOrDefault();
+                        var a = swings.Where(x => x.notes.Any(y => y.Beats == curr.Beats && y.Color == curr.Color && y.CutDirection == curr.CutDirection && y.x == curr.x && y.y == curr.y)).FirstOrDefault();
+                        var b = swings.Where(x => x.notes.Any(y => y.Beats == comp.Beats && y.Color == comp.Color && y.CutDirection == comp.CutDirection && y.x == comp.x && y.y == comp.y)).FirstOrDefault();
                         var d = Math.Sqrt(Math.Pow(curr.x - comp.x, 2) + Math.Pow(curr.y - comp.y, 2));
                         if (d > 0.499 && d < 1.001) // Adjacent
                         {
                             if (curr.CutDirection == comp.CutDirection && SwingType.Diagonal.Contains(curr.CutDirection))
                             {
-                                arr.Add(curr);
+                                found.Add(curr);
                                 lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
                                 continue;
                             }
@@ -171,7 +168,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             var target = (comp.x, comp.y);
                             var index = 1;
                             var rev = Reverse.Get(curr.CutDirection);
-                            var count = arr.Count;
+                            var count = found.Count;
                             if (curr.CutDirection != 8)
                             {
                                 while (!NoteDirection.IsLimit(pos, rev))
@@ -180,12 +177,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     index++;
                                     if (pos == target)
                                     {
-                                        arr.Add(curr);
+                                        found.Add(curr);
                                         lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
                                         break;
                                     }
                                 }
-                                if(count != arr.Count)
+                                if(count != found.Count)
                                 {
                                     continue;
                                 }
@@ -202,12 +199,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     index++;
                                     if (pos == target)
                                     {
-                                        arr.Add(curr);
+                                        found.Add(curr);
                                         lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
                                         break;
                                     }
                                 }
-                                if (count != arr.Count)
+                                if (count != found.Count)
                                 {
                                     continue;
                                 }
@@ -216,43 +213,26 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         if (((curr.y == comp.y || curr.x == comp.x) && Swing.IsIntersect(curr, comp, angle, 2)) ||
                                 (IsDiagonal && Swing.IsIntersect(curr, comp, angle2, 2)))
                         {
-                            arr.Add(curr);
+                            found.Add(curr);
                             lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
                         }
                     }
                 }
-                foreach (var item in arr)
+                foreach (var item in found)
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Swing Path",
-                        Severity = Severity.Error,
-                        CheckType = "Swing",
-                        Description = "Swing path issue.",
-                        ResultData = new(),
-                        BeatmapObjects = new() { item }
-                    });
-                    issue = CritResult.Fail;
+                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        name, Severity.Error, checkType, "Swing path issue", new(), new() { item });
+                    criteria = CritResult.Fail;
                 }
             }
 
-            if (issue == CritResult.Success)
+            if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Swing Path",
-                    Severity = Severity.Passed,
-                    CheckType = "Swing",
-                    Description = "No issue with swing path detected.",
-                    ResultData = new()
-                });
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        name, Severity.Passed, checkType, "No issue with swing path detected");
             }
 
-            return issue;
+            return criteria;
         }
     }
 }

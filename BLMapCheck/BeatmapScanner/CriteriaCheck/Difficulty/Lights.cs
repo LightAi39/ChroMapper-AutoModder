@@ -40,41 +40,33 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Also check for well-lit bombs
         public static CritResult Check(float songLength, List<Light> events, List<Lightcoloreventboxgroup> v3events, List<Bomb> bombs)
         {
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            string name = "Light";
+            string checkType = "Light";
+            CritResult criteria = CritResult.Success;
             var timescale = CriteriaCheckManager.timescale;
 
-            var issue = CritResult.Success;
             if (songLength == 0)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Light",
-                    Severity = Severity.Error,
-                    CheckType = "Light",
-                    Description = "Light check error, SongLength is 0. Make sure to use an ogg file.",
-                    ResultData = new(),
-                });
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                    name, Severity.Error, checkType, "Light check error, SongLength is 0. Make sure to use an ogg file");
                 return CritResult.Fail;
             }
+
             var end = timescale.BPM.ToBeatTime(songLength, true);
             var lit = true;
+
+            // Check if there's lights in the map
             if ((!events.Any() || !events.Exists(e => e.Type >= 0 && e.Type <= 5)) && !v3events.Any())
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Light",
-                    Severity = Severity.Error,
-                    CheckType = "Light",
-                    Description = "The map must have sufficient lighting throughout.",
-                    ResultData = new()
-                });
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                    name, Severity.Error, checkType, "The map must have sufficient lighting throughout");
                 return CritResult.Fail;
             }
             else
             {
+                // Calculate the average amount of light per beat
                 var lights = events.Where(e => e.Type >= 0 && e.Type <= 5).OrderBy(e => e.Beats).ToList();
                 var average = lights.Count() / end;
                 if (v3events.Count > 0)
@@ -83,50 +75,30 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 if (average < Instance.AverageLightPerBeat)
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Average Light",
-                        Severity = Severity.Error,
-                        CheckType = "Light",
-                        Description = "The map must have sufficient lighting throughout.",
-                        ResultData = new() { new("CurrentAvgLightPerBeat", average.ToString()), new("RequiredAvgLightPerBeat", Instance.AverageLightPerBeat.ToString()) }
-                    });
-                    issue = CritResult.Fail;
+                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        "Average Light", Severity.Error, checkType, "The map must have sufficient lighting throughout", 
+                        new() { new("CurrentAvgLightPerBeat", average.ToString()), new("RequiredAvgLightPerBeat", Instance.AverageLightPerBeat.ToString()) });
+                    criteria = CritResult.Fail;
                 }
 
-                if (issue == CritResult.Success)
+                if (criteria == CritResult.Success)
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Light",
-                        Severity = Severity.Passed,
-                        CheckType = "Light",
-                        Description = "Map has enough light per beat in average.",
-                        ResultData = new() { new("CurrentAvgLightPerBeat", average.ToString()), new("RequiredAvgLightPerBeat", Instance.AverageLightPerBeat.ToString()) }
-                    });
+                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        name, Severity.Error, checkType, "Map has enough light per beat in average",
+                        new() { new("CurrentAvgLightPerBeat", average.ToString()), new("RequiredAvgLightPerBeat", Instance.AverageLightPerBeat.ToString()) });
                 }
 
+                // Bombs must be sufficiently lit during their presence
+                name = "Bomb Lit";
                 // Based on: https://github.com/KivalEvan/BeatSaber-MapCheck/blob/main/src/ts/tools/events/unlitBomb.ts
                 var eventLitTime = new List<List<EventLitTime>>();
+                // If V3 lights exist, bomb won't be checked
                 if (v3events.Any())
                 {
-                    //ExtendOverallComment("R6A - Warning - V3 Lights detected. Bombs visibility won't be checked."); TODO: USE NEW METHOD
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Bomb Lit",
-                        Severity = Severity.Inconclusive,
-                        CheckType = "Light",
-                        Description = "V3 Lights detected. Bombs visibility won't be checked.",
-                        ResultData = new() { new("BombLit", "Inconclusive") },
-                        BeatmapObjects = new(bombs) { }
-                    });
-                    return CritResult.Warning;
+                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        name, Severity.Inconclusive, checkType, "V3 Lights detected. Bombs visibility won't be checked",
+                        new() { new("BombLit", "Inconclusive") });
+                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                 }
                 else
                 {
@@ -173,19 +145,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         }
                         if (!isLit)
                         {
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Bomb Lit",
-                                Severity = Severity.Error,
-                                CheckType = "Light",
-                                Description = "There must be sufficient lighting whenever bombs are present.",
-                                ResultData = new() { new("BombLit", isLit.ToString()) },
-                                BeatmapObjects = new() { bomb }
-                            });
                             lit = false;
-                            issue = CritResult.Fail;
+                            CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                                name, Severity.Error, checkType, "Bombs must be sufficiently lit during their presence",
+                                new() { new("BombLit", isLit.ToString()) }, new() { bomb });
+                            criteria = CritResult.Fail;
                         }
                     }
                 }
@@ -193,20 +157,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if(lit)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Bomb Lit",
-                    Severity = Severity.Passed,
-                    CheckType = "Light",
-                    Description = "Bombs in the map are properly lit.",
-                    ResultData = new()
-                });
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                    name, Severity.Passed, checkType, "Bombs in the map are properly lit");
             }
             
             timescale.BPM.ResetCurrentBPM();
-            return issue;
+
+            return criteria;
         }
     }
 }

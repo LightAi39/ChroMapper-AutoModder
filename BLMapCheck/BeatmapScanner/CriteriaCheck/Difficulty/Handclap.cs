@@ -10,28 +10,38 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Handclap
     {
-        // Attempt to detect specific note and angle placement based on BeatLeader criteria
+        // Attempt to detect specific note and angle placement
+        // TODO: Use swing path and simulation instead of hardcoding logic
         public static CritResult Check(List<Note> notes)
         {
-            var issue = CritResult.Success;
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            string name = "Hand Clap";
+            string checkType = "Handclap";
+            CritResult criteria = CritResult.Success;
 
             if (notes.Any())
             {
                 Note previous = notes[0];
+                // Store last red and blue note
                 Note[] lastNote = { null, null };
                 List<List<Note>> swingNoteArray = new()
                 {
                     new(),
                     new()
                 };
-                var arr = new List<Note>();
+
+                // Store potential handclap
+                var handclap = new List<Note>();
                 for (int i = 0; i < notes.Count; i++)
                 {
                     var note = notes[i];
+                    // Skip any direction
                     if (note.CutDirection == 8)
                     {
                         continue;
                     }
+                    // Clear swingNoteArray if the beat is not the same for the same hand
                     if (lastNote[note.Color] != null)
                     {
                         if (note.Beats != lastNote[note.Color].Beats)
@@ -39,41 +49,47 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             swingNoteArray[note.Color].Clear();
                         }
                     }
+                    // Compare current note to opposite color notes on same beat
                     foreach (var other in swingNoteArray[(note.Color + 1) % 2])
                     {
+                        // Skip any direction
                         if (other.CutDirection == 8)
                         {
                             continue;
                         }
+                        // If it isn't a color note, skip
                         if (other.Color != 0 && other.Color != 1)
                         {
                             continue;
                         }
+                        // If the beat doesn't match, skip
                         if (note.Beats != other.Beats)
                         {
                             continue;
                         }
+                        // Calculate distance
                         var d = Math.Sqrt(Math.Pow(note.x - other.x, 2) + Math.Pow(note.y - other.y, 2));
                         if (d > 0.499 && d < 1.001) // Adjacent
                         {
-
+                            // Same line
                             if (other.x == note.x)
                             {
                                 if ((SwingType.Up.Contains(note.CutDirection) && SwingType.Down.Contains(other.CutDirection)) ||
                                     (SwingType.Down.Contains(note.CutDirection) && SwingType.Up.Contains(other.CutDirection)))
                                 {
-                                    arr.Add(other);
-                                    arr.Add(note);
+                                    handclap.Add(other);
+                                    handclap.Add(note);
                                     break;
                                 }
                             }
+                            // Same layer
                             else if (other.y == note.y)
                             {
                                 if ((SwingType.Left.Contains(note.CutDirection) && SwingType.Right.Contains(other.CutDirection)) ||
                                     (SwingType.Right.Contains(note.CutDirection) && SwingType.Left.Contains(other.CutDirection)))
                                 {
-                                    arr.Add(other);
-                                    arr.Add(note);
+                                    handclap.Add(other);
+                                    handclap.Add(note);
                                     break;
                                 }
                             }
@@ -85,19 +101,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 (note.CutDirection == 4 && note.y < other.y && note.x > other.x) ||
                                 (note.CutDirection == 5 && note.y < other.y && note.x < other.x)) && Reverse.Get(note.CutDirection) == other.CutDirection)
                             {
-                                arr.Add(other);
-                                arr.Add(note);
+                                handclap.Add(other);
+                                handclap.Add(note);
                                 break;
                             }
                         }
                         else if (d >= 2 && d <= 2.99) // 1-2 wide
                         {
+                            // This method move the note according to it direction on the grid by one, and return the new position
                             if (NoteDirection.Move(note) == NoteDirection.Move(other))
                             {
                                 if ((note.Color == 0 && note.x > other.x) || (note.Color == 1 && note.x < other.x)) // Crossover
                                 {
-                                    arr.Add(other);
-                                    arr.Add(note);
+                                    handclap.Add(other);
+                                    handclap.Add(note);
                                     break;
                                 }
                                 else if ((note.x == other.x + 2 && note.y == other.y + 2) || (other.x == note.x + 2 && other.y == note.y + 2) // Facing directly
@@ -107,29 +124,28 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 (other.y == note.y && other.x == note.x + 2 && Reverse.Get(note.CutDirection) == other.CutDirection) ||
                                 (other.y == note.y && other.x == note.x - 2 && Reverse.Get(note.CutDirection) == other.CutDirection))
                                 {
-                                    arr.Add(other);
-                                    arr.Add(note);
+                                    handclap.Add(other);
+                                    handclap.Add(note);
                                     break;
                                 }
                             }
                         }
                         else if (d > 2.99 && ((note.Color == 0 && note.x > 2) || (note.Color == 1 && note.x < 1))) // 3-wide
                         {
-                            // TODO: This is trash, could easily be done better
                             if (other.y == note.y)
                             {
                                 if (((SwingType.Up_Left.Contains(note.CutDirection) && SwingType.Up_Right.Contains(other.CutDirection) && note.Color == 1) ||
                                     (SwingType.Up_Right.Contains(note.CutDirection) && SwingType.Up_Left.Contains(other.CutDirection) && note.Color == 0)))
                                 {
-                                    arr.Add(other);
-                                    arr.Add(note);
+                                    handclap.Add(other);
+                                    handclap.Add(note);
                                     break;
                                 }
                                 if ((SwingType.Down_Left.Contains(note.CutDirection) && SwingType.Down_Right.Contains(other.CutDirection) && note.Color == 1) ||
                                 (SwingType.Down_Right.Contains(note.CutDirection) && SwingType.Down_Left.Contains(other.CutDirection) && note.Color == 0))
                                 {
-                                    arr.Add(other);
-                                    arr.Add(note);
+                                    handclap.Add(other);
+                                    handclap.Add(note);
                                     break;
                                 }
 
@@ -140,38 +156,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     swingNoteArray[note.Color].Add(note);
                 }
 
-                foreach (var item in arr)
+                foreach (var item in handclap)
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Hand Clap",
-                        Severity = Severity.Warning,
-                        CheckType = "Handclap",
-                        Description = "Patterns must not encourage hand clapping.",
-                        ResultData = new() { new("Handclap", "Warning") },
-                        BeatmapObjects = new() { item }
-                    });
-                    issue = CritResult.Warning;
+                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        name, Severity.Warning, checkType, "Patterns must not encourage hand clapping", new() { new("Handclap", "Warning") }, new() { item });
+                    criteria = CritResult.Warning;
                 }
             }
 
-            if (issue == CritResult.Success)
+            if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Hand Clap",
-                    Severity = Severity.Passed,
-                    CheckType = "Handclap",
-                    Description = "No handclap pattern detected.",
-                    ResultData = new(),
-                });
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        name, Severity.Passed, checkType, "No handclap pattern detected");
             }
 
-            return issue;
+            return criteria;
         }
     }
 }

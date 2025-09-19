@@ -14,178 +14,138 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             public bool Flick { get; set; } = false;
         }
 
+        // Check for flick while using average EBPM over time
         public static void Check(List<SwingData> swings, List<Parser.Map.Difficulty.V3.Grid.Note> notes)
         {
-            if (Configs.Config.Instance.DisplayFlick)
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            string name = "Unexpected Speed";
+            string checkType = "Speed";
+
+            var windowSize = 4f; // beats
+            Queue<SwingData> dataWindowLeft = new();
+            Queue<SwingData> dataWindowRight = new();
+            List<EbpmData> rollingAverageLeft = new();
+            List<EbpmData> rollingAverageRight = new();
+            List<EbpmData> ReverseRollingAverageLeft = new();
+            List<EbpmData> ReverseRollingAverageRight = new();
+
+            // Preprocess the data
+            foreach (var swing in swings)
             {
-                var windowSize = 4f; // beats
-                Queue<SwingData> dataWindowLeft = new();
-                Queue<SwingData> dataWindowRight = new();
-                List<EbpmData> rollingAverageLeft = new();
-                List<EbpmData> rollingAverageRight = new();
-                List<EbpmData> ReverseRollingAverageLeft = new();
-                List<EbpmData> ReverseRollingAverageRight = new();
+                EbpmData data = new();
+                var clean = true;
+                if (!swing.rightHand)
+                {
+                    dataWindowLeft.Enqueue(swing);
+                    do
+                    {
+                        // Only keep the swings that are part of the window size (in beat) in the queue
+                        if (dataWindowLeft.Peek().swingStartBeat < swing.swingStartBeat - windowSize) dataWindowLeft.Dequeue();
+                        else clean = false;
+                    } while (clean);
+                    data.Swing = swing;
+                    // Get the average of the current queue
+                    data.Average = dataWindowLeft.Select(d => d.swingEBPM).Average();
+                    rollingAverageLeft.Add(data);
+                }
+                else
+                {
+                    dataWindowRight.Enqueue(swing);
+                    do
+                    {
+                        if (dataWindowRight.Peek().swingStartBeat < swing.swingStartBeat - windowSize) dataWindowRight.Dequeue();
+                        else clean = false;
+                    } while (clean);
+                    data.Swing = swing;
+                    data.Average = dataWindowRight.Select(d => d.swingEBPM).Average();
+                    rollingAverageRight.Add(data);
+                }
+            }
 
-                foreach (var swing in swings)
-                {
-                    EbpmData data = new();
-                    var clean = true;
-                    if (!swing.rightHand)
-                    {
-                        dataWindowLeft.Enqueue(swing);
-                        do
-                        {
-                            if (dataWindowLeft.Peek().swingStartBeat < swing.swingStartBeat - windowSize) dataWindowLeft.Dequeue();
-                            else clean = false;
-                        } while (clean);
-                        data.Swing = swing;
-                        data.Average = dataWindowLeft.Select(d => d.swingEBPM).Average();
-                        rollingAverageLeft.Add(data);
-                    }
-                    else
-                    {
-                        dataWindowRight.Enqueue(swing);
-                        do
-                        {
-                            if (dataWindowRight.Peek().swingStartBeat < swing.swingStartBeat - windowSize) dataWindowRight.Dequeue();
-                            else clean = false;
-                        } while (clean);
-                        data.Swing = swing;
-                        data.Average = dataWindowRight.Select(d => d.swingEBPM).Average();
-                        rollingAverageRight.Add(data);
-                    }
-                }
-                dataWindowLeft.Clear();
-                dataWindowRight.Clear();
-                for (int i = swings.Count - 1; i >= 0; i--)
-                {
-                    var swing = swings[i];
-                    EbpmData data = new();
-                    var clean = true;
-                    if (!swing.rightHand)
-                    {
-                        dataWindowLeft.Enqueue(swing);
-                        do
-                        {
-                            if (dataWindowLeft.Peek().swingStartBeat > swing.swingStartBeat + windowSize) dataWindowLeft.Dequeue();
-                            else clean = false;
-                        } while (clean);
-                        data.Swing = swing;
-                        data.Average = dataWindowLeft.Select(d => d.swingEBPM).Average();
-                        ReverseRollingAverageLeft.Add(data);
-                    }
-                    else
-                    {
-                        dataWindowRight.Enqueue(swing);
-                        do
-                        {
-                            if (dataWindowRight.Peek().swingStartBeat > swing.swingStartBeat + windowSize) dataWindowRight.Dequeue();
-                            else clean = false;
-                        } while (clean);
-                        data.Swing = swing;
-                        data.Average = dataWindowRight.Select(d => d.swingEBPM).Average();
-                        ReverseRollingAverageRight.Add(data);
-                    }
-                }
+            dataWindowLeft.Clear();
+            dataWindowRight.Clear();
 
-                foreach (var data in rollingAverageLeft)
+            // Preprocess the data in reverse
+            for (int i = swings.Count - 1; i >= 0; i--)
+            {
+                var swing = swings[i];
+                EbpmData data = new();
+                var clean = true;
+                if (!swing.rightHand)
                 {
-                    if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
-                }
-                foreach (var data in ReverseRollingAverageLeft)
-                {
-                    if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
-                }
-                foreach (var data in rollingAverageRight)
-                {
-                    if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
-                }
-                foreach (var data in ReverseRollingAverageRight)
-                {
-                    if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
-                }
-                rollingAverageLeft.ForEach(r => r.Flick = r.Flick == true && true == ReverseRollingAverageLeft.Where(a => a.Swing.Equals(r.Swing)).FirstOrDefault().Flick);
-                rollingAverageRight.ForEach(r => r.Flick = r.Flick == true && true == ReverseRollingAverageRight.Where(a => a.Swing.Equals(r.Swing)).FirstOrDefault().Flick);
-
-                foreach (var data in rollingAverageLeft)
-                {
-                    if (data.Flick)
+                    dataWindowLeft.Enqueue(swing);
+                    do
                     {
-                        var note = data.Swing.notes.FirstOrDefault();
-                        var index = notes.FindIndex(c => c.Beats == note.b && c.Color == note.c && note.x == c.x && note.y == c.y);
-                        var cube = notes[index];
-                        if (index < notes.Count - 3)
+                        if (dataWindowLeft.Peek().swingStartBeat > swing.swingStartBeat + windowSize) dataWindowLeft.Dequeue();
+                        else clean = false;
+                    } while (clean);
+                    data.Swing = swing;
+                    data.Average = dataWindowLeft.Select(d => d.swingEBPM).Average();
+                    ReverseRollingAverageLeft.Add(data);
+                }
+                else
+                {
+                    dataWindowRight.Enqueue(swing);
+                    do
+                    {
+                        if (dataWindowRight.Peek().swingStartBeat > swing.swingStartBeat + windowSize) dataWindowRight.Dequeue();
+                        else clean = false;
+                    } while (clean);
+                    data.Swing = swing;
+                    data.Average = dataWindowRight.Select(d => d.swingEBPM).Average();
+                    ReverseRollingAverageRight.Add(data);
+                }
+            }
+
+            // If the double of the average is slower than the current swing EBPM, consider that swing a flick
+            foreach (var data in rollingAverageLeft)
+            {
+                if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
+            }
+            foreach (var data in ReverseRollingAverageLeft)
+            {
+                if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
+            }
+            foreach (var data in rollingAverageRight)
+            {
+                if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
+            }
+            foreach (var data in ReverseRollingAverageRight)
+            {
+                if (data.Average * 2 < data.Swing.swingEBPM) data.Flick = true;
+            }
+
+            // Only keep the flick that are considered flick on both the rolling average and reverse rolling average
+            rollingAverageLeft.ForEach(r => r.Flick = r.Flick == true && true == ReverseRollingAverageLeft.Where(a => a.Swing.Equals(r.Swing)).FirstOrDefault().Flick);
+            rollingAverageRight.ForEach(r => r.Flick = r.Flick == true && true == ReverseRollingAverageRight.Where(a => a.Swing.Equals(r.Swing)).FirstOrDefault().Flick);
+            List<EbpmData> merged = new(rollingAverageLeft);
+            merged.AddRange(rollingAverageRight);
+            merged = merged.OrderBy(x => x.Swing.notes.FirstOrDefault().Beats).ToList();
+
+            foreach (var data in merged)
+            {
+                if (data.Flick)
+                {
+                    // Find the note to convert it to BeatmapObject
+                    var note = data.Swing.notes.FirstOrDefault();
+                    var index = notes.FindIndex(n => n == note);
+                    var cube = notes[index];
+                    if (index < notes.Count - 3)
+                    {
+                        // Check if the next two notes have the same spacing than the next note and the current one as an extra check
+                        if (notes[index + 1].Beats - cube.Beats != notes[index + 2].Beats - notes[index + 1].Beats)
                         {
-                            if (notes[index + 1].Beats - cube.Beats != notes[index + 2].Beats - notes[index + 1].Beats)
-                            {
-                                CheckResults.Instance.AddResult(new CheckResult()
-                                {
-                                    Characteristic = CriteriaCheckManager.Characteristic,
-                                    Difficulty = CriteriaCheckManager.Difficulty,
-                                    Name = "Unexpected Speed",
-                                    Severity = Severity.Info,
-                                    CheckType = "Speed",
-                                    Description = "High EBPM compared to rolling average.",
-                                    ResultData = new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) },
-                                    BeatmapObjects = new() { cube }
-                                });
-                            }
-                        }
-                        else
-                        {
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Unexpected Speed",
-                                Severity = Severity.Info,
-                                CheckType = "Speed",
-                                Description = "High EBPM compared to rolling average.",
-                                ResultData = new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) },
-                                BeatmapObjects = new() { cube }
-                            });
+                            CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                                name, Severity.Info, checkType, "High EBPM compared to rolling average",
+                                new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) }, new() { note });
                         }
                     }
-                }
-
-                foreach (var data in rollingAverageRight)
-                {
-                    if (data.Flick)
+                    else // No extra check on the last few notes
                     {
-                        var note = data.Swing.notes.FirstOrDefault();
-                        var index = notes.FindIndex(c => c.Beats == note.b && c.Color == note.c && note.x == c.x && note.y == c.y);
-                        var cube = notes[index];
-                        if (index < notes.Count - 3)
-                        {
-                            if (notes[index + 1].Beats - cube.Beats != notes[index + 2].Beats - notes[index + 1].Beats)
-                            {
-                                CheckResults.Instance.AddResult(new CheckResult()
-                                {
-                                    Characteristic = CriteriaCheckManager.Characteristic,
-                                    Difficulty = CriteriaCheckManager.Difficulty,
-                                    Name = "Unexpected Speed",
-                                    Severity = Severity.Info,
-                                    CheckType = "Speed",
-                                    Description = "High EBPM compared to rolling average.",
-                                    ResultData = new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) },
-                                    BeatmapObjects = new() { cube }
-                                });
-                            }
-                        }
-                        else
-                        {
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Unexpected Speed",
-                                Severity = Severity.Info,
-                                CheckType = "Speed",
-                                Description = "High EBPM compared to rolling average.",
-                                ResultData = new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) },
-                                BeatmapObjects = new() { cube }
-                            });
-                        }
+                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                            name, Severity.Info, checkType, "High EBPM compared to rolling average",
+                            new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) }, new() { note });
                     }
                 }
             }

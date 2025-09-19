@@ -1,4 +1,6 @@
 ﻿using BLMapCheck.Classes.Results;
+using System.Linq;
+using System.Xml.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
@@ -8,51 +10,33 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Compare current label name with a list of offensive words.
         public static CritResult Check(string difficultyLabel)
         {
-            if(difficultyLabel != null)
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            string name = "Difficulty Label Name";
+            string checkType = "Label";
+            string description = "The label name cannot contain obscene content";
+            CritResult criteria = CritResult.Success;
+
+            // Custom label
+            if (difficultyLabel != null)
             {
                 ProfanityFilter.ProfanityFilter pf = new();
                 var isProfanity = pf.ContainsProfanity(difficultyLabel);
                 if (isProfanity)
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Difficulty Label Name",
-                        Severity = Severity.Error,
-                        CheckType = "Label",
-                        Description = "The label name cannot contain obscene content.",
-                        ResultData = new()
-                    });
-                    return CritResult.Fail;
+                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        name, Severity.Error, checkType, description);
+                    criteria = CritResult.Fail;
                 }
-
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Difficulty Label Name",
-                    Severity = Severity.Passed,
-                    CheckType = "Label",
-                    Description = "The label name cannot contain obscene content.",
-                    ResultData = new()
-                });
-
-                return CritResult.Success;
             }
 
-            CheckResults.Instance.AddResult(new CheckResult()
+            if (criteria == CritResult.Success)
             {
-                Characteristic = CriteriaCheckManager.Characteristic,
-                Difficulty = CriteriaCheckManager.Difficulty,
-                Name = "Difficulty Label Name",
-                Severity = Severity.Passed,
-                CheckType = "Label",
-                Description = "The label name cannot contain obscene content.",
-                ResultData = new()
-            });
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                        name, Severity.Passed, checkType, description);
+            }
 
-            return CritResult.Success;
+            return criteria;
         }
     }
 }

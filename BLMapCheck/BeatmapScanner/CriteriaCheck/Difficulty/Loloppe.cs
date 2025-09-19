@@ -13,38 +13,42 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Detect parallel notes
         public static CritResult Check(List<Note> notes)
         {
-            var issue = CritResult.Success;
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            string name = "Loloppe";
+            string checkType = "Loloppe";
+            CritResult criteria = CritResult.Success;
 
-            if (DetectParallel(notes.Where(c => c.Color == 0).ToList())) issue = CritResult.Fail;
-            if (DetectParallel(notes.Where(c => c.Color == 1).ToList())) issue = CritResult.Fail;
+            if (DetectParallel(notes.Where(c => c.Color == 0).ToList())) criteria = CritResult.Fail;
+            if (DetectParallel(notes.Where(c => c.Color == 1).ToList())) criteria = CritResult.Fail;
 
-            if (issue == CritResult.Success)
+            if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Loloppe",
-                    Severity = Severity.Passed,
-                    CheckType = "Loloppe",
-                    Description = "No parallel notes of the same color on the same swing detected.",
-                    ResultData = new()
-                });
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                    name, Severity.Passed, checkType, "No parallel notes of the same color on the same swing detected");
             }
 
-            return issue;
+            return criteria;
         }
 
         public static bool DetectParallel(List<Note> notes)
         {
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            string name = "Loloppe";
+            string checkType = "Loloppe";
+
             var issue = false;
 
             for (int i = 1; i < notes.Count; i++)
             {
+                // Ignore any direction
                 if (notes[i].CutDirection == 8 || notes[i - 1].CutDirection == 8)
                 {
                     continue;
                 }
+
+                // Within 0.125 beat of eachother
                 if (notes[i].Beats - notes[i - 1].Beats < 0.125)
                 {
                     var direction = DirectionToDegree[notes[i].CutDirection];
@@ -104,17 +108,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                     if (check || total > 22.5)
                     {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Loloppe",
-                            Severity = Severity.Error,
-                            CheckType = "Loloppe",
-                            Description = "Multiple notes of the same color on the same swing must flow.",
-                            ResultData = new() { new("Type", "Loloppe Note") },
-                            BeatmapObjects = new() { notes[i], notes[i - 1] }
-                        });
+                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                            name, Severity.Error, checkType, "Multiple notes of the same color on the same swing must flow", 
+                            new() { new("Type", "Loloppe Note") }, new() { notes[i], notes[i - 1] });
+
                         issue = true;
                     }
                 }

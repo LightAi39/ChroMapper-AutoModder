@@ -1,13 +1,10 @@
 ﻿using beatleader_parser.Timescale;
 using Beatmap.Base;
-using BLMapCheck.BeatmapScanner.CriteriaCheck;
-using BLMapCheck.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Models;
 using Parser.Map.Difficulty.V3.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Beatmap.Helper;
 using Beatmap.Info;
 using TMPro;
 using UnityEngine;

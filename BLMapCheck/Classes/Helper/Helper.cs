@@ -39,16 +39,12 @@ namespace BLMapCheck.Classes.Helper
 
         public static List<NoteData> NotesData = new();
 
-        public static Note FindNote(List<Note> notes, JoshaParity.Note note)
-        {
-            return notes.FirstOrDefault(n => n.Beats == note.b && n.x == note.x && n.y == note.y && n.CutDirection == note.d && n.Color == note.c && n.AngleOffset == note.a);
-        }
-
         public static void CreateNoteData(List<Note> notes, List<JoshaParity.SwingData> swingData)
         {
             NotesData = new();
             var red = swingData.Where(s => !s.rightHand).ToList();
             var blue = swingData.Where(s => s.rightHand).ToList();
+
             HandleSwings(notes, red);
             HandleSwings(notes, blue);
         }
@@ -65,48 +61,41 @@ namespace BLMapCheck.Classes.Helper
                 if ((int)swing.swingType >= 1 && (int)swing.swingType <= 3) // Slider, stack or window
                 {
                     // There's a bug with arrow-less swings in JoshaParity, notes need to be re-ordered
-                    swing.notes = swing.notes.OrderBy(x => x.b).ToList();
+                    swing.notes = swing.notes.OrderBy(x => x.Beats).ToList();
 
                     for (int j = 1; j < swing.notes.Count; j++)
                     {
                         var prev = swing.notes[j - 1];
                         var note = swing.notes[j];
-                        var n = FindNote(notes, note);
-                        if (n != null)
+                        var data = new NoteData()
                         {
-                            var data = new NoteData()
-                            {
-                                Note = n,
-                                Pattern = true,
-                                Precision = note.b - prev.b,
-                                Spacing = Math.Max(Math.Max(Math.Abs(note.x - prev.x), Math.Abs(note.y - prev.y)) - 1, 0),
-                                Line = note.x,
-                                Layer = note.y
-                            };
-                            if (newSwing)
-                            {
-                                var no = FindNote(notes, prev);
-                                if (no == null) break; // Couldn't find head note, ignore that swing.
-                                NotesData.Add(new(no));
-                                NotesData.Last().Head = true;
-                                NotesData.Last().Pattern = true;
-                                NotesData.Last().Precision = data.Precision;
-                                NotesData.Last().Spacing = data.Spacing;
-                                NotesData.Last().Note = FindNote(notes, prev);
-                                NotesData.Last().Line = prev.x;
-                                NotesData.Last().Layer = prev.y;
-                                newSwing = false;
-                            }
-                            NotesData.Add(data);
+                            Note = note,
+                            Pattern = true,
+                            Precision = note.Beats - prev.Beats,
+                            Spacing = Math.Max(Math.Max(Math.Abs(note.x - prev.x), Math.Abs(note.y - prev.y)) - 1, 0),
+                            Line = note.x,
+                            Layer = note.y
+                        };
+                        if (newSwing)
+                        {
+                            NotesData.Add(new(note));
+                            NotesData.Last().Head = true;
+                            NotesData.Last().Pattern = true;
+                            NotesData.Last().Precision = data.Precision;
+                            NotesData.Last().Spacing = data.Spacing;
+                            NotesData.Last().Note = prev;
+                            NotesData.Last().Line = prev.x;
+                            NotesData.Last().Layer = prev.y;
+                            newSwing = false;
                         }
+                        NotesData.Add(data);
                     }
                 }
                 else // Everything else
                 {
                     foreach (var note in swing.notes)
                     {
-                        var n = FindNote(notes, note);
-                        if (n != null) NotesData.Add(new(n));
+                        NotesData.Add(new(note));
                     }
                 }
             }
@@ -117,7 +106,7 @@ namespace BLMapCheck.Classes.Helper
             // Not really sure how to deal with rounding issue. Doesn't really matter as long as it's close enough I guess.
             var averageSliderDuration = NotesData.GroupBy(c => c.Precision / (c.Spacing + 1))
             .OrderByDescending(g => g.Count())
-            .Last()
+            .LastOrDefault()
             .Key;
             if (averageSliderDuration != 0) Config.Instance.SliderPrecision = averageSliderDuration;
             else Config.Instance.SliderPrecision = 0.0625;

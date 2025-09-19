@@ -7,28 +7,18 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal class AngleOffset
     {
+        // Flag existing notes with angle offset as info type
         public static void Check(List<Note> notes)
         {
-            if (Configs.Config.Instance.DisplayAngleOffset)
+            string characteristic = CriteriaCheckManager.Characteristic;
+            string difficulty = CriteriaCheckManager.Difficulty;
+            string name = "AngleOffset Note";
+            string checkType = "AngleOffset";
+
+            foreach (Note note in notes.Where(o => o.AngleOffset != 0))
             {
-                if (notes.Any())
-                {
-                    var n = notes.Where(o => o.AngleOffset != 0).ToList();
-                    foreach (Note note in n)
-                    {
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "AngleOffset Note",
-                            Severity = Severity.Info,
-                            CheckType = "AngleOffset",
-                            Description = "AngleOffset",
-                            ResultData = new() { new("AngleOffset", note.AngleOffset.ToString()) },
-                            BeatmapObjects = new() { note }
-                        });
-                    }
-                }
+                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                    name, Severity.Info, checkType, checkType);
             }
         }
     }
