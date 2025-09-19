@@ -1,9 +1,9 @@
-[submodule "BLMapCheck/beatleader-analyzer"]
-	path = BLMapCheck/beatleader-analyzer
-	url = https://github.com/BeatLeader/beatleader-analyzer.git
-[submodule "BLMapCheck/beatleader-parser"]
-	path = BLMapCheck/beatleader-parser
-	url = https://github.com/BeatLeader/beatleader-parser.git
-[submodule "BLMapCheck/JoshaParity"]
-	path = BLMapCheck/JoshaParity
+[submodule "ChroMapper-AutoModder/JoshaParity"]
+	path = ChroMapper-AutoModder/JoshaParity
 	url = https://github.com/Loloppe/JoshaParity.git
+[submodule "ChroMapper-AutoModder/beatleader-parser"]
+	path = ChroMapper-AutoModder/beatleader-parser
+	url = https://github.com/BeatLeader/beatleader-parser.git
+[submodule "ChroMapper-AutoModder/beatleader-analyzer"]
+	path = ChroMapper-AutoModder/beatleader-analyzer
+	url = https://github.com/BeatLeader/beatleader-analyzer.git
