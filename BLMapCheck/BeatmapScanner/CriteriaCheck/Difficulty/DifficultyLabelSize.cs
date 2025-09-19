@@ -37,7 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
                         name, Severity.Passed, checkType, "The difficulty label size is valid",
-                        new() { new("CurrentSize", difficultyLabel.Count().ToString() + " characters"), new("MaxSize", maxValue + " characters") });
+                        new() { new("CurrentSize", difficultyLabel?.Count().ToString() ?? "Default"), new("MaxSize", maxValue + " characters") });
             }
 
             return criteria;
