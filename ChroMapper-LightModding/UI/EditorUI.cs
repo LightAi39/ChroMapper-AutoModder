@@ -299,7 +299,7 @@ namespace ChroMapper_LightModding.UI
 
             var dropdown = dialog.AddComponent<DropdownComponent>()
                 .WithLabel("Type")
-                .WithOptions(Enum.GetValues(typeof(CommentTypesEnum)).Cast<CommentTypesEnum>().Select(t => Exporter.CommentTypeName(t)).ToList())
+                .WithOptions(Enum.GetValues(typeof(CommentTypesEnum)).Cast<CommentTypesEnum>().Where(t => t != CommentTypesEnum.Data).Select(t => Exporter.CommentTypeName(t)).ToList())
                 .OnChanged((int i) => { type = lastSelectedType = (CommentTypesEnum)i; });
 
             dropdown.Value = (int)lastSelectedType;
@@ -427,7 +427,7 @@ namespace ChroMapper_LightModding.UI
 
             var typeSelector = dialog.AddComponent<DropdownComponent>()
                 .WithLabel("Type")
-                .WithOptions(Enum.GetValues(typeof(CommentTypesEnum)).Cast<CommentTypesEnum>().Select(t => Exporter.CommentTypeName(t)).ToList())
+                .WithOptions(Enum.GetValues(typeof(CommentTypesEnum)).Cast<CommentTypesEnum>().Where(t => t != CommentTypesEnum.Data).Select(t => Exporter.CommentTypeName(t)).ToList())
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
             typeSelector.Value = (int)comment.Type;
 

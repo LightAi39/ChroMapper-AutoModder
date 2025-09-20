@@ -70,7 +70,7 @@ namespace ChroMapper_LightModding.Export
         {
             string text = string.Join(", ", Enum.GetValues(typeof(CommentTypesEnum))
                 .Cast<CommentTypesEnum>()
-                .Where(t => review.DifficultyReviews.Any(r => r.Comments.Any(c => c.Type == t)))
+                .Where(t => t != CommentTypesEnum.Data && review.DifficultyReviews.Any(r => r.Comments.Any(c => c.Type == t)))
                 .Select(t => $"({CommentTypeShortening(t)}) = {Exporter.CommentTypeName(t)}")) + "\n\n";
             foreach (var diffReview in review.DifficultyReviews)
             {
@@ -217,6 +217,8 @@ namespace ChroMapper_LightModding.Export
                     return "X";
                 case CommentTypesEnum.Info:
                     return "i";
+                case CommentTypesEnum.Data:
+                    return "";
             }
 
             return "";
@@ -233,6 +235,8 @@ namespace ChroMapper_LightModding.Export
                     return "Unrankable";
                 case CommentTypesEnum.Info:
                     return "Note";
+                case CommentTypesEnum.Data:
+                    return "Data";
             }
 
             return "";
