@@ -1,4 +1,5 @@
 ﻿using ChroMapper_LightModding.Models;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -60,6 +61,37 @@ namespace ChroMapper_LightModding.Export
 
             CopyToClipboard(text);
         }
+
+        public void ExportToDiscordMDShort(MapsetReview review)
+        {
+            string text = string.Join(", ", Enum.GetValues(typeof(CommentTypesEnum))
+                .Cast<CommentTypesEnum>()
+                .Where(t => review.DifficultyReviews.Any(r => r.Comments.Any(c => c.Type == t)))
+                .Select(t => $"({CommentTypeShortening(t)}) = {Exporter.CommentTypeName(t)}")) + "\n\n";
+            foreach (var diffReview in review.DifficultyReviews)
+            {
+                if (diffReview.Comments.Count > 0 || !string.IsNullOrEmpty(diffReview.OverallComment)) {
+                    text += $"{diffReview.Difficulty}:\n";
+                }
+
+                foreach (var comment in diffReview.Comments)
+                {
+                    text += $"({CommentTypeShortening(comment.Type)}) {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} - {comment.Message}\n";
+                }
+
+                if (diffReview.Comments.Count > 0) {
+                    text += "\n";
+                }
+
+                if (!string.IsNullOrEmpty(diffReview.OverallComment))
+                {
+                    text += $"Overall feedback:\n{diffReview.OverallComment}";
+                }
+            }
+
+            CopyToClipboard(text);
+        }
+
 
         public void ExportToDiscordMDByImportance(MapsetReview _review)
         {
@@ -160,6 +192,38 @@ namespace ChroMapper_LightModding.Export
         public static void CopyToClipboard(string text)
         {
             GUIUtility.systemCopyBuffer = text;
+        }
+
+        public static string CommentTypeShortening(CommentTypesEnum commentType) {
+            switch (commentType)
+            {
+                case CommentTypesEnum.Suggestion:
+                    return "S";
+                case CommentTypesEnum.Unsure:
+                    return "?";
+                case CommentTypesEnum.Issue:
+                    return "X";
+                case CommentTypesEnum.Info:
+                    return "i";
+            }
+
+            return "";
+        }
+
+        public static string CommentTypeName(CommentTypesEnum commentType) {
+            switch (commentType)
+            {
+                case CommentTypesEnum.Suggestion:
+                    return "Suggestion";
+                case CommentTypesEnum.Unsure:
+                    return "Questionable";
+                case CommentTypesEnum.Issue:
+                    return "Unrankable";
+                case CommentTypesEnum.Info:
+                    return "Note";
+            }
+
+            return "";
         }
     }
 }
