@@ -96,7 +96,7 @@ namespace BLMapCheck
             throw new Exception("Check was not finished correctly");
         }
 
-        public CheckResults ImportMod(string characteristic, string difficulty, List<string> mod)
+        public CheckResults ImportMod(string characteristic, string difficulty, int difficultyRank, List<string> mod)
         {
             CheckResults.Reset();
             if (!mapLoaded)
@@ -104,7 +104,7 @@ namespace BLMapCheck
                 throw new Exception("Map not loaded");
             }
 
-            GenericMod.Import(characteristic, difficulty, mod);
+            GenericMod.Import(characteristic, difficulty, difficultyRank, mod);
 
             if (CheckResults.Instance.CheckFinished)
             {
@@ -113,7 +113,7 @@ namespace BLMapCheck
             throw new Exception("Check was not finished correctly");
         }
 
-        public CheckResults CompareTimings(string characteristic, string difficulty)
+        public CheckResults CompareTimings(string characteristic, string difficulty, int difficultyRank)
         {
             CheckResults.Reset();
             if (!mapLoaded)
@@ -121,7 +121,7 @@ namespace BLMapCheck
                 throw new Exception("Map not loaded");
             }
 
-            DifficultyTimings.Compare(characteristic, difficulty);
+            DifficultyTimings.Compare(characteristic, difficulty, difficultyRank);
 
             if (CheckResults.Instance.CheckFinished)
             {
@@ -130,7 +130,7 @@ namespace BLMapCheck
             throw new Exception("Check was not finished correctly");
         }
 
-        public CheckResults CheckSingleDifficulty(string characteristic, string difficulty)
+        public CheckResults CheckSingleDifficulty(string characteristic, string difficulty, int difficultyRank)
         {
             CheckResults.Reset();
             if (!mapLoaded)
@@ -139,7 +139,7 @@ namespace BLMapCheck
             }
 
             CriteriaCheckManager manager = new();
-            manager.CheckSingleDifficulty(characteristic, difficulty);
+            manager.CheckSingleDifficulty(characteristic, difficulty, difficultyRank);
 
             if (CheckResults.Instance.CheckFinished)
             {
@@ -148,7 +148,7 @@ namespace BLMapCheck
             throw new Exception("Check was not finished correctly");
         }
 
-        public CheckResults CheckDifficultyStatistics(string characteristic, string difficulty)
+        public CheckResults CheckDifficultyStatistics(string characteristic, string difficulty, int difficultyRank)
         {
             CheckResults.Reset();
             if (!mapLoaded)
@@ -157,7 +157,7 @@ namespace BLMapCheck
             }
 
             CriteriaCheckManager manager = new();
-            manager.CheckDifficultyStatistics(characteristic, difficulty);
+            manager.CheckDifficultyStatistics(characteristic, difficulty, difficultyRank);
 
             if (CheckResults.Instance.CheckFinished)
             {

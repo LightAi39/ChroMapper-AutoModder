@@ -7,7 +7,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class DifficultyLabelSize
     {
-        public static CritResult Check(string characteristic, string difficulty, string difficultyLabel, int difficultyCount)
+        public static CritResult Check(string difficultyLabel, int difficultyCount)
         {
             CritResult criteria = CritResult.Success;
 
@@ -23,8 +23,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (difficultyLabel.Count() > maxValue)
                 {
-                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                        "Difficulty Label Size", Severity.Error, "Label", "The difficulty label is too long",
+                    CheckResults.Instance.CreateDiffResult("Difficulty Label Size", Severity.Error, "Label", "The difficulty label is too long",
                         new() { new("CurrentSize", difficultyLabel.Count().ToString() + " characters"), new("MaxSize", maxValue + " characters") });
                     criteria = CritResult.Fail;
                 }
@@ -32,8 +31,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                        "Difficulty Label Size", Severity.Passed, "Label", "The difficulty label size is valid",
+                CheckResults.Instance.CreateDiffResult("Difficulty Label Size", Severity.Passed, "Label", "The difficulty label size is valid",
                         new() { new("CurrentSize", difficultyLabel?.Count().ToString() ?? "Default"), new("MaxSize", maxValue + " characters") });
             }
 

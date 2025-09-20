@@ -17,9 +17,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class VisionBlock
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
-        public static CritResult Check(string characteristic, string difficulty, Timescale timescale, List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, double pass, double tech, float noteJumpStartBeatOffset)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, double pass, double tech, float noteJumpStartBeatOffset)
         {
             CritResult criteria = CritResult.Success;
+            Timescale timescale = CriteriaCheckManager.Timescale;
 
             // Create a new list to not mess up with the original reference
             var beatmapGridObjects = beatmapGridObject.ToList();
@@ -121,8 +122,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 {
                                     if (note is Note)
                                     {
-                                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                            "Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
+                                        CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
                                                 new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(note.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
                                                 new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeWarning) * 1000, 0).ToString()),
                                             }, new() { note });
@@ -150,8 +150,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 {
                                     if (note is Note)
                                     {
-                                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                            "Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
+                                        CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
                                                 new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(note.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
                                                 new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeWarning) * 1000, 0).ToString()),
                                             }, new() { note });
@@ -227,8 +226,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                                 var di = Math.Sqrt(Math.Pow(bomb.x - left.x, 2) + Math.Pow(bomb.y - left.y, 2));
                                                 if (di >= 0 && di < 1.001)
                                                 {
-                                                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                                        "Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
+                                                    CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     }, new() { bomb });
@@ -250,8 +248,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         var d = Math.Sqrt(Math.Pow(bomb.x - pos.x, 2) + Math.Pow(bomb.y - pos.y, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                                        "Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
+                                            CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     }, new() { bomb });
@@ -269,8 +266,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                                 var di = Math.Sqrt(Math.Pow(bomb.x - right.x, 2) + Math.Pow(bomb.y - right.y, 2));
                                                 if (di >= 0 && di < 1.001)
                                                 {
-                                                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                                        "Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
+                                                    CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     }, new() { bomb });
@@ -292,8 +288,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         var d = Math.Sqrt(Math.Pow(bomb.x - pos.x, 2) + Math.Pow(bomb.y - pos.y, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                                        "Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
+                                            CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     }, new() { bomb });
@@ -328,8 +323,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                                 var di = Math.Sqrt(Math.Pow(bomb.x - left.x, 2) + Math.Pow(bomb.y - left.y, 2));
                                                 if (di >= 0 && di < 1.001)
                                                 {
-                                                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                                        "Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
+                                                    CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     }, new() { bomb });
@@ -351,8 +345,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         var d = Math.Sqrt(Math.Pow(bomb.x - pos.x, 2) + Math.Pow(bomb.y - pos.y, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                                        "Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
+                                            CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     }, new() { bomb });
@@ -370,8 +363,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                                 var di = Math.Sqrt(Math.Pow(bomb.x - right.x, 2) + Math.Pow(bomb.y - right.y, 2));
                                                 if (di >= 0 && di < 1.001)
                                                 {
-                                                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                                        "Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
+                                                    CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     }, new() { bomb });
@@ -393,8 +385,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         var d = Math.Sqrt(Math.Pow(bomb.x - pos.x, 2) + Math.Pow(bomb.y - pos.y, 2));
                                         if (d >= 0 && d < 1.001)
                                         {
-                                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                                        "Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
+                                            CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
                                                         new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
                                                         new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
                                                     }, new() { bomb });
@@ -422,8 +413,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                    "Vision Block", Severity.Passed, "Vision", "No issue with vision from notes and bombs detected");
+                CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Passed, "Vision", "No issue with vision from notes and bombs detected");
             }
 
             timescale.BPM.ResetCurrentBPM();

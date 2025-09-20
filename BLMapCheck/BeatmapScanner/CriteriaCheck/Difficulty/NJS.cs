@@ -9,15 +9,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class NJS
     {
         // NJS and VNJS criteria
-        public static CritResult Check(string characteristic, string difficulty, float njs, float noteJumpStartBeatOffset, List<BeatmapGridObject> allObjects)
+        public static CritResult Check(float njs, float noteJumpStartBeatOffset, List<BeatmapGridObject> allObjects)
         {
             CritResult criteria = CritResult.Success;
 
             // The base NJS need to be a positive number
             if (njs <= 0)
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                    "Note Jump Speed", Severity.Error, "NoteJumpSpeed", "Note Jump Speed cannot be lower or equal to 0.", 
+                CheckResults.Instance.CreateDiffResult("Note Jump Speed", Severity.Error, "NoteJumpSpeed", "Note Jump Speed cannot be lower or equal to 0.", 
                     new() { new("CurrentNoteJumpSpeed", njs.ToString()), new("MinimumNoteJumpSpeed", "0") });
                 criteria = CritResult.Fail;
             }
@@ -33,8 +32,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             if (objects.Count > 0)
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                    "Note Jump Speed", Severity.Error, "NoteJumpSpeed", "NJS must not reach below 1 at any point in the map", new(), objects);
+                CheckResults.Instance.CreateDiffResult("Note Jump Speed", Severity.Error, "NoteJumpSpeed", "NJS must not reach below 1 at any point in the map", new(), objects);
                 criteria = CritResult.Fail;
             }
 
@@ -49,8 +47,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
             if (objects.Count > 0)
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                    "Note Jump Speed", Severity.Warning, "NoteJumpSpeed", "Values below 4 NJS may require justification", new(), objects);
+                CheckResults.Instance.CreateDiffResult("Note Jump Speed", Severity.Warning, "NoteJumpSpeed", "Values below 4 NJS may require justification", new(), objects);
                 if (CritResult.Warning > criteria) criteria = CritResult.Warning;
             }
 
@@ -58,15 +55,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             List<float> allNjs = allObjects.Select(obj => obj.njs).ToList();
             if (njs < allNjs.Min() || njs > allNjs.Max())
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                    "Note Jump Speed", Severity.Error, "NoteJumpSpeed", "The base NJS value must be between the minimum and maximum NJS used in interactable portions of the map");
+                CheckResults.Instance.CreateDiffResult("Note Jump Speed", Severity.Error, "NoteJumpSpeed", "The base NJS value must be between the minimum and maximum NJS used in interactable portions of the map");
                 criteria = CritResult.Fail;
             }
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                    "Note Jump Speed", Severity.Info, "NoteJumpSpeed", "No issue with NJS detected.");
+                CheckResults.Instance.CreateDiffResult("Note Jump Speed", Severity.Passed, "NoteJumpSpeed", "No issue with NJS detected.");
             }
 
             return criteria;

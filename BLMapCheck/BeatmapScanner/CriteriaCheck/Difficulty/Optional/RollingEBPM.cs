@@ -3,7 +3,7 @@ using JoshaParity;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
+namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Optional
 {
     internal static class RollingEBPM
     {
@@ -15,7 +15,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         }
 
         // Check for flick while using average EBPM over time
-        public static void Check(string characteristic, string difficulty, List<SwingData> swings, List<Parser.Map.Difficulty.V3.Grid.Note> notes)
+        public static void Check(List<SwingData> swings, List<Parser.Map.Difficulty.V3.Grid.Note> notes)
         {
             var windowSize = 4f; // beats
             Queue<SwingData> dataWindowLeft = new();
@@ -131,15 +131,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         // Check if the next two notes have the same spacing than the next note and the current one as an extra check
                         if (notes[index + 1].Beats - cube.Beats != notes[index + 2].Beats - notes[index + 1].Beats)
                         {
-                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                "Unexpected Speed", Severity.Info, "Speed", "High EBPM compared to rolling average",
+                            CheckResults.Instance.CreateDiffResult("Unexpected Speed", Severity.Data, "Speed", "High EBPM compared to rolling average",
                                 new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) }, new() { note });
                         }
                     }
                     else // No extra check on the last few notes
                     {
-                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                            "Unexpected Speed", Severity.Info, "Speed", "High EBPM compared to rolling average",
+                        CheckResults.Instance.CreateDiffResult("Unexpected Speed", Severity.Data, "Speed", "High EBPM compared to rolling average",
                             new() { new("CurrentSwingEBPM", data.Swing.swingEBPM.ToString()), new("RollingAvgEBPM", data.Average.ToString()) }, new() { note });
                     }
                 }

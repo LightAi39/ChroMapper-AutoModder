@@ -1,4 +1,5 @@
-﻿using BLMapCheck.BeatmapScanner.Data.Criteria;
+﻿using BLMapCheck.BeatmapScanner.CriteriaCheck;
+using BLMapCheck.BeatmapScanner.Data.Criteria;
 using Parser.Map.Difficulty.V3.Base;
 using System.Collections.Generic;
 
@@ -28,7 +29,7 @@ namespace BLMapCheck.Classes.Results
 
         public bool CheckFinished { get; set; } = false;
 
-        public void CreateDiffResult(string characteristic, string difficulty, string name, Severity severity,
+        public void CreateDiffResult(string name, Severity severity,
             string checkType, string description, List<KeyValuePair> resultData = null, List<BeatmapObject> beatmapObjects = null)
         {
             if (resultData == null) resultData = new();
@@ -36,8 +37,9 @@ namespace BLMapCheck.Classes.Results
 
             Instance.AddResult(new CheckResult()
             {
-                Characteristic = characteristic,
-                Difficulty = difficulty,
+                Characteristic = CriteriaCheckManager.Characteristic,
+                difficultyRank = CriteriaCheckManager.DifficultyRank,
+                Difficulty = CriteriaCheckManager.Difficulty,
                 Name = name,
                 Severity = severity,
                 CheckType = checkType,

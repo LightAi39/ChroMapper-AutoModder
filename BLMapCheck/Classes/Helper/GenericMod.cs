@@ -1,5 +1,7 @@
-﻿using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.BeatmapScanner.CriteriaCheck;
+using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Base;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -13,8 +15,12 @@ namespace BLMapCheck.Classes.Helper
         static public readonly string NumberPattern2 = @"\d+([.,])?(\d+)?";
         static public readonly string SpecialCharPattern = @"^[^\w]+";
 
-        public static void Import(string characteristic, string difficulty, List<string> mod)
+        public static void Import(string characteristic, string difficulty, int difficultyRank, List<string> mod)
         {
+            CriteriaCheckManager.Difficulty = difficulty;
+            CriteriaCheckManager.Characteristic = characteristic;
+            CriteriaCheckManager.DifficultyRank = difficultyRank;
+
             Severity severity = Severity.Info;
 
             bool loop;
@@ -32,8 +38,8 @@ namespace BLMapCheck.Classes.Helper
                 keyword = false;
                 comment = "";
 
-                // SS-style format
-                if (line.StartsWith("(X)"))
+                // Compact-style format
+                if (line.ToLowerInvariant().StartsWith("(x)"))
                 {
                     severity = Severity.Error;
                     str = str.Remove(0, 3).Trim();
@@ -43,9 +49,14 @@ namespace BLMapCheck.Classes.Helper
                     severity = Severity.Inconclusive;
                     str = str.Remove(0, 3).Trim();
                 }
-                else if (line.StartsWith("(S)"))
+                else if (line.ToLowerInvariant().StartsWith("(s)"))
                 {
                     severity = Severity.Suggestion;
+                    str = str.Remove(0, 3).Trim();
+                }
+                else if (line.ToLowerInvariant().StartsWith("(i)"))
+                {
+                    severity = Severity.Info;
                     str = str.Remove(0, 3).Trim();
                 }
                 substring = str;
@@ -159,7 +170,7 @@ namespace BLMapCheck.Classes.Helper
                             beatmapObject.Add(obj);
                         }
 
-                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty, "Mod", severity, "Mod", comment, new(), beatmapObject);
+                        CheckResults.Instance.CreateDiffResult("Mod", severity, "Mod", comment, new(), beatmapObject);
                     }
                     beats.Clear();
                 }

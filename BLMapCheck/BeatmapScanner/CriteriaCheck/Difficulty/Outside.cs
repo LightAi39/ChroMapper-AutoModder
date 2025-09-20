@@ -9,14 +9,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal class Outside
     {
         // Detect objects that are outside of the audio boundary
-        public static CritResult Check(string characteristic, string difficulty, Timescale timescale, float songLength, List<Note> notes, List<Chain> chains, List<Bomb> bombs, List<Wall> walls)
+        public static CritResult Check(float songLength, List<Note> notes, List<Chain> chains, List<Bomb> bombs, List<Wall> walls)
         {
             CritResult criteria = CritResult.Success;
+            Timescale timescale = CriteriaCheckManager.Timescale;
 
             if (songLength == 0)
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                    "Outside", Severity.Error, "Outside", "Outside check error, SongLength is 0. Make sure to use an ogg file");
+                CheckResults.Instance.CreateDiffResult("Outside", Severity.Error, "Outside", "Outside check error, SongLength is 0. Make sure to use an ogg file");
                 criteria = CritResult.Fail;
             }
 
@@ -27,15 +27,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             if (notes.Exists(c => c.Beats < 0 || c.Beats > end) || chains.Exists(c => c.Beats < 0 || c.TailInBeats < 0 || c.Beats > end || c.TailInBeats > end)
                 || bombs.Exists(b => b.Beats < 0 || b.Beats > end) || walls.Exists(w => w.Beats < 0 || w.Beats + w.DurationInBeats > end))
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                    "Outside", Severity.Error, "Outside", "Object cannot exist outside of playable length");
+                CheckResults.Instance.CreateDiffResult("Outside", Severity.Error, "Outside", "Object cannot exist outside of playable length");
                 criteria = CritResult.Fail;
             }
 
             if(criteria == CritResult.Success) 
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                    "Outside", Severity.Passed, "Outside", "No object detected outside of the playable length");
+                CheckResults.Instance.CreateDiffResult("Outside", Severity.Passed, "Outside", "No object detected outside of the playable length");
             }
 
             return criteria;

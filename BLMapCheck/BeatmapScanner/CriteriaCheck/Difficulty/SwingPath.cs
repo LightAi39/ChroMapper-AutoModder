@@ -16,9 +16,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class SwingPath
     {
         // Check if a note block the swing path of another note of a different color
-        public static CritResult Check(string characteristic, string difficulty, Timescale timescale, List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Note> notes)
+        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Note> notes)
         {
             CritResult criteria = CritResult.Success;
+            Timescale timescale = CriteriaCheckManager.Timescale;
 
             if (beatmapGridObjects.Any())
             {
@@ -97,8 +98,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             var obj = beatmapGridObjects.Where(c => c.Beats == note.Beats && note.x == c.x && note.y == c.y).FirstOrDefault();
 
-                                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                                                "Swing Path", Severity.Info, "Swing", "Possible swing path issue", new(), new() { obj });
+                                            CheckResults.Instance.CreateDiffResult("Swing Path", Severity.Data, "Swing", "Possible swing path issue", new(), new() { obj });
                                         }
                                     }
                                 }
@@ -215,16 +215,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 foreach (var item in found)
                 {
-                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                        "Swing Path", Severity.Error, "Swing", "Swing path issue", new(), new() { item });
+                    CheckResults.Instance.CreateDiffResult("Swing Path", Severity.Error, "Swing", "Swing path issue", new(), new() { item });
                     criteria = CritResult.Fail;
                 }
             }
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                        "Swing Path", Severity.Passed, "Swing", "No issue with swing path detected");
+                CheckResults.Instance.CreateDiffResult("Swing Path", Severity.Passed, "Swing", "No issue with swing path detected");
             }
 
             return criteria;

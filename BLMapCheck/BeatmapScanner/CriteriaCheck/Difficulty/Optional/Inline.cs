@@ -6,16 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
+namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Optional
 {
     internal class Inline
     {
         // Detect and highlight notes that are too close to eachother, based on beat distance
-        public static void Check(string characteristic, string difficulty, Timescale timescale, List<Note> notes)
+        public static void Check(List<Note> notes)
         {
+            Timescale timescale = CriteriaCheckManager.Timescale;
+
             // Calculate the maximum distance in beats considered for inline
             double maxDistance = 0.251;
-            if (Configs.Config.Instance.InlineBeatPrecision != 0) maxDistance = (1 / Configs.Config.Instance.InlineBeatPrecision) + 0.001;
+            if (Configs.Config.Instance.InlineBeatPrecision != 0) maxDistance = 1 / Configs.Config.Instance.InlineBeatPrecision + 0.001;
 
             // List to store already found inline
             List<Note> highlighted = new();
@@ -35,8 +37,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         if (i != 0) distance = (inline.Beats - inlines[i - 1].Beats) / (timescale.BPM.GetValue() / 60) * inline.njs;
                         else distance = (inline.Beats - note.Beats) / (timescale.BPM.GetValue() / 60) * inline.njs;
                         
-                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                            "Inline Note", Severity.Info, "Inline", "Inline", new() { new("Distance", Math.Round(distance, 3).ToString() + "m") }, new() { inline });
+                        CheckResults.Instance.CreateDiffResult("Inline Note", Severity.Data, "Inline", "Inline", new() { new("Distance", Math.Round(distance, 3).ToString() + "m") }, new() { inline });
 
                         // Add to list of found inline
                         highlighted.Add(inline);

@@ -209,12 +209,12 @@ namespace ChroMapper_LightModding.UI
                 RefreshInfoMenu();
             }, 64, 25, 10);
 
-            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordBeatOrder", "Export to clipboard (mod)", new Vector2(100, -18), () =>
+            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordBeatOrder", "Copy to clipboard (compact)", new Vector2(100, -18), () =>
             {
                 exporter.ExportToDiscordMDShort(plugin.currentMapsetReview);
             }, 64, 25, 9);
 
-            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordSeverityOrder", "Export to clipboard (explicit)", new Vector2(164, -18), () =>
+            UIHelper.AddButton(_infoMenu.transform, "ExportAMDiscordSeverityOrder", "Copy to clipboard", new Vector2(164, -18), () =>
             {
                 exporter.ExportToDiscordMDByBeats(plugin.currentMapsetReview);
             }, 64, 25, 9);

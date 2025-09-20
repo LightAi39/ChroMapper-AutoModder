@@ -14,9 +14,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Implementation of Kival Evan hitboxInline.ts, hitboxStair.ts and hitboxReverseStaircase.ts
         // TODO: Either new algo or comment and optimize this code
-        public static CritResult Check(string characteristic, string difficulty, Timescale timescale, List<Note> notes, float njs)
+        public static CritResult Check(List<Note> notes, float njs)
         {
             CritResult criteria = CritResult.Success;
+            Timescale timescale = CriteriaCheckManager.Timescale;
 
             if (notes.Any())
             {
@@ -61,8 +62,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in hitbox)
                 {
-                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                        "Inline", Severity.Warning, "Hitbox", "Low NJS Inline", new(), new() { item });
+                    CheckResults.Instance.CreateDiffResult("Inline", Severity.Warning, "Hitbox", "Low NJS Inline", new(), new() { item });
                     criteria = CritResult.Warning;
                 }
 
@@ -146,8 +146,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in hitbox)
                 {
-                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                        "Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue",
+                    CheckResults.Instance.CreateDiffResult("Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue",
                         new List<Classes.Results.KeyValuePair>() { new("Type", "Staircase") }, new() { item });
                     criteria = CritResult.Warning;
                 }
@@ -203,8 +202,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in hitbox)
                 {
-                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                        "Reverse Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue", 
+                    CheckResults.Instance.CreateDiffResult("Reverse Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue", 
                         new List<Classes.Results.KeyValuePair>() { new("Type", "Reverse Staircase") }, new() { item });
                     criteria = CritResult.Warning;
                 }
@@ -212,8 +210,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if(criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
-                        "Staircase", Severity.Passed, "Staircase", "No hitbox issue detected");
+                CheckResults.Instance.CreateDiffResult("Staircase", Severity.Passed, "Staircase", "No hitbox issue detected");
             }
 
             return criteria;

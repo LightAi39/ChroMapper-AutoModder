@@ -7,7 +7,8 @@ namespace ChroMapper_LightModding.Models
         Suggestion,
         Unsure,
         Issue,
-        Info
+        Info,
+        Data
     }
 
     public class Comment

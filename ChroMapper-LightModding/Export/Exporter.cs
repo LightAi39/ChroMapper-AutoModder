@@ -17,6 +17,8 @@ namespace ChroMapper_LightModding.Export
 
             foreach (var comment in review.Comments)
             {
+                if (comment.Type == CommentTypesEnum.Data) continue;
+
                 text += $"**{comment.Type} - {comment.Message}**";
 
                 if (comment.Response != "")
@@ -38,6 +40,8 @@ namespace ChroMapper_LightModding.Export
 
                 foreach (var comment in diffReview.Comments)
                 {
+                    if (comment.Type == CommentTypesEnum.Data) continue;
+
                     text += $"**Beats: {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type}**\n{comment.Message}";
 
                     if (comment.Response != "")
@@ -76,6 +80,8 @@ namespace ChroMapper_LightModding.Export
 
                 foreach (var comment in diffReview.Comments)
                 {
+                    if (comment.Type == CommentTypesEnum.Data) continue;
+
                     text += $"({CommentTypeShortening(comment.Type)}) {string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} - {comment.Message}\n";
                 }
 
@@ -104,6 +110,8 @@ namespace ChroMapper_LightModding.Export
 
             foreach (var comment in review.Comments)
             {
+                if (comment.Type == CommentTypesEnum.Data) continue;
+
                 text += $"**{comment.Type} - {comment.Message}**";
 
                 if (comment.Response != "")
@@ -127,6 +135,8 @@ namespace ChroMapper_LightModding.Export
 
                 foreach (var comment in diffReview.Comments)
                 {
+                    if (comment.Type == CommentTypesEnum.Data) continue;
+
                     if (lastType != comment.Type)
                     {
                         text += $"### {comment.Type}:\n";
@@ -165,6 +175,8 @@ namespace ChroMapper_LightModding.Export
 
             foreach (var comment in review.Comments)
             {
+                if (comment.Type == CommentTypesEnum.Data) continue;
+
                 text += $"{string.Join(", ", comment.Objects.ConvertAll(p => p.ToString()).Distinct())} | {comment.Type} - {comment.Message}";
 
                 if (comment.Response != "")

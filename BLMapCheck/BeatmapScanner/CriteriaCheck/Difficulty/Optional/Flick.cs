@@ -4,18 +4,18 @@ using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.Classes.Helper.Helper;
 
-namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
+namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Optional
 {
     internal class Flick
     {
         // Detect and flag flicks, based on beat distance
-        public static void Check(string characteristic, string difficulty, List<Note> notes)
+        public static void Check(List<Note> notes)
         {
             if (notes.Any())
             {
                 // Fetch maximum beat duration for a flick
                 double maxDistance = 0.251f;
-                if (Configs.Config.Instance.FlickBeatPrecision != 0) maxDistance = (1 / Configs.Config.Instance.FlickBeatPrecision) + 0.001;
+                if (Configs.Config.Instance.FlickBeatPrecision != 0) maxDistance = 1 / Configs.Config.Instance.FlickBeatPrecision + 0.001;
 
                 var red = NotesData.Where(n => n.Note.Color == 0 && (n.Head || !n.Pattern)).ToList();
                 var blue = NotesData.Where(n => n.Note.Color == 1 && (n.Head || !n.Pattern)).ToList();
@@ -26,7 +26,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var flick in flicks)
                 {
-                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty, "Flick Note", Severity.Info, "Flick", "Flick", 
+                    CheckResults.Instance.CreateDiffResult("Flick Note", Severity.Data, "Flick", "Flick", 
                         new List<Classes.Results.KeyValuePair>() { new("Maximum distance", (maxDistance - 0.001).ToString()) }, new() { flick.Note });
                 }
             }

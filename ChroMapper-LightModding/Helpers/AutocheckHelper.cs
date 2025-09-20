@@ -48,7 +48,7 @@ namespace ChroMapper_LightModding.Helpers
                     var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
                     diff.Data = newDiff.Difficulty.Data;
                 }
-                results = criteriaCheck.ImportMod(characteristic, difficulty, mod);
+                results = criteriaCheck.ImportMod(characteristic, difficulty, difficultyRank, mod);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                 CreateCommentsFromNewData(results.Results.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).ToList());
@@ -62,7 +62,7 @@ namespace ChroMapper_LightModding.Helpers
                     var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
                     diff.Data = newDiff.Difficulty.Data;
                 }
-                results = criteriaCheck.CompareTimings(characteristic, difficulty);
+                results = criteriaCheck.CompareTimings(characteristic, difficulty, difficultyRank);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                 CreateCommentsFromNewData(results.Results.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).ToList());
@@ -83,7 +83,7 @@ namespace ChroMapper_LightModding.Helpers
                     var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
                     diff.Data = newDiff.Difficulty.Data;
                 }
-                results = criteriaCheck.CheckSingleDifficulty(characteristic, difficulty);
+                results = criteriaCheck.CheckSingleDifficulty(characteristic, difficulty, difficultyRank);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                 plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = results.DifficultyCriteriaResults.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Crit;
@@ -91,7 +91,7 @@ namespace ChroMapper_LightModding.Helpers
             }
             else if (isForMapCheckStats)
             {
-                results = criteriaCheck.CheckDifficultyStatistics(characteristic, difficulty);
+                results = criteriaCheck.CheckDifficultyStatistics(characteristic, difficulty, difficultyRank);
                 var resultData = results.Results.Where(x => x.Name == "Statistical Data" && x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault().ResultData;
                 return (
                     Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),
@@ -220,6 +220,8 @@ namespace ChroMapper_LightModding.Helpers
                     case Severity.Inconclusive:
                         commentType = CommentTypesEnum.Unsure;
                         break;
+                    case Severity.Data: // Skip
+                        continue;
                     default:
                         commentType = null;
                         break;
@@ -236,26 +238,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 difficulty = item.Difficulty;
                 characteristic = item.Characteristic;
-                switch (item.Difficulty)
-                {
-                    case "Easy":
-                        difficultyRank = 1;
-                        break;
-                    case "Normal":
-                        difficultyRank = 3;
-                        break;
-                    case "Hard":
-                        difficultyRank = 5;
-                        break;
-                    case "Expert":
-                        difficultyRank = 7;
-                        break;
-                    case "ExpertPlus":
-                        difficultyRank = 9;
-                        break;
-                    default:
-                        break;
-                }
+                difficultyRank = item.difficultyRank;
 
                 CommentTypesEnum? commentType;
                 switch (item.Severity)
@@ -278,6 +261,8 @@ namespace ChroMapper_LightModding.Helpers
                     case Severity.Inconclusive:
                         commentType = CommentTypesEnum.Unsure;
                         break;
+                    case Severity.Data: // Skip
+                        continue;
                     default:
                         commentType = null;
                         break;
