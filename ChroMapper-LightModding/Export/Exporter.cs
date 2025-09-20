@@ -216,7 +216,7 @@ namespace ChroMapper_LightModding.Export
                 case CommentTypesEnum.Unrankable:
                     return "X";
                 case CommentTypesEnum.Note:
-                    return "i";
+                    return "N";
                 case CommentTypesEnum.Data:
                     return "";
             }
