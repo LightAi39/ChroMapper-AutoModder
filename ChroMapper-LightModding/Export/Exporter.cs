@@ -211,11 +211,11 @@ namespace ChroMapper_LightModding.Export
             {
                 case CommentTypesEnum.Suggestion:
                     return "S";
-                case CommentTypesEnum.Unsure:
+                case CommentTypesEnum.Questionable:
                     return "?";
-                case CommentTypesEnum.Issue:
+                case CommentTypesEnum.Unrankable:
                     return "X";
-                case CommentTypesEnum.Info:
+                case CommentTypesEnum.Note:
                     return "i";
                 case CommentTypesEnum.Data:
                     return "";
@@ -229,11 +229,11 @@ namespace ChroMapper_LightModding.Export
             {
                 case CommentTypesEnum.Suggestion:
                     return "Suggestion";
-                case CommentTypesEnum.Unsure:
+                case CommentTypesEnum.Questionable:
                     return "Questionable";
-                case CommentTypesEnum.Issue:
+                case CommentTypesEnum.Unrankable:
                     return "Unrankable";
-                case CommentTypesEnum.Info:
+                case CommentTypesEnum.Note:
                     return "Note";
                 case CommentTypesEnum.Data:
                     return "Data";

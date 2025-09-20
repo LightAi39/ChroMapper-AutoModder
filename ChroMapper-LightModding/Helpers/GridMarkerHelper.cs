@@ -171,11 +171,11 @@ namespace ChroMapper_LightModding.Helpers
             {
                 case CommentTypesEnum.Suggestion:
                     return Color.green;
-                case CommentTypesEnum.Unsure:
+                case CommentTypesEnum.Questionable:
                     return Color.yellow;
-                case CommentTypesEnum.Issue:
+                case CommentTypesEnum.Unrankable:
                     return Color.red;
-                case CommentTypesEnum.Info:
+                case CommentTypesEnum.Note:
                 case CommentTypesEnum.Data:
                     return Color.magenta;
                 default:

@@ -138,13 +138,13 @@ namespace ChroMapper_LightModding
                 .With("button", "<Keyboard>/g");
             openCommentAction.performed += _ => { OpenCommentKeyEvent(); };
 
-            quickMarkUnsureAction = new InputAction("Quick mark unsure", type: InputActionType.Button);
+            quickMarkUnsureAction = new InputAction("Quick mark Questionable", type: InputActionType.Button);
             quickMarkUnsureAction.AddBinding("<Keyboard>/f9");
-            quickMarkUnsureAction.performed += _ => { QuickMarkUnsureEvent(); };
+            quickMarkUnsureAction.performed += _ => { QuickMarkQuestionableEvent(); };
 
-            quickMarkIssueAction = new InputAction("Quick mark issue", type: InputActionType.Button);
+            quickMarkIssueAction = new InputAction("Quick mark unrankable", type: InputActionType.Button);
             quickMarkIssueAction.AddBinding("<Keyboard>/f10");
-            quickMarkIssueAction.performed += _ => { QuickMarkIssueEvent(); };
+            quickMarkIssueAction.performed += _ => { QuickMarkUnrankableEvent(); };
 
             // copy/paste review comment hotkeys (avoid interfering with Ctrl+C in ChroMapper)
             copyReviewCommentAction = new InputAction("Copy Review Comment", type: InputActionType.Button);
@@ -350,7 +350,7 @@ namespace ChroMapper_LightModding
             SelectionController.DeselectAll();
         }
 
-        public void QuickMarkUnsureEvent()
+        public void QuickMarkQuestionableEvent()
         {
             if (currentReview == null) { Debug.Log("Comment Creation not executed, no file loaded."); return; }
             var selection = SelectionController.SelectedObjects;
@@ -371,8 +371,8 @@ namespace ChroMapper_LightModding
                     }
                     else
                     {
-                        Debug.Log("Quick Creating comment of type Unsure");
-                        HandleCreateComment(CommentTypesEnum.Unsure, "", selectedObjects);
+                        Debug.Log("Quick Creating comment of type Questionable");
+                        HandleCreateComment(CommentTypesEnum.Questionable, "", selectedObjects);
                     }
 
                 }
@@ -389,7 +389,7 @@ namespace ChroMapper_LightModding
             SelectionController.DeselectAll();
         }
 
-        public void QuickMarkIssueEvent()
+        public void QuickMarkUnrankableEvent()
         {
             if (currentReview == null) { Debug.Log("Comment Creation not executed, no file loaded."); return; }
             var selection = SelectionController.SelectedObjects;
@@ -410,8 +410,8 @@ namespace ChroMapper_LightModding
                     }
                     else
                     {
-                        Debug.Log("Quick Creating comment of type Issue");
-                        HandleCreateComment(CommentTypesEnum.Issue, "", selectedObjects);
+                        Debug.Log("Quick Creating comment of type Unrankable");
+                        HandleCreateComment(CommentTypesEnum.Unrankable, "", selectedObjects);
                     }
 
                 }

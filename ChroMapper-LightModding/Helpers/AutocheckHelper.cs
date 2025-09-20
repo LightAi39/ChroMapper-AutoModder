@@ -206,19 +206,19 @@ namespace ChroMapper_LightModding.Helpers
                         commentType = null;
                         break;
                     case Severity.Info:
-                        commentType = CommentTypesEnum.Info;
+                        commentType = CommentTypesEnum.Note;
                         break;
                     case Severity.Suggestion:
                         commentType = CommentTypesEnum.Suggestion;
                         break;
                     case Severity.Warning:
-                        commentType = CommentTypesEnum.Unsure;
+                        commentType = CommentTypesEnum.Questionable;
                         break;
                     case Severity.Error:
-                        commentType = CommentTypesEnum.Issue;
+                        commentType = CommentTypesEnum.Unrankable;
                         break;
                     case Severity.Inconclusive:
-                        commentType = CommentTypesEnum.Unsure;
+                        commentType = CommentTypesEnum.Questionable;
                         break;
                     case Severity.Data: 
                         commentType = CommentTypesEnum.Data;
@@ -248,19 +248,19 @@ namespace ChroMapper_LightModding.Helpers
                         commentType = null;
                         break;
                     case Severity.Info:
-                        commentType = CommentTypesEnum.Info;
+                        commentType = CommentTypesEnum.Note;
                         break;
                     case Severity.Suggestion:
                         commentType = CommentTypesEnum.Suggestion;
                         break;
                     case Severity.Warning:
-                        commentType = CommentTypesEnum.Unsure;
+                        commentType = CommentTypesEnum.Questionable;
                         break;
                     case Severity.Error:
-                        commentType = CommentTypesEnum.Issue;
+                        commentType = CommentTypesEnum.Unrankable;
                         break;
                     case Severity.Inconclusive:
-                        commentType = CommentTypesEnum.Unsure;
+                        commentType = CommentTypesEnum.Questionable;
                         break;
                     case Severity.Data:
                         commentType = CommentTypesEnum.Data;
