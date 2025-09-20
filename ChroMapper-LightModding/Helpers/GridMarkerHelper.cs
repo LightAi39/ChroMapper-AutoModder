@@ -57,29 +57,18 @@ namespace ChroMapper_LightModding.Helpers
             UpdateBpmChanges();
             var currentComments = plugin.currentReview.Comments;
 
-            if (currentComments.Count < renderedComments.Count) // Removed comment
+            List<CachedComment> toDelete = renderedComments.Where(x => !currentComments.Exists(y => y == x.Comment)).ToList();
+            foreach (var renderedComment in toDelete)
             {
-                List<CachedComment> toDelete = new();
-                foreach (var renderedComment in renderedComments.ToList())
-                {
-                    if (currentComments.All(x => x != renderedComment.Comment))
-                    {
-                        GameObject.Destroy(renderedComment.Text.gameObject);
-                        renderedComments.Remove(renderedComment);
-                    }
-                }
+                GameObject.Destroy(renderedComment.Text.gameObject);
+                renderedComments.Remove(renderedComment);
             }
 
-            if (currentComments.Count > renderedComments.Count) // Added comment
+            List<Comment> toAdd = currentComments.Where(x => !renderedComments.Exists(y => y.Comment == x)).ToList();
+            foreach (var comment in toAdd)
             {
-                foreach (var comment in currentComments)
-                {
-                    if (renderedComments.All(x => x.Comment != comment))
-                    {
-                        TextMeshProUGUI text = CreateGridBookmark(comment);
-                        renderedComments.Add(new CachedComment(comment, text));
-                    }
-                }
+                TextMeshProUGUI text = CreateGridBookmark(comment);
+                renderedComments.Add(new CachedComment(comment, text));
             }
 
             foreach (CachedComment cachedComment in renderedComments) // Covering for edited comment

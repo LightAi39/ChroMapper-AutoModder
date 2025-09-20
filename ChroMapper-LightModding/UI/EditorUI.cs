@@ -1416,7 +1416,7 @@ namespace ChroMapper_LightModding.UI
         {
             (float min, float max) beat = (plugin.AudioTimeSyncController.CurrentJsonTime - 0.01f, plugin.AudioTimeSyncController.CurrentJsonTime + 0.01f);
 
-            List<Comment> comments = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat >= beat.min && o.Beat <= beat.max)).ToList();
+            List<Comment> comments = plugin.currentReview.Comments.Where(c => c.StartBeat >= beat.min && c.StartBeat <= beat.max).ToList();
 
             if (comments.Count == 0)
             {

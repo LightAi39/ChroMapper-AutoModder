@@ -109,7 +109,7 @@ namespace ChroMapper_LightModding.Helpers
 
         public void RunImportMod(string characteristic, int difficultyRank, string difficulty, List<string> mod)
         {
-            RunAutoCheck(false, false, false, true, characteristic, difficultyRank, difficulty, mod);
+            RunAutoCheck(false, false, false, false, characteristic, difficultyRank, difficulty, mod);
         }
 
         public void RunCompareTimings(string characteristic, int difficultyRank, string difficulty)
