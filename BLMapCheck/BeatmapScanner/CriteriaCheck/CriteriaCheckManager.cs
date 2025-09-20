@@ -113,7 +113,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             if (diff.Notes.Count >= 20)
             {
-                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute, difficultyBeatmap._noteJumpMovementSpeed);
+                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
                 Helper.CreateNoteData(diff.Notes, swings);
             }
             else
@@ -198,7 +198,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             if (diff.Notes.Count >= 20)
             {
                 _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == difficulty);
-                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute, difficultyBeatmap._noteJumpMovementSpeed);
+                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
             } else
             {
                 throw new Exception("Must have at least 20 notes");
