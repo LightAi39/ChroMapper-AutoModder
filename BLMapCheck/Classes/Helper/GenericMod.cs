@@ -37,6 +37,7 @@ namespace BLMapCheck.Classes.Helper
                 str = line.Trim();
                 keyword = false;
                 comment = "";
+                beats.Clear();
 
                 // Compact-style format
                 if (line.ToLowerInvariant().StartsWith("(x)"))
@@ -99,80 +100,87 @@ namespace BLMapCheck.Classes.Helper
                                 }
                             }
                         } while (loop);
-                    }
 
-                    // Check for range
-                    if (!keyword && substring.StartsWith("to"))
-                    {
-                        // Remove to and white space
-                        string sub = substring.Substring(2).Trim();
-                        // Write the whole thing on both beat
-                        match = Regex.Match(sub, NumberPattern, RegexOptions.Compiled);
-                        if (match.Success)
+                        // Check for range
+                        if (!keyword && substring.StartsWith("to"))
                         {
-                            beats.Add(TryParseFloat(match.Value));
-                            comment = str;
-                        }
-                        else comment = substring.Trim();
-                    }
-                    else if (!keyword && substring.StartsWith("-"))
-                    {
-                        // Remove - and white space
-                        string sub = substring.Substring(1).Trim();
-                        // Write the whole thing on both beat
-                        match = Regex.Match(sub, NumberPattern, RegexOptions.Compiled);
-                        if (match.Success)
-                        {
-                            beats.Add(TryParseFloat(match.Value));
-                            comment = str;
-                        }
-                        else comment = substring.Trim();
-                    }
-                    else comment = substring.Trim();
-
-                    // Remove special symbol and white space
-                    comment = Regex.Replace(comment, SpecialCharPattern, "");
-
-                    // BeatLeader difficulty compare format
-                    if (line.StartsWith("- Removed"))
-                    {
-                        comment = comment.Insert(0, "Removed ");
-                    }
-                    else if (line.StartsWith("+ Added"))
-                    {
-                        comment = comment.Insert(0, "Added ");
-                    }
-                    else if (line.StartsWith("/ Modified"))
-                    {
-                        comment = comment.Insert(0, "Modified ");
-                    }
-
-                    DifficultyV3 current = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
-
-                    foreach (var b in beats)
-                    {
-                        List<BeatmapObject> beatmapObject = new();
-                        beatmapObject.AddRange(current.Notes.Where(x => x.Beats == b));
-                        beatmapObject.AddRange(current.Bombs.Where(x => x.Beats == b));
-                        beatmapObject.AddRange(current.Arcs.Where(x => x.Beats == b));
-                        beatmapObject.AddRange(current.Chains.Where(x => x.Beats == b));
-                        beatmapObject.AddRange(current.Walls.Where(x => x.Beats == b));
-                        // Create a fake object if necessary, otherwise there won't be any comment
-                        if (beatmapObject.Count == 0)
-                        {
-                            Parser.Map.Difficulty.V3.Grid.Note obj = new()
+                            // Remove to and white space
+                            string sub = substring.Substring(2).Trim();
+                            // Write the whole thing on both beat
+                            match = Regex.Match(sub, NumberPattern, RegexOptions.Compiled);
+                            if (match.Success)
                             {
-                                Beats = b,
-                                x = 0,
-                                y = 0,
-                                Color = 0
-                            };
-                            beatmapObject.Add(obj);
+                                beats.Add(TryParseFloat(match.Value));
+                                comment = str;
+                            }
+                            else comment = substring.Trim();
+                        }
+                        else if (!keyword && substring.StartsWith("-"))
+                        {
+                            // Remove - and white space
+                            string sub = substring.Substring(1).Trim();
+
+                            match = Regex.Match(sub, NumberPattern, RegexOptions.Compiled);
+                            if (match.Success)
+                            {
+                                beat = TryParseFloat(match.Value);
+                                // Verify that the next beat detected is further than the previous one
+                                // Otherwise, probably just a delimiter
+                                if (beat > beats.LastOrDefault())
+                                {
+                                    // Write the whole thing on both beat
+                                    beats.Add(beat);
+                                    comment = str;
+                                }
+                                else comment = substring.Trim();
+                            }
+                            else comment = substring.Trim();
+                        }
+                        else comment = substring.Trim();
+
+                        // Remove special symbol and white space
+                        comment = Regex.Replace(comment, SpecialCharPattern, "");
+
+                        // BeatLeader difficulty compare format
+                        if (line.StartsWith("- Removed"))
+                        {
+                            comment = comment.Insert(0, "Removed ");
+                        }
+                        else if (line.StartsWith("+ Added"))
+                        {
+                            comment = comment.Insert(0, "Added ");
+                        }
+                        else if (line.StartsWith("/ Modified"))
+                        {
+                            comment = comment.Insert(0, "Modified ");
                         }
 
-                        CheckResults.Instance.CreateDiffResult("Mod", severity, "Mod", comment, new(), beatmapObject);
+                        DifficultyV3 current = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
+
+                        foreach (var b in beats)
+                        {
+                            List<BeatmapObject> beatmapObject = new();
+                            beatmapObject.AddRange(current.Notes.Where(x => x.Beats == b));
+                            beatmapObject.AddRange(current.Bombs.Where(x => x.Beats == b));
+                            beatmapObject.AddRange(current.Arcs.Where(x => x.Beats == b));
+                            beatmapObject.AddRange(current.Chains.Where(x => x.Beats == b));
+                            beatmapObject.AddRange(current.Walls.Where(x => x.Beats == b));
+                            // Create a fake object if necessary, otherwise there won't be any comment
+                            if (beatmapObject.Count == 0)
+                            {
+                                Parser.Map.Difficulty.V3.Grid.Note obj = new()
+                                {
+                                    Beats = b,
+                                    x = 0,
+                                    y = 0,
+                                    Color = 0
+                                };
+                                beatmapObject.Add(obj);
+                            }
+
+                            CheckResults.Instance.CreateDiffResult("Mod", severity, "Mod", comment, new(), beatmapObject);
+                        }
                     }
-                    beats.Clear();
                 }
             }
 
