@@ -187,6 +187,7 @@ namespace ChroMapper_LightModding.Helpers
                 case CommentTypesEnum.Issue:
                     return Color.red;
                 case CommentTypesEnum.Info:
+                case CommentTypesEnum.Data:
                     return Color.magenta;
                 default:
                     return Color.clear;

@@ -10,10 +10,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Optional
         // Flag existing notes with angle offset as info type
         public static void Check(List<Note> notes)
         {
-            foreach (Note note in notes.Where(o => o.AngleOffset != 0))
+            if (notes.Any())
             {
-                CheckResults.Instance.CreateDiffResult("AngleOffset Note", Severity.Data, "AngleOffset", "AngleOffset");
-            }
+                foreach (Note note in notes.Where(o => o.AngleOffset != 0))
+                {
+                    CheckResults.Instance.CreateDiffResult("AngleOffset Note", Severity.Data, "AngleOffset", "AngleOffset", 
+                        new() { new("AngleOffset", note.AngleOffset.ToString()) }, new() { note });
+                }
+            }  
         }
     }
 }

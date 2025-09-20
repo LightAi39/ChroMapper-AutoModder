@@ -220,8 +220,9 @@ namespace ChroMapper_LightModding.Helpers
                     case Severity.Inconclusive:
                         commentType = CommentTypesEnum.Unsure;
                         break;
-                    case Severity.Data: // Skip
-                        continue;
+                    case Severity.Data: 
+                        commentType = CommentTypesEnum.Data;
+                        break;
                     default:
                         commentType = null;
                         break;
@@ -261,8 +262,9 @@ namespace ChroMapper_LightModding.Helpers
                     case Severity.Inconclusive:
                         commentType = CommentTypesEnum.Unsure;
                         break;
-                    case Severity.Data: // Skip
-                        continue;
+                    case Severity.Data:
+                        commentType = CommentTypesEnum.Data;
+                        break;
                     default:
                         commentType = null;
                         break;
