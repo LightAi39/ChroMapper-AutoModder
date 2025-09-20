@@ -1,4 +1,5 @@
-﻿using BLMapCheck.Classes.Results;
+﻿using beatleader_parser.Timescale;
+using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
@@ -10,23 +11,19 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class HotStart
     {
         // Detect objects that are too early in the map
-        public static CritResult Check(List<BeatmapGridObject> objects, List<Wall> walls)
+        public static CritResult Check(string characteristic, string difficulty, Timescale timescale, List<BeatmapGridObject> objects, List<Wall> walls)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string name = "Hot Start";
-            string checkType = "Duration";
             CritResult criteria = CritResult.Success;
-            var timescale = CriteriaCheckManager.timescale;
 
+            // Calculate the minimum duration in beats
             var limit = timescale.BPM.ToBeatTime((float)Instance.HotStartDuration, true);
 
             foreach (var c in objects)
             {
                 if (c.Beats < limit)
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        name, Severity.Error, checkType, "There must be at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects",
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Hot Start", Severity.Error, "Duration", "There must be at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects",
                         new() { new("CurrentBeat", c.Beats.ToString()), new("MinimumBeat", limit.ToString()) }, new() { c });
                     criteria = CritResult.Fail;
                 }
@@ -38,8 +35,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (w.Beats < limit && ((w.x + w.Width >= 2 && w.x < 2) || w.x == 1 || w.x == 2))
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        name, Severity.Error, checkType, "There must be at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects",
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Hot Start", Severity.Error, "Duration", "There must be at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects",
                         new() { new("CurrentBeat", w.Beats.ToString()), new("MinimumBeat", limit.ToString()) }, new() { w });
                     criteria = CritResult.Fail;
                 }
@@ -48,8 +45,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if(criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        name, Severity.Passed, checkType, "There is at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects");
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Hot Start", Severity.Passed, "Duration", "There is at least " + Instance.HotStartDuration.ToString() + " seconds of time before any interactable objects");
             }
 
             return criteria;

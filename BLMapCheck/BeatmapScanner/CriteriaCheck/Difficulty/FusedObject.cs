@@ -1,4 +1,5 @@
-﻿using BLMapCheck.Classes.Results;
+﻿using beatleader_parser.Timescale;
+using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
@@ -14,14 +15,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Objects may not be placed in a way where they intersect in the Z dimension.
         // Objects that are placed within 0.5m of one another in the Z dimension on the same grid cell are considered to intersect.
-        public static CritResult Check(List<Note> notes, List<Bomb> bombs, List<Wall> obstacles, List<Chain> chains)
+        public static CritResult Check(string characteristic, string difficulty, Timescale timescale, List<Note> notes, List<Bomb> bombs, List<Wall> obstacles, List<Chain> chains)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string name = "Fused Object";
-            string checkType = "Fused";
             CritResult criteria = CritResult.Success;
-            var timescale = CriteriaCheckManager.timescale;
 
             // Notes and bombs can be considered the same for this
             List<BeatmapGridObject> objects = new();
@@ -36,7 +32,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var n in objects)
                 {
                     // Need to calculate 0.5m based on the NJS and BPM
-                    var max = CalculateMeter(n.Beats, n.njs);
+                    var max = CalculateMeter(n.Beats, n.njs, timescale);
 
                     // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
                     if (n.Beats - (o.Beats + o.DurationInBeats) >= max)
@@ -47,8 +43,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     // Need to take into account wall height and duration
                     if (n.Beats >= o.Beats - max && n.Beats <= o.Beats + o.DurationInBeats + max && n.x <= o.x + o.Width - 1 && n.x >= o.x && n.y < o.y + o.Height && n.y >= o.y - 1)
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { n, o });
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Fused Object", Severity.Error, "Fused", "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { n, o });
                         criteria = CritResult.Fail;
                     }
                 }
@@ -57,7 +53,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var c in chains)
                 {
                     // Need to calculate 0.5m based on the NJS and BPM
-                    var max = CalculateMeter(c.Beats, c.njs);
+                    var max = CalculateMeter(c.Beats, c.njs, timescale);
 
                     // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
                     if (c.TailInBeats - (o.Beats + o.DurationInBeats) >= max)
@@ -70,8 +66,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var post = o.Beats + o.DurationInBeats + max;
                     if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && c.tx <= o.x + o.Width - 1 && c.tx >= o.x && c.ty < o.y + o.Height && c.ty >= o.y - 1)
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { c, o });
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Fused Object", Severity.Error, "Fused", "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { c, o });
                         criteria = CritResult.Fail;
                     }
                 }
@@ -86,7 +82,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     var next = objects[j];
                     // Need to calculate 0.5m based on the NJS and BPM
-                    var max = CalculateMeter(next.Beats, next.njs);
+                    var max = CalculateMeter(next.Beats, next.njs, timescale);
 
                     // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
                     if (next.Beats - n.Beats >= max)
@@ -97,8 +93,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     // Compare beat, x and y position
                     if (n.Beats >= next.Beats - max && n.Beats <= next.Beats + max && n.x == next.x && n.y == next.y)
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { n, next });
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Fused Object", Severity.Error, "Fused", "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { n, next });
                         criteria = CritResult.Fail;
                     }
                 }
@@ -111,7 +107,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var c in chains)
                 {
                     // Need to calculate 0.5m based on the NJS and BPM
-                    var max = CalculateMeter(c.Beats, c.njs);
+                    var max = CalculateMeter(c.Beats, c.njs, timescale);
 
                     // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
                     if (c.TailInBeats - n.Beats >= max)
@@ -130,8 +126,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var post = n.Beats + max;
                     if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && IsPointBetween(n, c))
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { n, c });
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Fused Object", Severity.Error, "Fused", "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { n, c });
                         criteria = CritResult.Fail;
                     }
                 }
@@ -145,7 +141,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var c in chains)
                 {
                     // Need to calculate 0.5m based on the NJS and BPM
-                    var max = CalculateMeter(c.Beats, c.njs);
+                    var max = CalculateMeter(c.Beats, c.njs, timescale);
 
                     // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
                     if (c.TailInBeats - b.Beats >= max)
@@ -158,8 +154,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var post = b.Beats + max;
                     if ((c.Beats >= pre || c.TailInBeats >= pre) && (c.Beats <= post || c.TailInBeats <= post) && IsPointBetween(b, c))
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { b, c });
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Fused Object", Severity.Error, "Fused", "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { b, c });
                         criteria = CritResult.Fail;
                     }
                 }
@@ -174,7 +170,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     var c2 = chains[j];
                     // Need to calculate 0.5m based on the NJS and BPM
-                    var max = CalculateMeter(c.Beats, c.njs);
+                    var max = CalculateMeter(c.Beats, c.njs, timescale);
 
                     // Objects are ordered in beat, so if the beat is above the max limit, break out of this loop
                     if (Math.Abs(c2.TailInBeats - c.Beats) >= max || Math.Abs(c2.TailInBeats - c.TailInBeats) >= max || Math.Abs(c2.Beats - c.Beats) >= max || Math.Abs(c2.Beats - c.TailInBeats) >= max)
@@ -187,8 +183,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var post = c.Beats + max;
                     if ((c2.Beats >= pre || c2.TailInBeats >= pre) && (c2.Beats <= post || c2.TailInBeats <= post) && DoLinesIntersect(c, c2))
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            name, Severity.Error, checkType, "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { c, c2 });
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Fused Object", Severity.Error, "Fused", "Objects cannot collide within " + max.ToString() + " in the same line", new(), new() { c, c2 });
                         criteria = CritResult.Fail;
                     }
                 }
@@ -196,8 +192,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                    name, Severity.Passed, checkType, "No fused objects detected");
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                    "Fused Object", Severity.Passed, "Fused", "No fused objects detected");
             }
 
             timescale.BPM.ResetCurrentBPM();
@@ -205,10 +201,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             return criteria;
         }
 
-        public static double CalculateMeter(float beat, float njs)
+        public static double CalculateMeter(float beat, float njs, Timescale timescale)
         {
-            CriteriaCheckManager.timescale.BPM.SetCurrentBPM(beat);
-            return Math.Round(CriteriaCheckManager.timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
+            timescale.BPM.SetCurrentBPM(beat);
+            return Math.Round(timescale.BPM.ToBeatTime(1) / njs * Instance.FusedDistance, 3);
         }
     }
 }

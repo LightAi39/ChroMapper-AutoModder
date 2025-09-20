@@ -11,11 +11,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class ProlongedSwing
     {
         // Very basic check for stuff like Pauls, Dotspam, long chain duration, etc.
-        public static CritResult Check(List<Note> notes, List<Chain> chains)
+        public static CritResult Check(string characteristic, string difficulty, List<Note> notes, List<Chain> chains)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string checkType = "Chain";
             CritResult criteria = CritResult.Success;
 
             var duration = false;
@@ -31,8 +28,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 // The duration of chains should be similar to the average effective slider duration or 150% of that
                 if (ch.TailInBeats - ch.Beats >= Config.Instance.SliderPrecision * 2.1)
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Chain Duration", Severity.Warning, checkType, "The duration of chains should be similar to the average effective slider duration or 150% of that. A longer duration might require justification if deemed too slow by Ranking Staff.", 
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Chain Duration", Severity.Warning, "Chain", "The duration of chains should be similar to the average effective slider duration or 150% of that. A longer duration might require justification if deemed too slow by Ranking Staff.", 
                         new() { new("CurrentDuration", (ch.TailInBeats - ch.Beats).ToString()), new("MaximumDuration", (Config.Instance.SliderPrecision * 2.1).ToString()) }, new() { ch });
                     if (CritResult.Warning > criteria) criteria = CritResult.Warning;
 
@@ -42,8 +39,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 // Chains must have a head note
                 if (!notes.Exists(c => c.Beats == ch.Beats && c.Color == ch.Color && c.x == ch.x && c.y == ch.y))
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Chain Head", Severity.Error, checkType, "Chain must have an head note", 
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Chain Head", Severity.Error, "Chain", "Chain must have an head note", 
                         new() { new("IssueType", "No head note at: " + ch.Beats + " " + ch.x + "/" + ch.y) }, new() { ch });
                     criteria = CritResult.Fail;
 
@@ -53,37 +50,34 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (!duration)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Chain Duration", Severity.Passed, checkType, "Chains duration are under 150% the average effective slider duration");
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Chain Duration", Severity.Passed, "Chain", "Chains duration are under 150% the average effective slider duration");
             }
 
             if(!head)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Chain Head", Severity.Passed, checkType, "All chains in the map have an head note");
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Chain Head", Severity.Passed, "Chain", "All chains in the map have an head note");
             }
 
             // Possible dots spam and pauls
             var leftNotes = notes.Where(d => d.Color == 0).ToList();
             var rightNotes = notes.Where(d => d.Color == 1).ToList();
 
-            CheckForSpam(leftNotes, criteria);
-            CheckForSpam(rightNotes, criteria);
+            CheckForSpam(characteristic, difficulty, leftNotes, criteria);
+            CheckForSpam(characteristic, difficulty, rightNotes, criteria);
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
                         "Dot Spam", Severity.Passed, "Swing", "Map doesn't have any prolonged swing duration");
             }
 
             return criteria;
         }
         
-        public static void CheckForSpam(List<Note> notes, CritResult criteria)
+        public static void CheckForSpam(string characteristic, string difficulty, List<Note> notes, CritResult criteria)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string checkType = "Swing";
             Note previous = null;
 
             foreach (var note in notes)
@@ -96,15 +90,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         // Any direction
                         if (note.CutDirection == 8)
                         {
-                            CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                                "Dot Spam", Severity.Warning, checkType, "Swing duration should be consistent throughout the map",
+                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                                "Dot Spam", Severity.Warning, "Swing", "Swing duration should be consistent throughout the map",
                                 new() { new("Type", "Dot Spam") }, new() { note });
                             if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                         }
                         else if (previous.CutDirection != 8 && IsSameDirection(DirectionToDegree[previous.CutDirection] + previous.AngleOffset, DirectionToDegree[note.CutDirection] + note.AngleOffset)) // Same direction
                         {
-                            CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                                "Dot Spam", Severity.Error, checkType, "Swing duration should be consistent throughout the map",
+                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                                "Dot Spam", Severity.Error, "Swing", "Swing duration should be consistent throughout the map",
                                 new() { new("Type", "Dot Spam") }, new() { note });
                             if (CritResult.Fail > criteria) criteria = CritResult.Fail;
                         }

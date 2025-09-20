@@ -10,25 +10,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
         {
             if (SongAuthorName.Count() == 0)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Name = "Song Author",
-                    Severity = Severity.Error,
-                    CheckType = "SongInfo",
-                    Description = "The song author field is empty.",
-                    ResultData = new() { new("SongAuthorLength", "0") }
-                });
+                CheckResults.Instance.CreateInfoResult("Song Author", Severity.Error, "SongInfo", "The song author field is empty",
+                    new() { new("SongAuthorLength", "0") });
                 return CritResult.Fail;
             }
 
-            CheckResults.Instance.AddResult(new CheckResult()
-            {
-                Name = "Song Author",
-                Severity = Severity.Passed,
-                CheckType = "SongInfo",
-                Description = "The song author field is not empty.",
-                ResultData = new() { new("SongAuthorLength", SongAuthorName.Count().ToString()) }
-            });
+            CheckResults.Instance.CreateInfoResult("Song Author", Severity.Passed, "SongInfo", "The song author field is not empty",
+                    new() { new("SongAuthorLength", SongAuthorName.Count().ToString()) });
             return CritResult.Success;
         }
     }

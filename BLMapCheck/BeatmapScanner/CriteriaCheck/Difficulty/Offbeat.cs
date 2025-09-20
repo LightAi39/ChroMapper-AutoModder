@@ -14,13 +14,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         public static readonly float[] AllowedSnap = { 0, 0.125f, 0.167f, 0.25f, 0.333f, 0.375f, 0.5f, 0.625f, 0.667f, 0.75f, 0.833f, 0.875f };
 
         // Detect notes that are mapped to an uncommon precision.
-        public static void Check()
+        public static void Check(string characteristic, string difficulty)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string name = "Offbeat Note";
-            string checkType = "Offbeat";
-
             var notes = NotesData.Where(n => (n.Note.Color == 0 || n.Note.Color == 1) && (n.Head || !n.Pattern)).ToList();
 
             if (notes.Count >= 2)
@@ -32,8 +27,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (!AllowedSnap.Contains(precision))
                     {
                         var reality = RealToFraction(precision, 0.01);
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                                name, Severity.Info, checkType, "Uncommon precision",
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                                "Offbeat Note", Severity.Info, "Offbeat", "Uncommon precision",
                                 new() { new("Precision", reality.N.ToString() + "/" + reality.D.ToString()) }, new() { note.Note });
                     }
                 }

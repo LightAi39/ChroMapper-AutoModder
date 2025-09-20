@@ -1,4 +1,5 @@
-﻿using BLMapCheck.BeatmapScanner.MapCheck;
+﻿using beatleader_parser.Timescale;
+using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
@@ -14,16 +15,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class SwingPath
     {
-       
         // Check if a note block the swing path of another note of a different color
-        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Note> notes)
+        public static CritResult Check(string characteristic, string difficulty, Timescale timescale, List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Note> notes)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string name = "Swing Path";
-            string checkType = "Swing";
             CritResult criteria = CritResult.Success;
-            var timescale = CriteriaCheckManager.timescale;
 
             if (beatmapGridObjects.Any())
             {
@@ -102,8 +97,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             var obj = beatmapGridObjects.Where(c => c.Beats == note.Beats && note.x == c.x && note.y == c.y).FirstOrDefault();
 
-                                            CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                                                name, Severity.Info, checkType, "Possible swing path issue", new(), new() { obj });
+                                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                                                "Swing Path", Severity.Info, "Swing", "Possible swing path issue", new(), new() { obj });
                                         }
                                     }
                                 }
@@ -220,16 +215,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
                 foreach (var item in found)
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        name, Severity.Error, checkType, "Swing path issue", new(), new() { item });
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Swing Path", Severity.Error, "Swing", "Swing path issue", new(), new() { item });
                     criteria = CritResult.Fail;
                 }
             }
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        name, Severity.Passed, checkType, "No issue with swing path detected");
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Swing Path", Severity.Passed, "Swing", "No issue with swing path detected");
             }
 
             return criteria;

@@ -10,25 +10,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
         {
             if (SongName.Count() == 0)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Name = "Song Name",
-                    Severity = Severity.Error,
-                    CheckType = "SongInfo",
-                    Description = "The song name field is empty.",
-                    ResultData = new() { new("SongNameLength", "0") }
-                });
+                CheckResults.Instance.CreateInfoResult("Song Name", Severity.Error, "SongInfo", "The song name field is empty",
+                    new() { new("SongNameLength", "0") });
                 return CritResult.Fail;
             }
 
-            CheckResults.Instance.AddResult(new CheckResult()
-            {
-                Name = "Song Name",
-                Severity = Severity.Passed,
-                CheckType = "SongInfo",
-                Description = "The song name field is not empty.",
-                ResultData = new() { new("SongNameLength", SongName.Count().ToString()) }
-            });
+            CheckResults.Instance.CreateInfoResult("Song Name", Severity.Passed, "SongInfo", "The song name field is not empty",
+                    new() { new("SongNameLength", SongName.Count().ToString()) });
             return CritResult.Success;
         }
     }

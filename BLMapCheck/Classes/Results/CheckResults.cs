@@ -28,7 +28,7 @@ namespace BLMapCheck.Classes.Results
 
         public bool CheckFinished { get; set; } = false;
 
-        public void CreateAndAddResult(string characteristic, string difficulty, string name, Severity severity,
+        public void CreateDiffResult(string characteristic, string difficulty, string name, Severity severity,
             string checkType, string description, List<KeyValuePair> resultData = null, List<BeatmapObject> beatmapObjects = null)
         {
             if (resultData == null) resultData = new();
@@ -38,6 +38,23 @@ namespace BLMapCheck.Classes.Results
             {
                 Characteristic = characteristic,
                 Difficulty = difficulty,
+                Name = name,
+                Severity = severity,
+                CheckType = checkType,
+                Description = description,
+                ResultData = resultData,
+                BeatmapObjects = beatmapObjects
+            });
+        }
+
+        public void CreateInfoResult(string name, Severity severity,
+            string checkType, string description, List<KeyValuePair> resultData = null, List<BeatmapObject> beatmapObjects = null)
+        {
+            if (resultData == null) resultData = new();
+            if (beatmapObjects == null) beatmapObjects = new();
+
+            Instance.AddResult(new CheckResult()
+            {
                 Name = name,
                 Severity = severity,
                 CheckType = checkType,

@@ -12,12 +12,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Attempt to detect specific note and angle placement
         // TODO: Use swing path and simulation instead of hardcoding logic
-        public static CritResult Check(List<Note> notes)
+        public static CritResult Check(string characteristic, string difficulty, List<Note> notes)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string name = "Hand Clap";
-            string checkType = "Handclap";
             CritResult criteria = CritResult.Success;
 
             if (notes.Any())
@@ -158,16 +154,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in handclap)
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        name, Severity.Warning, checkType, "Patterns must not encourage hand clapping", new() { new("Handclap", "Warning") }, new() { item });
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Hand Clap", Severity.Warning, "Handclap", "Patterns must not encourage hand clapping", new() { new("Handclap", "Warning") }, new() { item });
                     criteria = CritResult.Warning;
                 }
             }
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        name, Severity.Passed, checkType, "No handclap pattern detected");
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Hand Clap", Severity.Passed, "Handclap", "No handclap pattern detected");
             }
 
             return criteria;

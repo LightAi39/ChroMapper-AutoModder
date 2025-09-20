@@ -13,24 +13,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // JoshaParity is used to detect reset, high angle parity, and warn while playing inverted.
         // Parity warning angle is configurable
-        public static CritResult Check(List<SwingData> swings, List<Parser.Map.Difficulty.V3.Grid.Note> notes)
+        public static CritResult Check(string characteristic, string difficulty, List<SwingData> swings, List<Parser.Map.Difficulty.V3.Grid.Note> notes)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string checkType = "NoteJumpSpeed";
             CritResult criteria = CritResult.Success;
 
             foreach (var swing in swings.Where(x => x.resetType == ResetType.Rebound).ToList())
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                    "Parity", Severity.Error, checkType, "Parity error", new() { new("ErrorType", "Reset") }, new(swing.notes) { });
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                    "Parity", Severity.Error, "Parity", "Parity error", new() { new("ErrorType", "Reset") }, new(swing.notes) { });
                 criteria = CritResult.Fail;
             }
 
             foreach (var swing in swings.Where(x => x.swingEBPM == float.PositiveInfinity).ToList())
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                    "Parity Mismatch", Severity.Error, checkType, "NJS must not reach below 1 at any point in the map", 
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                    "Parity Mismatch", Severity.Error, "Parity", "NJS must not reach below 1 at any point in the map", 
                     new() { new("ErrorType", "swingEBPM is equal PositiveInfinity") }, new(swing.notes) { });
                 criteria = CritResult.Fail;
             }
@@ -46,8 +43,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            "Parity Warning", Severity.Warning, checkType, "Parity degree difference", 
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Parity Warning", Severity.Warning, "Parity", "Parity degree difference", 
                             new() { new("WarningType", Math.Abs(difference) + " degree difference") }, new(rightHandSwings[i].notes) { });
                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                     }
@@ -55,8 +52,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (Instance.ParityInvertedWarning)
                         {
-                            CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            "Parity Inverted", Severity.Warning, checkType, "Parity playing inverted",
+                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Parity Inverted", Severity.Warning, "Parity", "Parity playing inverted",
                                 new() { new("WarningType", "Playing inverted") }, new(rightHandSwings[i].notes) { });
                         }
                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
@@ -72,8 +69,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            "Parity Warning", Severity.Warning, checkType, "Parity degree difference",
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Parity Warning", Severity.Warning, "Parity", "Parity degree difference",
                             new() { new("WarningType", Math.Abs(difference) + " degree difference") }, new(leftHandSwings[i].notes) { });
                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                     }
@@ -81,8 +78,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (Instance.ParityInvertedWarning)
                         {
-                            CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            "Parity Inverted", Severity.Warning, checkType, "Parity playing inverted",
+                            CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Parity Inverted", Severity.Warning, "Parity", "Parity playing inverted",
                                 new() { new("WarningType", "Playing inverted") }, new(leftHandSwings[i].notes) { });
                         }
                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
@@ -112,15 +109,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         new("rightHand", swing.rightHand.ToString())
                     };
                     
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Parity Debug", commentType, checkType, "Parity Debug", resultData, new(swing.notes) { });
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Parity Debug", commentType, "Parity", "Parity Debug", resultData, new(swing.notes) { });
                 }
             }
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Parity", Severity.Passed, checkType, "No possible parity issue detected");
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Parity", Severity.Passed, "Parity", "No possible parity issue detected");
             }
 
             return criteria;

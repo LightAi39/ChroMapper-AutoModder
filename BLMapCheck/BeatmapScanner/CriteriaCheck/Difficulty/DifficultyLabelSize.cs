@@ -7,27 +7,24 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class DifficultyLabelSize
     {
-        public static CritResult Check(string difficultyLabel, int count = 1)
+        public static CritResult Check(string characteristic, string difficulty, string difficultyLabel, int difficultyCount)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string name = "Difficulty Label Size";
-            string checkType = "Label";
             CritResult criteria = CritResult.Success;
 
+            // Max line allowed is based on numbers of difficulty
             var maxLine = 1;
-            if (count == 2) maxLine = 2;
-            if (count >= 3) maxLine = 3;
+            if (difficultyCount == 2) maxLine = 2;
+            if (difficultyCount >= 3) maxLine = 3;
                 
             // Each diff remove around 5 letters
-            var maxValue = (Instance.MaxChar + (5 - count) * 5) * maxLine;
+            var maxValue = (Instance.MaxChar + (5 - difficultyCount) * 5) * maxLine;
 
             if (difficultyLabel != null)
             {
                 if (difficultyLabel.Count() > maxValue)
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        name, Severity.Error, checkType, "The difficulty label is too long",
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Difficulty Label Size", Severity.Error, "Label", "The difficulty label is too long",
                         new() { new("CurrentSize", difficultyLabel.Count().ToString() + " characters"), new("MaxSize", maxValue + " characters") });
                     criteria = CritResult.Fail;
                 }
@@ -35,8 +32,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        name, Severity.Passed, checkType, "The difficulty label size is valid",
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Difficulty Label Size", Severity.Passed, "Label", "The difficulty label size is valid",
                         new() { new("CurrentSize", difficultyLabel?.Count().ToString() ?? "Default"), new("MaxSize", maxValue + " characters") });
             }
 

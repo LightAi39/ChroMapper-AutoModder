@@ -1,7 +1,7 @@
 ﻿using beatleader_analyzer;
 using beatleader_parser;
-using beatleader_parser.Timescale;
 using BLMapCheck.BeatmapScanner.CriteriaCheck;
+using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
 using BLMapCheck.Configs;
 using Parser.Map;
@@ -104,8 +104,7 @@ namespace BLMapCheck
                 throw new Exception("Map not loaded");
             }
 
-            CriteriaCheckManager manager = new();
-            manager.ImportMod(characteristic, difficulty, mod);
+            GenericMod.Import(characteristic, difficulty, mod);
 
             if (CheckResults.Instance.CheckFinished)
             {
@@ -122,8 +121,7 @@ namespace BLMapCheck
                 throw new Exception("Map not loaded");
             }
 
-            CriteriaCheckManager manager = new();
-            manager.CompareTimings(characteristic, difficulty);
+            DifficultyTimings.Compare(characteristic, difficulty);
 
             if (CheckResults.Instance.CheckFinished)
             {

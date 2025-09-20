@@ -8,13 +8,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal class Shrado
     {
-        public static void Check()
+        public static void Check(string characteristic, string difficulty)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string name = "Shrado Angle";
-            string checkType = "Shrado";
-
             var red = NotesData.Where(n => n.Note.Color == 0 && (n.Head || !n.Pattern)).ToList();
             var blue = NotesData.Where(n => n.Note.Color == 1 && (n.Head || !n.Pattern)).ToList();
 
@@ -24,8 +19,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     if (DetectShrado(red[i].Note, red[i + 1].Note))
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            name, Severity.Info, checkType, name, new(), new() { red[i + 1].Note });
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Shrado Angle", Severity.Info, "Shrado", "Shrado Angle", new(), new() { red[i + 1].Note });
                     }
                 }
             }
@@ -36,8 +31,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     if (DetectShrado(blue[i].Note, blue[i + 1].Note))
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            name, Severity.Info, checkType, name, new(), new() { blue[i + 1].Note });
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Shrado Angle", Severity.Info, "Shrado", "Shrado Angle", new(), new() { blue[i + 1].Note });
                     }
                 }
             }

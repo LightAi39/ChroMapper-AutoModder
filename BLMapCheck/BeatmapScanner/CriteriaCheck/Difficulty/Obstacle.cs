@@ -12,13 +12,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Obstacle
     {
         // Calculate dodge wall per seconds, objects hidden behind walls, walls that force players outside of boundary, walls that are too short in middle lane and negative walls.
-        public static CritResult Check(List<Note> notes, List<Wall> walls, List<Bomb> bombs)
+        public static CritResult Check(string characteristic, string difficulty, Timescale timescale, List<Note> notes, List<Wall> walls, List<Bomb> bombs)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string checkType = "Wall";
             CritResult criteria = CritResult.Success;
-            Timescale timescale = CriteriaCheckManager.timescale;
 
             var middleWall = walls.Where(w => (w.x == 1 || w.x == 2) && w.Width == 1);
             // Preprocessed note data
@@ -40,8 +36,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             foreach (var note in above)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                    "Visibility", Severity.Warning, checkType, "Reduced visibility due to wall", new(), new() { note });
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                    "Visibility", Severity.Warning, "Wall", "Reduced visibility due to wall", new(), new() { note });
                 criteria = CritResult.Warning;
             }
 
@@ -57,8 +53,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 
                 foreach (var n in note)
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Hidden", Severity.Error, checkType, "Notes cannot be hidden behind walls", new(), new() { n });
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Hidden", Severity.Error, "Wall", "Notes cannot be hidden behind walls", new(), new() { n });
                     criteria = CritResult.Fail;
                 }
 
@@ -66,8 +62,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 var bomb = bombs.Where(b => b.x == line && !(b.y == 0 && w.y == 0 && w.Height == 1) && ((b.y >= w.y - 1 && b.y < w.y + w.Height) || (b.y >= 0 && w.y == 0 && w.Height > 1)) && b.Beats > w.Beats && b.Beats <= w.Beats + w.DurationInBeats + 0.25).ToList();
                 foreach (var b in bomb)
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Hidden", Severity.Error, checkType, "Bombs cannot be hidden behind walls", new(), new() { b });
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Hidden", Severity.Error, "Wall", "Bombs cannot be hidden behind walls", new(), new() { b });
                     criteria = CritResult.Fail;
                 }
             }
@@ -86,14 +82,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (((w.Height >= 3 && w.y <= 0) || (w.Height >= 2 && w.y == 1)) && ((w.x + w.Width == 3 && walls.Exists(wa => wa != w && wa.y <= 1 && wa.Height > 0 && ((wa.Height >= 3 && wa.y <= 0) || (wa.Height >= 2 && wa.y == 1)) && wa.x + wa.Width >= 2 && wa.x <= 1 && wa.Beats <= w.Beats + w.DurationInBeats && wa.Beats + wa.DurationInBeats >= w.Beats)) ||
                     (w.x + w.Width == 2 && walls.Exists(wa => wa != w && wa.y <= 1 && wa.Height > 0 && ((wa.Height >= 3 && wa.y <= 0) || (wa.Height >= 2 && wa.y == 1)) && wa.x == 2 && wa.Beats <= w.Beats + w.DurationInBeats && wa.Beats + wa.DurationInBeats >= w.Beats))))
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Forced Movement", Severity.Error, checkType, "Walls cannot force the player to move into the outer lanes", new(), new() { w });
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Forced Movement", Severity.Error, "Wall", "Walls cannot force the player to move into the outer lanes", new(), new() { w });
                     criteria = CritResult.Fail;
                 }
                 else if (((w.Height >= 3 && w.y <= 0) || (w.Height >= 2 && w.y == 1)) && ((w.Width >= 3 && (w.x + w.Width == 3 || w.x == 1)) || (w.Width >= 2 && w.x == 1 && w.y <= 1 && w.Height > 0) || (w.Width >= 4 && w.x + w.Width >= 4 && w.x <= 0 && w.y <= 1)))
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Forced Movement", Severity.Error, checkType, "Walls cannot force the player to move into the outer lanes", new(), new() { w });
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Forced Movement", Severity.Error, "Wall", "Walls cannot force the player to move into the outer lanes", new(), new() { w });
                     criteria = CritResult.Fail;
                 }
 
@@ -104,8 +100,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     || (((w.x >= 0 && w.x <= 3) || (w.x + w.Width >= 1 && w.x <= 3)) && w.Height < 0)  // Under grid with negative h
                     || (w.x + w.Width >= 1 && w.x <= 3) && w.y + w.Height >= 0 && w.Height < 0) // Stretch above with negative h
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Wall Size", Severity.Error, checkType, "Walls must have positive width, height and duration", new(), new() { w });
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Wall Size", Severity.Error, "Wall", "Walls must have positive width, height and duration", new(), new() { w });
                     criteria = CritResult.Fail;
                 }
 
@@ -113,8 +109,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (w.DurationInBeats < min &&
                     !walls.Exists(wa => wa != w && wa.x + wa.Width >= w.x + w.Width && wa.x <= w.x && wa.DurationInBeats >= min && w.Beats >= wa.Beats && w.Beats <= wa.Beats + wa.DurationInBeats + max))
                 {
-                    CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Wall Length", Severity.Error, checkType, "Walls cannot be shorter than 13.8ms", 
+                    CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Wall Length", Severity.Error, "Wall", "Walls cannot be shorter than 13.8ms", 
                         new() { new("CurrentLength", w.DurationInBeats.ToString()), new("MinimumLength", min.ToString()) }, new() { w });
                     criteria = CritResult.Fail;
                 }
@@ -124,8 +120,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Wall", Severity.Passed, checkType, "No issue with hidden objects, movement, wall size and duration detected");
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Wall", Severity.Passed, "Wall", "No issue with hidden objects, movement, wall size and duration detected");
             }
 
             bool issue = false;
@@ -168,16 +164,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     if (dodge >= Instance.MaximumDodgeWallPerSecond)
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            "Wall Dodge", Severity.Error, checkType, "Dodge walls must not force the players head to move more than " + Instance.MaximumDodgeWallPerSecond.ToString() + " times per second",
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Wall Dodge", Severity.Error, "Wall", "Dodge walls must not force the players head to move more than " + Instance.MaximumDodgeWallPerSecond.ToString() + " times per second",
                             new() { new("CurrentDodgeAmount", dodge.ToString()), new("MaxDodgeAmount", Instance.MaximumDodgeWallPerSecond.ToString()) }, new() { w });
                         criteria = CritResult.Fail;
                         issue = true;
                     }
                     else if (dodge >= Instance.SubjectiveDodgeWallPerSecond)
                     {
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            "Wall Dodge", Severity.Warning, checkType, "Dodge walls that force the players head to move more than " + Instance.SubjectiveDodgeWallPerSecond.ToString() + " per second need justification",
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Wall Dodge", Severity.Warning, "Wall", "Dodge walls that force the players head to move more than " + Instance.SubjectiveDodgeWallPerSecond.ToString() + " per second need justification",
                             new() { new("CurrentDodgeAmount", dodge.ToString()), new("ReccomendedDodgeAmount", Instance.SubjectiveDodgeWallPerSecond.ToString()) }, new() { w });
                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                         issue = true;
@@ -187,8 +183,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (!issue)
             {
-                CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                        "Wall Dodge", Severity.Passed, checkType, "No issue with dodge wall found");
+                CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                        "Wall Dodge", Severity.Passed, "Wall", "No issue with dodge wall found");
             }
 
             timescale.BPM.ResetCurrentBPM();

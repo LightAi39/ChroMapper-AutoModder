@@ -1,4 +1,5 @@
-﻿using beatleader_parser.VNJS;
+﻿using beatleader_parser.Timescale;
+using beatleader_parser.VNJS;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
@@ -10,14 +11,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal class Inline
     {
         // Detect and highlight notes that are too close to eachother, based on beat distance
-        public static void Check(List<Note> notes)
+        public static void Check(string characteristic, string difficulty, Timescale timescale, List<Note> notes)
         {
-            string characteristic = CriteriaCheckManager.Characteristic;
-            string difficulty = CriteriaCheckManager.Difficulty;
-            string name = "Inline Note";
-            string checkType = "Inline";
-            var timescale = CriteriaCheckManager.timescale;
-
+            // Calculate the maximum distance in beats considered for inline
             double maxDistance = 0.251;
             if (Configs.Config.Instance.InlineBeatPrecision != 0) maxDistance = (1 / Configs.Config.Instance.InlineBeatPrecision) + 0.001;
 
@@ -39,8 +35,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         if (i != 0) distance = (inline.Beats - inlines[i - 1].Beats) / (timescale.BPM.GetValue() / 60) * inline.njs;
                         else distance = (inline.Beats - note.Beats) / (timescale.BPM.GetValue() / 60) * inline.njs;
                         
-                        CheckResults.Instance.CreateAndAddResult(characteristic, difficulty,
-                            name, Severity.Info, checkType, checkType, new() { new("Distance", Math.Round(distance, 3).ToString() + "m") }, new() { inline });
+                        CheckResults.Instance.CreateDiffResult(characteristic, difficulty,
+                            "Inline Note", Severity.Info, "Inline", "Inline", new() { new("Distance", Math.Round(distance, 3).ToString() + "m") }, new() { inline });
 
                         // Add to list of found inline
                         highlighted.Add(inline);
