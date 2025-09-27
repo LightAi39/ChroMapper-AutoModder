@@ -1289,6 +1289,11 @@ namespace ChroMapper_LightModding.UI
 			{
 				plugin.SetCommentClipboard(comment.Type, comment.Message);
 			});
+
+            UIHelper.AddButton(_commentMenu.transform, "DeleteComment", "Quick Delete", new Vector2(119.5f, -159), () =>
+            {
+                plugin.HandleDeleteComment(comment.Id);
+            });
         }
 
         public void RefreshCommentSelectMenu(List<Comment> comments)
