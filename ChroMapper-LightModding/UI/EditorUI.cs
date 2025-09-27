@@ -1431,12 +1431,9 @@ namespace ChroMapper_LightModding.UI
             else if (comments.Count == 1)
             {
                 // open top right comment UI
-                if (currentCommentMenuId != comments.FirstOrDefault().Id)
-                {
-                    RemoveCommentMenu();
-                    CreateCommentMenu(comments.FirstOrDefault());
-                    RemoveCommentSelectMenu();
-                }
+                RemoveCommentMenu();
+                CreateCommentMenu(comments.FirstOrDefault());
+                RemoveCommentSelectMenu();
             }
             else if (comments.Count > 1)
             {
