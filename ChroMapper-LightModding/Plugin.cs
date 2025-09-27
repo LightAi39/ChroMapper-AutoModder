@@ -109,6 +109,7 @@ namespace ChroMapper_LightModding
             songInfoUI = new(this, fileHelper, exporter, autocheckHelper);
 
             SceneManager.sceneLoaded += SceneLoaded;
+            LoadedDifficultySelectController.LoadedDifficultyChangedEvent += LoadedDifficultyChanged;
 
             // Config
             HandleConfigFile();
@@ -171,6 +172,16 @@ namespace ChroMapper_LightModding
         }
 
         #region Event Handlers
+
+        private void LoadedDifficultyChanged()
+        {
+            if (hasLoadedIntoEditor)
+            {
+                outlineHelper.RefreshOutlines();
+                editorUI.RefreshTimelineMarkers();
+                CommentsUpdated.Invoke();
+            }
+        }
 
         private void SceneLoaded(Scene scene, LoadSceneMode mode)
         {
@@ -561,7 +572,6 @@ namespace ChroMapper_LightModding
             editorUI.RefreshTimelineMarkers();
             CommentsUpdated.Invoke();
         }
-        
 
         public void HandleUpdateSongInfoComment(Comment comment)
         {
