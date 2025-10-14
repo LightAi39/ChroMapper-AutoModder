@@ -516,7 +516,7 @@ namespace ChroMapper_LightModding.UI
 
         private void CreateTimelineMarkers()
         {
-            if (!showTimelineMarkers) return;
+            if (!showTimelineMarkers || plugin.currentReview == null) return;
             AddTimelineMarkers(_songTimeline);
             _timelineMarkers.SetActive(true);
         }

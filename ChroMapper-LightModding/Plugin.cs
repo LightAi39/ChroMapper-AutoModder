@@ -175,7 +175,7 @@ namespace ChroMapper_LightModding
 
         private void LoadedDifficultyChanged()
         {
-            if (hasLoadedIntoEditor)
+            if (hasLoadedIntoEditor && currentReview != null)
             {
                 outlineHelper.RefreshOutlines();
                 editorUI.RefreshTimelineMarkers();
