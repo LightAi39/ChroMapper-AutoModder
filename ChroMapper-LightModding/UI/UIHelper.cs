@@ -9,7 +9,7 @@ namespace ChroMapper_LightModding.UI
     internal class UIHelper
     {
         // Credit goes to Top_Cat's CM-JS UI for this source code
-        public static void AddButton(Transform parent, string title, string text, Vector2 pos, UnityAction onClick, float width = 60, float height = 25, float fontSize = 12)
+        public static void AddButton(Transform parent, string title, string text, Vector2 pos, UnityAction onClick, float width = 60, float height = 25, float fontSize = 12, string tooltip = "")
         {
             var button = Object.Instantiate(PersistentUI.Instance.ButtonPrefab, parent);
             MoveTransform(button.transform, width, height, 0.5f, 1, pos.x, pos.y);
@@ -20,6 +20,12 @@ namespace ChroMapper_LightModding.UI
             button.SetText(text);
             button.Text.enableAutoSizing = false;
             button.Text.fontSize = fontSize;
+            
+            if (!string.IsNullOrWhiteSpace(tooltip))
+            {
+                var tt = button.gameObject.AddComponent<Tooltip>();
+                tt.TooltipOverride = tooltip;
+            }
         }
 
         public static void AddImageButton(Transform parent, string title, Sprite image, Vector2 pos, UnityAction onClick)
