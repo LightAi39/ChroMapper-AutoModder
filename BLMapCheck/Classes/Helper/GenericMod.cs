@@ -55,7 +55,7 @@ namespace BLMapCheck.Classes.Helper
                     severity = Severity.Suggestion;
                     str = str.Remove(0, 3).Trim();
                 }
-                else if (line.ToLowerInvariant().StartsWith("(i)"))
+                else if (line.ToLowerInvariant().StartsWith("(i)") || line.ToLowerInvariant().StartsWith("(n)"))
                 {
                     severity = Severity.Info;
                     str = str.Remove(0, 3).Trim();
