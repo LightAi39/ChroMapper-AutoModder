@@ -101,15 +101,37 @@ namespace BLMapCheck.Classes.Helper
             }
         }
 
+        // 1/16, 1/20, 1/24, 1/25, 1/30, 1/32, 1/40, 1/48, 1/50, 1/60, 1/64
+        public static double[] ExpectedDenominator = { 0.0625, 0.05, 0.04166666666, 0.04, 0.03333333333, 0.03125, 0.025, 0.02083333333, 0.02, 0.01666666666, 0.015625 };
+
         public static void SetAutoSliderPrecision()
         {
-            // Not really sure how to deal with rounding issue. Doesn't really matter as long as it's close enough I guess.
-            var averageSliderDuration = NotesData.GroupBy(c => c.Precision / (c.Spacing + 1))
-            .OrderByDescending(g => g.Count())
-            .LastOrDefault()
+            double? averageSliderDuration = NotesData.Select(c => c.Precision / (c.Spacing + 1))?
+            .Where(p => p != 0)?
+            .GroupBy(p => p)?
+            .OrderByDescending(g => g.Count())?
+            .FirstOrDefault()?
             .Key;
-            if (averageSliderDuration != 0) Config.Instance.SliderPrecision = averageSliderDuration;
-            else Config.Instance.SliderPrecision = 0.0625;
+
+            if (averageSliderDuration != null)
+            {
+                double closestNumber = ExpectedDenominator[0];
+                double minDifference = Math.Abs((double)(averageSliderDuration - closestNumber));
+
+                for (int i = 1; i < ExpectedDenominator.Length; i++)
+                {
+                    double currentNumber = ExpectedDenominator[i];
+                    double currentDifference = Math.Abs((double)averageSliderDuration - currentNumber);
+
+                    if (currentDifference < minDifference)
+                    {
+                        minDifference = currentDifference;
+                        closestNumber = currentNumber;
+                    }
+                }
+
+                Config.Instance.SliderPrecision = closestNumber;
+            }
         }
 
         public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
@@ -283,79 +305,30 @@ namespace BLMapCheck.Classes.Helper
             return (x + dis * Math.Cos(ConvertDegreesToRadians(direction)), y + dis * Math.Sin(ConvertDegreesToRadians(direction)));
         }
 
-        public static Fraction RealToFraction(double value, double accuracy)
+        public static (int num, int den) DoubleToFraction(double value, int maxDen = 64)
         {
-            if (accuracy <= 0.0 || accuracy >= 1.0)
+            int bestNum = 1;
+            int bestDen = 1;
+            double bestError = Math.Abs(value - 1.0);
+
+            for (int den = 1; den <= maxDen; den++)
             {
-                throw new ArgumentOutOfRangeException("accuracy", "Must be > 0 and < 1.");
-            }
+                int num = (int)Math.Round(value * den);
+                double error = Math.Abs(value - (double)num / den);
 
-            int sign = Math.Sign(value);
-
-            if (sign == -1)
-            {
-                value = Math.Abs(value);
-            }
-
-            // Accuracy is the maximum relative error; convert to absolute maxError
-            double maxError = sign == 0 ? accuracy : value * accuracy;
-
-            int n = (int)Math.Floor(value);
-            value -= n;
-
-            if (value < maxError)
-            {
-                return new Fraction(sign * n, 1);
-            }
-
-            if (1 - maxError < value)
-            {
-                return new Fraction(sign * (n + 1), 1);
-            }
-
-            // The lower fraction is 0/1
-            int lower_n = 0;
-            int lower_d = 1;
-
-            // The upper fraction is 1/1
-            int upper_n = 1;
-            int upper_d = 1;
-
-            while (true)
-            {
-                // The middle fraction is (lower_n + upper_n) / (lower_d + upper_d)
-                int middle_n = lower_n + upper_n;
-                int middle_d = lower_d + upper_d;
-
-                if (middle_d * (value + maxError) < middle_n)
+                if (error < bestError)
                 {
-                    // real + error < middle : middle is our new upper
-                    upper_n = middle_n;
-                    upper_d = middle_d;
-                }
-                else if (middle_n < (value - maxError) * middle_d)
-                {
-                    // middle < real - error : middle is our new lower
-                    lower_n = middle_n;
-                    lower_d = middle_d;
-                }
-                else
-                {
-                    // Middle is our best fraction
-                    return new Fraction((n * middle_d + middle_n) * sign, middle_d);
+                    bestError = error;
+                    bestNum = num;
+                    bestDen = den;
+
+                    // Perfect match?
+                    if (error == 0)
+                        break;
                 }
             }
-        }
-        public struct Fraction
-        {
-            public Fraction(int n, int d)
-            {
-                N = n;
-                D = d;
-            }
 
-            public int N { get; set; }
-            public int D { get; set; }
+            return (bestNum, bestDen);
         }
 
         public static List<Vector3> FindChainLinksPosition(int n, Chain chain)

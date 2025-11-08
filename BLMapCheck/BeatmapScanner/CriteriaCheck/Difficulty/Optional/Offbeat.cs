@@ -22,9 +22,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Optional
                     var precision = (float)Math.Round(note.Note.Beats % 1, 3);
                     if (!AllowedSnap.Contains(precision))
                     {
-                        var reality = RealToFraction(precision, 0.01);
+                        var reality = DoubleToFraction(precision);
                         CheckResults.Instance.CreateDiffResult("Offbeat Note", Severity.Data, "Offbeat", "Uncommon precision",
-                                new() { new("Precision", reality.N.ToString() + "/" + reality.D.ToString()) }, new() { note.Note });
+                                new() { new("Precision", reality.num.ToString() + "/" + reality.den.ToString()) }, new() { note.Note });
                     }
                 }
             }

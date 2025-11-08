@@ -38,10 +38,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 // Slider Swing speed must be consistent per section of the map. This may be overruled with sufficient justification.
                 if (note.Precision - 0.01 > (note.Spacing + 1) * Config.Instance.SliderPrecision)
                 {
-                    var expected = RealToFraction((note.Spacing + 1) * Config.Instance.SliderPrecision, 0.05);
+                    var expected = DoubleToFraction((note.Spacing + 1) * Config.Instance.SliderPrecision);
 
                     CheckResults.Instance.CreateDiffResult("Slider Precision", Severity.Warning, "Slider", "Slider Swing speed must be consistent per section of the map", 
-                        new() { new("ExpectedSliderPrecision", expected.N.ToString() + "/" + expected.D.ToString()) }, new() { note.Note });
+                        new() { new("ExpectedSliderPrecision", expected.num.ToString() + "/" + expected.den.ToString()) }, new() { note.Note });
                     if (CritResult.Warning > criteria) criteria = CritResult.Warning;
 
                     continue;
@@ -50,10 +50,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 // Slider Swing speed must be consistent per section of the map. This may be overruled with sufficient justification.
                 if (!(note.Precision <= ((note.Spacing + 1) * Config.Instance.SliderPrecision) + 0.01 && note.Precision >= ((note.Spacing + 1) * Config.Instance.SliderPrecision) - 0.01))
                 {
-                    var expected = RealToFraction((note.Spacing + 1) * Config.Instance.SliderPrecision, 0.05);
+                    var expected = DoubleToFraction((note.Spacing + 1) * Config.Instance.SliderPrecision);
 
                     CheckResults.Instance.CreateDiffResult("Slider Precision", Severity.Warning, "Slider", "Slider Swing speed must be consistent per section of the map",
-                        new() { new("ExpectedSliderPrecision", expected.N.ToString() + "/" + expected.D.ToString()) }, new() { note.Note });
+                        new() { new("ExpectedSliderPrecision", expected.num.ToString() + "/" + expected.den.ToString()) }, new() { note.Note });
                     if (CritResult.Warning > criteria) criteria = CritResult.Warning;
 
                     continue;
