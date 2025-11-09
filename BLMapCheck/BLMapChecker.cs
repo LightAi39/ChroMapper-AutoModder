@@ -113,7 +113,7 @@ namespace BLMapCheck
             throw new Exception("Check was not finished correctly");
         }
 
-        public CheckResults CompareTimings(string characteristic, string difficulty, int difficultyRank)
+        public CheckResults CompareTimings(string characteristic, string difficulty, int difficultyRank, string targetChar, string targetDiff)
         {
             CheckResults.Reset();
             if (!mapLoaded)
@@ -121,7 +121,7 @@ namespace BLMapCheck
                 throw new Exception("Map not loaded");
             }
 
-            DifficultyTimings.Compare(characteristic, difficulty, difficultyRank);
+            DifficultyTimings.Compare(characteristic, difficulty, difficultyRank, targetChar, targetDiff);
 
             if (CheckResults.Instance.CheckFinished)
             {

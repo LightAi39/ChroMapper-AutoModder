@@ -1,8 +1,10 @@
-﻿using UnityEngine.Events;
-using UnityEngine.UI;
-using UnityEngine;
-using Object = UnityEngine.Object;
+﻿using System.Collections.Generic;
 using TMPro;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
+using static UnityEngine.InputSystem.HID.HID;
+using Object = UnityEngine.Object;
 
 namespace ChroMapper_LightModding.UI
 {
@@ -128,8 +130,23 @@ namespace ChroMapper_LightModding.UI
             colorBlock.normalColor = Color.white;
             toggleComponent.colors = colorBlock;
             toggleComponent.isOn = value;
-
+            
             toggleComponent.onValueChanged.AddListener(onClick);
+        }
+
+        public static UIDropdown AddDropdown(Transform parent, string title, string text, Vector2 pos, List<string> options, UnityAction<int> action = null)
+        {
+            var dropdown = Object.Instantiate(PersistentUI.Instance.DropdownPrefab);
+            var rectTransform = ((RectTransform)dropdown.transform);
+            rectTransform.SetParent(parent);
+            MoveTransform(rectTransform, 100, 30, 0.5f, 1, pos.x, pos.y);
+            dropdown.name = title;
+            dropdown.SetOptions(options);
+
+            if (action != null)
+                dropdown.Dropdown.onValueChanged.AddListener(action);
+
+            return dropdown;
         }
 
         public static RectTransform AttachTransform(GameObject obj, float sizeX, float sizeY, float anchorX, float anchorY, float anchorPosX, float anchorPosY, float pivotX = 0.5f, float pivotY = 0.5f)

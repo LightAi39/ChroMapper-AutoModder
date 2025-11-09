@@ -9,13 +9,13 @@ namespace BLMapCheck.Classes.Helper
 {
     internal class DifficultyTimings
     {
-        public static void Compare(string characteristic, string difficulty, int difficultyRank)
+        public static void Compare(string characteristic, string difficulty, int difficultyRank, string targetChar, string targetDiff)
         {
             CriteriaCheckManager.Difficulty = difficulty;
             CriteriaCheckManager.Characteristic = characteristic;
             CriteriaCheckManager.DifficultyRank = difficultyRank;
 
-            DifficultyV3 target = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic).OrderBy(x => x.BeatMap._difficultyRank).Last().Data;
+            DifficultyV3 target = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Characteristic == targetChar && x.Difficulty == targetDiff).Data;
             DifficultyV3 current = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
             if (current != null && target != null)
             {

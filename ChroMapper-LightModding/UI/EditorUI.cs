@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using Object = UnityEngine.Object;
@@ -26,11 +27,16 @@ namespace ChroMapper_LightModding.UI
 
         private GameObject _timelineMarkers;
         private GameObject _criteriaMenu;
+        private GameObject _timingComparesMenu;
         private GameObject _settingMenu;
         private GameObject _modMenu;
         private GameObject _ratingsMenu;
         private GameObject _commentMenu;
         private GameObject _commentSelectMenu;
+
+        private List<CharacteristicInfo> timingCharInfos;
+        private UIDropdown timingCharDropdown;
+        private UIDropdown timingDiffDropdown;
 
         private string currentCommentMenuId;
         private string currentLoadedMod = null;
@@ -603,6 +609,7 @@ namespace ChroMapper_LightModding.UI
             if (plugin.currentReview == null) return;
             AddCriteriaMenu(_pauseMenu);
             _criteriaMenu.SetActive(true);
+            AddTimingComparesMenu(_pauseMenu);
             AddSettingMenu(_pauseMenu);
             AddModMenu(_pauseMenu);
             AddRatingsMenu(_criteriaMenu.transform);
@@ -641,7 +648,17 @@ namespace ChroMapper_LightModding.UI
                 RunBeatmapScannerOnThisDiff();
                 RefreshCriteriaMenu();
             });
-            UIHelper.AddLabel(_criteriaMenu.transform, "FileSaveWarning", "Save the map before using these buttons!", new Vector2(0, -18), new Vector2(180, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_criteriaMenu.transform, "FileSaveWarning", "Save the map before using these buttons!", new Vector2(-30, -18), new Vector2(100, 24), TextAlignmentOptions.Left);
+            #endregion
+
+            #region Clear comments button
+            UIHelper.AddButton(_criteriaMenu.transform, "ClearAllComments", "Clear All Comments", new Vector2(64, -18), () =>
+            {
+                plugin.currentReview.Comments.Clear();
+                plugin.CommentsUpdated.Invoke();
+                outlineHelper.RefreshOutlines();
+                RefreshTimelineMarkers();
+            });
             #endregion
 
             #region Mod button
@@ -658,9 +675,11 @@ namespace ChroMapper_LightModding.UI
             #region Timings button
             UIHelper.AddButton(_criteriaMenu.transform, "CompareTimings", "Compare Timings", new Vector2(188, -18), () =>
             {
-                CompareTimingsOnThisDiff();
-                outlineHelper.RefreshOutlines();
-                RefreshTimelineMarkers();
+                if (_timingComparesMenu != null)
+                {
+                    _timingComparesMenu.SetActive(true);
+                    _criteriaMenu.SetActive(false);
+                }
             });
             #endregion
 
@@ -990,6 +1009,80 @@ namespace ChroMapper_LightModding.UI
             });
 
             #endregion
+        }
+
+        internal class CharacteristicInfo
+        {
+            public string Name { get; set; }
+            public List<string> Difficulties { get; set; } = new();
+
+            public CharacteristicInfo(string characteristic, List<string> difficulties)
+            {
+                Name = characteristic;
+                Difficulties = difficulties;
+            }
+        }
+
+        public void AddTimingComparesMenu(Transform parent)
+        {
+            _timingComparesMenu = new GameObject("Automodder Timing Compares Menu");
+            _timingComparesMenu.transform.parent = parent;
+            _timingComparesMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_timingComparesMenu, 110, 85, 0.05f, 1.20f, 15, 0, 0, 1);
+
+            Image image = _timingComparesMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            List<CharacteristicInfo> charInfos = new();
+            List<string> characteristics = new();
+            foreach (var difficultySet in plugin.BeatSaberSongContainer.Info.DifficultySets)
+            {
+                if (difficultySet.Characteristic == "Lightshow") continue;
+
+                List<string> difficulties = new();
+                foreach (var difficulty in difficultySet.Difficulties)
+                {
+                    difficulties.Add(difficulty.Difficulty);
+                }
+                if (difficulties.Count > 0)
+                {
+                    difficulties.Reverse();
+                    charInfos.Add(new CharacteristicInfo(difficultySet.Characteristic, difficulties));
+                    characteristics.Add(difficultySet.Characteristic);
+                }
+            }
+            timingCharInfos = charInfos;
+
+            UnityAction<int> dropdownCharChanged = OnTimingCharacteristicChanged;
+
+            #region Dropbox
+            timingCharDropdown = UIHelper.AddDropdown(_timingComparesMenu.transform, "Characteristic", "Characteristic", new Vector2(1f, -16), characteristics, dropdownCharChanged);
+            timingDiffDropdown = UIHelper.AddDropdown(_timingComparesMenu.transform, "Difficulty", "Difficulty", new Vector2(1f, -44), charInfos[0].Difficulties);
+            #endregion
+
+            #region Button
+            UIHelper.AddButton(_timingComparesMenu.transform, "ApplyCompare", "Compare", new Vector2(1f, -70), () =>
+            {
+                string characteristic = timingCharDropdown.Dropdown.options[timingCharDropdown.Dropdown.value].text;
+                string difficulty = timingDiffDropdown.Dropdown.options[timingDiffDropdown.Dropdown.value].text;
+                CompareTimingsOnThisDiff(characteristic, difficulty);
+                outlineHelper.RefreshOutlines();
+                RefreshTimelineMarkers();
+                _criteriaMenu.SetActive(true);
+                _timingComparesMenu.SetActive(false);
+            });
+            #endregion
+        }
+
+        public void OnTimingCharacteristicChanged(int index)
+        {
+            string characteristic = timingCharDropdown.Dropdown.options[index].text;
+            CharacteristicInfo info = timingCharInfos.Where(x => x.Name == characteristic).FirstOrDefault();
+            timingDiffDropdown.SetOptions(info.Difficulties);
+            timingDiffDropdown.Dropdown.SetValueWithoutNotify(0);
         }
 
         public void AddSettingMenu(Transform parent)
@@ -1385,11 +1478,11 @@ namespace ChroMapper_LightModding.UI
             plugin.CommentsUpdated.Invoke();
         }
 
-        private void CompareTimingsOnThisDiff()
+        private void CompareTimingsOnThisDiff(string characteristic, string difficulty)
         {
             var difficultyInfo = plugin.BeatSaberSongContainer.MapDifficultyInfo;
 
-            autocheckHelper.RunCompareTimings(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty);
+            autocheckHelper.RunCompareTimings(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty, characteristic, difficulty);
             plugin.CommentsUpdated.Invoke();
         }
 

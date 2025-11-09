@@ -29,7 +29,10 @@ namespace ChroMapper_LightModding.Helpers
         }
 
         // this is temporary
-        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness, double duration) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, bool isTimingCheck, string characteristic = "", int difficultyRank = 0, string difficulty = "", List<string> mod = null)
+        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness, double duration) RunAutoCheck(bool isAutoCheckOnInfo, 
+            bool isAutoCheckOnDiff, bool isForMapCheckStats, bool isTimingCheck, 
+            string characteristic = "", int difficultyRank = 0, string difficulty = "",
+            List<string> mod = null, string targetChar = "", string targetDiff = "")
         {
             // So it doesn't reload the map on every button press
             if(lastLoaded != plugin.currentlyLoadedFolderPath)
@@ -62,7 +65,7 @@ namespace ChroMapper_LightModding.Helpers
                     var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
                     diff.Data = newDiff.Difficulty.Data;
                 }
-                results = criteriaCheck.CompareTimings(characteristic, difficulty, difficultyRank);
+                results = criteriaCheck.CompareTimings(characteristic, difficulty, difficultyRank, targetChar, targetDiff);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                 CreateCommentsFromNewData(results.Results.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).ToList());
@@ -112,9 +115,9 @@ namespace ChroMapper_LightModding.Helpers
             RunAutoCheck(false, false, false, false, characteristic, difficultyRank, difficulty, mod);
         }
 
-        public void RunCompareTimings(string characteristic, int difficultyRank, string difficulty)
+        public void RunCompareTimings(string characteristic, int difficultyRank, string difficulty, string targetChar, string targetDiff)
         {
-            RunAutoCheck(false, false, false, true, characteristic, difficultyRank, difficulty);
+            RunAutoCheck(false, false, false, true, characteristic, difficultyRank, difficulty, null, targetChar, targetDiff);
         }
 
         public void RunAutoCheckOnInfo()
