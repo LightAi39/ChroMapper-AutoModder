@@ -14,6 +14,20 @@ using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
+    public class FakeVB
+    {
+        public BeatmapGridObject Note { get; set; }
+        public FakeVB(int x, int y, float beat) 
+        {
+            Note = new()
+            {
+                x = x,
+                y = y,
+                Beats = beat
+            };
+        }
+    }
+
     internal static class VisionBlock
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
@@ -27,18 +41,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (beatmapGridObjects.Any())
             {
-                // Create fake object to simulate VB links
-                var leftVB = new BeatmapGridObject
-                {
-                    x = 1,
-                    y = 1
-                };
-                var rightVB = new BeatmapGridObject
-                {
-                    x = 2,
-                    y = 1
-                };
-
                 // Try to find VB links
                 foreach (var chain in chains)
                 {
@@ -54,24 +56,25 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (chain.Squish - 0.01 <= max) // << play with this value to change the limit
                     {
                         List<Vector3> a = new();
-                        var pos = FindChainLinksPosition(chain.SliceCount - 1, chain);
+                        var pos = FindChainLinksPosition(chain);
                         foreach (var p in pos)
                         {
-                            x = Math.Abs(1 - p.x);
-                            y = Math.Abs(1 - p.y);
+                            x = 1.5f - p.x;
+                            y = 1.5f - p.y;
                             distance = Math.Sqrt(x * x + y * y);
-                            if (distance <= 0.4)
+                            var time = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x.x == p.x && x.y == p.y) / ((float)pos.Count - 1)) + chain.Beats;
+                            if (distance < 0.65)
                             {
-                                leftVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x.x == p.x && x.y == p.y) / (pos.Count - 1)) + chain.Beats;
-                                beatmapGridObjects.Add(leftVB);
+                                FakeVB fakeVB = new(1, 1, time);
+                                beatmapGridObjects.Add(fakeVB.Note);
                             }
-                            x = Math.Abs(2 - p.x);
-                            y = Math.Abs(1 - p.y);
+                            x = 2.5f - p.x;
+                            y = 1.5f - p.y;
                             distance = Math.Sqrt(x * x + y * y);
-                            if (distance <= 0.4)
+                            if (distance < 0.65)
                             {
-                                rightVB.Beats = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x.x == p.x && x.y == p.y) / (pos.Count - 1)) + chain.Beats;
-                                beatmapGridObjects.Add(rightVB);
+                                FakeVB fakeVB = new(2, 1, time);
+                                beatmapGridObjects.Add(fakeVB.Note);
                             }
                         }
                     }

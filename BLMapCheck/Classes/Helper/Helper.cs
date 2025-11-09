@@ -11,7 +11,6 @@ namespace BLMapCheck.Classes.Helper
     internal class Helper
     {
         public static double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315 };
-        public static double[] ChainDirToDegree = { 180, 0, -90, 90, 135, -135, -45, 45 };
 
         public class NoteData
         {
@@ -331,38 +330,45 @@ namespace BLMapCheck.Classes.Helper
             return (bestNum, bestDen);
         }
 
-        public static List<Vector3> FindChainLinksPosition(int n, Chain chain)
+        public static Vector2 PointOnQuadBezier(Vector2 p0, Vector2 p1, Vector2 p2, float t)
         {
-            if (n == 0) n = 1;
+            return ((float)Math.Pow(1 - t, 2) * p0) + (2 * (1 - t) * t * p1) + ((float)Math.Pow(t, 2) * p2);
+        }
+
+        public static float AngleOnQuadBezier(Vector2 p0, Vector2 p1, Vector2 p2, float t)
+        {
+            Vector2 derivative = (2 * (1 - t) * (p1 - p0)) + (2 * t * (p2 - p1));
+            return (float)Helper.ConvertRadiansToDegrees(Math.Atan2(derivative.x, -derivative.y));
+        }
+
+        // Code mostly taken from ArcViewer
+        public static List<Vector3> FindChainLinksPosition(Chain c)
+        {
             List<Vector3> list = new();
+            //These are the start and end points of the bezier curve
+            Vector2 startPos = new(c.x, c.y);
+            Vector2 endPos = new(c.tx, c.ty);
+            //The midpoint of the curve is 1/2 the distance between the start points, in the direction the chain faces
+            float directDistance = Vector2.Distance(startPos, endPos);
+            Vector2 DirectionVector = new Vector2((float)Math.Sin(Helper.ConvertDegreesToRadians(DirectionToDegree[c.CutDirection])), (float)-Math.Cos(Helper.ConvertDegreesToRadians(DirectionToDegree[c.CutDirection])));
+            Vector2 midOffset = DirectionVector * directDistance / 2f;
+            Vector2 midPoint = startPos + midOffset;
+            float duration = c.TailInBeats - c.Beats;
             Vector3 linkSegment;
-            var head = new Vector2(chain.x, chain.y);
-            var tail = new Vector2(chain.tx, chain.ty);
-            var dir = (Math.PI * 2) / 360 * ChainDirToDegree[chain.CutDirection];
-            var headDirection = new Vector2((float)Math.Sin(dir), (float)-Math.Cos(dir));
-            var multiplier = (head - tail).magnitude / 2;
-            var next = head + new Vector2((multiplier * headDirection.x), multiplier * headDirection.y);
-
-            for (int j = 0; j < chain.SliceCount; j++)
+            //Start at 1 because head note counts as a "segment"
+            for (int i = 1; i < c.SliceCount; i++)
             {
-                float squish = 1;
-                if (chain.Squish != 0) squish = chain.Squish;
-                var interval = (float)j / n * squish;
-                var path = tail - head + new Vector2(1.5f, 0);
-                if (Math.Abs(Vector2.SignedAngle(new Vector2(0f, -1f), path) - ChainDirToDegree[chain.CutDirection]) < 0.01f)
-                {
-                    var pos = Vector3.LerpUnclamped(new Vector3(head.x, head.y, 0), new Vector3(tail.x, tail.y, 0), interval);
-                    linkSegment = new Vector3(pos.x, pos.y, 0);
-                }
-                else
-                {
-                    var pos = ((float)Math.Pow(1 - interval, 2) * head) + (2 * (1 - interval) * interval * next) +
-                                     ((float)Math.Pow(interval, 2) * tail);
-                    linkSegment = new Vector3(pos.x, pos.y, 0);
-                }
-
+                float timeProgress = (float)i / (c.SliceCount - 1);
+                //Calculate beat based on time progress
+                float beat = c.Beats + (duration * timeProgress);
+                //Calculate position based on the chain's bezier curve
+                float t = timeProgress * c.Squish;
+                Vector2 linkPos = PointOnQuadBezier(startPos, midPoint, endPos, t);
+                float linkAngle = AngleOnQuadBezier(startPos, midPoint, endPos, t);
+                linkSegment = new Vector3(linkPos.x, linkPos.y, 0);
                 list.Add(linkSegment);
             }
+
             return list;
         }
     }
