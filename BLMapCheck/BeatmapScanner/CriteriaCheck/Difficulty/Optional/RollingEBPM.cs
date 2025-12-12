@@ -124,9 +124,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Optional
                 {
                     // Find the note to convert it to BeatmapObject
                     var note = data.Swing.notes.FirstOrDefault();
+                    if (note == null) continue;
+                    
                     var index = notes.FindIndex(n => n == note);
+                    if (index < 0) continue;
+                    
                     var cube = notes[index];
-                    if (index < notes.Count - 3)
+                    if (index < notes.Count - 2)
                     {
                         // Check if the next two notes have the same spacing than the next note and the current one as an extra check
                         if (notes[index + 1].Beats - cube.Beats != notes[index + 2].Beats - notes[index + 1].Beats)
