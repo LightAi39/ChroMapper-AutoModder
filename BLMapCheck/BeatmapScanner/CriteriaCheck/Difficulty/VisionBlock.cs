@@ -59,19 +59,19 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         var pos = FindChainLinksPosition(chain);
                         foreach (var p in pos)
                         {
-                            x = 1.5f - p.x;
-                            y = 1.5f - p.y;
+                            x = 1f - p.x;
+                            y = 1f - p.y;
                             distance = Math.Sqrt(x * x + y * y);
                             var time = (chain.TailInBeats - chain.Beats) * (pos.FindIndex(x => x.x == p.x && x.y == p.y) / ((float)pos.Count - 1)) + chain.Beats;
-                            if (distance < 0.65)
+                            if (distance < 0.35)
                             {
                                 FakeVB fakeVB = new(1, 1, time);
                                 beatmapGridObjects.Add(fakeVB.Note);
                             }
-                            x = 2.5f - p.x;
-                            y = 1.5f - p.y;
+                            x = 2f - p.x;
+                            y = 1f - p.y;
                             distance = Math.Sqrt(x * x + y * y);
-                            if (distance < 0.65)
+                            if (distance < 0.35)
                             {
                                 FakeVB fakeVB = new(2, 1, time);
                                 beatmapGridObjects.Add(fakeVB.Note);

@@ -350,7 +350,7 @@ namespace BLMapCheck.Classes.Helper
             Vector2 endPos = new(c.tx, c.ty);
             //The midpoint of the curve is 1/2 the distance between the start points, in the direction the chain faces
             float directDistance = Vector2.Distance(startPos, endPos);
-            Vector2 DirectionVector = new Vector2((float)Math.Sin(Helper.ConvertDegreesToRadians(DirectionToDegree[c.CutDirection])), (float)-Math.Cos(Helper.ConvertDegreesToRadians(DirectionToDegree[c.CutDirection])));
+            Vector2 DirectionVector = new Vector2((float)Math.Cos(Helper.ConvertDegreesToRadians(DirectionToDegree[c.CutDirection])), (float)Math.Sin(Helper.ConvertDegreesToRadians(DirectionToDegree[c.CutDirection])));
             Vector2 midOffset = DirectionVector * directDistance / 2f;
             Vector2 midPoint = startPos + midOffset;
             float duration = c.TailInBeats - c.Beats;
