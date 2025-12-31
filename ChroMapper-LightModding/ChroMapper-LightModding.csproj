@@ -31,9 +31,6 @@
 		<Reference Include="Analyzer">
 		  <HintPath>..\SubModule\beatleader-analyzer\beatleader-analyzer\obj\Release\netstandard2.1\Analyzer.dll</HintPath>
 		</Reference>
-		<Reference Include="BLMapCheck">
-		  <HintPath>..\BLMapCheck\obj\Release\netstandard2.1\BLMapCheck.dll</HintPath>
-		</Reference>
 		<Reference Include="FileBrowser">
 			<HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\FileBrowser.dll</HintPath>
 			<Private>false</Private>
@@ -44,9 +41,6 @@
 		<Reference Include="Main">
 			<HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Main.dll</HintPath>
 			<Private>false</Private>
-		</Reference>
-		<Reference Include="Parser">
-		  <HintPath>..\SubModule\beatleader-parser\beatleader-parser\obj\Release\netstandard2.1\Parser.dll</HintPath>
 		</Reference>
 		<Reference Include="Plugins">
 			<HintPath>$(ChroMapperDir)\ChroMapper_Data\Managed\Plugins.dll</HintPath>
@@ -93,6 +87,11 @@
 	<ItemGroup>
 		<EmbeddedResource Include="Assets\Icon.png" />
 		<EmbeddedResource Include="manifest.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\BLMapCheck\BLMapCheck.csproj" />
+	  <ProjectReference Include="..\SubModule\beatleader-analyzer\Parser\beatleader-parser\Parser.csproj" />
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">

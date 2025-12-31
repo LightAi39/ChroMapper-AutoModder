@@ -53,7 +53,7 @@ namespace BLMapCheck
         {
             mapLoaded = false;
 
-            map = parser.TryLoadString(jsonStrings, songLength).FirstOrDefault();
+            map = parser.TryLoadString(jsonStrings, songLength);
             if(map != null)
             {
                 mapLoaded = true;

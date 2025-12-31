@@ -43,14 +43,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\SubModule\beatleader-analyzer\Parser\beatleader-parser\Parser.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Reference Include="Analyzer">
 	    <HintPath>..\SubModule\beatleader-analyzer\beatleader-analyzer\obj\Release\netstandard2.1\Analyzer.dll</HintPath>
 	  </Reference>
 	  <Reference Include="JoshaParity">
 	    <HintPath>..\SubModule\JoshaParity\JoshaParity\obj\Release\netstandard2.1\JoshaParity.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Parser">
-	    <HintPath>..\SubModule\beatleader-parser\beatleader-parser\obj\Release\netstandard2.1\Parser.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 

@@ -1,9 +1,6 @@
 [submodule "SubModule/JoshaParity"]
 	path = SubModule/JoshaParity
 	url = https://github.com/Loloppe/JoshaParity.git
-[submodule "SubModule/beatleader-parser"]
-	path = SubModule/beatleader-parser
-	url = https://github.com/BeatLeader/beatleader-parser.git
 [submodule "SubModule/beatleader-analyzer"]
 	path = SubModule/beatleader-analyzer
 	url = https://github.com/BeatLeader/beatleader-analyzer.git

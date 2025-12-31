@@ -49,7 +49,7 @@ namespace ChroMapper_LightModding.Helpers
                 {
                     var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
                     var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
-                    diff.Data = newDiff.Difficulty.Data;
+                    diff.Data = newDiff.Difficulties.FirstOrDefault().Data;
                 }
                 results = criteriaCheck.ImportMod(characteristic, difficulty, difficultyRank, mod);
                 fileHelper.CheckDifficultyReviewsExist();
@@ -63,7 +63,7 @@ namespace ChroMapper_LightModding.Helpers
                 {
                     var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
                     var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
-                    diff.Data = newDiff.Difficulty.Data;
+                    diff.Data = newDiff.Difficulties.FirstOrDefault().Data;
                 }
                 results = criteriaCheck.CompareTimings(characteristic, difficulty, difficultyRank, targetChar, targetDiff);
                 fileHelper.CheckDifficultyReviewsExist();
@@ -84,7 +84,7 @@ namespace ChroMapper_LightModding.Helpers
                 {
                     var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
                     var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
-                    diff.Data = newDiff.Difficulty.Data;
+                    diff.Data = newDiff.Difficulties.FirstOrDefault().Data;
                 }
                 results = criteriaCheck.CheckSingleDifficulty(characteristic, difficulty, difficultyRank);
                 fileHelper.CheckDifficultyReviewsExist();
@@ -98,7 +98,7 @@ namespace ChroMapper_LightModding.Helpers
                 var resultData = results.Results.Where(x => x.Name == "Statistical Data" && x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault().ResultData;
                 return (
                     Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),
-                    Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value) * 10,
+                    Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "EBPM").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "PEBPM").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "SPS").FirstOrDefault().Value),

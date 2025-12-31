@@ -106,7 +106,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             DiffAnalysis diffAnalysis = new(BLMapChecker.map, diffSet);
             List<SwingData> swings = diffAnalysis.GetSwingData();
 
-            List<Ratings> BeatmapScannerData;
+            Ratings BeatmapScannerData;
 
             _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == difficulty);
             int diffCount = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic)._difficultyBeatmaps.Count();
@@ -147,7 +147,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Wall = Obstacle.Check(diff.Notes, diff.Walls, diff.Bombs),
                 Chain = Chains.Check(diff.Chains, diff.Notes),
                 Parity = Parity.Check(swings, diff.Notes),
-                VisionBlock = VisionBlock.Check(allNoteObjects, diff.Chains, BeatmapScannerData[0].Pass, BeatmapScannerData[0].Tech, difficultyBeatmap._noteJumpStartBeatOffset),
+                VisionBlock = VisionBlock.Check(allNoteObjects, diff.Chains, BeatmapScannerData.PassRating, BeatmapScannerData.TechRating, difficultyBeatmap._noteJumpStartBeatOffset),
                 ProlongedSwing = ProlongedSwing.Check(diff.Notes, diff.Chains),
                 Loloppe = Loloppe.Check(diff.Notes),
                 SwingPath = SwingPath.Check(allNoteObjects, swings, diff.Notes),
@@ -193,7 +193,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             swings = diffAnalysis.GetSwingData();
 
-            List<Ratings> BeatmapScannerData = new();
+            Ratings BeatmapScannerData = new();
 
             if (diff.Notes.Count >= 20)
             {
@@ -208,7 +208,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             return WriteDifficultyStatistics(BeatmapScannerData, diffAnalysis);
         }
 
-        private CheckResult WriteDifficultyStatistics(List<Ratings> beatmapScannerData, DiffAnalysis diffAnalysis)
+        private CheckResult WriteDifficultyStatistics(Ratings beatmapScannerData, DiffAnalysis diffAnalysis)
         {
             List<SwingData> source = diffAnalysis.swingContainer.LeftHandSwings.ToList();
             source.AddRange(diffAnalysis.swingContainer.RightHandSwings.ToList());
@@ -224,8 +224,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Description = "Statistical data of the difficulty",
                 ResultData = new()
                 {
-                    new("Pass", Math.Round(beatmapScannerData[0].Pass, 2).ToString()),
-                    new("Tech", Math.Round(beatmapScannerData[0].Tech, 2).ToString()),
+                    new("Pass", Math.Round(beatmapScannerData.PassRating, 2).ToString()),
+                    new("Tech", Math.Round(beatmapScannerData.TechRating, 2).ToString()),
                     new("EBPM", Math.Round(diffAnalysis.GetAverageEBPM(), 2).ToString()),
                     new("PEBPM", Math.Round(PeakEBPM, 2).ToString()),
                     new("SPS", Math.Round(diffAnalysis.GetSPS(), 2).ToString()),

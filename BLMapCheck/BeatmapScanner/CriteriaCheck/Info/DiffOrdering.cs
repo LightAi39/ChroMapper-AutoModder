@@ -27,7 +27,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
                 {
                     _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == difficulty.Characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == difficulty.Difficulty);
                     var data = BLMapChecker.analyzer.GetRating(difficulty.Data, difficulty.Characteristic, difficulty.Difficulty, BeatsPerMinute, difficultyBeatmap._noteJumpMovementSpeed);
-                    ordered.Add(data[0].Pass);
+                    ordered.Add(data.PassRating);
                 }
             }
 
