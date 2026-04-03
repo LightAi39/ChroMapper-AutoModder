@@ -28,7 +28,7 @@ namespace BLMapCheck.Classes.Helper
                     if (previous != null) results.Add(new("Previous:", previous.ToString()));
                     if (next != null) results.Add(new("Next:", next.ToString()));
 
-                    CheckResults.Instance.CreateDiffResult("Timing", Severity.Info, "Timing", "Timing doesn't exist in top diff", results, new() { note });
+                    CheckResults.Instance.CreateDiffResult("Timing", Severity.Info, "Timing", "Timing doesn't exist in compared diff", results, new() { note });
                 }
             }
 
