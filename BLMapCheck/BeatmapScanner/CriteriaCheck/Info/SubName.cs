@@ -10,26 +10,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
     {
         public static CritResult Check(string songName, string Author)
         {
-            var issue = CritResult.Success;
+            CritResult criteria = CritResult.Success;
+
             if (songName.Count() != 0)
             {
                 var containedSubstrings = CheckForSubstrings(songName);
 
                 if (containedSubstrings.Any())
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Name = "Song Name",
-                        Severity = Severity.Error,
-                        CheckType = "SongInfo",
-                        Description = "Tags should only be in the Sub Name field.",
-                        ResultData = new()
-                        {
-                            new("SongName", songName),
-                            new("Tags", string.Join(", ", containedSubstrings))
-                        }
-                    });
-                    issue = CritResult.Fail;
+                    CheckResults.Instance.CreateInfoResult("Song Name", Severity.Error, "SongInfo", "Tags should only be in the Sub Name field",
+                    new() { new("SongName", songName), new("Tags", string.Join(", ", containedSubstrings)) });
+                    criteria = CritResult.Fail;
                 }
             }
             if (Author.Count() != 0)
@@ -37,33 +28,19 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
                 var containedSubstrings = CheckForSubstrings(Author);
                 if (containedSubstrings.Any())
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Name = "Song Author",
-                        Severity = Severity.Error,
-                        CheckType = "SongInfo",
-                        Description = "Tags should only be in the Sub Name field.",
-                        ResultData = new()
-                        {
-                            new("SongAuthor", Author),
-                            new("Tags", string.Join(", ", containedSubstrings))
-                        }
-                    });
-                    issue = CritResult.Fail;
+                    CheckResults.Instance.CreateInfoResult("Song Author", Severity.Error, "SongInfo", "Tags should only be in the Sub Name field",
+                    new() { new("SongAuthor", Author), new("Tags", string.Join(", ", containedSubstrings)) });
+                    criteria = CritResult.Fail;
                 }
             }
-            if (issue == CritResult.Success)
+
+            if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Name = "Song SubName",
-                    Severity = Severity.Passed,
-                    CheckType = "SongInfo",
-                    Description = "Tags were not found in the Song Name or Song Author field",
-                    ResultData = new() { new("SubName", "Success") }
-                });
+                CheckResults.Instance.CreateInfoResult("Song SubName", Severity.Passed, "SongInfo", "Tags were not found in the Song Name or Song Author field",
+                   new() { new("SubName", "Success") });
             }
-            return issue;
+
+            return criteria;
         }
 
         private static List<string> CheckForSubstrings(string input)

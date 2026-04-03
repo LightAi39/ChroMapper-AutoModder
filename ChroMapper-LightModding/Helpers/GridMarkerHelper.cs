@@ -1,13 +1,10 @@
 ﻿using beatleader_parser.Timescale;
 using Beatmap.Base;
-using BLMapCheck.BeatmapScanner.CriteriaCheck;
-using BLMapCheck.BeatmapScanner.MapCheck;
 using ChroMapper_LightModding.Models;
 using Parser.Map.Difficulty.V3.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Beatmap.Helper;
 using Beatmap.Info;
 using TMPro;
 using UnityEngine;
@@ -60,29 +57,18 @@ namespace ChroMapper_LightModding.Helpers
             UpdateBpmChanges();
             var currentComments = plugin.currentReview.Comments;
 
-            if (currentComments.Count < renderedComments.Count) // Removed comment
+            List<CachedComment> toDelete = renderedComments.Where(x => !currentComments.Exists(y => y == x.Comment)).ToList();
+            foreach (var renderedComment in toDelete)
             {
-                List<CachedComment> toDelete = new();
-                foreach (var renderedComment in renderedComments.ToList())
-                {
-                    if (currentComments.All(x => x != renderedComment.Comment))
-                    {
-                        GameObject.Destroy(renderedComment.Text.gameObject);
-                        renderedComments.Remove(renderedComment);
-                    }
-                }
+                GameObject.Destroy(renderedComment.Text.gameObject);
+                renderedComments.Remove(renderedComment);
             }
 
-            if (currentComments.Count > renderedComments.Count) // Added comment
+            List<Comment> toAdd = currentComments.Where(x => !renderedComments.Exists(y => y.Comment == x)).ToList();
+            foreach (var comment in toAdd)
             {
-                foreach (var comment in currentComments)
-                {
-                    if (renderedComments.All(x => x.Comment != comment))
-                    {
-                        TextMeshProUGUI text = CreateGridBookmark(comment);
-                        renderedComments.Add(new CachedComment(comment, text));
-                    }
-                }
+                TextMeshProUGUI text = CreateGridBookmark(comment);
+                renderedComments.Add(new CachedComment(comment, text));
             }
 
             foreach (CachedComment cachedComment in renderedComments) // Covering for edited comment
@@ -185,11 +171,12 @@ namespace ChroMapper_LightModding.Helpers
             {
                 case CommentTypesEnum.Suggestion:
                     return Color.green;
-                case CommentTypesEnum.Unsure:
+                case CommentTypesEnum.Questionable:
                     return Color.yellow;
-                case CommentTypesEnum.Issue:
+                case CommentTypesEnum.Unrankable:
                     return Color.red;
-                case CommentTypesEnum.Info:
+                case CommentTypesEnum.Note:
+                case CommentTypesEnum.Data:
                     return Color.magenta;
                 default:
                     return Color.clear;

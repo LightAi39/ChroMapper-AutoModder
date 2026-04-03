@@ -29,7 +29,10 @@ namespace ChroMapper_LightModding.Helpers
         }
 
         // this is temporary
-        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness, double duration) RunAutoCheck(bool isAutoCheckOnInfo, bool isAutoCheckOnDiff, bool isForMapCheckStats, bool isTimingCheck, string characteristic = "", int difficultyRank = 0, string difficulty = "")
+        public (double pass, double tech, double ebpm, double pebpm, double sps, string handness, double duration) RunAutoCheck(bool isAutoCheckOnInfo, 
+            bool isAutoCheckOnDiff, bool isForMapCheckStats, bool isTimingCheck, 
+            string characteristic = "", int difficultyRank = 0, string difficulty = "",
+            List<string> mod = null, string targetChar = "", string targetDiff = "")
         {
             // So it doesn't reload the map on every button press
             if(lastLoaded != plugin.currentlyLoadedFolderPath)
@@ -39,16 +42,30 @@ namespace ChroMapper_LightModding.Helpers
             }
             CheckResults results; //= criteriaCheck.CheckAllCriteria();
 
-            if (isTimingCheck)
+            if (mod != null)
             {
                 // Find the diff and only overwrite that specific diff
                 if (lastLoaded == plugin.currentlyLoadedFolderPath)
                 {
                     var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
                     var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
-                    diff.Data = newDiff.Difficulty.Data;
+                    diff.Data = newDiff.Difficulties.FirstOrDefault().Data;
                 }
-                results = criteriaCheck.CompareTimings(characteristic, difficulty);
+                results = criteriaCheck.ImportMod(characteristic, difficulty, difficultyRank, mod);
+                fileHelper.CheckDifficultyReviewsExist();
+                RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
+                CreateCommentsFromNewData(results.Results.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).ToList(), false);
+            }
+            else if (isTimingCheck)
+            {
+                // Find the diff and only overwrite that specific diff
+                if (lastLoaded == plugin.currentlyLoadedFolderPath)
+                {
+                    var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
+                    var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
+                    diff.Data = newDiff.Difficulties.FirstOrDefault().Data;
+                }
+                results = criteriaCheck.CompareTimings(characteristic, difficulty, difficultyRank, targetChar, targetDiff);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                 CreateCommentsFromNewData(results.Results.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).ToList());
@@ -67,9 +84,9 @@ namespace ChroMapper_LightModding.Helpers
                 {
                     var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
                     var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
-                    diff.Data = newDiff.Difficulty.Data;
+                    diff.Data = newDiff.Difficulties.FirstOrDefault().Data;
                 }
-                results = criteriaCheck.CheckSingleDifficulty(characteristic, difficulty);
+                results = criteriaCheck.CheckSingleDifficulty(characteristic, difficulty, difficultyRank);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
                 plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Critera = results.DifficultyCriteriaResults.Where(x => x.Difficulty == difficulty && x.Characteristic == characteristic).FirstOrDefault().Crit;
@@ -77,11 +94,11 @@ namespace ChroMapper_LightModding.Helpers
             }
             else if (isForMapCheckStats)
             {
-                results = criteriaCheck.CheckDifficultyStatistics(characteristic, difficulty);
+                results = criteriaCheck.CheckDifficultyStatistics(characteristic, difficulty, difficultyRank);
                 var resultData = results.Results.Where(x => x.Name == "Statistical Data" && x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault().ResultData;
                 return (
                     Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),
-                    Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value) * 10,
+                    Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "EBPM").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "PEBPM").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "SPS").FirstOrDefault().Value),
@@ -93,9 +110,14 @@ namespace ChroMapper_LightModding.Helpers
 
         }
 
-        public void RunCompareTimings(string characteristic, int difficultyRank, string difficulty)
+        public void RunImportMod(string characteristic, int difficultyRank, string difficulty, List<string> mod)
         {
-            RunAutoCheck(false, false, false, true, characteristic, difficultyRank, difficulty);
+            RunAutoCheck(false, false, false, false, characteristic, difficultyRank, difficulty, mod);
+        }
+
+        public void RunCompareTimings(string characteristic, int difficultyRank, string difficulty, string targetChar, string targetDiff)
+        {
+            RunAutoCheck(false, false, false, true, characteristic, difficultyRank, difficulty, null, targetChar, targetDiff);
         }
 
         public void RunAutoCheckOnInfo()
@@ -170,8 +192,7 @@ namespace ChroMapper_LightModding.Helpers
             plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments.Where(x => x.IsAutogenerated == false || x.Response != "" || x.MarkAsSuppressed).ToList();
         }
 
-
-        public void CreateCommentsFromNewData(List<CheckResult> checkResults)
+        public void CreateCommentsFromNewData(List<CheckResult> checkResults, bool autogenerated = true)
         {
             checkResults = checkResults.Where(x => x.Name != "Statistical Data").ToList();
             // song info comments
@@ -188,19 +209,22 @@ namespace ChroMapper_LightModding.Helpers
                         commentType = null;
                         break;
                     case Severity.Info:
-                        commentType = CommentTypesEnum.Info;
+                        commentType = CommentTypesEnum.Note;
                         break;
                     case Severity.Suggestion:
                         commentType = CommentTypesEnum.Suggestion;
                         break;
                     case Severity.Warning:
-                        commentType = CommentTypesEnum.Unsure;
+                        commentType = CommentTypesEnum.Questionable;
                         break;
                     case Severity.Error:
-                        commentType = CommentTypesEnum.Issue;
+                        commentType = CommentTypesEnum.Unrankable;
                         break;
                     case Severity.Inconclusive:
-                        commentType = CommentTypesEnum.Unsure;
+                        commentType = CommentTypesEnum.Questionable;
+                        break;
+                    case Severity.Data: 
+                        commentType = CommentTypesEnum.Data;
                         break;
                     default:
                         commentType = null;
@@ -218,26 +242,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 difficulty = item.Difficulty;
                 characteristic = item.Characteristic;
-                switch (item.Difficulty)
-                {
-                    case "Easy":
-                        difficultyRank = 1;
-                        break;
-                    case "Normal":
-                        difficultyRank = 3;
-                        break;
-                    case "Hard":
-                        difficultyRank = 5;
-                        break;
-                    case "Expert":
-                        difficultyRank = 7;
-                        break;
-                    case "ExpertPlus":
-                        difficultyRank = 9;
-                        break;
-                    default:
-                        break;
-                }
+                difficultyRank = item.difficultyRank;
 
                 CommentTypesEnum? commentType;
                 switch (item.Severity)
@@ -246,19 +251,22 @@ namespace ChroMapper_LightModding.Helpers
                         commentType = null;
                         break;
                     case Severity.Info:
-                        commentType = CommentTypesEnum.Info;
+                        commentType = CommentTypesEnum.Note;
                         break;
                     case Severity.Suggestion:
                         commentType = CommentTypesEnum.Suggestion;
                         break;
                     case Severity.Warning:
-                        commentType = CommentTypesEnum.Unsure;
+                        commentType = CommentTypesEnum.Questionable;
                         break;
                     case Severity.Error:
-                        commentType = CommentTypesEnum.Issue;
+                        commentType = CommentTypesEnum.Unrankable;
                         break;
                     case Severity.Inconclusive:
-                        commentType = CommentTypesEnum.Unsure;
+                        commentType = CommentTypesEnum.Questionable;
+                        break;
+                    case Severity.Data:
+                        commentType = CommentTypesEnum.Data;
                         break;
                     default:
                         commentType = null;
@@ -278,31 +286,30 @@ namespace ChroMapper_LightModding.Helpers
                     {
                         if (item.BeatmapObjects.Count > 1)
                         {
-                            CreateDiffCommentNotes(item.Description, (CommentTypesEnum)commentType, item);
+                            CreateDiffCommentNotes(item.Description, (CommentTypesEnum)commentType, item, autogenerated);
                         }
-                        CreateDiffCommentNote(item.Description, (CommentTypesEnum)commentType, item);
+                        else CreateDiffCommentNote(item.Description, (CommentTypesEnum)commentType, item, autogenerated);
                     }
-                    
                 }
                 else if (item.BeatmapObjects[0] is Bomb bomb)
                 {
                     if (commentType != null)
                     {
-                        CreateDiffCommentBomb(item.Description, (CommentTypesEnum)commentType, item);
+                        CreateDiffCommentBomb(item.Description, (CommentTypesEnum)commentType, item, autogenerated);
                     }
                 }
                 else if (item.BeatmapObjects[0] is Chain slider)
                 {
                     if (commentType != null)
                     {
-                        CreateDiffCommentLink(item.Description, (CommentTypesEnum)commentType, item);
+                        CreateDiffCommentLink(item.Description, (CommentTypesEnum)commentType, item, autogenerated);
                     }
                 }
                 else if (item.BeatmapObjects[0] is Wall wall)
                 {
                     if (commentType != null)
                     {
-                        CreateDiffCommentObstacle(item.Description, (CommentTypesEnum)commentType, item);
+                        CreateDiffCommentObstacle(item.Description, (CommentTypesEnum)commentType, item, autogenerated);
                     }
                 }
             }
@@ -333,14 +340,13 @@ namespace ChroMapper_LightModding.Helpers
             comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
         }
 
-
         /// <summary>
         /// Create a comment in a difficultyreview for a note
         /// </summary>
         /// <param name="message">the mesasge</param>
         /// <param name="type">the severity</param>
         /// <param name="cube">the cube</param>
-        private void CreateDiffCommentNote(string message, CommentTypesEnum type, CheckResult result)
+        private void CreateDiffCommentNote(string message, CommentTypesEnum type, CheckResult result, bool autogenerated)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -377,7 +383,46 @@ namespace ChroMapper_LightModding.Helpers
                 Objects = new() { note },
                 Type = type,
                 Message = message,
-                IsAutogenerated = true
+                IsAutogenerated = autogenerated
+            };
+
+            if (!CheckIfCommentAlreadyExists(comment))
+            {
+                List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
+                comments.Add(comment);
+                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            }
+        }
+
+        private void CreateDiffCommentNotes(string message, CommentTypesEnum type, CheckResult result, bool autogenerated)
+        {
+            List<Note> notes = result.BeatmapObjects.Where(x => x is Note).Cast<Note>().ToList();
+
+            if (notes.Count == 0) return;
+            string id = Guid.NewGuid().ToString();
+
+            List<SelectedObject> objects = new();
+
+            foreach (var note in notes)
+            {
+                objects.Add(new()
+                {
+                    Beat = note.Beats,
+                    PosX = note.x,
+                    PosY = note.y,
+                    Color = note.Color,
+                    ObjectType = ObjectType.Note
+                });
+            }
+
+            Comment comment = new()
+            {
+                Id = id,
+                StartBeat = objects.FirstOrDefault().Beat,
+                Objects = objects,
+                Type = type,
+                Message = message,
+                IsAutogenerated = autogenerated
             };
 
             if (!CheckIfCommentAlreadyExists(comment))
@@ -394,7 +439,7 @@ namespace ChroMapper_LightModding.Helpers
         /// <param name="message">the mesasge</param>
         /// <param name="type">the severity</param>
         /// <param name="cube">the cube</param>
-        private void CreateDiffCommentLink(string message, CommentTypesEnum type, CheckResult result)
+        private void CreateDiffCommentLink(string message, CommentTypesEnum type, CheckResult result, bool autogenerated)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -430,7 +475,7 @@ namespace ChroMapper_LightModding.Helpers
                 Objects = new() { note },
                 Type = type,
                 Message = message,
-                IsAutogenerated = true
+                IsAutogenerated = autogenerated
             };
 
             if (!CheckIfCommentAlreadyExists(comment))
@@ -447,7 +492,7 @@ namespace ChroMapper_LightModding.Helpers
         /// <param name="message">the mesasge</param>
         /// <param name="type">the severity</param>
         /// <param name="bomb">the bomb</param>
-        private void CreateDiffCommentBomb(string message, CommentTypesEnum type, CheckResult result)
+        private void CreateDiffCommentBomb(string message, CommentTypesEnum type, CheckResult result, bool autogenerated)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -483,7 +528,7 @@ namespace ChroMapper_LightModding.Helpers
                 Objects = new() { note },
                 Type = type,
                 Message = message,
-                IsAutogenerated = true
+                IsAutogenerated = autogenerated
             };
 
             if (!CheckIfCommentAlreadyExists(comment))
@@ -522,7 +567,7 @@ namespace ChroMapper_LightModding.Helpers
         /// <param name="message">the mesasge</param>
         /// <param name="type">the severity</param>
         /// <param name="wall">the wall</param>
-        private void CreateDiffCommentObstacle(string message, CommentTypesEnum type, CheckResult result)
+        private void CreateDiffCommentObstacle(string message, CommentTypesEnum type, CheckResult result, bool autogenerated)
         {
             string id = Guid.NewGuid().ToString();
 
@@ -558,7 +603,7 @@ namespace ChroMapper_LightModding.Helpers
                 Objects = new() { note },
                 Type = type,
                 Message = message,
-                IsAutogenerated = true
+                IsAutogenerated = autogenerated
             };
 
             if (!CheckIfCommentAlreadyExists(comment))
@@ -585,46 +630,6 @@ namespace ChroMapper_LightModding.Helpers
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
             return comments.Any(c => comment.Message == c.Message && c.Objects.Any(o => String.Equals(o.ToStringFull().ToLower(), comment.Objects.FirstOrDefault().ToStringFull().ToLower(), StringComparison.InvariantCulture)));
-        }
-
-        private void CreateDiffCommentNotes(string message, CommentTypesEnum type, CheckResult result )
-        {
-            List<Note> notes = result.BeatmapObjects.Where(x => x is Note).Cast<Note>().ToList();
-
-            if (notes.Count == 0) return;
-            string id = Guid.NewGuid().ToString();
-
-            List<SelectedObject> objects = new();
-
-            foreach (var note in notes)
-            {
-                objects.Add(new()
-                {
-                    Beat = note.Beats,
-                    PosX = note.x,
-                    PosY = note.y,
-                    Color = note.Color,
-                    ObjectType = ObjectType.Note
-                });
-            }
-
-            Comment comment = new()
-            {
-                Id = id,
-                StartBeat = objects.FirstOrDefault().Beat,
-                Objects = objects,
-                Type = type,
-                Message = message,
-                IsAutogenerated = true
-            };
-
-            List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-
-            if (!CheckIfCommentAlreadyExists(comment))
-            {
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
-            }
         }
     }
 }

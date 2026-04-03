@@ -33,6 +33,16 @@ namespace BLMapCheck.Classes.Unity
             return new Vector2(a.x * d, a.y * d);
         }
 
+        public static Vector2 operator /(Vector2 a, float d)
+        {
+            return new Vector2(a.x / d, a.y / d);
+        }
+
+        public override string ToString()
+        {
+            return "(" + x.ToString() + "/" + y.ToString() + ")";
+        }
+
         public float magnitude
         {
             get { return (float)Math.Sqrt(x * x + y * y); }

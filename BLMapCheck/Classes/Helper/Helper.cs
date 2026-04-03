@@ -11,7 +11,6 @@ namespace BLMapCheck.Classes.Helper
     internal class Helper
     {
         public static double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315 };
-        public static double[] ChainDirToDegree = { 180, 0, -90, 90, 135, -135, -45, 45 };
 
         public class NoteData
         {
@@ -39,16 +38,12 @@ namespace BLMapCheck.Classes.Helper
 
         public static List<NoteData> NotesData = new();
 
-        public static Note FindNote(List<Note> notes, JoshaParity.Note note)
-        {
-            return notes.FirstOrDefault(n => n.Beats == note.b && n.x == note.x && n.y == note.y && n.CutDirection == note.d && n.Color == note.c && n.AngleOffset == note.a);
-        }
-
         public static void CreateNoteData(List<Note> notes, List<JoshaParity.SwingData> swingData)
         {
             NotesData = new();
             var red = swingData.Where(s => !s.rightHand).ToList();
             var blue = swingData.Where(s => s.rightHand).ToList();
+
             HandleSwings(notes, red);
             HandleSwings(notes, blue);
         }
@@ -65,62 +60,77 @@ namespace BLMapCheck.Classes.Helper
                 if ((int)swing.swingType >= 1 && (int)swing.swingType <= 3) // Slider, stack or window
                 {
                     // There's a bug with arrow-less swings in JoshaParity, notes need to be re-ordered
-                    swing.notes = swing.notes.OrderBy(x => x.b).ToList();
+                    swing.notes = swing.notes.OrderBy(x => x.Beats).ToList();
 
                     for (int j = 1; j < swing.notes.Count; j++)
                     {
                         var prev = swing.notes[j - 1];
                         var note = swing.notes[j];
-                        var n = FindNote(notes, note);
-                        if (n != null)
+                        var data = new NoteData()
                         {
-                            var data = new NoteData()
-                            {
-                                Note = n,
-                                Pattern = true,
-                                Precision = note.b - prev.b,
-                                Spacing = Math.Max(Math.Max(Math.Abs(note.x - prev.x), Math.Abs(note.y - prev.y)) - 1, 0),
-                                Line = note.x,
-                                Layer = note.y
-                            };
-                            if (newSwing)
-                            {
-                                var no = FindNote(notes, prev);
-                                if (no == null) break; // Couldn't find head note, ignore that swing.
-                                NotesData.Add(new(no));
-                                NotesData.Last().Head = true;
-                                NotesData.Last().Pattern = true;
-                                NotesData.Last().Precision = data.Precision;
-                                NotesData.Last().Spacing = data.Spacing;
-                                NotesData.Last().Note = FindNote(notes, prev);
-                                NotesData.Last().Line = prev.x;
-                                NotesData.Last().Layer = prev.y;
-                                newSwing = false;
-                            }
-                            NotesData.Add(data);
+                            Note = note,
+                            Pattern = true,
+                            Precision = note.Beats - prev.Beats,
+                            Spacing = Math.Max(Math.Max(Math.Abs(note.x - prev.x), Math.Abs(note.y - prev.y)) - 1, 0),
+                            Line = note.x,
+                            Layer = note.y
+                        };
+                        if (newSwing)
+                        {
+                            NotesData.Add(new(note));
+                            NotesData.Last().Head = true;
+                            NotesData.Last().Pattern = true;
+                            NotesData.Last().Precision = data.Precision;
+                            NotesData.Last().Spacing = data.Spacing;
+                            NotesData.Last().Note = prev;
+                            NotesData.Last().Line = prev.x;
+                            NotesData.Last().Layer = prev.y;
+                            newSwing = false;
                         }
+                        NotesData.Add(data);
                     }
                 }
                 else // Everything else
                 {
                     foreach (var note in swing.notes)
                     {
-                        var n = FindNote(notes, note);
-                        if (n != null) NotesData.Add(new(n));
+                        NotesData.Add(new(note));
                     }
                 }
             }
         }
 
+        // 1/16, 1/20, 1/24, 1/25, 1/30, 1/32, 1/40, 1/48, 1/50, 1/60, 1/64
+        public static double[] ExpectedDenominator = { 0.0625, 0.05, 0.04166666666, 0.04, 0.03333333333, 0.03125, 0.025, 0.02083333333, 0.02, 0.01666666666, 0.015625 };
+
         public static void SetAutoSliderPrecision()
         {
-            // Not really sure how to deal with rounding issue. Doesn't really matter as long as it's close enough I guess.
-            var averageSliderDuration = NotesData.GroupBy(c => c.Precision / (c.Spacing + 1))
-            .OrderByDescending(g => g.Count())
-            .Last()
+            double? averageSliderDuration = NotesData.Select(c => c.Precision / (c.Spacing + 1))?
+            .Where(p => p != 0)?
+            .GroupBy(p => p)?
+            .OrderByDescending(g => g.Count())?
+            .FirstOrDefault()?
             .Key;
-            if (averageSliderDuration != 0) Config.Instance.SliderPrecision = averageSliderDuration;
-            else Config.Instance.SliderPrecision = 0.0625;
+
+            if (averageSliderDuration != null)
+            {
+                double closestNumber = ExpectedDenominator[0];
+                double minDifference = Math.Abs((double)(averageSliderDuration - closestNumber));
+
+                for (int i = 1; i < ExpectedDenominator.Length; i++)
+                {
+                    double currentNumber = ExpectedDenominator[i];
+                    double currentDifference = Math.Abs((double)averageSliderDuration - currentNumber);
+
+                    if (currentDifference < minDifference)
+                    {
+                        minDifference = currentDifference;
+                        closestNumber = currentNumber;
+                    }
+                }
+
+                Config.Instance.SliderPrecision = closestNumber;
+            }
         }
 
         public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)
@@ -294,113 +304,71 @@ namespace BLMapCheck.Classes.Helper
             return (x + dis * Math.Cos(ConvertDegreesToRadians(direction)), y + dis * Math.Sin(ConvertDegreesToRadians(direction)));
         }
 
-        public static Fraction RealToFraction(double value, double accuracy)
+        public static (int num, int den) DoubleToFraction(double value, int maxDen = 64)
         {
-            if (accuracy <= 0.0 || accuracy >= 1.0)
+            int bestNum = 1;
+            int bestDen = 1;
+            double bestError = Math.Abs(value - 1.0);
+
+            for (int den = 1; den <= maxDen; den++)
             {
-                throw new ArgumentOutOfRangeException("accuracy", "Must be > 0 and < 1.");
-            }
+                int num = (int)Math.Round(value * den);
+                double error = Math.Abs(value - (double)num / den);
 
-            int sign = Math.Sign(value);
-
-            if (sign == -1)
-            {
-                value = Math.Abs(value);
-            }
-
-            // Accuracy is the maximum relative error; convert to absolute maxError
-            double maxError = sign == 0 ? accuracy : value * accuracy;
-
-            int n = (int)Math.Floor(value);
-            value -= n;
-
-            if (value < maxError)
-            {
-                return new Fraction(sign * n, 1);
-            }
-
-            if (1 - maxError < value)
-            {
-                return new Fraction(sign * (n + 1), 1);
-            }
-
-            // The lower fraction is 0/1
-            int lower_n = 0;
-            int lower_d = 1;
-
-            // The upper fraction is 1/1
-            int upper_n = 1;
-            int upper_d = 1;
-
-            while (true)
-            {
-                // The middle fraction is (lower_n + upper_n) / (lower_d + upper_d)
-                int middle_n = lower_n + upper_n;
-                int middle_d = lower_d + upper_d;
-
-                if (middle_d * (value + maxError) < middle_n)
+                if (error < bestError)
                 {
-                    // real + error < middle : middle is our new upper
-                    upper_n = middle_n;
-                    upper_d = middle_d;
-                }
-                else if (middle_n < (value - maxError) * middle_d)
-                {
-                    // middle < real - error : middle is our new lower
-                    lower_n = middle_n;
-                    lower_d = middle_d;
-                }
-                else
-                {
-                    // Middle is our best fraction
-                    return new Fraction((n * middle_d + middle_n) * sign, middle_d);
+                    bestError = error;
+                    bestNum = num;
+                    bestDen = den;
+
+                    // Perfect match?
+                    if (error == 0)
+                        break;
                 }
             }
-        }
-        public struct Fraction
-        {
-            public Fraction(int n, int d)
-            {
-                N = n;
-                D = d;
-            }
 
-            public int N { get; set; }
-            public int D { get; set; }
+            return (bestNum, bestDen);
         }
 
-        public static List<Vector3> FindChainLinksPosition(int n, Chain chain)
+        public static Vector2 PointOnQuadBezier(Vector2 p0, Vector2 p1, Vector2 p2, float t)
         {
-            if (n == 0) n = 1;
+            return ((float)Math.Pow(1 - t, 2) * p0) + (2 * (1 - t) * t * p1) + ((float)Math.Pow(t, 2) * p2);
+        }
+
+        public static float AngleOnQuadBezier(Vector2 p0, Vector2 p1, Vector2 p2, float t)
+        {
+            Vector2 derivative = (2 * (1 - t) * (p1 - p0)) + (2 * t * (p2 - p1));
+            return (float)Helper.ConvertRadiansToDegrees(Math.Atan2(derivative.x, -derivative.y));
+        }
+
+        // Code mostly taken from ArcViewer
+        public static List<Vector3> FindChainLinksPosition(Chain c)
+        {
             List<Vector3> list = new();
+            //These are the start and end points of the bezier curve
+            Vector2 startPos = new(c.x, c.y);
+            Vector2 endPos = new(c.tx, c.ty);
+            //The midpoint of the curve is 1/2 the distance between the start points, in the direction the chain faces
+            float directDistance = Vector2.Distance(startPos, endPos);
+            Vector2 DirectionVector = new Vector2((float)Math.Cos(Helper.ConvertDegreesToRadians(DirectionToDegree[c.CutDirection])), (float)Math.Sin(Helper.ConvertDegreesToRadians(DirectionToDegree[c.CutDirection])));
+            Vector2 midOffset = DirectionVector * directDistance / 2f;
+            Vector2 midPoint = startPos + midOffset;
+            float duration = c.TailInBeats - c.Beats;
             Vector3 linkSegment;
-            var head = new Vector2(chain.x, chain.y);
-            var tail = new Vector2(chain.tx, chain.ty);
-            var dir = (Math.PI * 2) / 360 * ChainDirToDegree[chain.CutDirection];
-            var headDirection = new Vector2((float)Math.Sin(dir), (float)-Math.Cos(dir));
-            var multiplier = (head - tail).magnitude / 2;
-            var next = head + new Vector2((multiplier * headDirection.x), multiplier * headDirection.y);
-
-            for (int j = 0; j < chain.SliceCount; j++)
+            //Start at 1 because head note counts as a "segment"
+            for (int i = 1; i < c.SliceCount; i++)
             {
-                float squish = 1;
-                if (chain.Squish != 0) squish = chain.Squish;
-                var interval = (float)j / n * squish;
-                var path = tail - head + new Vector2(1.5f, 0);
-                if (Math.Abs(Vector2.SignedAngle(new Vector2(0f, -1f), path) - ChainDirToDegree[chain.CutDirection]) < 0.01f)
-                {
-                    var pos = Vector3.LerpUnclamped(new Vector3(head.x, head.y, 0), new Vector3(tail.x, tail.y, 0), interval);
-                    linkSegment = new Vector3(pos.x, pos.y, 0);
-                }
-                else
-                {
-                    var pos = ((float)Math.Pow(1 - interval, 2) * head) + (2 * (1 - interval) * interval * next) +
-                                     ((float)Math.Pow(interval, 2) * tail);
-                    linkSegment = new Vector3(pos.x, pos.y, 0);
-                }
-
+                float timeProgress = (float)i / (c.SliceCount - 1);
+                //Calculate beat based on time progress
+                float beat = c.Beats + (duration * timeProgress);
+                //Calculate position based on the chain's bezier curve
+                float t = timeProgress * c.Squish;
+                Vector2 linkPos = PointOnQuadBezier(startPos, midPoint, endPos, t);
+                float linkAngle = AngleOnQuadBezier(startPos, midPoint, endPos, t);
+                linkSegment = new Vector3(linkPos.x, linkPos.y, 0);
                 list.Add(linkSegment);
             }
+
             return list;
         }
     }

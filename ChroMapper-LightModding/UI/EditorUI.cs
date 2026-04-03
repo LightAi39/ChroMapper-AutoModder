@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using Object = UnityEngine.Object;
@@ -26,12 +27,19 @@ namespace ChroMapper_LightModding.UI
 
         private GameObject _timelineMarkers;
         private GameObject _criteriaMenu;
+        private GameObject _timingComparesMenu;
         private GameObject _settingMenu;
+        private GameObject _modMenu;
         private GameObject _ratingsMenu;
         private GameObject _commentMenu;
         private GameObject _commentSelectMenu;
 
+        private List<CharacteristicInfo> timingCharInfos;
+        private UIDropdown timingCharDropdown;
+        private UIDropdown timingDiffDropdown;
+
         private string currentCommentMenuId;
+        private string currentLoadedMod = null;
 
         private Transform _songTimeline;
         private Transform _pauseMenu;
@@ -271,6 +279,8 @@ namespace ChroMapper_LightModding.UI
             dialog.Open();
         }
 
+        public static CommentTypesEnum lastSelectedType = CommentTypesEnum.Suggestion;
+
         public void ShowCreateCommentUI(List<SelectedObject> selectedObjects)
         {
             CommentTypesEnum type = CommentTypesEnum.Suggestion;
@@ -293,13 +303,19 @@ namespace ChroMapper_LightModding.UI
                 .WithInitialValue(message)
                 .OnChanged((string s) => { message = s; });
 
-            dialog.AddComponent<DropdownComponent>()
+            var dropdown = dialog.AddComponent<DropdownComponent>()
                 .WithLabel("Type")
-                .WithOptions<CommentTypesEnum>()
-                .OnChanged((int i) => { type = (CommentTypesEnum)i; });
+                .WithOptions(Enum.GetValues(typeof(CommentTypesEnum)).Cast<CommentTypesEnum>().Where(t => t != CommentTypesEnum.Data).Select(t => Exporter.CommentTypeName(t)).ToList())
+                .OnChanged((int i) => { type = lastSelectedType = (CommentTypesEnum)i; });
 
-            dialog.AddFooterButton(null, "Cancel");
-            dialog.AddFooterButton(() => { plugin.HandleCreateComment(type, message, selectedObjects); }, "Create");
+            dropdown.Value = (int)lastSelectedType;
+
+			dialog.AddFooterButton(null, "Cancel");
+			dialog.AddFooterButton(() => { plugin.HandleCreateComment(type, message, selectedObjects); }, "Create");
+			if (plugin.HasCommentClipboard)
+			{
+				dialog.AddFooterButton(() => { plugin.PasteClipboardToSelection(selectedObjects); dialog.Close(); }, "Paste");
+			}
 
             dialog.Open();
         }
@@ -415,24 +431,24 @@ namespace ChroMapper_LightModding.UI
                 .WithInitialValue(message)
                 .OnChanged((string s) => { message = s; });
 
-            dialog.AddComponent<DropdownComponent>()
+            var typeSelector = dialog.AddComponent<DropdownComponent>()
                 .WithLabel("Type")
-                .WithOptions<CommentTypesEnum>()
-                .WithInitialValue(Convert.ToInt32(comment.Type))
+                .WithOptions(Enum.GetValues(typeof(CommentTypesEnum)).Cast<CommentTypesEnum>().Where(t => t != CommentTypesEnum.Data).Select(t => Exporter.CommentTypeName(t)).ToList())
                 .OnChanged((int i) => { type = (CommentTypesEnum)i; });
+            typeSelector.Value = (int)comment.Type;
 
             dialog.AddFooterButton(null, "Cancel");
             dialog.AddFooterButton(() =>
             {
                 ShowDeleteCommentUI(comment);
             }, "Delete comment");
-            dialog.AddFooterButton(() =>
-            {
-                comment.Message = message;
-                comment.Type = type;
-                comment.MarkAsSuppressed = false;
-                plugin.HandleUpdateComment(comment);
-            }, "Save edit");
+			dialog.AddFooterButton(() =>
+			{
+				comment.Message = message;
+				comment.Type = type;
+				comment.MarkAsSuppressed = false;
+				plugin.HandleUpdateComment(comment);
+			}, "Save edit");
 
             dialog.Open();
         }
@@ -506,7 +522,7 @@ namespace ChroMapper_LightModding.UI
 
         private void CreateTimelineMarkers()
         {
-            if (!showTimelineMarkers) return;
+            if (!showTimelineMarkers || plugin.currentReview == null) return;
             AddTimelineMarkers(_songTimeline);
             _timelineMarkers.SetActive(true);
         }
@@ -593,7 +609,9 @@ namespace ChroMapper_LightModding.UI
             if (plugin.currentReview == null) return;
             AddCriteriaMenu(_pauseMenu);
             _criteriaMenu.SetActive(true);
+            AddTimingComparesMenu(_pauseMenu);
             AddSettingMenu(_pauseMenu);
+            AddModMenu(_pauseMenu);
             AddRatingsMenu(_criteriaMenu.transform);
             _ratingsMenu.SetActive(true);
         }
@@ -630,15 +648,38 @@ namespace ChroMapper_LightModding.UI
                 RunBeatmapScannerOnThisDiff();
                 RefreshCriteriaMenu();
             });
-            UIHelper.AddLabel(_criteriaMenu.transform, "FileSaveWarning", "Save the map before using these buttons!", new Vector2(0, -18), new Vector2(180, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_criteriaMenu.transform, "FileSaveWarning", "Save the map before using these buttons!", new Vector2(-30, -18), new Vector2(100, 24), TextAlignmentOptions.Left);
+            #endregion
+
+            #region Clear comments button
+            UIHelper.AddButton(_criteriaMenu.transform, "ClearAllComments", "Clear All Comments", new Vector2(64, -18), () =>
+            {
+                plugin.currentReview.Comments.Clear();
+                plugin.CommentsUpdated.Invoke();
+                outlineHelper.RefreshOutlines();
+                RefreshTimelineMarkers();
+            });
+            #endregion
+
+            #region Mod button
+            UIHelper.AddButton(_criteriaMenu.transform, "ImportMod", "Import Mod", new Vector2(126, -18), () =>
+            {
+                if (_modMenu != null)
+                {
+                    _modMenu.SetActive(true);
+                    _criteriaMenu.SetActive(false);
+                }
+            });
             #endregion
 
             #region Timings button
             UIHelper.AddButton(_criteriaMenu.transform, "CompareTimings", "Compare Timings", new Vector2(188, -18), () =>
             {
-                CompareTimingsOnThisDiff();
-                outlineHelper.RefreshOutlines();
-                RefreshTimelineMarkers();
+                if (_timingComparesMenu != null)
+                {
+                    _timingComparesMenu.SetActive(true);
+                    _criteriaMenu.SetActive(false);
+                }
             });
             #endregion
 
@@ -931,6 +972,119 @@ namespace ChroMapper_LightModding.UI
 
         }
 
+        public void AddModMenu(Transform parent)
+        {
+            _modMenu = new GameObject("Automodder Mod Menu");
+            _modMenu.transform.parent = parent;
+            _modMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_modMenu, 572, 215, 0.05f, 1.20f, 0, 0, 0, 1);
+
+            Image image = _modMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            #region Settings button
+            UIHelper.AddButton(_modMenu.transform, "ImportMod", "Import Mod", new Vector2(250, -18), () =>
+            {
+                if (currentLoadedMod != null && currentLoadedMod.Length > 0)
+                {
+                    List<string> mod = currentLoadedMod.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).ToList();
+                    ImportModOnThisDiff(mod);
+                    outlineHelper.RefreshOutlines();
+                    RefreshTimelineMarkers();
+                }
+            });
+
+            UIHelper.AddTextInput(_modMenu.transform, "ModTextbox", "", new Vector2(-60, -107), "Paste mod here", (change) =>
+            {
+                currentLoadedMod = change;
+            }, 500, 200);
+
+            UIHelper.AddButton(_modMenu.transform, "CloseSettingsMenu", "Close Menu", new Vector2(250, -44), () =>
+            {
+                _criteriaMenu.SetActive(true);
+                _modMenu.SetActive(false);
+            });
+
+            #endregion
+        }
+
+        internal class CharacteristicInfo
+        {
+            public string Name { get; set; }
+            public List<string> Difficulties { get; set; } = new();
+
+            public CharacteristicInfo(string characteristic, List<string> difficulties)
+            {
+                Name = characteristic;
+                Difficulties = difficulties;
+            }
+        }
+
+        public void AddTimingComparesMenu(Transform parent)
+        {
+            _timingComparesMenu = new GameObject("Automodder Timing Compares Menu");
+            _timingComparesMenu.transform.parent = parent;
+            _timingComparesMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_timingComparesMenu, 110, 85, 0.05f, 1.20f, 15, 0, 0, 1);
+
+            Image image = _timingComparesMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            List<CharacteristicInfo> charInfos = new();
+            List<string> characteristics = new();
+            foreach (var difficultySet in plugin.BeatSaberSongContainer.Info.DifficultySets)
+            {
+                if (difficultySet.Characteristic == "Lightshow") continue;
+
+                List<string> difficulties = new();
+                foreach (var difficulty in difficultySet.Difficulties)
+                {
+                    difficulties.Add(difficulty.Difficulty);
+                }
+                if (difficulties.Count > 0)
+                {
+                    difficulties.Reverse();
+                    charInfos.Add(new CharacteristicInfo(difficultySet.Characteristic, difficulties));
+                    characteristics.Add(difficultySet.Characteristic);
+                }
+            }
+            timingCharInfos = charInfos;
+
+            UnityAction<int> dropdownCharChanged = OnTimingCharacteristicChanged;
+
+            #region Dropbox
+            timingCharDropdown = UIHelper.AddDropdown(_timingComparesMenu.transform, "Characteristic", "Characteristic", new Vector2(1f, -16), characteristics, dropdownCharChanged);
+            timingDiffDropdown = UIHelper.AddDropdown(_timingComparesMenu.transform, "Difficulty", "Difficulty", new Vector2(1f, -44), charInfos[0].Difficulties);
+            #endregion
+
+            #region Button
+            UIHelper.AddButton(_timingComparesMenu.transform, "ApplyCompare", "Compare", new Vector2(1f, -70), () =>
+            {
+                string characteristic = timingCharDropdown.Dropdown.options[timingCharDropdown.Dropdown.value].text;
+                string difficulty = timingDiffDropdown.Dropdown.options[timingDiffDropdown.Dropdown.value].text;
+                CompareTimingsOnThisDiff(characteristic, difficulty);
+                outlineHelper.RefreshOutlines();
+                RefreshTimelineMarkers();
+                _criteriaMenu.SetActive(true);
+                _timingComparesMenu.SetActive(false);
+            });
+            #endregion
+        }
+
+        public void OnTimingCharacteristicChanged(int index)
+        {
+            string characteristic = timingCharDropdown.Dropdown.options[index].text;
+            CharacteristicInfo info = timingCharInfos.Where(x => x.Name == characteristic).FirstOrDefault();
+            timingDiffDropdown.SetOptions(info.Difficulties);
+            timingDiffDropdown.Dropdown.SetValueWithoutNotify(0);
+        }
+
         public void AddSettingMenu(Transform parent)
         {
             _settingMenu = new GameObject("Automodder Setting Menu");
@@ -1183,7 +1337,7 @@ namespace ChroMapper_LightModding.UI
             _commentMenu.transform.parent = parent;
             _commentMenu.SetActive(false);
 
-            UIHelper.AttachTransform(_commentMenu, 325, 175, 1, 1, 0, 0, 1, 1);
+            UIHelper.AttachTransform(_commentMenu, 325, 200, 1, 1, 0, 0, 1, 1);
 
             Image image = _commentMenu.AddComponent<Image>();
             image.sprite = PersistentUI.Instance.Sprites.Background;
@@ -1207,6 +1361,7 @@ namespace ChroMapper_LightModding.UI
             else UIHelper.AddLabel(_commentMenu.transform, "Response", $"No Response", new Vector2(0, -108), new Vector2(313, 24), TextAlignmentOptions.Left);
 
             if (comment.MarkAsSuppressed) UIHelper.AddLabel(_commentMenu.transform, "Solved", $"Marked as Solved", new Vector2(0, -159), new Vector2(313, 24), TextAlignmentOptions.Right);
+            if (comment.IsAutogenerated) UIHelper.AddLabel(_commentMenu.transform, "Autogen", $"Marked as Autogenerated", new Vector2(0, -184), new Vector2(313, 24), TextAlignmentOptions.Right);
 
             UIHelper.AddButton(_commentMenu.transform, "OpenComment", "Open Comment", new Vector2(-128.5f, -159), () =>
             {
@@ -1224,7 +1379,23 @@ namespace ChroMapper_LightModding.UI
                 RefreshCommentMenu(comment);
             });
 
+            // Second row
 
+			UIHelper.AddButton(_commentMenu.transform, "CopyComment", "Copy", new Vector2(-128.5f, -184), () =>
+			{
+				plugin.SetCommentClipboard(comment.Type, comment.Message);
+			});
+
+            UIHelper.AddButton(_commentMenu.transform, "DeleteComment", "Quick Delete", new Vector2(-66.5f, -184), () =>
+            {
+                plugin.HandleDeleteComment(comment.Id);
+            });
+
+            UIHelper.AddButton(_commentMenu.transform, "AutogenComment", "Toggle Autogen", new Vector2(-4.5f, -184), () =>
+            {
+                comment.IsAutogenerated = !comment.IsAutogenerated;
+                RefreshCommentMenu(comment);
+            });
         }
 
         public void RefreshCommentSelectMenu(List<Comment> comments)
@@ -1299,11 +1470,19 @@ namespace ChroMapper_LightModding.UI
             plugin.CommentsUpdated.Invoke();
         }
 
-        private void CompareTimingsOnThisDiff()
+        private void ImportModOnThisDiff(List<string> mod)
         {
             var difficultyInfo = plugin.BeatSaberSongContainer.MapDifficultyInfo;
 
-            autocheckHelper.RunCompareTimings(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty);
+            autocheckHelper.RunImportMod(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty, mod);
+            plugin.CommentsUpdated.Invoke();
+        }
+
+        private void CompareTimingsOnThisDiff(string characteristic, string difficulty)
+        {
+            var difficultyInfo = plugin.BeatSaberSongContainer.MapDifficultyInfo;
+
+            autocheckHelper.RunCompareTimings(difficultyInfo.Characteristic, difficultyInfo.DifficultyRank, difficultyInfo.Difficulty, characteristic, difficulty);
             plugin.CommentsUpdated.Invoke();
         }
 
@@ -1344,7 +1523,7 @@ namespace ChroMapper_LightModding.UI
         {
             (float min, float max) beat = (plugin.AudioTimeSyncController.CurrentJsonTime - 0.01f, plugin.AudioTimeSyncController.CurrentJsonTime + 0.01f);
 
-            List<Comment> comments = plugin.currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat >= beat.min && o.Beat <= beat.max)).ToList();
+            List<Comment> comments = plugin.currentReview.Comments.Where(c => c.StartBeat >= beat.min && c.StartBeat <= beat.max).ToList();
 
             if (comments.Count == 0)
             {
@@ -1354,12 +1533,9 @@ namespace ChroMapper_LightModding.UI
             else if (comments.Count == 1)
             {
                 // open top right comment UI
-                if (currentCommentMenuId != comments.FirstOrDefault().Id)
-                {
-                    RemoveCommentMenu();
-                    CreateCommentMenu(comments.FirstOrDefault());
-                    RemoveCommentSelectMenu();
-                }
+                RemoveCommentMenu();
+                CreateCommentMenu(comments.FirstOrDefault());
+                RemoveCommentSelectMenu();
             }
             else if (comments.Count > 1)
             {

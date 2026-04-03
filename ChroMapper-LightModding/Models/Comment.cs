@@ -5,9 +5,10 @@ namespace ChroMapper_LightModding.Models
     public enum CommentTypesEnum
     {
         Suggestion,
-        Unsure,
-        Issue,
-        Info
+        Questionable,
+        Unrankable,
+        Note,
+        Data
     }
 
     public class Comment

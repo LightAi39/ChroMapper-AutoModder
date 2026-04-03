@@ -67,6 +67,33 @@ namespace ChroMapper_LightModding
         InputAction openCommentAction;
         InputAction quickMarkUnsureAction;
         InputAction quickMarkIssueAction;
+        InputAction copyReviewCommentAction;
+        InputAction pasteReviewCommentAction;
+
+        private bool hasCommentClipboard = false;
+        private CommentTypesEnum commentClipboardType;
+        private string commentClipboardMessage = "";
+
+        public bool HasCommentClipboard { get => hasCommentClipboard; }
+        public CommentTypesEnum CommentClipboardType { get => commentClipboardType; }
+        public string CommentClipboardMessage { get => commentClipboardMessage; }
+        public void SetCommentClipboard(CommentTypesEnum type, string message)
+        {
+            hasCommentClipboard = true;
+            commentClipboardType = type;
+            commentClipboardMessage = message ?? "";
+        }
+        public void ClearCommentClipboard()
+        {
+            hasCommentClipboard = false;
+            commentClipboardType = CommentTypesEnum.Suggestion;
+            commentClipboardMessage = "";
+        }
+        public void PasteClipboardToSelection(List<SelectedObject> selectedObjects)
+        {
+            if (!hasCommentClipboard || selectedObjects == null || selectedObjects.Count == 0) return;
+            HandleCreateComment(commentClipboardType, commentClipboardMessage, selectedObjects);
+        }
 
         public Action CommentsUpdated;
 
@@ -82,6 +109,7 @@ namespace ChroMapper_LightModding
             songInfoUI = new(this, fileHelper, exporter, autocheckHelper);
 
             SceneManager.sceneLoaded += SceneLoaded;
+            LoadedDifficultySelectController.LoadedDifficultyChangedEvent += LoadedDifficultyChanged;
 
             // Config
             HandleConfigFile();
@@ -96,7 +124,7 @@ namespace ChroMapper_LightModding
                 .With("button", "<Keyboard>/e");
             addCommentAction.AddCompositeBinding("ButtonWithOneModifier") // keeping this assigned for a bit so people arent confused
                 .With("modifier", "<Keyboard>/ctrl")
-                .With("button", "<Keyboard>/g");
+                .With("button", "<Keyboard>/r");
             addCommentAction.AddCompositeBinding("ButtonWithOneModifier")
                 .With("modifier", "<Keyboard>/ctrl")
                 .With("button", "<Keyboard>/space");
@@ -111,13 +139,26 @@ namespace ChroMapper_LightModding
                 .With("button", "<Keyboard>/g");
             openCommentAction.performed += _ => { OpenCommentKeyEvent(); };
 
-            quickMarkUnsureAction = new InputAction("Quick mark unsure", type: InputActionType.Button);
+            quickMarkUnsureAction = new InputAction("Quick mark Questionable", type: InputActionType.Button);
             quickMarkUnsureAction.AddBinding("<Keyboard>/f9");
-            quickMarkUnsureAction.performed += _ => { QuickMarkUnsureEvent(); };
+            quickMarkUnsureAction.performed += _ => { QuickMarkQuestionableEvent(); };
 
-            quickMarkIssueAction = new InputAction("Quick mark issue", type: InputActionType.Button);
+            quickMarkIssueAction = new InputAction("Quick mark unrankable", type: InputActionType.Button);
             quickMarkIssueAction.AddBinding("<Keyboard>/f10");
-            quickMarkIssueAction.performed += _ => { QuickMarkIssueEvent(); };
+            quickMarkIssueAction.performed += _ => { QuickMarkUnrankableEvent(); };
+
+            // copy/paste review comment hotkeys (avoid interfering with Ctrl+C in ChroMapper)
+            copyReviewCommentAction = new InputAction("Copy Review Comment", type: InputActionType.Button);
+            copyReviewCommentAction.AddCompositeBinding("ButtonWithOneModifier")
+                .With("modifier", "<Keyboard>/alt")
+                .With("button", "<Keyboard>/c");
+            copyReviewCommentAction.performed += _ => { CopyCommentKeyEvent(); };
+
+            pasteReviewCommentAction = new InputAction("Paste Review Comment", type: InputActionType.Button);
+            pasteReviewCommentAction.AddCompositeBinding("ButtonWithOneModifier")
+                .With("modifier", "<Keyboard>/alt")
+                .With("button", "<Keyboard>/v");
+            pasteReviewCommentAction.performed += _ => { PasteCommentKeyEvent(); };
 
         }
 
@@ -131,6 +172,16 @@ namespace ChroMapper_LightModding
         }
 
         #region Event Handlers
+
+        private void LoadedDifficultyChanged()
+        {
+            if (hasLoadedIntoEditor && currentReview != null)
+            {
+                outlineHelper.RefreshOutlines();
+                editorUI.RefreshTimelineMarkers();
+                CommentsUpdated.Invoke();
+            }
+        }
 
         private void SceneLoaded(Scene scene, LoadSceneMode mode)
         {
@@ -175,6 +226,8 @@ namespace ChroMapper_LightModding
             openCommentAction.Enable();
             quickMarkUnsureAction.Enable();
             quickMarkIssueAction.Enable();
+            copyReviewCommentAction.Enable();
+            pasteReviewCommentAction.Enable();
 
             _noteGridContainer = UnityEngine.Object.FindObjectOfType<NoteGridContainer>();
             _obstacleGridContainer = UnityEngine.Object.FindObjectOfType<ObstacleGridContainer>();
@@ -308,7 +361,7 @@ namespace ChroMapper_LightModding
             SelectionController.DeselectAll();
         }
 
-        public void QuickMarkUnsureEvent()
+        public void QuickMarkQuestionableEvent()
         {
             if (currentReview == null) { Debug.Log("Comment Creation not executed, no file loaded."); return; }
             var selection = SelectionController.SelectedObjects;
@@ -329,8 +382,8 @@ namespace ChroMapper_LightModding
                     }
                     else
                     {
-                        Debug.Log("Quick Creating comment of type Unsure");
-                        HandleCreateComment(CommentTypesEnum.Unsure, "", selectedObjects);
+                        Debug.Log("Quick Creating comment of type Questionable");
+                        HandleCreateComment(CommentTypesEnum.Questionable, "", selectedObjects);
                     }
 
                 }
@@ -347,7 +400,7 @@ namespace ChroMapper_LightModding
             SelectionController.DeselectAll();
         }
 
-        public void QuickMarkIssueEvent()
+        public void QuickMarkUnrankableEvent()
         {
             if (currentReview == null) { Debug.Log("Comment Creation not executed, no file loaded."); return; }
             var selection = SelectionController.SelectedObjects;
@@ -368,8 +421,8 @@ namespace ChroMapper_LightModding
                     }
                     else
                     {
-                        Debug.Log("Quick Creating comment of type Issue");
-                        HandleCreateComment(CommentTypesEnum.Issue, "", selectedObjects);
+                        Debug.Log("Quick Creating comment of type Unrankable");
+                        HandleCreateComment(CommentTypesEnum.Unrankable, "", selectedObjects);
                     }
 
                 }
@@ -381,6 +434,90 @@ namespace ChroMapper_LightModding
             else
             {
                 Debug.Log("Comment Creation not executed, selection is empty.");
+            }
+
+            SelectionController.DeselectAll();
+        }
+
+        public void CopyCommentKeyEvent()
+        {
+            if (currentReview == null) { Debug.Log("Copy not executed, no file loaded."); return; }
+            var selection = SelectionController.SelectedObjects;
+
+            if (SelectionController.HasSelectedObjects())
+            {
+                List<SelectedObject> selectedObjects = GetSelectedObjectListFromSelection(selection);
+
+                Comment found = null;
+                if (selectedObjects.Count > 1)
+                {
+                    var matches = currentReview.Comments
+                        .Where(c => JsonConvert.SerializeObject(c.Objects) == JsonConvert.SerializeObject(selectedObjects))
+                        .OrderBy(c => c.StartBeat)
+                        .ToList();
+                    if (matches.Count >= 1) found = matches.First();
+                }
+                else if (selectedObjects.Count == 1)
+                {
+                    var matches = currentReview.Comments
+                        .Where(c => c.Objects.Any(o => JsonConvert.SerializeObject(o) == JsonConvert.SerializeObject(selectedObjects[0])))
+                        .OrderBy(c => c.StartBeat)
+                        .ToList();
+                    if (matches.Count >= 1) found = matches.First();
+                }
+
+                if (found != null)
+                {
+                    SetCommentClipboard(found.Type, found.Message);
+                    Debug.Log($"Copied comment type '{found.Type}' and message to Automodder clipboard.");
+                }
+                else
+                {
+                    Debug.Log("No comment found to copy from selection.");
+                }
+            }
+            else
+            {
+                // Fallback: try copying by current beat/time even if nothing selected
+                (float min, float max) beat = (AudioTimeSyncController.CurrentJsonTime - 0.01f, AudioTimeSyncController.CurrentJsonTime + 0.01f);
+                List<Comment> commentsAtBeat = currentReview.Comments.Where(c => c.Objects.Any(o => o.Beat >= beat.min && o.Beat <= beat.max)).OrderBy(c => c.StartBeat).ToList();
+                if (commentsAtBeat.Count > 0)
+                {
+                    var first = commentsAtBeat.First();
+                    SetCommentClipboard(first.Type, first.Message);
+                    Debug.Log($"Copied comment by current beat: type '{first.Type}'.");
+                }
+                else
+                {
+                    Debug.Log("Copy not executed, selection is empty and no comment at current beat.");
+                }
+            }
+
+            SelectionController.DeselectAll();
+        }
+
+        public void PasteCommentKeyEvent()
+        {
+            if (currentReview == null) { Debug.Log("Paste not executed, no file loaded."); return; }
+            if (!hasCommentClipboard) { Debug.Log("Paste not executed, Automodder clipboard is empty."); return; }
+            var selection = SelectionController.SelectedObjects;
+
+            if (SelectionController.HasSelectedObjects())
+            {
+                List<SelectedObject> selectedObjects = GetSelectedObjectListFromSelection(selection);
+                if (selectedObjects.Count > 0)
+                {
+                    HandleCreateComment(commentClipboardType, commentClipboardMessage, selectedObjects);
+                    Debug.Log("Pasted comment from Automodder clipboard to selection.");
+                }
+                else
+                {
+                    Debug.Log("Paste cancelled, no supported objects selected.");
+                }
+            }
+            else
+            {
+                Debug.Log("Paste not executed, selection is empty.");
             }
 
             SelectionController.DeselectAll();
@@ -435,7 +572,6 @@ namespace ChroMapper_LightModding
             editorUI.RefreshTimelineMarkers();
             CommentsUpdated.Invoke();
         }
-        
 
         public void HandleUpdateSongInfoComment(Comment comment)
         {
@@ -532,6 +668,8 @@ namespace ChroMapper_LightModding
             openCommentAction.Disable();
             quickMarkUnsureAction.Disable();
             quickMarkIssueAction.Disable();
+            copyReviewCommentAction.Disable();
+            pasteReviewCommentAction.Disable();
             outlineHelper.selectionCache = null;
             if (gridMarkerHelper != null) 
             {

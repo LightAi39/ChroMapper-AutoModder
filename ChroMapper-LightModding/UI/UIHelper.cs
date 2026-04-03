@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using UnityEngine;
+using static UnityEngine.InputSystem.HID.HID;
 using Object = UnityEngine.Object;
-using TMPro;
 
 namespace ChroMapper_LightModding.UI
 {
     internal class UIHelper
     {
-        // i ended up copying Top_Cat's CM-JS UI helper, too useful to make my own tho
-        // after askin TC if it's one of the only way, he let me use this
-        public static void AddButton(Transform parent, string title, string text, Vector2 pos, UnityAction onClick, float width = 60, float height = 25, float fontSize = 12)
+        // Credit goes to Top_Cat's CM-JS UI for this source code
+        public static void AddButton(Transform parent, string title, string text, Vector2 pos, UnityAction onClick, float width = 60, float height = 25, float fontSize = 12, string tooltip = "")
         {
             var button = Object.Instantiate(PersistentUI.Instance.ButtonPrefab, parent);
             MoveTransform(button.transform, width, height, 0.5f, 1, pos.x, pos.y);
@@ -26,6 +22,12 @@ namespace ChroMapper_LightModding.UI
             button.SetText(text);
             button.Text.enableAutoSizing = false;
             button.Text.fontSize = fontSize;
+            
+            if (!string.IsNullOrWhiteSpace(tooltip))
+            {
+                var tt = button.gameObject.AddComponent<Tooltip>();
+                tt.TooltipOverride = tooltip;
+            }
         }
 
         public static void AddImageButton(Transform parent, string title, Sprite image, Vector2 pos, UnityAction onClick)
@@ -79,7 +81,7 @@ namespace ChroMapper_LightModding.UI
             textComponent.text = text;
         }
 
-        public static void AddTextInput(Transform parent, string title, string text, Vector2 pos, string value, UnityAction<string> onChange)
+        public static void AddTextInput(Transform parent, string title, string text, Vector2 pos, string value, UnityAction<string> onChange, float sizeX = 55, float sizeY = 20)
         {
             var entryLabel = new GameObject(title + " Label", typeof(TextMeshProUGUI));
             var rectTransform = ((RectTransform)entryLabel.transform);
@@ -95,7 +97,7 @@ namespace ChroMapper_LightModding.UI
             textComponent.text = text;
 
             var textInput = Object.Instantiate(PersistentUI.Instance.TextInputPrefab, parent);
-            MoveTransform(textInput.transform, 55, 20, 0.5f, 1, pos.x + 27.5f, pos.y);
+            MoveTransform(textInput.transform, sizeX, sizeY, 0.5f, 1, pos.x + 27.5f, pos.y);
             textInput.GetComponent<Image>().pixelsPerUnitMultiplier = 3;
             textInput.InputField.text = value;
             textInput.InputField.onFocusSelectAll = false;
@@ -128,8 +130,23 @@ namespace ChroMapper_LightModding.UI
             colorBlock.normalColor = Color.white;
             toggleComponent.colors = colorBlock;
             toggleComponent.isOn = value;
-
+            
             toggleComponent.onValueChanged.AddListener(onClick);
+        }
+
+        public static UIDropdown AddDropdown(Transform parent, string title, string text, Vector2 pos, List<string> options, UnityAction<int> action = null)
+        {
+            var dropdown = Object.Instantiate(PersistentUI.Instance.DropdownPrefab);
+            var rectTransform = ((RectTransform)dropdown.transform);
+            rectTransform.SetParent(parent);
+            MoveTransform(rectTransform, 100, 30, 0.5f, 1, pos.x, pos.y);
+            dropdown.name = title;
+            dropdown.SetOptions(options);
+
+            if (action != null)
+                dropdown.Dropdown.onValueChanged.AddListener(action);
+
+            return dropdown;
         }
 
         public static RectTransform AttachTransform(GameObject obj, float sizeX, float sizeY, float anchorX, float anchorY, float anchorPosX, float anchorPosY, float pivotX = 0.5f, float pivotY = 0.5f)

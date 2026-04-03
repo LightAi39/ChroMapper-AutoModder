@@ -15,42 +15,19 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Parity warning angle is configurable
         public static CritResult Check(List<SwingData> swings, List<Parser.Map.Difficulty.V3.Grid.Note> notes)
         {
-            bool hadIssue = false;
-            bool hadWarning = false;
+            CritResult criteria = CritResult.Success;
 
             foreach (var swing in swings.Where(x => x.resetType == ResetType.Rebound).ToList())
             {
-                List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
-                swing.notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Parity",
-                    Severity = Severity.Error,
-                    CheckType = "Parity",
-                    Description = "Parity error.",
-                    ResultData = new() { new("ErrorType", "Reset") },
-                    BeatmapObjects = new(colornotes) { }
-                });
-                hadIssue = true;
+                CheckResults.Instance.CreateDiffResult("Parity", Severity.Error, "Parity", "Parity error", new() { new("ErrorType", "Reset") }, new(swing.notes) { });
+                criteria = CritResult.Fail;
             }
+
             foreach (var swing in swings.Where(x => x.swingEBPM == float.PositiveInfinity).ToList())
             {
-                List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
-                swing.notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Parity Mismatch",
-                    Severity = Severity.Error,
-                    CheckType = "Parity",
-                    Description = "Parity mismatch on the same beat.",
-                    ResultData = new() { new("ErrorType", "swingEBPM is equal PositiveInfinity") },
-                    BeatmapObjects = new(colornotes) { }
-                });
-                hadIssue = true;
+                CheckResults.Instance.CreateDiffResult("Parity Mismatch", Severity.Error, "Parity", "NJS must not reach below 1 at any point in the map", 
+                    new() { new("ErrorType", "swingEBPM is equal PositiveInfinity") }, new(swing.notes) { });
+                criteria = CritResult.Fail;
             }
 
             List<SwingData> rightHandSwings = swings.Where(x => x.rightHand).ToList();
@@ -60,44 +37,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (i != 0)
                 {
-                    if (i == rightHandSwings.Count - 1 && rightHandSwings[i].notes.Last().d == 8) break;
+                    if (i == rightHandSwings.Count - 1 && rightHandSwings[i].notes.Last().CutDirection == 8) break;
                     float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
-                        List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
-                        rightHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Parity Warning",
-                            Severity = Severity.Warning,
-                            CheckType = "Parity",
-                            Description = "Parity degree difference.",
-                            ResultData = new() { new("WarningType", Math.Abs(difference) + " degree difference") },
-                            BeatmapObjects = new(colornotes) { }
-                        });
-                        hadWarning = true;
+                        CheckResults.Instance.CreateDiffResult("Parity Warning", Severity.Warning, "Parity", "Parity degree difference", 
+                            new() { new("WarningType", Math.Abs(difference) + " degree difference") }, new(rightHandSwings[i].notes) { });
+                        if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                     }
                     else if (Math.Abs(rightHandSwings[i].startPos.rotation) > 135 || Math.Abs(rightHandSwings[i].endPos.rotation) > 135)
                     {
                         if (Instance.ParityInvertedWarning)
                         {
-                            List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
-                            rightHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Parity Inverted",
-                                Severity = Severity.Inconclusive,
-                                CheckType = "Parity",
-                                Description = "Parity playing inverted.",
-                                ResultData = new() { new("WarningType", "Playing inverted") },
-                                BeatmapObjects = new(colornotes) { }
-                            });
+                            CheckResults.Instance.CreateDiffResult("Parity Inverted", Severity.Warning, "Parity", "Parity playing inverted",
+                                new() { new("WarningType", "Playing inverted") }, new(rightHandSwings[i].notes) { });
                         }
-                        hadWarning = true;
+                        if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                     }
                 }
             }
@@ -106,44 +61,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 if (i != 0)
                 {
-                    if (i == leftHandSwings.Count - 1 && leftHandSwings[i].notes.Last().d == 8) break;
+                    if (i == leftHandSwings.Count - 1 && leftHandSwings[i].notes.Last().CutDirection == 8) break;
                     float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
                     if (Math.Abs(difference) >= Instance.ParityWarningAngle)
                     {
-                        List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
-                        leftHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
-                        CheckResults.Instance.AddResult(new CheckResult()
-                        {
-                            Characteristic = CriteriaCheckManager.Characteristic,
-                            Difficulty = CriteriaCheckManager.Difficulty,
-                            Name = "Parity Warning",
-                            Severity = Severity.Warning,
-                            CheckType = "Parity",
-                            Description = "Parity degree difference.",
-                            ResultData = new() { new("WarningType", Math.Abs(difference).ToString() + " degree difference") },
-                            BeatmapObjects = new(colornotes) { }
-                        });
-                        hadWarning = true;
+                        CheckResults.Instance.CreateDiffResult("Parity Warning", Severity.Warning, "Parity", "Parity degree difference",
+                            new() { new("WarningType", Math.Abs(difference) + " degree difference") }, new(leftHandSwings[i].notes) { });
+                        if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                     }
                     else if (Math.Abs(leftHandSwings[i].startPos.rotation) > 135 || Math.Abs(leftHandSwings[i].endPos.rotation) > 135)
                     {
                         if (Instance.ParityInvertedWarning)
                         {
-                            List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
-                            leftHandSwings[i].notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
-                            CheckResults.Instance.AddResult(new CheckResult()
-                            {
-                                Characteristic = CriteriaCheckManager.Characteristic,
-                                Difficulty = CriteriaCheckManager.Difficulty,
-                                Name = "Parity Inverted",
-                                Severity = Severity.Inconclusive,
-                                CheckType = "Parity",
-                                Description = "Parity playing inverted.",
-                                ResultData = new() { new("WarningType", "Playing inverted") },
-                                BeatmapObjects = new(colornotes) { }
-                            });
+                            CheckResults.Instance.CreateDiffResult("Parity Inverted", Severity.Warning, "Parity", "Parity playing inverted",
+                                new() { new("WarningType", "Playing inverted") }, new(leftHandSwings[i].notes) { });
                         }
-                        hadWarning = true;
+                        if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                     }
                 }
             }
@@ -153,11 +86,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 foreach (var swing in swings)
                 {
                     var swingWithoutNotes = swing;
-                    Severity commentType = Severity.Info;
+                    Severity commentType = Severity.Data;
                     if (swing.resetType == ResetType.Rebound) commentType = Severity.Error;
                     if (Math.Abs(swing.endPos.rotation) > 135 || Math.Abs(swing.endPos.rotation) > 135) commentType = Severity.Inconclusive;
 
-                    List<KeyValuePair> resultData = new()
+                    List<Classes.Results.KeyValuePair> resultData = new()
                     {
                         new("swingParity", swing.swingParity.ToString()),
                         new("resetType", swing.resetType.ToString()),
@@ -170,44 +103,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         new("rightHand", swing.rightHand.ToString())
                     };
                     
-                    List<Parser.Map.Difficulty.V3.Grid.Note> colornotes = new();
-                    swing.notes.ForEach(note => colornotes.Add(notes.Where(n => n.Beats == note.b && n.CutDirection == note.d && n.x == note.x && n.y == note.y && n.Color == note.c).FirstOrDefault()));
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Parity Debug",
-                        Severity = commentType,
-                        CheckType = "Parity",
-                        Description = "Parity Debug.",
-                        ResultData = resultData,
-                        BeatmapObjects = new(colornotes) { }
-                    });
+                    CheckResults.Instance.CreateDiffResult("Parity Debug", commentType, "Parity", "Parity Debug", resultData, new(swing.notes) { });
                 }
             }
 
-            if (hadIssue)
+            if (criteria == CritResult.Success)
             {
-                return CritResult.Fail;
+                CheckResults.Instance.CreateDiffResult("Parity", Severity.Passed, "Parity", "No possible parity issue detected");
             }
-            else if (hadWarning)
-            {
-                return CritResult.Warning;
-            }
-            else
-            {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Parity",
-                    Severity = Severity.Passed,
-                    CheckType = "Parity",
-                    Description = "No possible parity issue detected.",
-                    ResultData = new()
-                });
-                return CritResult.Success;
-            }
+
+            return criteria;
         }
     }
 }

@@ -9,38 +9,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         public static CritResult Check(List<string> requirements)
         {
-            var issue = CritResult.Success;
+            CritResult criteria = CritResult.Success;
 
             if (requirements != null && requirements.Any())
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Requirements",
-                    Severity = Severity.Error,
-                    CheckType = "Requirements",
-                    Description = "Any map that is dependent on other mods or programs is not allowed.",
-                    ResultData = new() { new("Requirements", "Has " + string.Join(",", requirements.ToArray())) }
-                });
-                issue = CritResult.Fail;
+                CheckResults.Instance.CreateDiffResult("Requirements", Severity.Error, "Requirements", "Any map that is dependent on other mods or programs is not allowed", 
+                    new() { new("Requirements", "Has " + string.Join(",", requirements.ToArray())) });
+                criteria = CritResult.Fail;
             }
 
-            if (issue == CritResult.Success)
+            if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Requirements",
-                    Severity = Severity.Passed,
-                    CheckType = "Requirements",
-                    Description = "Map doesn't have any mod requirement.",
-                    ResultData = new() { new("Requirements", "None") }
-                });
+                CheckResults.Instance.CreateDiffResult("Requirements", Severity.Passed, "Requirements", "Map doesn't have any mod requirement",
+                    new() { new("Requirements", "None") });
             }
 
-            return issue;
+            return criteria;
         }
     }
 }

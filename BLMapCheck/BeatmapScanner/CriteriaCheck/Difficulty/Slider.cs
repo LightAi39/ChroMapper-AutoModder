@@ -9,12 +9,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Slider
     {
         // Get the average sliders precision and warn if it's not applied to all sliders in the map.
-        // Also check if sliders is above 45 degree (that could use some work)
+        // TODO: Add an algo that detect sliders that require rotation above 45 degree
         public static CritResult Check()
         {
-            var issue = CritResult.Success;
+            CritResult criteria = CritResult.Success;
+
+            // Fetch non-head slider notes from preprocessed data
             var sliders = NotesData.Where(c => c.Pattern && !c.Head && c.Precision != 0).ToList();
 
+            // Get average from preprocessed data, or use manual value
             if (Config.Instance.AutomaticSliderPrecision)
             {
                SetAutoSliderPrecision();
@@ -24,74 +27,45 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             {
                 NoteData note = sliders[i];
 
+                // The minimum effective slider precision is 1/16th (or 1/8th for a 2-note window,
+                // as the missing note should be counted for effective precision.) relative to the mapping precision in that section.
                 if (note.Precision - 0.01 > (note.Spacing + 1) * 0.0625)
                 {
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Slider Precision",
-                        Severity = Severity.Error,
-                        CheckType = "Slider",
-                        Description = "Slider cannot be slower than 1/16.",
-                        ResultData = new(),
-                        BeatmapObjects = new() { note.Note }
-                    });
-                    issue = CritResult.Fail;
+                    CheckResults.Instance.CreateDiffResult("Slider Precision", Severity.Error, "Slider", "Slider cannot be slower than 1/16", new(), new() { note.Note });
+                    criteria = CritResult.Fail;
                 }
 
+                // Slider Swing speed must be consistent per section of the map. This may be overruled with sufficient justification.
                 if (note.Precision - 0.01 > (note.Spacing + 1) * Config.Instance.SliderPrecision)
                 {
-                    var expected = RealToFraction(((note.Spacing + 1) * Config.Instance.SliderPrecision), 0.05);
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Slider Precision",
-                        Severity = Severity.Error,
-                        CheckType = "Slider",
-                        Description = "Sliders duration must be fast enough to keep consistent swing speed.",
-                        ResultData = new() { new("ExpectedSliderPrecision", expected.N.ToString() + "/" + expected.D.ToString()) },
-                        BeatmapObjects = new() { note.Note }
-                    });
-                    issue = CritResult.Fail;
+                    var expected = DoubleToFraction((note.Spacing + 1) * Config.Instance.SliderPrecision);
+
+                    CheckResults.Instance.CreateDiffResult("Slider Precision", Severity.Warning, "Slider", "Slider Swing speed must be consistent per section of the map", 
+                        new() { new("ExpectedSliderPrecision", expected.num.ToString() + "/" + expected.den.ToString()) }, new() { note.Note });
+                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
+
                     continue;
                 }
 
+                // Slider Swing speed must be consistent per section of the map. This may be overruled with sufficient justification.
                 if (!(note.Precision <= ((note.Spacing + 1) * Config.Instance.SliderPrecision) + 0.01 && note.Precision >= ((note.Spacing + 1) * Config.Instance.SliderPrecision) - 0.01))
                 {
-                    var expected = RealToFraction(((note.Spacing + 1) * Config.Instance.SliderPrecision), 0.05);
-                    CheckResults.Instance.AddResult(new CheckResult()
-                    {
-                        Characteristic = CriteriaCheckManager.Characteristic,
-                        Difficulty = CriteriaCheckManager.Difficulty,
-                        Name = "Slider Precision",
-                        Severity = Severity.Warning,
-                        CheckType = "Slider",
-                        Description = "Sliders must have equal spacing between notes to keep consistent swing duration.",
-                        ResultData = new() { new("ExpectedSliderPrecision", expected.N.ToString() + "/" + expected.D.ToString()) },
-                        BeatmapObjects = new() { note.Note }
-                    });
-                    if(issue == CritResult.Success) issue = CritResult.Warning;
+                    var expected = DoubleToFraction((note.Spacing + 1) * Config.Instance.SliderPrecision);
+
+                    CheckResults.Instance.CreateDiffResult("Slider Precision", Severity.Warning, "Slider", "Slider Swing speed must be consistent per section of the map",
+                        new() { new("ExpectedSliderPrecision", expected.num.ToString() + "/" + expected.den.ToString()) }, new() { note.Note });
+                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
+
                     continue;
                 }
             }
 
-            if (issue == CritResult.Success)
+            if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.AddResult(new CheckResult()
-                {
-                    Characteristic = CriteriaCheckManager.Characteristic,
-                    Difficulty = CriteriaCheckManager.Difficulty,
-                    Name = "Slider",
-                    Severity = Severity.Passed,
-                    CheckType = "Slider",
-                    Description = "No issue with slider precision and rotation detected.",
-                    ResultData = new()
-                });
+                CheckResults.Instance.CreateDiffResult("Slider Precision", Severity.Passed, "Slider", "No issue with slider precision detected");
             }
 
-            return issue;
+            return criteria;
         }
     }
 }

@@ -9,6 +9,7 @@ namespace BLMapCheck.Classes.Results
     {
         public string Name { get; set; } = "";
         public string? Difficulty { get; set; }
+        public int difficultyRank { get; set; }
         public string? Characteristic { get; set; }
         public Severity Severity { get; set; }
         public string CheckType { get; set; } = "";
@@ -24,7 +25,8 @@ namespace BLMapCheck.Classes.Results
         Suggestion,
         Warning,
         Error,
-        Inconclusive
+        Inconclusive,
+        Data
     }
 
     public class KeyValuePair
