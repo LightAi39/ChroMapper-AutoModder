@@ -83,6 +83,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                     // Chains cannot change in direction by more than 45 degrees from the starting position and angle of the head note
                     // TODO: Need a new algo, this is horrible
+                    if (chain.CutDirection >= DirectionToDegree.Length)
+                    {
+                        CheckResults.Instance.CreateDiffResult("Chain Rotation", Severity.Error, "Chain", "Chains must have a proper cut direction",
+                            new List<Classes.Results.KeyValuePair>() { new("ChainDirection", "Error") }, new() { chain });
+                        criteria = CritResult.Fail;
+                        continue;
+                    }
                     var temp = new NoteData()
                     {
                         Direction = Mod(DirectionToDegree[chain.CutDirection], 360),
