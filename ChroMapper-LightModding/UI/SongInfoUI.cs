@@ -238,7 +238,8 @@ namespace ChroMapper_LightModding.UI
 
             #region Criteria
             InfoCrit criteria = plugin.currentMapsetReview.Criteria;
-            float startPosY = -65, posY, offsetX = 10;
+            // Low enough to stay clear of the export buttons
+            float startPosY = -71, posY, offsetX = 10;
             string name;
 
             // this is extremely ugly. i tried minimizing the amount of manual changing i had to do but i ended up making this super messy because we still need the same values later when they are already changed.
@@ -296,7 +297,7 @@ namespace ChroMapper_LightModding.UI
             }, 50, 20, 10);
 
             posY = startPosY - 26 * 4;
-            name = "Offset";
+            name = "Song Time Offset";
             UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.Offset, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
@@ -304,15 +305,30 @@ namespace ChroMapper_LightModding.UI
                 criteria.Offset = IncrementSeverity(criteria.Offset);
                 posY = startPosY - 26 * 4;
                 offsetX = 10;
-                name = "Offset";
+                name = "Song Time Offset";
                 CreateCriteriaStatusElement(criteria.Offset, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
             // 1 column to the right now
             offsetX = 200;
+            posY = startPosY;
+            name = "Cover Image";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.CoverImage, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.CoverImage = IncrementSeverity(criteria.CoverImage);
+                posY = startPosY;
+                offsetX = 200;
+                name = "Cover Image";
+                CreateCriteriaStatusElement(criteria.CoverImage, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
             posY = startPosY - 26 * 1;
             name = "BPM";
-            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            // Shows the song BPM detected by the last song info auto check
+            string bpmLabel = autocheckHelper.DetectedBpm != null ? $"BPM ({autocheckHelper.DetectedBpm})" : name;
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", bpmLabel, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.BPM, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
             {
@@ -347,6 +363,19 @@ namespace ChroMapper_LightModding.UI
                 offsetX = 200;
                 name = "Preview Time";
                 CreateCriteriaStatusElement(criteria.Preview, name, new Vector2(-90 + offsetX, posY));
+            }, 50, 20, 10);
+
+            posY = startPosY - 26 * 4;
+            name = "Info.dat Values";
+            UIHelper.AddLabel(_infoMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
+            CreateCriteriaStatusElement(criteria.InfoValues, name, new Vector2(-90 + offsetX, posY));
+            UIHelper.AddButton(_infoMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
+            {
+                criteria.InfoValues = IncrementSeverity(criteria.InfoValues);
+                posY = startPosY - 26 * 4;
+                offsetX = 200;
+                name = "Info.dat Values";
+                CreateCriteriaStatusElement(criteria.InfoValues, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
             #endregion
@@ -567,23 +596,8 @@ namespace ChroMapper_LightModding.UI
             GameObject critStatusObj = GameObject.Find($"Crit_{name}_status");
             if (critStatusObj != null) Object.Destroy(critStatusObj);
 
-            Color color;
-            switch (severity)
-            {
-                case CritResult.Success:
-                    color = Color.green;
-                    break;
-                case CritResult.Warning:
-                    color = Color.yellow;
-                    break;
-                case CritResult.Fail:
-                    color = Color.red;
-                    break;
-                default:
-                    color = Color.gray;
-                    break;
-            }
-            UIHelper.AddLabel(parent, $"Crit_{name}_status", "●", pos, new Vector2(25, 24), null, color, 12);
+            var (symbol, color) = UIHelper.CriteriaStatus(severity);
+            UIHelper.AddLabel(parent, $"Crit_{name}_status", symbol, pos, new Vector2(25, 24), null, color, 12);
         }
 
         private CritResult IncrementSeverity(CritResult severity)

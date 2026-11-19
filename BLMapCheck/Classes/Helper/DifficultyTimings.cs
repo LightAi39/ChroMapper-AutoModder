@@ -9,30 +9,29 @@ namespace BLMapCheck.Classes.Helper
 {
     internal class DifficultyTimings
     {
-        public static void Compare(string characteristic, string difficulty, int difficultyRank, string targetChar, string targetDiff)
+        public static void Compare(CheckContext ctx, string characteristic, string difficulty, int difficultyRank, string targetChar, string targetDiff)
         {
-            CriteriaCheckManager.Difficulty = difficulty;
-            CriteriaCheckManager.Characteristic = characteristic;
-            CriteriaCheckManager.DifficultyRank = difficultyRank;
+            ctx.SetDifficulty(characteristic, difficulty, difficultyRank);
 
-            DifficultyV3 target = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Characteristic == targetChar && x.Difficulty == targetDiff).Data;
-            DifficultyV3 current = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
+            DifficultyV3 target = ctx.Map.Difficulties.FirstOrDefault(x => x.Characteristic == targetChar && x.Difficulty == targetDiff)?.Data;
+            DifficultyV3 current = ctx.Map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic)?.Data;
             if (current != null && target != null)
             {
+                var targetBeats = target.Notes.Select(x => x.Beats).Distinct().OrderBy(x => x).ToList();
                 foreach (var note in current.Notes)
                 {
-                    if (target.Notes.Exists(x => x.Beats == note.Beats)) continue;
-                    var previous = target.Notes.Where(x => x.Beats < note.Beats)?.Select(x => x.Beats).DefaultIfEmpty().Aggregate((x, y) => Math.Abs(x - note.Beats) < Math.Abs(y - note.Beats) ? x : y);
-                    var next = target.Notes.Where(x => x.Beats > note.Beats)?.Select(x => x.Beats).DefaultIfEmpty().Aggregate((x, y) => Math.Abs(x - note.Beats) < Math.Abs(y - note.Beats) ? x : y);
+                    var index = targetBeats.BinarySearch(note.Beats);
+                    if (index >= 0) continue;
+                    // Index of the closest timing after this note
+                    index = ~index;
                     List<Classes.Results.KeyValuePair> results = new();
-                    if (previous != null) results.Add(new("Previous:", previous.ToString()));
-                    if (next != null) results.Add(new("Next:", next.ToString()));
+                    if (index > 0) results.Add(new("Previous:", targetBeats[index - 1].ToString()));
+                    if (index < targetBeats.Count) results.Add(new("Next:", targetBeats[index].ToString()));
 
-                    CheckResults.Instance.CreateDiffResult("Timing", Severity.Info, "Timing", "Timing doesn't exist in compared diff", results, new() { note });
+                    ctx.Results.CreateDiffResult("Timing", Severity.Info, "Timing", "Timing doesn't exist in compared diff", results, new() { note });
                 }
             }
 
-            CheckResults.Instance.CheckFinished = true;
         }
     }
 }

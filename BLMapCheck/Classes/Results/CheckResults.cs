@@ -1,5 +1,4 @@
-﻿using BLMapCheck.BeatmapScanner.CriteriaCheck;
-using BLMapCheck.BeatmapScanner.Data.Criteria;
+﻿using BLMapCheck.BeatmapScanner.Data.Criteria;
 using Parser.Map.Difficulty.V3.Base;
 using System.Collections.Generic;
 
@@ -7,21 +6,7 @@ namespace BLMapCheck.Classes.Results
 {
     public class CheckResults
     {
-        private static CheckResults _instance;
-
-        private CheckResults() { }
-
-        public static CheckResults Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new CheckResults();
-                }
-                return _instance;
-            }
-        }
+        internal CheckResults() { }
 
         public InfoCrit InfoCriteriaResult { get; set; }
         public List<DifficultyCriteriaResults> DifficultyCriteriaResults { get; set; } = new();
@@ -29,17 +14,22 @@ namespace BLMapCheck.Classes.Results
 
         public bool CheckFinished { get; set; } = false;
 
-        public void CreateDiffResult(string name, Severity severity,
+        // Difficulty that new difficulty results are attached to, set through CheckContext.SetDifficulty
+        internal string CurrentCharacteristic;
+        internal string CurrentDifficulty;
+        internal int CurrentDifficultyRank;
+
+        internal void CreateDiffResult(string name, Severity severity,
             string checkType, string description, List<KeyValuePair> resultData = null, List<BeatmapObject> beatmapObjects = null)
         {
             if (resultData == null) resultData = new();
             if (beatmapObjects == null) beatmapObjects = new();
 
-            Instance.AddResult(new CheckResult()
+            AddResult(new CheckResult()
             {
-                Characteristic = CriteriaCheckManager.Characteristic,
-                difficultyRank = CriteriaCheckManager.DifficultyRank,
-                Difficulty = CriteriaCheckManager.Difficulty,
+                Characteristic = CurrentCharacteristic,
+                difficultyRank = CurrentDifficultyRank,
+                Difficulty = CurrentDifficulty,
                 Name = name,
                 Severity = severity,
                 CheckType = checkType,
@@ -49,13 +39,13 @@ namespace BLMapCheck.Classes.Results
             });
         }
 
-        public void CreateInfoResult(string name, Severity severity,
+        internal void CreateInfoResult(string name, Severity severity,
             string checkType, string description, List<KeyValuePair> resultData = null, List<BeatmapObject> beatmapObjects = null)
         {
             if (resultData == null) resultData = new();
             if (beatmapObjects == null) beatmapObjects = new();
 
-            Instance.AddResult(new CheckResult()
+            AddResult(new CheckResult()
             {
                 Name = name,
                 Severity = severity,
@@ -74,12 +64,6 @@ namespace BLMapCheck.Classes.Results
         public void RemoveResult(CheckResult result)
         {
             Results.Remove(result);
-        }
-
-        public static CheckResults Reset()
-        {
-            _instance = new();
-            return _instance;
         }
 
     }

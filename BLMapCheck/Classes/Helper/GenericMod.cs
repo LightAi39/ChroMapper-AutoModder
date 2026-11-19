@@ -14,15 +14,13 @@ namespace BLMapCheck.Classes.Helper
         static public readonly string NumberPattern = @"^\d+([.,])?(\d+)?";
         static public readonly string NumberPattern2 = @"\d+([.,])?(\d+)?";
         static public readonly string SpecialCharPattern = @"^[^\w]+";
+        private const float BeatTolerance = 0.002f;
 
-        public static void Import(string characteristic, string difficulty, int difficultyRank, List<string> mod)
+        public static void Import(CheckContext ctx, string characteristic, string difficulty, int difficultyRank, List<string> mod)
         {
-            CriteriaCheckManager.Difficulty = difficulty;
-            CriteriaCheckManager.Characteristic = characteristic;
-            CriteriaCheckManager.DifficultyRank = difficultyRank;
+            ctx.SetDifficulty(characteristic, difficulty, difficultyRank);
 
-            Severity severity = Severity.Info;
-
+            Severity severity;
             bool loop;
             bool keyword;
             float beat;
@@ -32,6 +30,8 @@ namespace BLMapCheck.Classes.Helper
             string substring;
             List<float> beats = new();
 
+            DifficultyV3 current = ctx.Map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
+
             foreach (var line in mod)
             {
                 str = line.Trim();
@@ -39,25 +39,26 @@ namespace BLMapCheck.Classes.Helper
                 comment = "";
                 beats.Clear();
 
-                // Compact-style format
-                if (line.ToLowerInvariant().StartsWith("(x)"))
+                // Compact-style format, lines without a prefix are Info
+                severity = Severity.Info;
+                var prefix = str.ToLowerInvariant();
+                if (prefix.StartsWith("(x)"))
                 {
                     severity = Severity.Error;
                     str = str.Remove(0, 3).Trim();
                 }
-                else if (line.StartsWith("(?)"))
+                else if (prefix.StartsWith("(?)"))
                 {
                     severity = Severity.Inconclusive;
                     str = str.Remove(0, 3).Trim();
                 }
-                else if (line.ToLowerInvariant().StartsWith("(s)"))
+                else if (prefix.StartsWith("(s)"))
                 {
                     severity = Severity.Suggestion;
                     str = str.Remove(0, 3).Trim();
                 }
-                else if (line.ToLowerInvariant().StartsWith("(i)") || line.ToLowerInvariant().StartsWith("(n)"))
+                else if (prefix.StartsWith("(i)") || prefix.StartsWith("(n)"))
                 {
-                    severity = Severity.Info;
                     str = str.Remove(0, 3).Trim();
                 }
                 substring = str;
@@ -155,16 +156,17 @@ namespace BLMapCheck.Classes.Helper
                             comment = comment.Insert(0, "Modified ");
                         }
 
-                        DifficultyV3 current = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
 
                         foreach (var b in beats)
                         {
                             List<BeatmapObject> beatmapObject = new();
-                            beatmapObject.AddRange(current.Notes.Where(x => x.Beats == b));
-                            beatmapObject.AddRange(current.Bombs.Where(x => x.Beats == b));
-                            beatmapObject.AddRange(current.Arcs.Where(x => x.Beats == b));
-                            beatmapObject.AddRange(current.Chains.Where(x => x.Beats == b));
-                            beatmapObject.AddRange(current.Walls.Where(x => x.Beats == b));
+                            // Comments usually round the beat to a few decimals
+                            bool AtBeat(BeatmapObject x) => Math.Abs(x.Beats - b) < BeatTolerance;
+                            beatmapObject.AddRange(current.Notes.Where(AtBeat));
+                            beatmapObject.AddRange(current.Bombs.Where(AtBeat));
+                            beatmapObject.AddRange(current.Arcs.Where(AtBeat));
+                            beatmapObject.AddRange(current.Chains.Where(AtBeat));
+                            beatmapObject.AddRange(current.Walls.Where(AtBeat));
                             // Create a fake object if necessary, otherwise there won't be any comment
                             if (beatmapObject.Count == 0)
                             {
@@ -178,18 +180,19 @@ namespace BLMapCheck.Classes.Helper
                                 beatmapObject.Add(obj);
                             }
 
-                            CheckResults.Instance.CreateDiffResult("Mod", severity, "Mod", comment, new(), beatmapObject);
+                            ctx.Results.CreateDiffResult("Mod", severity, "Mod", comment, new(), beatmapObject);
                         }
                     }
                 }
             }
 
-            CheckResults.Instance.CheckFinished = true;
         }
+
+        private static readonly CultureInfo frenchCulture = new("fr-FR");
 
         public static float TryParseFloat(string line)
         {
-            CultureInfo frenchCulture = new CultureInfo("fr-FR");
+
             if (float.TryParse(line, NumberStyles.Float, frenchCulture, out float result))
             {
                 return result;

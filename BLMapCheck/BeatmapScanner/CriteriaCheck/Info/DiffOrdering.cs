@@ -1,5 +1,6 @@
 ﻿using BLMapCheck.Classes.Results;
 using Parser.Map;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
@@ -8,40 +9,53 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 {
     internal static class DiffOrdering
     {
-        // Run this per characteristic
-        public static CritResult Check(List<DifficultySet> difficulties, float BeatsPerMinute, string characteristic = "")
+        // The difficulties must be ordered based on increasing star difficulty, with an allowed leniency of up to 0.5 stars.
+        private const double Leniency = 0.5;
+
+        // Checked per characteristic. If no characteristic is sent, every characteristic is checked
+        public static CritResult Check(CheckContext ctx, List<DifficultySet> difficulties, string characteristic = "")
         {
-            var ordered = new List<double>();
+            CritResult criteria = CritResult.Success;
 
-            // If no characteristic is sent, default out to a specific order
-            if (characteristic == "")
-            {
-                if (difficulties.Exists(x => x.Characteristic == "Standard")) characteristic = "Standard";
-                else if (difficulties.Exists(x => x.Characteristic == "OneSaber")) characteristic = "OneSaber";
-                else characteristic = difficulties.Select(x => x.Characteristic).FirstOrDefault().ToString();
-            }
+            var characteristics = characteristic == ""
+                ? difficulties.Select(x => x.Characteristic).Distinct().ToList()
+                : new List<string>() { characteristic };
 
-            foreach (var difficulty in difficulties.Where(x => x.Characteristic == characteristic))
+            foreach (var chara in characteristics)
             {
-                if(difficulty.Data.Notes.Count >= 20)
+                var ordered = new List<double>();
+
+                foreach (var difficulty in difficulties.Where(x => x.Characteristic == chara && x.Data.Notes.Count >= 20).OrderBy(x => x.BeatMap._difficultyRank))
                 {
-                    _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == difficulty.Characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == difficulty.Difficulty);
-                    var data = BLMapChecker.analyzer.GetRating(difficulty.Data, difficulty.Characteristic, difficulty.Difficulty, BeatsPerMinute, difficultyBeatmap._noteJumpMovementSpeed);
-                    ordered.Add(data.PassRating);
+                    var data = ctx.GetRating(difficulty);
+                    if (data != null) ordered.Add(Math.Round(data.PassRating, 2));
+                }
+
+                if (ordered.Count < 2) continue;
+
+                // A difficulty may be rated lower than any easier difficulty, as long as it's within the leniency
+                var highest = double.MinValue;
+                var valid = true;
+                foreach (var rating in ordered)
+                {
+                    if (rating < highest - Leniency) valid = false;
+                    highest = Math.Max(highest, rating);
+                }
+
+                if (valid)
+                {
+                    ctx.Results.CreateInfoResult("Difficulty Ordering", Severity.Passed, "SongInfo", "Difficulty ordering is correct",
+                        new() { new("Characteristic", chara), new("CurrentOrder", string.Join(",", ordered)) });
+                }
+                else
+                {
+                    ctx.Results.CreateInfoResult("Difficulty Ordering", Severity.Error, "SongInfo", "Difficulty ordering is wrong",
+                        new() { new("Characteristic", chara), new("CurrentOrder", string.Join(",", ordered)), new("ExpectedOrder", string.Join(",", ordered.OrderBy(x => x))) });
+                    criteria = CritResult.Fail;
                 }
             }
 
-            var order = ordered.OrderBy(x => x).ToList();
-            if (ordered.SequenceEqual(order))
-            {
-                CheckResults.Instance.CreateInfoResult("Difficulty Ordering", Severity.Passed, "SongInfo", "Difficulty ordering is correct", 
-                    new() { new("CurrentOrder", string.Join(",", ordered.ToArray())) });
-                return CritResult.Success;
-            }
-
-            CheckResults.Instance.CreateInfoResult("Difficulty Ordering", Severity.Error, "SongInfo", "Difficulty ordering is wrong",
-                    new() { new("CurrentOrder", string.Join(",", ordered.ToArray())), new("ExpectedOrder", string.Join(",", order.ToArray())) });
-            return CritResult.Fail;
+            return criteria;
         }
     }
 }

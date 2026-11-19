@@ -11,22 +11,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class Loloppe
     { 
         // Detect parallel notes
-        public static CritResult Check(List<Note> notes)
+        public static CritResult Check(CheckContext ctx, List<Note> notes)
         {
             CritResult criteria = CritResult.Success;
 
-            if (DetectParallel(notes.Where(c => c.Color == 0).ToList())) criteria = CritResult.Fail;
-            if (DetectParallel(notes.Where(c => c.Color == 1).ToList())) criteria = CritResult.Fail;
+            if (DetectParallel(ctx, notes.Where(c => c.Color == 0).ToList())) criteria = CritResult.Fail;
+            if (DetectParallel(ctx, notes.Where(c => c.Color == 1).ToList())) criteria = CritResult.Fail;
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult("Loloppe", Severity.Passed, "Loloppe", "No parallel notes of the same color on the same swing detected");
+                ctx.Results.CreateDiffResult("Loloppe", Severity.Passed, "Loloppe", "No parallel notes of the same color on the same swing detected");
             }
 
             return criteria;
         }
 
-        public static bool DetectParallel(List<Note> notes)
+        public static bool DetectParallel(CheckContext ctx, List<Note> notes)
         {
             var issue = false;
 
@@ -98,7 +98,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                     if (check || total > 22.5)
                     {
-                        CheckResults.Instance.CreateDiffResult("Loloppe", Severity.Error, "Loloppe", "Multiple notes of the same color on the same swing must flow", 
+                        ctx.Results.CreateDiffResult("Loloppe", Severity.Error, "Loloppe", "Multiple notes of the same color on the same swing must flow", 
                             new() { new("Type", "Loloppe Note") }, new() { notes[i], notes[i - 1] });
 
                         issue = true;

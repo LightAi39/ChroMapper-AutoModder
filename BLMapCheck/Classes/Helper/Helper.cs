@@ -1,5 +1,7 @@
 ﻿using BLMapCheck.Classes.Unity;
+using BLMapCheck.Classes.Results;
 using BLMapCheck.Configs;
+using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
@@ -10,7 +12,23 @@ namespace BLMapCheck.Classes.Helper
 {
     internal class Helper
     {
-        public static double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315 };
+        public static readonly double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315 };
+
+        // Characters that can't be typed on the in-game keyboard, so the field can't be searched for
+        public static List<char> UnsearchableCharacters(string text)
+        {
+            return (text ?? "").Where(c => c < 0x20 || c > 0x7E).Distinct().ToList();
+        }
+
+        // Metadata must be searchable: non-latin text should be romanized or translated, symbols substituted
+        internal static CritResult CheckSearchable(CheckContext ctx, string name, string text)
+        {
+            var characters = UnsearchableCharacters(text);
+            if (characters.Count == 0) return CritResult.Success;
+            ctx.Results.CreateInfoResult(name, Severity.Warning, "SongInfo", $"The {name.ToLowerInvariant()} contains characters that can't be typed in-game. Use an official translation, a romanization or a look-alike character",
+                new() { new(name.Replace(" ", ""), text), new("Characters", string.Join(" ", characters)) });
+            return CritResult.Warning;
+        }
 
         public class NoteData
         {
@@ -36,19 +54,17 @@ namespace BLMapCheck.Classes.Helper
             }
         }
 
-        public static List<NoteData> NotesData = new();
-
-        public static void CreateNoteData(List<Note> notes, List<JoshaParity.SwingData> swingData)
+        public static List<NoteData> CreateNoteData(List<SwingInfo> swingData)
         {
-            NotesData = new();
-            var red = swingData.Where(s => !s.rightHand).ToList();
-            var blue = swingData.Where(s => s.rightHand).ToList();
-
-            HandleSwings(notes, red);
-            HandleSwings(notes, blue);
+            List<NoteData> notesData = new();
+            var red = swingData.Where(s => !s.RightHand).ToList();
+            var blue = swingData.Where(s => s.RightHand).ToList();
+            HandleSwings(notesData, red);
+            HandleSwings(notesData, blue);
+            return notesData;
         }
 
-        public static void HandleSwings(List<Note> notes, List<JoshaParity.SwingData> swings)
+        public static void HandleSwings(List<NoteData> NotesData, List<SwingInfo> swings)
         {
             var newSwing = false;
 
@@ -57,15 +73,12 @@ namespace BLMapCheck.Classes.Helper
                 newSwing = true;
                 var swing = swings[i];
 
-                if ((int)swing.swingType >= 1 && (int)swing.swingType <= 3) // Slider, stack or window
+                if (swing.IsMultiNote) // Slider, stack or window
                 {
-                    // There's a bug with arrow-less swings in JoshaParity, notes need to be re-ordered
-                    swing.notes = swing.notes.OrderBy(x => x.Beats).ToList();
-
-                    for (int j = 1; j < swing.notes.Count; j++)
+                    for (int j = 1; j < swing.Notes.Count; j++)
                     {
-                        var prev = swing.notes[j - 1];
-                        var note = swing.notes[j];
+                        var prev = swing.Notes[j - 1];
+                        var note = swing.Notes[j];
                         var data = new NoteData()
                         {
                             Note = note,
@@ -92,7 +105,7 @@ namespace BLMapCheck.Classes.Helper
                 }
                 else // Everything else
                 {
-                    foreach (var note in swing.notes)
+                    foreach (var note in swing.Notes)
                     {
                         NotesData.Add(new(note));
                     }
@@ -101,11 +114,12 @@ namespace BLMapCheck.Classes.Helper
         }
 
         // 1/16, 1/20, 1/24, 1/25, 1/30, 1/32, 1/40, 1/48, 1/50, 1/60, 1/64
-        public static double[] ExpectedDenominator = { 0.0625, 0.05, 0.04166666666, 0.04, 0.03333333333, 0.03125, 0.025, 0.02083333333, 0.02, 0.01666666666, 0.015625 };
+        public static readonly double[] ExpectedDenominator = { 0.0625, 0.05, 0.04166666666, 0.04, 0.03333333333, 0.03125, 0.025, 0.02083333333, 0.02, 0.01666666666, 0.015625 };
 
-        public static void SetAutoSliderPrecision()
+        // Most common slider precision of the difficulty, snapped to the closest expected value. Null if there's no slider.
+        internal static double? DetectSliderPrecision(List<NoteData> notesData)
         {
-            double? averageSliderDuration = NotesData.Select(c => c.Precision / (c.Spacing + 1))?
+            double? averageSliderDuration = notesData.Select(c => c.Precision / (c.Spacing + 1))?
             .Where(p => p != 0)?
             .GroupBy(p => p)?
             .OrderByDescending(g => g.Count())?
@@ -129,8 +143,10 @@ namespace BLMapCheck.Classes.Helper
                     }
                 }
 
-                Config.Instance.SliderPrecision = closestNumber;
+                return closestNumber;
             }
+
+            return null;
         }
 
         public static bool NearestPointOnFiniteLine(Vector2 A, Vector2 B, Vector2 P)

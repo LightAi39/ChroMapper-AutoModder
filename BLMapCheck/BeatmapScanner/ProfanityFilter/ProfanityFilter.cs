@@ -259,31 +259,38 @@ namespace ProfanityFilter
         /// <returns>True if the term contains a profanity, False otherwise.</returns>
         public bool ContainsProfanity(string term)
         {
+            return FindProfanities(term).Count > 0;
+        }
+
+        // The parts of the term that ContainsProfanity matches, without the allowed words
+        public List<string> FindProfanities(string term)
+        {
+            var found = new List<string>();
             if (string.IsNullOrWhiteSpace(term))
             {
-                return false;
+                return found;
             }
 
-            List<string> potentialProfanities = _profanities.Where(word => word.Length <= term.Length).ToList();
+            // Longest first, so the whole word is reported instead of a shorter word it contains
+            List<string> potentialProfanities = _profanities.Where(word => word.Length <= term.Length).OrderByDescending(word => word.Length).ToList();
             
             // We might have a very short phrase coming in, resulting in no potential matches even before the regex
             if (potentialProfanities.Count == 0)
             {
-                return false;
+                return found;
             }
 
             Regex regex = new Regex(string.Format(@"(?:{0})", string.Join("|", potentialProfanities).Replace("$", "\\$"), RegexOptions.IgnoreCase));
 
             foreach (Match profanity in regex.Matches(term))
             {
-                // if any matches are found and aren't in the allowed list, we can return true here without checking further
-                if (!AllowList.Contains(profanity.Value.ToLower(CultureInfo.InvariantCulture)))
+                if (!AllowList.Contains(profanity.Value.ToLower(CultureInfo.InvariantCulture)) && !found.Contains(profanity.Value))
                 {
-                    return true;
+                    found.Add(profanity.Value);
                 }
             }
 
-            return false;
+            return found;
         }
 
         private StringBuilder CensorStringByProfanityList(char censorCharacter, List<string> swearList, StringBuilder censored, StringBuilder tracker, bool ignoreNumeric)

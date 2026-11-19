@@ -1,5 +1,4 @@
-﻿using beatleader_parser.Timescale;
-using BLMapCheck.BeatmapScanner.MapCheck;
+﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.ChroMapper;
 using BLMapCheck.Classes.Results;
 using BLMapCheck.Classes.Unity;
@@ -10,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Classes.Helper.Helper;
-using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
@@ -31,10 +29,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class VisionBlock
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
-        public static CritResult Check(List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, double pass, double tech, float noteJumpStartBeatOffset)
+        public static CritResult Check(CheckContext ctx, List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, double pass, double tech, float noteJumpStartBeatOffset)
         {
             CritResult criteria = CritResult.Success;
-            Timescale timescale = CriteriaCheckManager.Timescale;
 
             // Create a new list to not mess up with the original reference
             var beatmapGridObjects = beatmapGridObject.ToList();
@@ -51,8 +48,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if(chain.SliceCount >= 2) value = distance / (chain.SliceCount - 1);
                     // Difference between expected and current distance, multiplied by current squish to know maximum value
                     double max;
-                    if (chain.ty == chain.y) max = Math.Round(Instance.ChainLinkVsAir / 3 / value * chain.Squish, 2);
-                    else max = Math.Round(Instance.ChainLinkVsAir / 3 * 1.1 / value * chain.Squish, 2);
+                    if (chain.ty == chain.y) max = Math.Round(ctx.Config.ChainLinkVsAir / 3 / value * chain.Squish, 2);
+                    else max = Math.Round(ctx.Config.ChainLinkVsAir / 3 * 1.1 / value * chain.Squish, 2);
                     if (chain.Squish - 0.01 <= max) // << play with this value to change the limit
                     {
                         List<Vector3> a = new();
@@ -91,17 +88,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var note = beatmapGridObjects[i];
 
                     // Reaction Time need to be recalculated due to VNJS
-                    var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(note.njs, noteJumpStartBeatOffset, timescale.BPM.GetValue());
-                    var beatms = 60000 / timescale.BPM.GetValue();
-                    var reactionTime = beatms * halfJumpDuration;
+                    var reactionTime = ReactionTime(ctx, note.njs, noteJumpStartBeatOffset);
 
                     // Calculate thresholds according to BPM
-                    timescale.BPM.SetCurrentBPM(note.Beats);
-                    var MaxBottomNoteTime = timescale.BPM.ToBeatTime((float)Instance.VBMinBottomNoteTime);
-                    var MaxOuterNoteTime = timescale.BPM.ToBeatTime((float)Instance.VBMaxOuterNoteTime);
-                    var Overall = timescale.BPM.ToBeatTime((float)Instance.VBMinimum);
-                    var MinTimeWarning = timescale.BPM.ToBeatTime((float)((750 - 300) * Math.Pow(Math.E, -pass / 7.6 - tech * 0.06) + 325) / 1000);
-                    if (Instance.UseMapRT) MinTimeWarning = timescale.BPM.ToBeatTime(reactionTime / 1000);
+                    var MaxBottomNoteTime = ctx.SecondsToBeats(ctx.Config.VBMinBottomNoteTime, note.Beats);
+                    var MaxOuterNoteTime = ctx.SecondsToBeats(ctx.Config.VBMaxOuterNoteTime, note.Beats);
+                    var Overall = ctx.SecondsToBeats(ctx.Config.VBMinimum, note.Beats);
+                    var MinTimeWarning = ctx.SecondsToBeats(((750 - 300) * Math.Pow(Math.E, -pass / 7.6 - tech * 0.06) + 325) / 1000, note.Beats);
+                    if (ctx.Config.UseMapRT) MinTimeWarning = ctx.SecondsToBeats(reactionTime / 1000, note.Beats);
 
                     // Clean up out-of-range VB notes
                     lastMidL.RemoveAll(l => note.Beats - l.Beats > MinTimeWarning);
@@ -111,7 +105,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (note.Beats - lastMidL.First().Beats >= Overall) // Further than 0.025
                         {
-                            if (note.Beats - lastMidL.First().Beats <= MinTimeWarning) // Warning
+                            if (IsTooClose(ctx, note.Beats - lastMidL.First().Beats, MinTimeWarning, note.Beats)) // Warning
                             {
                                 if (note.x == 0 && note.Beats - lastMidL.First().Beats <= MaxOuterNoteTime) // Closer than 0.15 in outer lane
                                 {
@@ -125,9 +119,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 {
                                     if (note is Note)
                                     {
-                                        CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
-                                                new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(note.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
-                                                new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeWarning) * 1000, 0).ToString()),
+                                        ctx.Results.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
+                                                new("currentReactionTime", Math.Round(ctx.BeatsToSeconds(note.Beats - lastMidL.First().Beats, note.Beats) * 1000, 0).ToString()),
+                                                new("targetReactionTime", Math.Round(ctx.BeatsToSeconds(MinTimeWarning, note.Beats) * 1000, 0).ToString()),
                                             }, new() { note });
                                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                                     }
@@ -139,7 +133,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (note.Beats - lastMidR.First().Beats >= Overall)
                         {
-                            if (note.Beats - lastMidR.First().Beats <= MinTimeWarning)
+                            if (IsTooClose(ctx, note.Beats - lastMidR.First().Beats, MinTimeWarning, note.Beats))
                             {
                                 if (note.x == 3 && note.Beats - lastMidR.First().Beats <= MaxOuterNoteTime)
                                 {
@@ -153,9 +147,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 {
                                     if (note is Note)
                                     {
-                                        CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
-                                                new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(note.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
-                                                new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeWarning) * 1000, 0).ToString()),
+                                        ctx.Results.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
+                                                new("currentReactionTime", Math.Round(ctx.BeatsToSeconds(note.Beats - lastMidR.First().Beats, note.Beats) * 1000, 0).ToString()),
+                                                new("targetReactionTime", Math.Round(ctx.BeatsToSeconds(MinTimeWarning, note.Beats) * 1000, 0).ToString()),
                                             }, new() { note });
                                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                                     }
@@ -178,225 +172,77 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 // Bombs
                 lastMidL = new List<BeatmapGridObject>();
                 lastMidR = new List<BeatmapGridObject>();
-
+                // Last note of each hand before the current bomb, to know the swing direction
+                Note left = null;
+                Note right = null;
+                var noteIndex = 0;
                 for (var i = 0; i < beatmapGridObjects.Count; i++)
                 {
                     var bomb = beatmapGridObjects[i];
                     if (bomb is Bomb)
                     {
-                        timescale.BPM.SetCurrentBPM(bomb.Beats);
+                        while (noteIndex < beatmapGridObjects.Count && beatmapGridObjects[noteIndex].Beats < bomb.Beats)
+                        {
+                            if (beatmapGridObjects[noteIndex] is Note no)
+                            {
+                                if (no.Color == 0) left = no;
+                                else if (no.Color == 1) right = no;
+                            }
+                            noteIndex++;
+                        }
 
                         // Reaction Time need to be recalculated due to VNJS
-                        var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(bomb.njs, noteJumpStartBeatOffset, timescale.BPM.GetValue());
-                        var beatms = 60000 / timescale.BPM.GetValue();
-                        var reactionTime = beatms * halfJumpDuration;
+                        var reactionTime = ReactionTime(ctx, bomb.njs, noteJumpStartBeatOffset);
 
                         // Calculate thresholds according to BPM
-                        var MaxTimeBomb = timescale.BPM.ToBeatTime((float)Instance.VBMaxBombTime);
-                        var MinTimeBomb = timescale.BPM.ToBeatTime((float)Instance.VBMinBombTime);
-                        if (Instance.UseMapRT) MinTimeBomb = timescale.BPM.ToBeatTime(reactionTime / 1000);
-                        var Overall = timescale.BPM.ToBeatTime((float)Instance.VBMinimum);
-
-                        // Fetch last note before bomb to know swing direction
-                        var left = (Note)beatmapGridObjects.Where(x => x.Beats < bomb.Beats && x is Note no && no.Color == 0).OrderBy(o => o.Beats).LastOrDefault();
-                        var right = (Note)beatmapGridObjects.Where(x => x.Beats < bomb.Beats && x is Note no && no.Color == 1).OrderBy(o => o.Beats).LastOrDefault();
+                        var MaxTimeBomb = ctx.SecondsToBeats(ctx.Config.VBMaxBombTime, bomb.Beats);
+                        var MinTimeBomb = ctx.SecondsToBeats(ctx.Config.VBMinBombTime, bomb.Beats);
+                        if (ctx.Config.UseMapRT) MinTimeBomb = ctx.SecondsToBeats(reactionTime / 1000, bomb.Beats);
+                        var Overall = ctx.SecondsToBeats(ctx.Config.VBMinimum, bomb.Beats);
 
                         // Clean up out-of-range VB notes
                         lastMidL.RemoveAll(l => bomb.Beats - l.Beats > MinTimeBomb);
                         lastMidR.RemoveAll(l => bomb.Beats - l.Beats > MinTimeBomb);
 
+                        var flagged = false;
                         if (lastMidL.Count > 0)
                         {
-                            if (bomb.Beats - lastMidL.First().Beats <= MinTimeBomb) // Closer than 0.20
+                            var gap = bomb.Beats - lastMidL.First().Beats;
+                            if (IsTooClose(ctx, gap, MinTimeBomb, bomb.Beats)) // Closer than 0.20
                             {
-                                if (bomb.x == 0 && bomb.Beats - lastMidL.First().Beats <= MaxTimeBomb) // Closer than 0.15
+                                if (bomb.x == 0 && gap <= MaxTimeBomb) // Closer than 0.15
                                 {
                                     // Fine
                                 }
-                                else if ((bomb.x != 1 || bomb.y != 1) && bomb.Beats - lastMidL.First().Beats <= Overall) // Closer than 0.025
+                                else if ((bomb.x != 1 || bomb.y != 1) && gap <= Overall) // Closer than 0.025
                                 {
                                     // Also fine
                                 }
-                                else if (bomb.x < 2) // Possible VB
+                                else if (bomb.x < 2 && (IsInSwingPath(bomb, left) || IsInSwingPath(bomb, right))) // Possible VB
                                 {
-                                    // TODO: Comments this
-                                    if (left != null)
-                                    {
-                                        if (left.CutDirection == 8)
-                                        {
-                                            if(left.y == 1 && (left.x == 1 || left.x == 2))
-                                            {
-                                                var di = Math.Sqrt(Math.Pow(bomb.x - left.x, 2) + Math.Pow(bomb.y - left.y, 2));
-                                                if (di >= 0 && di < 1.001)
-                                                {
-                                                    CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
-                                                        new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
-                                                        new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
-                                                    }, new() { bomb });
-                                                    criteria = CritResult.Fail;
-                                                }
-                                            }
-                                            
-                                            continue;
-                                        }
-
-                                        var pos = (left.x, left.y);
-                                        int index = 1;
-                                        while (!NoteDirection.IsLimit(pos, left.CutDirection))
-                                        {
-                                            pos = NoteDirection.Move(left, index);
-                                            index++;
-                                        }
-
-                                        var d = Math.Sqrt(Math.Pow(bomb.x - pos.x, 2) + Math.Pow(bomb.y - pos.y, 2));
-                                        if (d >= 0 && d < 1.001)
-                                        {
-                                            CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
-                                                        new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
-                                                        new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
-                                                    }, new() { bomb });
-                                            criteria = CritResult.Fail;
-
-                                            continue;
-                                        }
-                                    }
-                                    if (right != null)
-                                    {
-                                        if (right.CutDirection == 8)
-                                        {
-                                            if (right.y == 1 && (right.x == 1 || right.x == 2))
-                                            {
-                                                var di = Math.Sqrt(Math.Pow(bomb.x - right.x, 2) + Math.Pow(bomb.y - right.y, 2));
-                                                if (di >= 0 && di < 1.001)
-                                                {
-                                                    CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
-                                                        new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
-                                                        new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
-                                                    }, new() { bomb });
-                                                    criteria = CritResult.Fail;
-                                                }
-                                            }
-                                            
-                                            continue;
-                                        }
-
-                                        var pos = (right.x, right.y);
-                                        int index = 1;
-                                        while (!NoteDirection.IsLimit(pos, right.CutDirection))
-                                        {
-                                            pos = NoteDirection.Move(right, index);
-                                            index++;
-                                        }
-
-                                        var d = Math.Sqrt(Math.Pow(bomb.x - pos.x, 2) + Math.Pow(bomb.y - pos.y, 2));
-                                        if (d >= 0 && d < 1.001)
-                                        {
-                                            CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
-                                                        new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidL.First().Beats) * 1000, 0).ToString()),
-                                                        new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
-                                                    }, new() { bomb });
-                                            criteria = CritResult.Fail;
-
-                                            continue;
-                                        }
-                                    }
+                                    ReportBomb(ctx, bomb, gap, MinTimeBomb);
+                                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
+                                    flagged = true;
                                 }
                             }
                         }
-                        if (lastMidR.Count > 0)
+                        if (lastMidR.Count > 0 && !flagged)
                         {
-                            if (bomb.Beats - lastMidR.First().Beats <= MinTimeBomb) // Closer than 0.20
+                            var gap = bomb.Beats - lastMidR.First().Beats;
+                            if (IsTooClose(ctx, gap, MinTimeBomb, bomb.Beats)) // Closer than 0.20
                             {
-                                if (bomb.x == 3 && bomb.Beats - lastMidR.First().Beats <= MaxTimeBomb) // Closer than 0.15
+                                if (bomb.x == 3 && gap <= MaxTimeBomb) // Closer than 0.15
                                 {
                                     // Fine
                                 }
-                                else if ((bomb.x != 2 || bomb.y != 1) && bomb.Beats - lastMidR.First().Beats <= Overall) // Closer than 0.025
+                                else if ((bomb.x != 2 || bomb.y != 1) && gap <= Overall) // Closer than 0.025
                                 {
                                     // Also fine
                                 }
-                                else if (bomb.x > 1) // Possible VB
+                                else if (bomb.x > 1 && (IsInSwingPath(bomb, left) || IsInSwingPath(bomb, right))) // Possible VB
                                 {
-                                    if (left != null)
-                                    {
-                                        if (left.CutDirection == 8)
-                                        {
-                                            if (left.y == 1 && (left.x == 1 || left.x == 2))
-                                            {
-                                                var di = Math.Sqrt(Math.Pow(bomb.x - left.x, 2) + Math.Pow(bomb.y - left.y, 2));
-                                                if (di >= 0 && di < 1.001)
-                                                {
-                                                    CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
-                                                        new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
-                                                        new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
-                                                    }, new() { bomb });
-                                                    criteria = CritResult.Fail;
-                                                }
-                                            }
-                                                
-                                            continue;
-                                        }
-
-                                        var pos = (left.x, left.y);
-                                        int index = 1;
-                                        while (!NoteDirection.IsLimit(pos, left.CutDirection))
-                                        {
-                                            pos = NoteDirection.Move(left, index);
-                                            index++;
-                                        }
-
-                                        var d = Math.Sqrt(Math.Pow(bomb.x - pos.x, 2) + Math.Pow(bomb.y - pos.y, 2));
-                                        if (d >= 0 && d < 1.001)
-                                        {
-                                            CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
-                                                        new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
-                                                        new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
-                                                    }, new() { bomb });
-                                            criteria = CritResult.Fail;
-
-                                            continue;
-                                        }
-                                    }
-                                    if (right != null)
-                                    {
-                                        if (right.CutDirection == 8)
-                                        {
-                                            if (right.y == 1 && (right.x == 1 || right.x == 2))
-                                            {
-                                                var di = Math.Sqrt(Math.Pow(bomb.x - right.x, 2) + Math.Pow(bomb.y - right.y, 2));
-                                                if (di >= 0 && di < 1.001)
-                                                {
-                                                    CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
-                                                        new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
-                                                        new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
-                                                    }, new() { bomb });
-                                                    criteria = CritResult.Fail;
-                                                }
-                                            }
-                                                
-                                            continue;
-                                        }
-
-                                        var pos = (right.x, right.y);
-                                        int index = 1;
-                                        while (!NoteDirection.IsLimit(pos, right.CutDirection))
-                                        {
-                                            pos = NoteDirection.Move(right, index);
-                                            index++;
-                                        }
-
-                                        var d = Math.Sqrt(Math.Pow(bomb.x - pos.x, 2) + Math.Pow(bomb.y - pos.y, 2));
-                                        if (d >= 0 && d < 1.001)
-                                        {
-                                            CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Error, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
-                                                        new("currentReactionTime", Math.Round(timescale.BPM.ToRealTime(bomb.Beats - lastMidR.First().Beats) * 1000, 0).ToString()),
-                                                        new("targetReactionTime", Math.Round(timescale.BPM.ToRealTime(MinTimeBomb) * 1000, 0).ToString()),
-                                                    }, new() { bomb });
-                                            criteria = CritResult.Fail;
-
-                                            continue;
-                                        }
-                                    }
+                                    ReportBomb(ctx, bomb, gap, MinTimeBomb);
+                                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                                 }
                             }
                         }
@@ -416,13 +262,55 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult("Vision Block", Severity.Passed, "Vision", "No issue with vision from notes and bombs detected");
+                ctx.Results.CreateDiffResult("Vision Block", Severity.Passed, "Vision", "No issue with vision from notes and bombs detected");
             }
-
-            timescale.BPM.ResetCurrentBPM();
 
             return criteria;
         }
 
+        // Check if the bomb is around where the previous swing of that hand ends
+        private static bool IsInSwingPath(BeatmapGridObject bomb, Note hand)
+        {
+            if (hand == null) return false;
+
+            if (hand.CutDirection == 8)
+            {
+                // Dots are only considered in the middle of the grid
+                if (hand.y != 1 || (hand.x != 1 && hand.x != 2)) return false;
+                return Math.Sqrt(Math.Pow(bomb.x - hand.x, 2) + Math.Pow(bomb.y - hand.y, 2)) < 1.001;
+            }
+
+            var pos = (hand.x, hand.y);
+            int index = 1;
+            while (!NoteDirection.IsLimit(pos, hand.CutDirection))
+            {
+                pos = NoteDirection.Move(hand, index);
+                index++;
+            }
+            return Math.Sqrt(Math.Pow(bomb.x - pos.x, 2) + Math.Pow(bomb.y - pos.y, 2)) < 1.001;
+        }
+
+        // Less than the target reaction time. Compared in whole ms like the reported values, so an object exactly at the limit is fine.
+        private static bool IsTooClose(CheckContext ctx, float gap, float limit, float beat)
+        {
+            return Math.Round(ctx.BeatsToSeconds(gap, beat) * 1000) < Math.Round(ctx.BeatsToSeconds(limit, beat) * 1000);
+        }
+
+        // Reaction time in ms. The game sets the jump duration from the song BPM, BPM changes don't affect it.
+        private static double ReactionTime(CheckContext ctx, float njs, float noteJumpStartBeatOffset)
+        {
+            var bpm = ctx.Map.Info._beatsPerMinute;
+            var halfJumpDuration = SpawnParameterHelper.CalculateHalfJumpDuration(njs, noteJumpStartBeatOffset, bpm);
+            return 60000 / bpm * halfJumpDuration;
+        }
+
+        private static void ReportBomb(CheckContext ctx, BeatmapGridObject bomb, float gap, float minTimeBomb)
+        {
+            // Like notes, a vision block needs to be evaluated and may require justification
+            ctx.Results.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Bombs must be placed to give the player acceptable time to react", new() {
+                new("currentReactionTime", Math.Round(ctx.BeatsToSeconds(gap, bomb.Beats) * 1000, 0).ToString()),
+                new("targetReactionTime", Math.Round(ctx.BeatsToSeconds(minTimeBomb, bomb.Beats) * 1000, 0).ToString()),
+            }, new() { bomb });
+        }
     }
 }

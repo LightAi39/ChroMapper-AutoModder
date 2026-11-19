@@ -1,4 +1,5 @@
-﻿using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
+﻿using System.Linq;
+using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 
 namespace BLMapCheck.BeatmapScanner.Data.Criteria
 {
@@ -24,11 +25,24 @@ namespace BLMapCheck.BeatmapScanner.Data.Criteria
         public CritResult DifficultyName { get; set; } = CritResult.Fail;
         public CritResult Requirement { get; set; } = CritResult.Fail;
         public CritResult NJS { get; set; } = CritResult.Fail;
+        public CritResult Bomb { get; set; } = CritResult.Fail;
+
+        // Every criterion set to NotChecked
+        public static DiffCrit NotChecked()
+        {
+            DiffCrit diffCrit = new();
+            foreach (var property in typeof(DiffCrit).GetProperties())
+            {
+                property.SetValue(diffCrit, CritResult.NotChecked);
+            }
+            return diffCrit;
+        }
 
         public CritResult HighestSeverityCheck()
         {
             DiffCrit diffCrit = this;
             var properties = typeof(DiffCrit).GetProperties();
+            if (properties.All(p => (CritResult)p.GetValue(diffCrit) == CritResult.NotChecked)) return CritResult.NotChecked;
             CritResult highestSeverity = CritResult.Success;
 
             foreach (var property in properties)

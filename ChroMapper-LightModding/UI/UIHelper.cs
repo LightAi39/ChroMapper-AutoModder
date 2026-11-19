@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using TMPro;
+using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -11,6 +12,16 @@ namespace ChroMapper_LightModding.UI
     internal class UIHelper
     {
         // Credit goes to Top_Cat's CM-JS UI for this source code
+        // Symbol and color of a criteria status. The shape tells the statuses apart without relying on color (colorblind players).
+        // Only use characters the ChroMapper font has, missing ones show up as a square.
+        public static (string Symbol, Color Color) CriteriaStatus(CritResult severity) => severity switch
+        {
+            CritResult.Success => ("●", Color.green),
+            CritResult.Warning => ("<b>!</b>", new Color(1f, 0.5f, 0f)), // Orange, yellow is too close to green. The font has no triangle glyph
+            CritResult.Fail => ("<b>X</b>", Color.red),
+            _ => ("<b>-</b>", Color.gray), // Not checked
+        };
+
         public static void AddButton(Transform parent, string title, string text, Vector2 pos, UnityAction onClick, float width = 60, float height = 25, float fontSize = 12, string tooltip = "")
         {
             var button = Object.Instantiate(PersistentUI.Instance.ButtonPrefab, parent);
@@ -107,7 +118,7 @@ namespace ChroMapper_LightModding.UI
             textInput.InputField.onValueChanged.AddListener(onChange);
         }
 
-        public static void AddCheckbox(Transform parent, string title, string text, Vector2 pos, bool value, UnityAction<bool> onClick)
+        public static Toggle AddCheckbox(Transform parent, string title, string text, Vector2 pos, bool value, UnityAction<bool> onClick)
         {
             var entryLabel = new GameObject(title + " Label", typeof(TextMeshProUGUI));
             var rectTransform = ((RectTransform)entryLabel.transform);
@@ -132,6 +143,7 @@ namespace ChroMapper_LightModding.UI
             toggleComponent.isOn = value;
             
             toggleComponent.onValueChanged.AddListener(onClick);
+            return toggleComponent;
         }
 
         public static UIDropdown AddDropdown(Transform parent, string title, string text, Vector2 pos, List<string> options, UnityAction<int> action = null)

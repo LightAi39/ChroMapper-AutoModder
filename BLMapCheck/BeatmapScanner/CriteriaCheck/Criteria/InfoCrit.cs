@@ -16,9 +16,12 @@ namespace BLMapCheck.BeatmapScanner.Data.Criteria
         public CritResult BPM { get; set; } = CritResult.Fail;
         public CritResult DifficultyOrdering { get; set; } = CritResult.Fail;
         public CritResult Preview { get; set; } = CritResult.Fail;
+        public CritResult InfoValues { get; set; } = CritResult.Fail;
+        public CritResult CoverImage { get; set; } = CritResult.Fail;
 
         public enum CritResult
         {
+            NotChecked = -1, // The check didn't run, e.g. difficulties with too few notes
             Success = 0,
             Warning = 1,
             Fail = 2

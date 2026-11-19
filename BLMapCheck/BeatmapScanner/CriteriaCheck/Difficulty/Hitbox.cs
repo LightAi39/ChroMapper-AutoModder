@@ -1,5 +1,4 @@
-﻿using beatleader_parser.Timescale;
-using BLMapCheck.BeatmapScanner.MapCheck;
+﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
@@ -14,10 +13,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     {
         // Implementation of Kival Evan hitboxInline.ts, hitboxStair.ts and hitboxReverseStaircase.ts
         // TODO: Either new algo or comment and optimize this code
-        public static CritResult Check(List<Note> notes, float njs)
+        public static CritResult Check(CheckContext ctx, List<Note> notes, float baseNjs)
         {
+            // NJS of the note arriving after the other one, it sets the distance between them (VNJS)
+            float NjsOf(Note note) => note.njs > 0 ? note.njs : baseNjs;
+
             CritResult criteria = CritResult.Success;
-            Timescale timescale = CriteriaCheckManager.Timescale;
 
             if (notes.Any())
             {
@@ -37,7 +38,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var note = notes[i];
                     if (lastNote[note.Color] != null)
                     {
-                        if (Swing.Next(note, lastNote[note.Color], timescale.BPM.GetValue(), swingNoteArray[note.Color]))
+                        if (Swing.Next(note, lastNote[note.Color], ctx.BpmAt(note.Beats), swingNoteArray[note.Color]))
                         {
                             swingNoteArray[note.Color].Clear();
                         }
@@ -50,7 +51,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             isInline = true;
                         }
-                        if (njs < 1.425 / ((60 * (note.Beats - other.Beats)) / timescale.BPM.GetValue()) && isInline)
+                        if (NjsOf(note) < 1.425 / ctx.BeatsToSeconds(note.Beats - other.Beats, note.Beats) && isInline)
                         {
                             hitbox.Add(note);
                             break;
@@ -62,11 +63,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in hitbox)
                 {
-                    CheckResults.Instance.CreateDiffResult("Inline", Severity.Warning, "Hitbox", "Low NJS Inline", new(), new() { item });
+                    ctx.Results.CreateDiffResult("Inline", Severity.Warning, "Hitbox", "Low NJS Inline", new(), new() { item });
                     criteria = CritResult.Warning;
                 }
 
-                var hitboxTime = (0.15 * timescale.BPM.GetValue()) / 60;
                 int[] lastNoteDirection = { -1, -1 };
                 double[] lastSpeed = { -1, -1 };
                 lastNote[0] = null;
@@ -84,7 +84,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var note = notes[i];
                     if (lastNote[note.Color] != null)
                     {
-                        if (Swing.Next(note, lastNote[note.Color], timescale.BPM.GetValue(), swingNoteArray[note.Color]))
+                        if (Swing.Next(note, lastNote[note.Color], ctx.BpmAt(note.Beats), swingNoteArray[note.Color]))
                         {
                             lastSpeed[note.Color] = note.Beats - lastNote[note.Color].Beats;
                             if (note.CutDirection != NoteDirection.ANY)
@@ -117,7 +117,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         if (lastNote[(note.Color + 1) % 2] != null)
                         {
                             if (note.Beats - lastNote[(note.Color + 1) % 2].Beats != 0 &&
-                                note.Beats - lastNote[(note.Color + 1) % 2].Beats < Math.Min(hitboxTime, lastSpeed[(note.Color + 1) % 2]))
+                                note.Beats - lastNote[(note.Color + 1) % 2].Beats < Math.Min(ctx.SecondsToBeats(0.15, note.Beats), lastSpeed[(note.Color + 1) % 2]))
                             {
                                 if (note.x == noteOccupy[(note.Color + 1) % 2].Line && note.y == noteOccupy[(note.Color + 1) % 2].Layer && !Swing.IsDouble(note, notes, i))
                                 {
@@ -146,7 +146,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in hitbox)
                 {
-                    CheckResults.Instance.CreateDiffResult("Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue",
+                    ctx.Results.CreateDiffResult("Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue",
                         new List<Classes.Results.KeyValuePair>() { new("Type", "Staircase") }, new() { item });
                     criteria = CritResult.Warning;
                 }
@@ -167,7 +167,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var note = notes[i];
                     if (lastNote[note.Color] != null)
                     {
-                        if (Swing.Next(note, lastNote[note.Color], timescale.BPM.GetValue(), swingNoteArray[note.Color]))
+                        if (Swing.Next(note, lastNote[note.Color], ctx.BpmAt(note.Beats), swingNoteArray[note.Color]))
                         {
                             swingNoteArray[note.Color].Clear();
                         }
@@ -180,13 +180,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         }
                         if (other.CutDirection != NoteDirection.ANY)
                         {
-                            if (!((note.Beats / timescale.BPM.GetValue() * 60) > (other.Beats / timescale.BPM.GetValue() * 60) + 0.01))
+                            if (ctx.BeatsToSeconds(note.Beats - other.Beats, note.Beats) <= 0.01)
                             {
                                 continue;
                             }
                             var isDiagonal = Swing.NoteDirectionAngle[other.CutDirection] % 90 > 15 && Swing.NoteDirectionAngle[other.CutDirection] % 90 < 75;
                             double[,] value = { { 15, 1.5 } };
-                            if (njs < 1.425 / ((60 * (note.Beats - other.Beats)) / timescale.BPM.GetValue() + (isDiagonal ? constantDiagonal : constant)) &&
+                            if (NjsOf(note) < 1.425 / (ctx.BeatsToSeconds(note.Beats - other.Beats, note.Beats) + (isDiagonal ? constantDiagonal : constant)) &&
                                 Swing.IsIntersect(note, other, value, 1))
                             {
                                 hitbox.Add(other);
@@ -202,7 +202,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 foreach (var item in hitbox)
                 {
-                    CheckResults.Instance.CreateDiffResult("Reverse Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue", 
+                    ctx.Results.CreateDiffResult("Reverse Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue", 
                         new List<Classes.Results.KeyValuePair>() { new("Type", "Reverse Staircase") }, new() { item });
                     criteria = CritResult.Warning;
                 }
@@ -210,7 +210,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if(criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult("Staircase", Severity.Passed, "Staircase", "No hitbox issue detected");
+                ctx.Results.CreateDiffResult("Staircase", Severity.Passed, "Staircase", "No hitbox issue detected");
             }
 
             return criteria;

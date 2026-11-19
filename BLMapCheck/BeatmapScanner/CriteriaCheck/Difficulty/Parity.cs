@@ -1,115 +1,81 @@
-﻿using BLMapCheck.Classes.Results;
-using JoshaParity;
-using Newtonsoft.Json;
+﻿using BLMapCheck.Classes.Helper;
+using BLMapCheck.Classes.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Parity
     {
-        // JoshaParity is used to detect reset, high angle parity, and warn while playing inverted.
+        // The Analyzer parity is used to detect reset, high angle parity, and warn while playing inverted.
         // Parity warning angle is configurable
-        public static CritResult Check(List<SwingData> swings, List<Parser.Map.Difficulty.V3.Grid.Note> notes)
+        public static CritResult Check(CheckContext ctx, List<SwingInfo> swings)
         {
             CritResult criteria = CritResult.Success;
 
-            foreach (var swing in swings.Where(x => x.resetType == ResetType.Rebound).ToList())
+            // Resets are allowed, but they must be backed by the music and be readable (R5C), which needs to be reviewed manually
+            foreach (var swing in swings.Where(x => x.IsRebound))
             {
-                CheckResults.Instance.CreateDiffResult("Parity", Severity.Error, "Parity", "Parity error", new() { new("ErrorType", "Reset") }, new(swing.notes) { });
+                ctx.Results.CreateDiffResult("Parity", Severity.Warning, "Parity", "Reset, must be backed by a musical element and be readable", new() { new("ErrorType", "Reset") }, new(swing.Notes));
+                if (CritResult.Warning > criteria) criteria = CritResult.Warning;
+            }
+
+            foreach (var swing in swings.Where(x => double.IsPositiveInfinity(x.EBPM)))
+            {
+                ctx.Results.CreateDiffResult("Parity Mismatch", Severity.Error, "Parity", "Swing has an infinite EBPM, notes of the same swing are likely mismatched",
+                    new() { new("ErrorType", "swingEBPM is equal PositiveInfinity") }, new(swing.Notes));
                 criteria = CritResult.Fail;
             }
 
-            foreach (var swing in swings.Where(x => x.swingEBPM == float.PositiveInfinity).ToList())
+            foreach (var hand in new[] { swings.Where(x => x.RightHand).ToList(), swings.Where(x => !x.RightHand).ToList() })
             {
-                CheckResults.Instance.CreateDiffResult("Parity Mismatch", Severity.Error, "Parity", "NJS must not reach below 1 at any point in the map", 
-                    new() { new("ErrorType", "swingEBPM is equal PositiveInfinity") }, new(swing.notes) { });
-                criteria = CritResult.Fail;
-            }
-
-            List<SwingData> rightHandSwings = swings.Where(x => x.rightHand).ToList();
-            List<SwingData> leftHandSwings = swings.Where(x => !x.rightHand).ToList();
-
-            for (int i = 0; i < rightHandSwings.Count; i++)
-            {
-                if (i != 0)
+                for (int i = 1; i < hand.Count; i++)
                 {
-                    if (i == rightHandSwings.Count - 1 && rightHandSwings[i].notes.Last().CutDirection == 8) break;
-                    float difference = rightHandSwings[i].startPos.rotation - rightHandSwings[i - 1].endPos.rotation;
-                    if (Math.Abs(difference) >= Instance.ParityWarningAngle)
+                    if (i == hand.Count - 1 && hand[i].Notes.Last().CutDirection == 8) break;
+                    var difference = Math.Abs(hand[i].StartRotation - hand[i - 1].EndRotation);
+                    if (difference >= ctx.Config.ParityWarningAngle)
                     {
-                        CheckResults.Instance.CreateDiffResult("Parity Warning", Severity.Warning, "Parity", "Parity degree difference", 
-                            new() { new("WarningType", Math.Abs(difference) + " degree difference") }, new(rightHandSwings[i].notes) { });
+                        ctx.Results.CreateDiffResult("Parity Warning", Severity.Warning, "Parity", "Parity degree difference",
+                            new() { new("WarningType", difference + " degree difference") }, new(hand[i].Notes));
                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                     }
-                    else if (Math.Abs(rightHandSwings[i].startPos.rotation) > 135 || Math.Abs(rightHandSwings[i].endPos.rotation) > 135)
+                    else if (Math.Abs(hand[i].StartRotation) > 135 || Math.Abs(hand[i].EndRotation) > 135)
                     {
-                        if (Instance.ParityInvertedWarning)
+                        if (ctx.Config.ParityInvertedWarning)
                         {
-                            CheckResults.Instance.CreateDiffResult("Parity Inverted", Severity.Warning, "Parity", "Parity playing inverted",
-                                new() { new("WarningType", "Playing inverted") }, new(rightHandSwings[i].notes) { });
+                            ctx.Results.CreateDiffResult("Parity Inverted", Severity.Warning, "Parity", "Parity playing inverted",
+                                new() { new("WarningType", "Playing inverted") }, new(hand[i].Notes));
                         }
                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                     }
                 }
             }
 
-            for (int i = 0; i < leftHandSwings.Count; i++)
-            {
-                if (i != 0)
-                {
-                    if (i == leftHandSwings.Count - 1 && leftHandSwings[i].notes.Last().CutDirection == 8) break;
-                    float difference = leftHandSwings[i].startPos.rotation - leftHandSwings[i - 1].endPos.rotation;
-                    if (Math.Abs(difference) >= Instance.ParityWarningAngle)
-                    {
-                        CheckResults.Instance.CreateDiffResult("Parity Warning", Severity.Warning, "Parity", "Parity degree difference",
-                            new() { new("WarningType", Math.Abs(difference) + " degree difference") }, new(leftHandSwings[i].notes) { });
-                        if (CritResult.Warning > criteria) criteria = CritResult.Warning;
-                    }
-                    else if (Math.Abs(leftHandSwings[i].startPos.rotation) > 135 || Math.Abs(leftHandSwings[i].endPos.rotation) > 135)
-                    {
-                        if (Instance.ParityInvertedWarning)
-                        {
-                            CheckResults.Instance.CreateDiffResult("Parity Inverted", Severity.Warning, "Parity", "Parity playing inverted",
-                                new() { new("WarningType", "Playing inverted") }, new(leftHandSwings[i].notes) { });
-                        }
-                        if (CritResult.Warning > criteria) criteria = CritResult.Warning;
-                    }
-                }
-            }
-
-            if (Instance.ParityDebug)
+            if (ctx.Config.ParityDebug)
             {
                 foreach (var swing in swings)
                 {
-                    var swingWithoutNotes = swing;
                     Severity commentType = Severity.Data;
-                    if (swing.resetType == ResetType.Rebound) commentType = Severity.Error;
-                    if (Math.Abs(swing.endPos.rotation) > 135 || Math.Abs(swing.endPos.rotation) > 135) commentType = Severity.Inconclusive;
+                    if (Math.Abs(swing.StartRotation) > 135 || Math.Abs(swing.EndRotation) > 135) commentType = Severity.Inconclusive;
 
                     List<Classes.Results.KeyValuePair> resultData = new()
                     {
-                        new("swingParity", swing.swingParity.ToString()),
-                        new("resetType", swing.resetType.ToString()),
-                        new("swingStartBeat", swing.swingStartBeat.ToString()),
-                        new("swingEndBeat", swing.swingEndBeat.ToString()),
-                        new("swingEBPM", swing.swingEBPM.ToString()),
-                        new("notes", JsonConvert.SerializeObject(swing.notes, Formatting.Indented)),
-                        new("startPos", JsonConvert.SerializeObject(swing.startPos, Formatting.Indented)),
-                        new("endPos", JsonConvert.SerializeObject(swing.endPos, Formatting.Indented)),
-                        new("rightHand", swing.rightHand.ToString())
+                        new("Parity", swing.Forehand ? "Forehand" : "Backhand"),
+                        new("Direction", Helper.Mod(Math.Round(swing.Direction), 360).ToString()),
+                        new("IsReset", swing.IsReset.ToString()),
+                        new("IsBombReset", swing.IsBombReset.ToString()),
+                        new("EBPM", Math.Round(swing.EBPM, 2).ToString())
                     };
-                    
-                    CheckResults.Instance.CreateDiffResult("Parity Debug", commentType, "Parity", "Parity Debug", resultData, new(swing.notes) { });
+
+                    ctx.Results.CreateDiffResult("Parity Debug", commentType, "Parity", "Parity Debug", resultData, new(swing.Notes));
                 }
             }
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult("Parity", Severity.Passed, "Parity", "No possible parity issue detected");
+                ctx.Results.CreateDiffResult("Parity", Severity.Passed, "Parity", "No possible parity issue detected");
             }
 
             return criteria;

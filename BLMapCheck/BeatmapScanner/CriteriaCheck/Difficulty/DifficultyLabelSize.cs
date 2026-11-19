@@ -1,13 +1,12 @@
 ﻿using BLMapCheck.Classes.Results;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class DifficultyLabelSize
     {
-        public static CritResult Check(string difficultyLabel, int difficultyCount)
+        public static CritResult Check(CheckContext ctx, string difficultyLabel, int difficultyCount)
         {
             CritResult criteria = CritResult.Success;
 
@@ -17,21 +16,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             if (difficultyCount >= 3) maxLine = 3;
                 
             // Each diff remove around 5 letters
-            var maxValue = (Instance.MaxChar + (5 - difficultyCount) * 5) * maxLine;
+            var maxValue = (ctx.Config.MaxChar + (5 - difficultyCount) * 5) * maxLine;
 
             if (difficultyLabel != null)
             {
                 if (difficultyLabel.Count() > maxValue)
                 {
-                    CheckResults.Instance.CreateDiffResult("Difficulty Label Size", Severity.Error, "Label", "The difficulty label is too long",
+                    // The character count is an estimate of the rendered width, so it needs to be verified in-game
+                    ctx.Results.CreateDiffResult("Difficulty Label Size", Severity.Warning, "Label", "The difficulty label is likely too long",
                         new() { new("CurrentSize", difficultyLabel.Count().ToString() + " characters"), new("MaxSize", maxValue + " characters") });
-                    criteria = CritResult.Fail;
+                    criteria = CritResult.Warning;
                 }
             }
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult("Difficulty Label Size", Severity.Passed, "Label", "The difficulty label size is valid",
+                ctx.Results.CreateDiffResult("Difficulty Label Size", Severity.Passed, "Label", "The difficulty label size is valid",
                         new() { new("CurrentSize", difficultyLabel?.Count().ToString() ?? "Default"), new("MaxSize", maxValue + " characters") });
             }
 

@@ -1,4 +1,5 @@
-﻿using beatleader_analyzer.BeatmapScanner.Data;
+﻿using Analyzer.BeatmapScanner.Data;
+using beatleader_analyzer.BeatmapScanner.Data;
 using beatleader_parser.Timescale;
 using BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty;
 using BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Optional;
@@ -7,7 +8,6 @@ using BLMapCheck.BeatmapScanner.Data.Criteria;
 using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
 using BLMapCheck.Configs;
-using JoshaParity;
 using Parser.Map;
 using Parser.Map.Difficulty.V3.Base;
 using System;
@@ -20,73 +20,59 @@ using Slider = BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Slider;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 {
-    public class CriteriaCheckManager
+    internal class CriteriaCheckManager
     {
-        public static Timescale Timescale;
+        public CheckContext Context { get; }
 
-        public static string Characteristic;
-        public static string Difficulty;
-        public static int DifficultyRank;
+        private BeatmapV3 Map => Context.Map;
+
+        public CriteriaCheckManager(CheckContext context)
+        {
+            Context = context;
+        }
 
         public void CheckAllCriteria()
         {
-            if (CheckResults.Instance.CheckFinished) CheckResults.Reset();
+            Context.Results.InfoCriteriaResult = AutoInfoCheck();
 
-            // Sort difficulty based on their rank index
-            BLMapChecker.map.Difficulties = BLMapChecker.map.Difficulties.OrderBy(x => x.BeatMap._difficultyRank).ToList();
-            CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
-
-            foreach (var diff in BLMapChecker.map.Difficulties)
+            // Check difficulties based on their rank index
+            foreach (var diff in Map.Difficulties.OrderBy(x => x.BeatMap._difficultyRank))
             {
-                Difficulty = diff.Difficulty;
-                DifficultyRank = diff.BeatMap._difficultyRank;
-                Characteristic = diff.Characteristic;
-
-                CheckResults.Instance.DifficultyCriteriaResults.Add(new(Difficulty, Characteristic, AutoDiffCheck(Characteristic, Difficulty, DifficultyRank)));
+                Context.Results.DifficultyCriteriaResults.Add(new(diff.Difficulty, diff.Characteristic, AutoDiffCheck(diff.Characteristic, diff.Difficulty, diff.BeatMap._difficultyRank)));
             }
-
-            CheckResults.Instance.CheckFinished = true;
         }
 
         public void CheckSongInfo()
         {
-            if (CheckResults.Instance.CheckFinished) CheckResults.Reset();
-
-            CheckResults.Instance.InfoCriteriaResult = AutoInfoCheck();
-
-            CheckResults.Instance.CheckFinished = true;
+            Context.Results.InfoCriteriaResult = AutoInfoCheck();
         }
 
         public void CheckSingleDifficulty(string characteristic, string difficulty, int difficultyRank)
         {
-            if (CheckResults.Instance.CheckFinished) CheckResults.Reset();
-
-            CheckResults.Instance.DifficultyCriteriaResults.Add(new(difficulty, characteristic, AutoDiffCheck(characteristic, difficulty, difficultyRank)));
-
-            CheckResults.Instance.CheckFinished = true;
+            Context.Results.DifficultyCriteriaResults.Add(new(difficulty, characteristic, AutoDiffCheck(characteristic, difficulty, difficultyRank)));
         }
 
         public void CheckDifficultyStatistics(string characteristic, string difficulty, int difficultyRank)
         {
-            if (CheckResults.Instance.CheckFinished) CheckResults.Reset();
-
-            CheckResults.Instance.Results.Add(GetDiffStatistics(characteristic, difficulty, difficultyRank));
-
-            CheckResults.Instance.CheckFinished = true;
+            // No statistics for difficulties that can't be rated
+            var statistics = GetDiffStatistics(characteristic, difficulty, difficultyRank);
+            if (statistics != null) Context.Results.AddResult(statistics);
         }
 
         public InfoCrit AutoInfoCheck()
         {
             InfoCrit infoCrit = new()
             {
-                SongName = SongName.Check(BLMapChecker.map.Info._songName),
-                SubName = SubName.Check(BLMapChecker.map.Info._songName, BLMapChecker.map.Info._songAuthorName),
-                SongAuthor = SongAuthor.Check(BLMapChecker.map.Info._songAuthorName),
-                Creator = Creator.Check(BLMapChecker.map.Info._levelAuthorName),
-                Offset = Offset.Check(BLMapChecker.map.Info._songTimeOffset),
-                BPM = BPM.Check(BLMapChecker.map.Info._beatsPerMinute),
-                DifficultyOrdering = DiffOrdering.Check(BLMapChecker.map.Difficulties, BLMapChecker.map.Info._beatsPerMinute),
-                Preview = SongPreview.Check(BLMapChecker.map.Info._previewStartTime, BLMapChecker.map.Info._previewDuration)
+                SongName = SongName.Check(Context, Map.Info._songName),
+                SubName = SubName.Check(Context, Map.Info._songName, Map.Info._songAuthorName, Map.Info._songSubName),
+                SongAuthor = SongAuthor.Check(Context, Map.Info._songAuthorName),
+                Creator = Creator.Check(Context, Map.Info._levelAuthorName),
+                Offset = Offset.Check(Context, Map.Info._songTimeOffset),
+                BPM = BPM.Check(Context, Map.Info._beatsPerMinute, Map.Info._songFilename),
+                DifficultyOrdering = DiffOrdering.Check(Context, Map.Difficulties),
+                Preview = SongPreview.Check(Context, Map.Info._previewStartTime, Map.Info._previewDuration),
+                InfoValues = InfoValues.Check(Context, Map.Info),
+                CoverImage = CoverImage.Check(Context, Map.Info._coverImageFilename)
             };
 
             return infoCrit;
@@ -94,81 +80,105 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
         public DiffCrit AutoDiffCheck(string characteristic, string difficulty, int difficultyRank)
         {
-            Characteristic = characteristic;
-            Difficulty = difficulty;
-            DifficultyRank = difficultyRank;
+            DifficultySet diffSet = SelectDifficulty(characteristic, difficulty, difficultyRank);
+            DifficultyV3 diff = diffSet.Data;
 
-            DifficultySet diffSet = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic);
-            DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
-
-            Timescale = Timescale.Create(BLMapChecker.map.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), BLMapChecker.map.Info._songTimeOffset);
-
-            DiffAnalysis diffAnalysis = new(BLMapChecker.map, diffSet);
-            List<SwingData> swings = diffAnalysis.GetSwingData();
-
-            Ratings BeatmapScannerData;
-
-            _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == difficulty);
-            int diffCount = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic)._difficultyBeatmaps.Count();
-
-            if (diff.Notes.Count >= 20)
+            // Lightshows and other difficulties with too few notes can't be rated
+            if (diff.Notes.Count < 20)
             {
-                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
-                Helper.CreateNoteData(diff.Notes, swings);
+                Context.Results.CreateDiffResult("Not Checked", Severity.Inconclusive, "Difficulty", "Difficulty has less than 20 notes, the criteria were not checked",
+                    new() { new("NoteCount", diff.Notes.Count.ToString()) });
+                return DiffCrit.NotChecked();
             }
-            else
+
+            var difficultySet = Map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic);
+            _Difficultybeatmaps difficultyBeatmap = difficultySet._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == difficulty);
+            int diffCount = difficultySet._difficultyBeatmaps.Count();
+
+            // The parser keeps objects in file order, but most checks expect them to be sorted by beat
+            var notes = diff.Notes.OrderBy(x => x.Beats).ToList();
+            var bombs = diff.Bombs.OrderBy(x => x.Beats).ToList();
+            var chains = diff.Chains.OrderBy(x => x.Beats).ToList();
+            var walls = diff.Walls.OrderBy(x => x.Beats).ToList();
+
+            InfoCrit.CritResult CheckRequirements() => (InfoCrit.CritResult)Math.Max((int)Requirements.Check(Context, difficultyBeatmap._customData?._requirements),
+                (int)ModdedObjects.Check(Context, difficultyBeatmap._beatmapFilename, notes, bombs, chains, diff.Arcs, walls));
+
+            // Noodle Extensions and Mapping Extensions place notes freely, the grid based checks would flag almost every note
+            if (ModdedObjects.IsModdedDifficulty(difficultyBeatmap._customData?._requirements, notes))
             {
-                return new(); // temporary since it also load lightshow diff, etc.
+                Context.Results.CreateDiffResult("Not Checked", Severity.Inconclusive, "Difficulty", "This difficulty uses Noodle Extensions or Mapping Extensions, the gameplay criteria were not checked");
+                var moddedCrit = DiffCrit.NotChecked();
+                moddedCrit.Requirement = CheckRequirements();
+                return moddedCrit;
             }
+
+            // Unsupported values (Mapping Extensions angles for example) can make the analyzer fail,
+            // the other criteria depend on its swings so only the requirements are checked
+            Ratings BeatmapScannerData = Context.GetRating(diffSet);
+            if (BeatmapScannerData == null)
+            {
+                Context.Results.CreateDiffResult("Not Checked", Severity.Inconclusive, "Difficulty", "The analyzer could not rate this difficulty, it may contain unsupported values. The criteria were not checked");
+                var notChecked = DiffCrit.NotChecked();
+                notChecked.Requirement = CheckRequirements();
+                return notChecked;
+            }
+
+            List<SwingInfo> swings = SwingInfo.FromRatings(BeatmapScannerData, bombs);
+            Context.NotesData = Helper.CreateNoteData(swings);
+            // The detected precision is per difficulty and never written to the config, so a manual value is kept
+            Context.SliderPrecision = (Context.Config.AutomaticSliderPrecision ? Helper.DetectSliderPrecision(Context.NotesData) : null) ?? Context.Config.SliderPrecision;
 
             List<BeatmapGridObject> allNoteObjects = new();
-            allNoteObjects.AddRange(diff.Notes);
-            allNoteObjects.AddRange(diff.Bombs);
+            allNoteObjects.AddRange(notes);
+            allNoteObjects.AddRange(bombs);
+            allNoteObjects = allNoteObjects.OrderBy(x => x.Beats).ToList();
 
             List<BeatmapGridObject> allObjects = new();
             allObjects.AddRange(allNoteObjects);
-            allObjects.AddRange(diff.Chains);
-            allObjects.AddRange(diff.Walls);
+            allObjects.AddRange(chains);
+            allObjects.AddRange(walls);
 
             // Criteria Check
             DiffCrit diffCrit = new()
             {
                 // Song Boundary
-                HotStart = HotStart.Check(allNoteObjects, diff.Walls),
-                ColdEnd = ColdEnd.Check(allNoteObjects, diff.Walls, (float)BLMapChecker.map.SongLength),
-                Outside = Outside.Check((float)BLMapChecker.map.SongLength, diff.Notes, diff.Chains, diff.Bombs, diff.Walls),
-                MinSongDuration = SongDuration.Check(diff.Notes),
+                HotStart = HotStart.Check(Context, allNoteObjects, walls),
+                ColdEnd = ColdEnd.Check(Context, allNoteObjects, walls, (float)Map.SongLength),
+                Outside = Outside.Check(Context, (float)Map.SongLength, notes, chains, bombs, walls),
+                MinSongDuration = SongDuration.Check(Context, notes, chains),
                 // Difficulty Label
-                DifficultyLabelSize = DifficultyLabelSize.Check(difficultyBeatmap._customData?._difficultyLabel, diffCount),
-                DifficultyName = DifficultyLabelName.Check(difficultyBeatmap._customData?._difficultyLabel),
-                Slider = Slider.Check(),
+                DifficultyLabelSize = DifficultyLabelSize.Check(Context, difficultyBeatmap._customData?._difficultyLabel, diffCount),
+                DifficultyName = DifficultyLabelName.Check(Context, difficultyBeatmap._customData?._difficultyLabel),
+                Slider = Slider.Check(Context),
                 // Object
-                FusedObject = FusedObject.Check(diff.Notes, diff.Bombs, diff.Walls, diff.Chains),
-                Wall = Obstacle.Check(diff.Notes, diff.Walls, diff.Bombs),
-                Chain = Chains.Check(diff.Chains, diff.Notes),
-                Parity = Parity.Check(swings, diff.Notes),
-                VisionBlock = VisionBlock.Check(allNoteObjects, diff.Chains, BeatmapScannerData.PassRating, BeatmapScannerData.TechRating, difficultyBeatmap._noteJumpStartBeatOffset),
-                ProlongedSwing = ProlongedSwing.Check(diff.Notes, diff.Chains),
-                Loloppe = Loloppe.Check(diff.Notes),
-                SwingPath = SwingPath.Check(allNoteObjects, swings, diff.Notes),
-                Hitbox = Hitbox.Check(diff.Notes, difficultyBeatmap._noteJumpMovementSpeed),
-                HandClap = Handclap.Check(diff.Notes),
+                FusedObject = FusedObject.Check(Context, notes, bombs, walls, chains),
+                Wall = Obstacle.Check(Context, notes, walls, bombs, chains),
+                Chain = Chains.Check(Context, chains, notes, diff.Arcs, bombs),
+                Bomb = Bombs.Check(Context, bombs, diff.Lights, diff.lightColorEventBoxGroups),
+                Parity = Parity.Check(Context, swings),
+                VisionBlock = VisionBlock.Check(Context, allNoteObjects, chains, BeatmapScannerData.PassRating, BeatmapScannerData.TechRating, difficultyBeatmap._noteJumpStartBeatOffset),
+                ProlongedSwing = ProlongedSwing.Check(Context, notes, chains),
+                Loloppe = Loloppe.Check(Context, notes),
+                SwingPath = SwingPath.Check(Context, allNoteObjects, notes),
+                Hitbox = Hitbox.Check(Context, notes, difficultyBeatmap._noteJumpMovementSpeed),
+                HandClap = Handclap.Check(Context, notes),
                 // Other
-                Light = Lights.Check((float)BLMapChecker.map.SongLength, diff.Lights, diff.lightColorEventBoxGroups, diff.Bombs),
-                Requirement = Requirements.Check(difficultyBeatmap._customData?._requirements),
-                NJS = NJS.Check(difficultyBeatmap._noteJumpMovementSpeed, difficultyBeatmap._noteJumpStartBeatOffset, allObjects)
+                Light = Lights.Check(Context, (float)Map.SongLength, diff.Lights, diff.lightColorEventBoxGroups),
+                Requirement = CheckRequirements(),
+                NJS = NJS.Check(Context, difficultyBeatmap._noteJumpMovementSpeed, difficultyBeatmap._noteJumpStartBeatOffset, allObjects, diff.njsEvents)
             };
 
             // Info Check
-            if (Config.Instance.HighlightOffbeat) Offbeat.Check();
-            if (Config.Instance.HighlightInline) Inline.Check(diff.Notes);
-            if (Config.Instance.DisplayFlick) RollingEBPM.Check(swings, diff.Notes);
-            if (Config.Instance.DisplayFlick) Flick.Check(diff.Notes);
-            if (Config.Instance.DisplayAngleOffset) AngleOffset.Check(diff.Notes);
-            if (Config.Instance.DisplayShrado) Shrado.Check();
-            if (Config.Instance.ChainConsistency) ChainConsistency.Check(diff.Chains);
+            if (Context.Config.HighlightOffbeat) Offbeat.Check(Context);
+            if (Context.Config.HighlightInline) Inline.Check(Context, notes);
+            if (Context.Config.DisplayFlick) RollingEBPM.Check(Context, swings, notes);
+            if (Context.Config.DisplayFlick) Flick.Check(Context, notes);
+            if (Context.Config.DisplayAngleOffset) AngleOffset.Check(Context, notes);
+            if (Context.Config.DisplayShrado) Shrado.Check(Context);
+            if (Context.Config.ChainConsistency) ChainConsistency.Check(Context, chains);
 
-            CheckResults.Instance.AddResult(WriteDifficultyStatistics(BeatmapScannerData, diffAnalysis));
+            Context.Results.AddResult(WriteDifficultyStatistics(BeatmapScannerData, swings));
 
             return diffCrit;
         }
@@ -176,49 +186,45 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
         private CheckResult GetDiffStatistics(string characteristic, string difficulty, int difficultyRank)
         {
-            Characteristic = characteristic;
-            Difficulty = difficulty;
-            DifficultyRank = difficultyRank;
+            DifficultySet diffSet = SelectDifficulty(characteristic, difficulty, difficultyRank);
+            DifficultyV3 diff = diffSet.Data;
 
-            DifficultyV3 diff = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic).Data;
+            // Lightshows and other difficulties with too few notes can't be rated
+            if (diff.Notes.Count < 20) return null;
 
-            Timescale = Timescale.Create(BLMapChecker.map.Info._beatsPerMinute, diff.bpmEvents.Where(x => x.Bpm < 10000 && x.Bpm > 0).ToList(), BLMapChecker.map.Info._songTimeOffset);
+            Ratings BeatmapScannerData = Context.GetRating(diffSet);
+            if (BeatmapScannerData == null) return null;
 
-            DiffAnalysis diffAnalysis;
-            List<SwingData> swings;
-
-            DifficultySet diffSet = BLMapChecker.map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic);
-
-            diffAnalysis = new(BLMapChecker.map, diffSet);
-
-            swings = diffAnalysis.GetSwingData();
-
-            Ratings BeatmapScannerData = new();
-
-            if (diff.Notes.Count >= 20)
-            {
-                _Difficultybeatmaps difficultyBeatmap = BLMapChecker.map.Info._difficultyBeatmapSets.FirstOrDefault(x => x._beatmapCharacteristicName == characteristic)._difficultyBeatmaps.FirstOrDefault(x => x._difficulty == difficulty);
-                BeatmapScannerData = BLMapChecker.analyzer.GetRating(diff, characteristic, difficulty, BLMapChecker.map.Info._beatsPerMinute);
-            } else
-            {
-                throw new Exception("Must have at least 20 notes");
-            }
-
-
-            return WriteDifficultyStatistics(BeatmapScannerData, diffAnalysis);
+            return WriteDifficultyStatistics(BeatmapScannerData, SwingInfo.FromRatings(BeatmapScannerData, diff.Bombs));
         }
 
-        private CheckResult WriteDifficultyStatistics(Ratings beatmapScannerData, DiffAnalysis diffAnalysis)
+        // Set the difficulty as the current one in the context, and return it
+        private DifficultySet SelectDifficulty(string characteristic, string difficulty, int difficultyRank)
         {
-            List<SwingData> source = diffAnalysis.swingContainer.LeftHandSwings.ToList();
-            source.AddRange(diffAnalysis.swingContainer.RightHandSwings.ToList());
-            var PeakEBPM = source.Max((SwingData x) => x.swingEBPM);
+            Context.SetDifficulty(characteristic, difficulty, difficultyRank);
+
+            DifficultySet diffSet = Map.Difficulties.FirstOrDefault(x => x.Difficulty == difficulty && x.Characteristic == characteristic)
+                ?? throw new Exception($"Difficulty {characteristic} {difficulty} not found");
+
+            Context.SetBpmEvents(diffSet.Data.bpmEvents);
+            Context.NotesData = new();
+
+            return diffSet;
+        }
+
+        private CheckResult WriteDifficultyStatistics(Ratings beatmapScannerData, List<SwingInfo> swings)
+        {
+            var left = swings.Where(x => !x.RightHand).ToList();
+            var right = swings.Where(x => x.RightHand).ToList();
+            // Swings per second of each hand, over the time that hand is used
+            double SPS(List<SwingInfo> hand) => hand.Count < 2 ? 0 : hand.Count / (hand.Last().EndSeconds - hand.First().StartSeconds);
+            double Handedness(List<SwingInfo> hand) => swings.Count == 0 ? 0 : (double)hand.Count / swings.Count * 100;
             return new CheckResult()
             {
                 Name = "Statistical Data",
-                Difficulty = Difficulty,
-                difficultyRank = DifficultyRank,
-                Characteristic = Characteristic,
+                Difficulty = Context.Results.CurrentDifficulty,
+                difficultyRank = Context.Results.CurrentDifficultyRank,
+                Characteristic = Context.Results.CurrentCharacteristic,
                 Severity = Severity.Data,
                 CheckType = "Statistics",
                 Description = "Statistical data of the difficulty",
@@ -226,11 +232,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 {
                     new("Pass", Math.Round(beatmapScannerData.PassRating, 2).ToString()),
                     new("Tech", Math.Round(beatmapScannerData.TechRating, 2).ToString()),
-                    new("EBPM", Math.Round(diffAnalysis.GetAverageEBPM(), 2).ToString()),
-                    new("PEBPM", Math.Round(PeakEBPM, 2).ToString()),
-                    new("SPS", Math.Round(diffAnalysis.GetSPS(), 2).ToString()),
-                    new("Handness", $"{Math.Round(diffAnalysis.GetHandedness().Y, 2)}/{Math.Round(diffAnalysis.GetHandedness().X, 2)}"),
-                    new("Duration", Math.Round(Timescale.BPM.ToRealTime(0.0625f, false) * 1000, 2).ToString())
+                    new("EBPM", Math.Round(swings.Count == 0 ? 0 : swings.Average(x => x.EBPM), 2).ToString()),
+                    new("PEBPM", Math.Round(swings.Count == 0 ? 0 : swings.Max(x => x.EBPM), 2).ToString()),
+                    new("SPS", Math.Round(SPS(left) + SPS(right), 2).ToString()),
+                    new("Handness", $"{Math.Round(Handedness(left), 2)}/{Math.Round(Handedness(right), 2)}"),
+                    new("Duration", Math.Round(Context.Timescale.BPM.ToRealTime(0.0625f, false) * 1000, 2).ToString())
                 }
             };
         }

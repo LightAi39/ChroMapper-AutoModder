@@ -8,44 +8,31 @@ using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Classes.Helper.Helper;
-using SwingData = JoshaParity.SwingData;
 using SwingType = BLMapCheck.BeatmapScanner.MapCheck.SwingType;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class SwingPath
     {
+        private static readonly double[,] angle = { { 45, 1 }, { 15, 2 } };
+        private static readonly double[,] angle2 = { { 45, 1 }, { 15, 1.5 } };
+
         // Check if a note block the swing path of another note of a different color
-        public static CritResult Check(List<BeatmapGridObject> beatmapGridObjects, List<SwingData> swings, List<Note> notes)
+        public static CritResult Check(CheckContext ctx, List<BeatmapGridObject> beatmapGridObjects, List<Note> notes)
         {
             CritResult criteria = CritResult.Success;
-            Timescale timescale = CriteriaCheckManager.Timescale;
+            Timescale timescale = ctx.Timescale;
 
             if (beatmapGridObjects.Any())
             {
-                List<List<Note>> doubleNotes = new();
-                foreach (var note in notes) // Find the double and group them together
-                {
-                    var n = notes.Where(n => n.Beats == note.Beats && n != note && ((n.Color == 0 && note.Color == 1) || (n.Color == 1 && note.Color == 0))).FirstOrDefault();
-                    if (n != null)
-                    {
-                        if (doubleNotes.Count == 0)
-                        {
-                            doubleNotes.Add(new());
-                        }
-                        else if (!doubleNotes.Last().Exists(x => x.Beats == n.Beats))
-                        {
-                            doubleNotes.Add(new());
-                            doubleNotes[doubleNotes.Count - 1] = new();
-                        }
-                        if (!doubleNotes.Last().Contains(note)) doubleNotes.Last().Add(note);
-                        if (!doubleNotes.Last().Contains(n)) doubleNotes.Last().Add(n);
-                    }
-                }
-
                 // No dot support for now
-                if (Configs.Config.Instance.DisplayBadcut)
+                if (ctx.Config.DisplayBadcut)
                 {
+                    // Find the double and group them together
+                    var doubleNotes = notes.Where(n => n.Color == 0 || n.Color == 1).GroupBy(n => n.Beats)
+                        .Where(g => g.Any(n => n.Color == 0) && g.Any(n => n.Color == 1))
+                        .Select(g => g.ToList()).ToList();
+
                     foreach (var group in doubleNotes)
                     {
                         for (int i = 0; i < group.Count; i++)
@@ -98,7 +85,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                         {
                                             var obj = beatmapGridObjects.Where(c => c.Beats == note.Beats && note.x == c.x && note.y == c.y).FirstOrDefault();
 
-                                            CheckResults.Instance.CreateDiffResult("Swing Path", Severity.Data, "Swing", "Possible swing path issue", new(), new() { obj });
+                                            ctx.Results.CreateDiffResult("Swing Path", Severity.Data, "Swing", "Possible swing path issue", new(), new() { obj });
                                         }
                                     }
                                 }
@@ -115,7 +102,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 for (int i = 0; i < beatmapGridObjects.Count; i++)
                 {
                     var current = beatmapGridObjects[i];
-                    if (current is not Note || (current.Beats / timescale.BPM.GetValue() * 60) < lastTime + 0.01)
+                    if (current is not Note || timescale.BPM.ToRealTime(current.Beats) < lastTime + 0.01)
                     {
                         continue;
                     }
@@ -123,7 +110,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         var curr = (Note)current;
                         var compareTo = beatmapGridObjects[j];
-                        if ((compareTo.Beats / timescale.BPM.GetValue() * 60) > (current.Beats / timescale.BPM.GetValue() * 60) + 0.01)
+                        if (timescale.BPM.ToRealTime(compareTo.Beats) > timescale.BPM.ToRealTime(current.Beats) + 0.01)
                         {
                             break;
                         }
@@ -136,8 +123,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             continue;
                         }
-                        double[,] angle = { { 45, 1 }, { 15, 2 } };
-                        double[,] angle2 = { { 45, 1 }, { 15, 1.5 } };
                         var IsDiagonal = false;
                         var dX = Math.Abs(curr.x - comp.x);
                         var dY = Math.Abs(curr.y - comp.y);
@@ -145,15 +130,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         {
                             IsDiagonal = true;
                         }
-                        var a = swings.Where(x => x.notes.Any(y => y.Beats == curr.Beats && y.Color == curr.Color && y.CutDirection == curr.CutDirection && y.x == curr.x && y.y == curr.y)).FirstOrDefault();
-                        var b = swings.Where(x => x.notes.Any(y => y.Beats == comp.Beats && y.Color == comp.Color && y.CutDirection == comp.CutDirection && y.x == comp.x && y.y == comp.y)).FirstOrDefault();
                         var d = Math.Sqrt(Math.Pow(curr.x - comp.x, 2) + Math.Pow(curr.y - comp.y, 2));
                         if (d > 0.499 && d < 1.001) // Adjacent
                         {
                             if (curr.CutDirection == comp.CutDirection && SwingType.Diagonal.Contains(curr.CutDirection))
                             {
                                 found.Add(curr);
-                                lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
+                                lastTime = timescale.BPM.ToRealTime(curr.Beats);
                                 continue;
                             }
                         }
@@ -173,7 +156,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     if (pos == target)
                                     {
                                         found.Add(curr);
-                                        lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
+                                        lastTime = timescale.BPM.ToRealTime(curr.Beats);
                                         break;
                                     }
                                 }
@@ -195,7 +178,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                     if (pos == target)
                                     {
                                         found.Add(curr);
-                                        lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
+                                        lastTime = timescale.BPM.ToRealTime(curr.Beats);
                                         break;
                                     }
                                 }
@@ -209,20 +192,20 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 (IsDiagonal && Swing.IsIntersect(curr, comp, angle2, 2)))
                         {
                             found.Add(curr);
-                            lastTime = (curr.Beats / timescale.BPM.GetValue() * 60);
+                            lastTime = timescale.BPM.ToRealTime(curr.Beats);
                         }
                     }
                 }
                 foreach (var item in found)
                 {
-                    CheckResults.Instance.CreateDiffResult("Swing Path", Severity.Error, "Swing", "Swing path issue", new(), new() { item });
+                    ctx.Results.CreateDiffResult("Swing Path", Severity.Error, "Swing", "Swing path issue", new(), new() { item });
                     criteria = CritResult.Fail;
                 }
             }
 
             if (criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult("Swing Path", Severity.Passed, "Swing", "No issue with swing path detected");
+                ctx.Results.CreateDiffResult("Swing Path", Severity.Passed, "Swing", "No issue with swing path detected");
             }
 
             return criteria;

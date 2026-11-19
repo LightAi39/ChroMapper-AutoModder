@@ -70,11 +70,15 @@ Always make sure to [save your file](https://github.com/LightAi39/ChroMapper-Aut
 * [Loloppe](https://github.com/Loloppe) - Backend logic/auto-check (BeatmapScanner, Implementing Auto-checking features)
 
 ## Referenced/used projects
-* [JoshaParity](https://github.com/Joshabi/JoshaParity) by [Joshabi](https://github.com/Joshabi) - Directly integrated fancy parity checker. We love joashabot ♡
+* [JoshaParity](https://github.com/Joshabi/JoshaParity) by [Joshabi](https://github.com/Joshabi) - Was the directly integrated fancy parity checker. We love joashabot ♡
 * [MapCheck](https://github.com/KivalEvan/BeatSaber-MapCheck) by [KivalEvan](https://github.com/KivalEvan) - Code heavily referenced when writing logic for auto-check.
 * [ppCurve](https://github.com/LackWiz/ppCurve/) by [LackWiz](https://github.com/LackWiz) - Code used in the original BeatmapScanner plugin which was implemented in this plugin.
 * [ProfanityDetector](https://github.com/stephenhaunts/ProfanityDetector) by [stephenhaunts](https://github.com/stephenhaunts) - Profanity checker used.
 * [Newtonsoft.Json](https://github.com/jamesnk/newtonsoft.json) by [JamesNK](https://github.com/JamesNK) - Used for object (de)serialization for saving/loading.
+* [ArrowVortex](https://github.com/uvcat7/ArrowVortex) by [uvcat7](https://github.com/uvcat7) - Song BPM detection is a port of its tempo detection, which uses [aubio](https://github.com/aubio/aubio) for onset detection.
+
+## License of the BPM detection
+The BPM detection code (`BLMapCheck/Classes/Helper/BpmDetector.cs`) is ported from ArrowVortex and aubio, which are licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html). That file is distributed under the GPLv3, the rest of the project keeps its MIT license.
 
 # Features
 

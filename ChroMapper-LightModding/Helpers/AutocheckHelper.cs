@@ -19,7 +19,12 @@ namespace ChroMapper_LightModding.Helpers
         private int difficultyRank;
         private string difficulty;
         private string lastLoaded = "";
-        private Comment lastFoundBombFusedComment = null;
+        // Best song BPM found by the last song info auto check, shown in the info menu. Null if not detected.
+        public string DetectedBpm { get; private set; }
+        // Last bomb comment of each check in the current run, close bombs of the same check are merged into it
+        private readonly Dictionary<string, (Comment Comment, float LastBeat)> lastBombComments = new();
+        // Bombs closer than this (in beats) to the previous bomb of the same check share a comment
+        private const float BombMergeDistance = 0.25f;
 
         public AutocheckHelper(Plugin plugin, FileHelper fileHelper)
         {
@@ -34,23 +39,21 @@ namespace ChroMapper_LightModding.Helpers
             string characteristic = "", int difficultyRank = 0, string difficulty = "",
             List<string> mod = null, string targetChar = "", string targetDiff = "")
         {
+            criteriaCheck.Config = Plugin.checkerConfig;
+
             // So it doesn't reload the map on every button press
             if(lastLoaded != plugin.currentlyLoadedFolderPath)
             {
                 lastLoaded = plugin.currentlyLoadedFolderPath;
                 criteriaCheck.LoadMap(plugin.currentlyLoadedFolderPath);
+                DetectedBpm = null;
             }
             CheckResults results; //= criteriaCheck.CheckAllCriteria();
 
             if (mod != null)
             {
-                // Find the diff and only overwrite that specific diff
-                if (lastLoaded == plugin.currentlyLoadedFolderPath)
-                {
-                    var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
-                    var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
-                    diff.Data = newDiff.Difficulties.FirstOrDefault().Data;
-                }
+                // Only reload that specific diff
+                criteriaCheck.ReloadDifficulty(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
                 results = criteriaCheck.ImportMod(characteristic, difficulty, difficultyRank, mod);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
@@ -58,13 +61,8 @@ namespace ChroMapper_LightModding.Helpers
             }
             else if (isTimingCheck)
             {
-                // Find the diff and only overwrite that specific diff
-                if (lastLoaded == plugin.currentlyLoadedFolderPath)
-                {
-                    var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
-                    var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
-                    diff.Data = newDiff.Difficulties.FirstOrDefault().Data;
-                }
+                // Only reload that specific diff
+                criteriaCheck.ReloadDifficulty(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
                 results = criteriaCheck.CompareTimings(characteristic, difficulty, difficultyRank, targetChar, targetDiff);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
@@ -73,19 +71,18 @@ namespace ChroMapper_LightModding.Helpers
             else if (isAutoCheckOnInfo)
             {
                 results = criteriaCheck.CheckSongInfo();
+                // The candidates are listed best first
+                var detectedData = results.Results.FirstOrDefault(x => x.Name == "Detected BPM")?.ResultData;
+                DetectedBpm = detectedData?.FirstOrDefault(x => x.Key == "DetectedBPM")?.Value.Split(',')[0].Trim();
+                plugin.currentMapsetReview.DetectedTempo = detectedData?.FirstOrDefault(x => x.Key == "DetectedTempo")?.Value;
                 RemovePastAutoCheckCommentsSongInfo();
                 plugin.currentMapsetReview.Criteria = results.InfoCriteriaResult;
                 CreateCommentsFromNewData(results.Results.Where(x => x.Difficulty == null && x.Characteristic == null).ToList());
             }
             else if (isAutoCheckOnDiff)
             {
-                // Find the diff and only overwrite that specific diff
-                if (lastLoaded == plugin.currentlyLoadedFolderPath)
-                {
-                    var diff = BLMapChecker.map.Difficulties.Where(x => x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault();
-                    var newDiff = BLMapChecker.parser.TryLoadPath(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
-                    diff.Data = newDiff.Difficulties.FirstOrDefault().Data;
-                }
+                // Only reload that specific diff
+                criteriaCheck.ReloadDifficulty(plugin.currentlyLoadedFolderPath, characteristic, difficulty);
                 results = criteriaCheck.CheckSingleDifficulty(characteristic, difficulty, difficultyRank);
                 fileHelper.CheckDifficultyReviewsExist();
                 RemovePastAutoCheckCommentsOnDiff(characteristic, difficultyRank, difficulty);
@@ -95,7 +92,9 @@ namespace ChroMapper_LightModding.Helpers
             else if (isForMapCheckStats)
             {
                 results = criteriaCheck.CheckDifficultyStatistics(characteristic, difficulty, difficultyRank);
-                var resultData = results.Results.Where(x => x.Name == "Statistical Data" && x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault().ResultData;
+                var resultData = results.Results.Where(x => x.Name == "Statistical Data" && x.Characteristic == characteristic && x.Difficulty == difficulty).FirstOrDefault()?.ResultData;
+                // Difficulties with too few notes, or that the analyzer can't rate, have no statistics
+                if (resultData == null) return (0, 0, 0, 0, 0, "", 0);
                 return (
                     Convert.ToDouble(resultData.Where(x => x.Key == "Pass").FirstOrDefault().Value),
                     Convert.ToDouble(resultData.Where(x => x.Key == "Tech").FirstOrDefault().Value),
@@ -194,6 +193,7 @@ namespace ChroMapper_LightModding.Helpers
 
         public void CreateCommentsFromNewData(List<CheckResult> checkResults, bool autogenerated = true)
         {
+            lastBombComments.Clear();
             checkResults = checkResults.Where(x => x.Name != "Statistical Data").ToList();
             // song info comments
             if (checkResults.Where(x => x.Difficulty == null && x.Characteristic == null).ToList().Count != 0)
@@ -336,8 +336,7 @@ namespace ChroMapper_LightModding.Helpers
                 IsAutogenerated = true
             };
             List<Comment> comments = plugin.currentMapsetReview.Comments;
-            comments.Add(comment);
-            comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+            AddSorted(comments, comment);
         }
 
         /// <summary>
@@ -389,31 +388,16 @@ namespace ChroMapper_LightModding.Helpers
             if (!CheckIfCommentAlreadyExists(comment))
             {
                 List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+                AddSorted(comments, comment);
             }
         }
 
         private void CreateDiffCommentNotes(string message, CommentTypesEnum type, CheckResult result, bool autogenerated)
         {
-            List<Note> notes = result.BeatmapObjects.Where(x => x is Note).Cast<Note>().ToList();
+            List<SelectedObject> objects = ToSelectedObjects(result);
 
-            if (notes.Count == 0) return;
+            if (objects.Count == 0) return;
             string id = Guid.NewGuid().ToString();
-
-            List<SelectedObject> objects = new();
-
-            foreach (var note in notes)
-            {
-                objects.Add(new()
-                {
-                    Beat = note.Beats,
-                    PosX = note.x,
-                    PosY = note.y,
-                    Color = note.Color,
-                    ObjectType = ObjectType.Note
-                });
-            }
 
             Comment comment = new()
             {
@@ -428,8 +412,7 @@ namespace ChroMapper_LightModding.Helpers
             if (!CheckIfCommentAlreadyExists(comment))
             {
                 List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+                AddSorted(comments, comment);
             }
         }
 
@@ -444,15 +427,6 @@ namespace ChroMapper_LightModding.Helpers
             string id = Guid.NewGuid().ToString();
 
             Chain chainLink = (Chain)result.BeatmapObjects[0];
-
-            SelectedObject note = new()
-            {
-                Beat = chainLink.Beats,
-                PosX = chainLink.x,
-                PosY = chainLink.y,
-                Color = chainLink.Color,
-                ObjectType = ObjectType.Chain
-            };
 
             if (result.ResultData.Any(x => x.Key == "currentReactionTime"))
             {
@@ -472,7 +446,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 Id = id,
                 StartBeat = chainLink.Beats,
-                Objects = new() { note },
+                Objects = ToSelectedObjects(result),
                 Type = type,
                 Message = message,
                 IsAutogenerated = autogenerated
@@ -481,8 +455,7 @@ namespace ChroMapper_LightModding.Helpers
             if (!CheckIfCommentAlreadyExists(comment))
             {
                 List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+                AddSorted(comments, comment);
             }
         }
 
@@ -497,15 +470,11 @@ namespace ChroMapper_LightModding.Helpers
             string id = Guid.NewGuid().ToString();
 
             Bomb bomb = (Bomb)result.BeatmapObjects[0];
+            // Bomb clusters are merged per check, so the key is the check message before the result data is added
+            string mergeKey = type + "|" + message;
 
-            SelectedObject note = new()
-            {
-                Beat = bomb.Beats,
-                PosX = bomb.x,
-                PosY = bomb.y,
-                Color = 3,
-                ObjectType = ObjectType.Note
-            };
+            // Every object of the result, a fused pair has two
+            List<SelectedObject> bombObjects = ToSelectedObjects(result);
 
             if (result.ResultData.Any(x => x.Key == "currentReactionTime"))
             {
@@ -525,39 +494,29 @@ namespace ChroMapper_LightModding.Helpers
             {
                 Id = id,
                 StartBeat = bomb.Beats,
-                Objects = new() { note },
+                Objects = bombObjects,
                 Type = type,
                 Message = message,
                 IsAutogenerated = autogenerated
             };
 
+            // Close to the previous bomb of the same check: add the bombs to that comment instead of creating a new one.
+            // Only comments created in this run are merged, so other checks and manual comments are never affected.
+            if (lastBombComments.TryGetValue(mergeKey, out var last) && bomb.Beats >= last.Comment.StartBeat && bomb.Beats - last.LastBeat <= BombMergeDistance)
+            {
+                foreach (var obj in bombObjects.Where(o => !last.Comment.Objects.Exists(e => e.Beat == o.Beat && e.PosX == o.PosX && e.PosY == o.PosY)))
+                {
+                    last.Comment.Objects.Add(obj);
+                }
+                lastBombComments[mergeKey] = (last.Comment, Math.Max(last.LastBeat, bombObjects.Max(o => o.Beat)));
+                return;
+            }
+
             if (!CheckIfCommentAlreadyExists(comment))
             {
                 List<Comment> comments = plugin.currentMapsetReview?.DifficultyReviews?.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-                // Preferably this would be Message instead of Type, but message currently include Response, which can have different values.
-                bool found = false;
-                if (lastFoundBombFusedComment == null)
-                {
-                    found = comments.Exists(x => x.Type == comment.Type && x.StartBeat <= comment.StartBeat && x.StartBeat >= comment.StartBeat - 0.25 && x.Objects.Exists(o => o.Color == 3));
-                    lastFoundBombFusedComment = comment;
-                }
-                else
-                {
-                    if (lastFoundBombFusedComment.Type == comment.Type && lastFoundBombFusedComment.StartBeat <= comment.StartBeat && lastFoundBombFusedComment.StartBeat >= comment.StartBeat - 0.25)
-                    {
-                        found = true;
-                        lastFoundBombFusedComment = comment;
-                    }
-                    else
-                    {
-                        lastFoundBombFusedComment = null;
-                    }
-                }
-                
-                // Skip that comment if already found on a previous bomb.
-                if (found) return;
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+                AddSorted(comments, comment);
+                lastBombComments[mergeKey] = (comment, bombObjects.Max(o => o.Beat));
             }
         }
 
@@ -572,15 +531,6 @@ namespace ChroMapper_LightModding.Helpers
             string id = Guid.NewGuid().ToString();
 
             Wall wall = (Wall)result.BeatmapObjects[0];
-
-            SelectedObject note = new()
-            {
-                Beat = wall.Beats,
-                PosX = wall.x,
-                PosY = wall.y,
-                Color = 0,
-                ObjectType = ObjectType.Obstacle
-            };
 
             if (result.ResultData.Any(x => x.Key == "currentReactionTime"))
             {
@@ -600,7 +550,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 Id = id,
                 StartBeat = wall.Beats,
-                Objects = new() { note },
+                Objects = ToSelectedObjects(result),
                 Type = type,
                 Message = message,
                 IsAutogenerated = autogenerated
@@ -609,8 +559,7 @@ namespace ChroMapper_LightModding.Helpers
             if (!CheckIfCommentAlreadyExists(comment))
             {
                 List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
-                comments.Add(comment);
-                comments.Sort((a, b) => a.StartBeat.CompareTo(b.StartBeat));
+                AddSorted(comments, comment);
             }
         }
 
@@ -629,7 +578,46 @@ namespace ChroMapper_LightModding.Helpers
         {
             List<Comment> comments = plugin.currentMapsetReview.DifficultyReviews.Where(x => x.DifficultyCharacteristic == characteristic && x.DifficultyRank == difficultyRank && x.Difficulty == difficulty).FirstOrDefault().Comments;
 
-            return comments.Any(c => comment.Message == c.Message && c.Objects.Any(o => String.Equals(o.ToStringFull().ToLower(), comment.Objects.FirstOrDefault().ToStringFull().ToLower(), StringComparison.InvariantCulture)));
+            string target = comment.Objects.FirstOrDefault()?.ToStringFull();
+            return comments.Any(c => comment.Message == c.Message && c.Objects.Any(o => String.Equals(o.ToStringFull(), target, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        // Every object of a result as comment objects, so mixed results (a note fused with a bomb or a wall) highlight all of them
+        private static List<SelectedObject> ToSelectedObjects(CheckResult result)
+        {
+            List<SelectedObject> objects = new();
+            foreach (var obj in result.BeatmapObjects)
+            {
+                switch (obj)
+                {
+                    case Note note:
+                        objects.Add(new() { Beat = note.Beats, PosX = note.x, PosY = note.y, Color = note.Color, ObjectType = ObjectType.Note });
+                        break;
+                    case Bomb bomb:
+                        objects.Add(new() { Beat = bomb.Beats, PosX = bomb.x, PosY = bomb.y, Color = 3, ObjectType = ObjectType.Note });
+                        break;
+                    case Chain chain:
+                        objects.Add(new() { Beat = chain.Beats, PosX = chain.x, PosY = chain.y, Color = chain.Color, ObjectType = ObjectType.Chain });
+                        break;
+                    case Wall wall:
+                        objects.Add(new() { Beat = wall.Beats, PosX = wall.x, PosY = wall.y, Color = 0, ObjectType = ObjectType.Obstacle });
+                        break;
+                }
+            }
+            return objects;
+        }
+
+        // Keeps the list sorted by beat without sorting it again for every comment, auto check can add thousands of them
+        private static void AddSorted(List<Comment> comments, Comment comment)
+        {
+            int lo = 0, hi = comments.Count;
+            while (lo < hi)
+            {
+                int mid = (lo + hi) / 2;
+                if (comments[mid].StartBeat <= comment.StartBeat) lo = mid + 1;
+                else hi = mid;
+            }
+            comments.Insert(lo, comment);
         }
     }
 }

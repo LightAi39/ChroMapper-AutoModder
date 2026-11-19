@@ -1,42 +1,45 @@
 ﻿using beatleader_parser.Timescale;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
-using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class SongDuration
     {
-        // Detect if the mapped duration is above the minimum required, from first note to last note
-        public static CritResult Check(List<Note> notes)
+        // Detect if the mapped duration is above the minimum required, from first note to last note or chain link
+        public static CritResult Check(CheckContext ctx, List<Note> notes, List<Chain> chains)
         {
             CritResult criteria = CritResult.Success;
-            Timescale timescale = CriteriaCheckManager.Timescale;
+            Timescale timescale = ctx.Timescale;
 
             if(notes.Any())
             {
-                // Calculate duration from first to last note to real time
-                var duration = timescale.BPM.ToRealTime(notes.Last().Beats - notes.First().Beats, true);
+                var first = notes.Min(n => n.Beats);
+                var last = notes.Max(n => n.Beats);
+                if (chains.Any()) last = Math.Max(last, chains.Max(c => c.TailInBeats));
+                // Convert both ends separately, the beat difference alone would ignore BPM changes
+                var duration = timescale.BPM.ToRealTime(last, true) - timescale.BPM.ToRealTime(first, true);
 
-                if (duration < Instance.MinSongDuration)
+                if (duration < ctx.Config.MinSongDuration)
                 {
-                    CheckResults.Instance.CreateDiffResult("Mapped Duration", Severity.Error, "Duration", "The map from first note to last note must be at least " + Instance.MinSongDuration.ToString() + " seconds in length.",
-                        new() { new("MappedDuration", duration.ToString() + "s"), new("MinimumDuration", Instance.MinSongDuration.ToString() + "s") });
+                    ctx.Results.CreateDiffResult("Mapped Duration", Severity.Error, "Duration", "The map from first note to last note must be at least " + ctx.Config.MinSongDuration.ToString() + " seconds in length.",
+                        new() { new("MappedDuration", duration.ToString() + "s"), new("MinimumDuration", ctx.Config.MinSongDuration.ToString() + "s") });
                     criteria = CritResult.Fail;
                 }
                 else
                 {
-                    CheckResults.Instance.CreateDiffResult("Mapped Duration", Severity.Passed, "Duration", "The map from first note to last note must be at least " + Instance.MinSongDuration.ToString() + " seconds in length.",
-                        new() { new("MappedDuration", duration.ToString() + "s"), new("MinimumDuration", Instance.MinSongDuration.ToString() + "s") });
+                    ctx.Results.CreateDiffResult("Mapped Duration", Severity.Passed, "Duration", "The map from first note to last note must be at least " + ctx.Config.MinSongDuration.ToString() + " seconds in length.",
+                        new() { new("MappedDuration", duration.ToString() + "s"), new("MinimumDuration", ctx.Config.MinSongDuration.ToString() + "s") });
                 }  
             }
             else
             {
-                CheckResults.Instance.CreateDiffResult("Mapped Duration", Severity.Error, "Duration", "The map from first note to last note must be at least " + Instance.MinSongDuration.ToString() + " seconds in length.",
-                        new() { new("MappedDuration", "0s"), new("MinimumDuration", Instance.MinSongDuration.ToString() + "s") });
+                ctx.Results.CreateDiffResult("Mapped Duration", Severity.Error, "Duration", "The map from first note to last note must be at least " + ctx.Config.MinSongDuration.ToString() + " seconds in length.",
+                        new() { new("MappedDuration", "0s"), new("MinimumDuration", ctx.Config.MinSongDuration.ToString() + "s") });
                 criteria = CritResult.Fail;
             }
 

@@ -29,13 +29,10 @@
 	<ItemGroup>
 	  <Compile Remove="beatleader-analyzer\**" />
 	  <Compile Remove="beatleader-parser\**" />
-	  <Compile Remove="JoshaParity\**" />
 	  <EmbeddedResource Remove="beatleader-analyzer\**" />
 	  <EmbeddedResource Remove="beatleader-parser\**" />
-	  <EmbeddedResource Remove="JoshaParity\**" />
 	  <None Remove="beatleader-analyzer\**" />
 	  <None Remove="beatleader-parser\**" />
-	  <None Remove="JoshaParity\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -44,18 +41,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\SubModule\beatleader-analyzer\Parser\beatleader-parser\Parser.csproj" />
+	  <ProjectReference Include="..\SubModule\beatleader-analyzer\beatleader-analyzer\Analyzer.csproj" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Reference Include="Analyzer">
-	    <HintPath>..\SubModule\beatleader-analyzer\beatleader-analyzer\obj\Release\netstandard2.1\Analyzer.dll</HintPath>
-	  </Reference>
-	  <Reference Include="JoshaParity">
-	    <HintPath>..\SubModule\JoshaParity\JoshaParity\obj\Release\netstandard2.1\JoshaParity.dll</HintPath>
-	  </Reference>
-	</ItemGroup>
-
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="xcopy /y /d  &quot;$(TargetPath)&quot; &quot;$(ChroMapperDir)\Plugins&quot;" />
-	</Target>
 </Project>

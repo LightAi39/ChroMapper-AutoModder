@@ -5,16 +5,28 @@ using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.BeatmapScanner.Data.Criteria.InfoCrit;
 using static BLMapCheck.Classes.Helper.Helper;
-using static BLMapCheck.Configs.Config;
 
 namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Chains
     {
         // Check if chains is part of the first 16 notes, link spacing, reverse direction, max distance, reach, and angle
-        public static CritResult Check(List<Chain> chains, List<Note> notes)
+        public static CritResult Check(CheckContext ctx, List<Chain> chains, List<Note> notes, List<Arc> arcs, List<Bomb> bombs)
         {
             CritResult criteria = CritResult.Success;
+
+            // Arcs may not be connected to bombs
+            // The result is placed on the bomb, the plugin can't put comments on arcs
+            Bomb OnBomb(int x, int y, float beat) => bombs.FirstOrDefault(b => b.x == x && b.y == y && Math.Abs(b.Beats - beat) < 0.001);
+            foreach (var arc in arcs ?? new())
+            {
+                var bomb = OnBomb(arc.x, arc.y, arc.Beats) ?? OnBomb(arc.tx, arc.ty, arc.TailInBeats);
+                if (bomb != null)
+                {
+                    ctx.Results.CreateDiffResult("Arc Bomb", Severity.Error, "Chain", "Arcs may not be connected to bombs", new(), new() { bomb });
+                    criteria = CritResult.Fail;
+                }
+            }
 
             // Chains may not be a part of the first 16 notes of the map
             if ((notes.Count >= 16 && chains.Where(c => c.Beats <= notes[15].Beats).Any()) || 
@@ -24,12 +36,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (notes.Count >= 16) beat = notes[15].Beats;
                 else beat = chains.LastOrDefault().Beats;
 
-                CheckResults.Instance.CreateDiffResult("Early Chain", Severity.Error, "Chain", "Chains cannot be part of the first 16 notes of the map", new(), new(chains.Where(c => c.Beats <= beat)));
+                ctx.Results.CreateDiffResult("Early Chain", Severity.Error, "Chain", "Chains cannot be part of the first 16 notes of the map", new(), new(chains.Where(c => c.Beats <= beat)));
                 criteria = CritResult.Fail;
             }
 
             foreach (var chain in chains)
             {
+                // Chain heads must be inside the 4x3 grid
+                if (chain.x < 0 || chain.x > 3 || chain.y < 0 || chain.y > 2)
+                {
+                    ctx.Results.CreateDiffResult("Chain Head", Severity.Error, "Chain", "Chain heads must be inside the 4x3 grid",
+                        new List<Classes.Results.KeyValuePair>() { new("ChainHead", "X: " + chain.x.ToString() + " Y: " + chain.y.ToString()) }, new() { chain });
+                    criteria = CritResult.Fail;
+                }
+
+                // Chain squish factor may not be set to a value of zero or lower
+                if (chain.Squish <= 0)
+                {
+                    ctx.Results.CreateDiffResult("Chain Squish", Severity.Error, "Chain", "Chain squish factor may not be set to a value of zero or lower",
+                        new List<Classes.Results.KeyValuePair>() { new("CurrentSquish", chain.Squish.ToString()) }, new() { chain });
+                    criteria = CritResult.Fail;
+                    continue;
+                }
+
                 // Chains must be complete
                 if (chain.SliceCount >= 2 && notes.Exists(n => n.Beats == chain.Beats && n.x == chain.x && n.y == chain.y && n.Color == chain.Color))
                 {
@@ -41,12 +70,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                     // Difference between expected and current distance, multiplied by current squish to know maximum value
                     double max;
-                    if (chain.ty == chain.y) max = Math.Round(Instance.ChainLinkVsAir / value * chain.Squish, 2);
-                    else max = Math.Round(Instance.ChainLinkVsAir * 1.1 / value * chain.Squish, 2);
+                    if (chain.ty == chain.y) max = Math.Round(ctx.Config.ChainLinkVsAir / value * chain.Squish, 2);
+                    else max = Math.Round(ctx.Config.ChainLinkVsAir * 1.1 / value * chain.Squish, 2);
 
                     if (chain.Squish - 0.01 > max)
                     {
-                        CheckResults.Instance.CreateDiffResult("Chain Squish", Severity.Error, "Chain", "Chains must be at least 12.5% links versus air/empty-space",
+                        ctx.Results.CreateDiffResult("Chain Squish", Severity.Error, "Chain", "Chains must be at least 12.5% links versus air/empty-space",
                             new List<Classes.Results.KeyValuePair>() { new("CurrentSquish", chain.Squish.ToString()), new("MaxSquish", max.ToString()) }, new() { chain });
                         criteria = CritResult.Fail;
                     }
@@ -56,7 +85,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var newY = chain.y + (chain.ty - chain.y) * chain.Squish;
                     if (newX > 4 || newX < -1 || newY > 2.33 || newY < -0.33)
                     {
-                        CheckResults.Instance.CreateDiffResult("Chain Lead", Severity.Error, "Chain", "Chains may not lead outside the 4x3 grid by more than 1 lane width",
+                        ctx.Results.CreateDiffResult("Chain Lead", Severity.Error, "Chain", "Chains may not lead outside the 4x3 grid by more than 1 lane width",
                             new List<Classes.Results.KeyValuePair>() { new("ChainLead", "X: " + newX.ToString() + " Y: " + newY.ToString()) }, new() { chain });
                         criteria = CritResult.Fail;
                     }
@@ -64,7 +93,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     // Chains must not be in reverse direction, the head must always precede the links in time
                     if (chain.TailInBeats < chain.Beats)
                     {
-                        CheckResults.Instance.CreateDiffResult("Reversed Chain", Severity.Error, "Chain", "Chain cannot have a reverse direction",
+                        ctx.Results.CreateDiffResult("Reversed Chain", Severity.Error, "Chain", "Chain cannot have a reverse direction",
                             new List<Classes.Results.KeyValuePair>() { new("ChainReverse", "Current duration: " + (chain.Beats - chain.TailInBeats).ToString()) }, new() { chain });
                         criteria = CritResult.Fail;
                     }
@@ -75,7 +104,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         if (note.Beats - chain.TailInBeats < chain.TailInBeats - chain.Beats)
                         {
-                            CheckResults.Instance.CreateDiffResult("Chain Flick", Severity.Error, "Chain", "The amount of beats between the last link of the preceding chain and the next note of the same hand must be equal or higher than the preceding chain’s duration",
+                            ctx.Results.CreateDiffResult("Chain Flick", Severity.Error, "Chain", "The amount of beats between the last link of the preceding chain and the next note of the same hand must be equal or higher than the preceding chain’s duration",
                             new List<Classes.Results.KeyValuePair>() { new("ChainFlick", "Chain duration: " + (chain.TailInBeats - chain.Beats).ToString() + " Duration between:" + (note.Beats - chain.TailInBeats).ToString()) }, new() { chain });
                             criteria = CritResult.Fail;
                         }
@@ -85,7 +114,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     // TODO: Need a new algo, this is horrible
                     if (chain.CutDirection >= DirectionToDegree.Length)
                     {
-                        CheckResults.Instance.CreateDiffResult("Chain Rotation", Severity.Error, "Chain", "Chains must have a proper cut direction",
+                        ctx.Results.CreateDiffResult("Chain Rotation", Severity.Error, "Chain", "Chains must have a proper cut direction",
                             new List<Classes.Results.KeyValuePair>() { new("ChainDirection", "Error") }, new() { chain });
                         criteria = CritResult.Fail;
                         continue;
@@ -106,16 +135,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         temp,
                         temp2
                     };
-                    if (!IsSameDirection(ReverseCutDirection(FindAngleViaPosition(temp3, 0, 1)), temp.Direction, Instance.MaxChainRotation) && !IsSameDirection(FindAngleViaPosition(temp3, 0, 1), temp.Direction, Instance.MaxChainRotation))
+                    if (!IsSameDirection(ReverseCutDirection(FindAngleViaPosition(temp3, 0, 1)), temp.Direction, ctx.Config.MaxChainRotation) && !IsSameDirection(FindAngleViaPosition(temp3, 0, 1), temp.Direction, ctx.Config.MaxChainRotation))
                     {
-                        CheckResults.Instance.CreateDiffResult("Chain Rotation", Severity.Error, "Chain", "Chains cannot change in direction by more than 45 degrees from the starting position and angle of the head note",
+                        ctx.Results.CreateDiffResult("Chain Rotation", Severity.Error, "Chain", "Chains cannot change in direction by more than 45 degrees from the starting position and angle of the head note",
                             new List<Classes.Results.KeyValuePair>() { new("ChainExceedsRotation", "True") }, new() { chain });
                         criteria = CritResult.Fail;
                     }
                 }
                 else
                 {
-                    CheckResults.Instance.CreateDiffResult("Chain Slice", Severity.Error, "Chain", "Chains must have a head note and at least one visible link (sc >= 2)",
+                    ctx.Results.CreateDiffResult("Chain Slice", Severity.Error, "Chain", "Chains must have a head note and at least one visible link (sc >= 2)",
                             new List<Classes.Results.KeyValuePair>() { new("CurrentSliceCount:", chain.SliceCount.ToString()) }, new() { chain });
                     criteria = CritResult.Fail;
                 }
@@ -123,7 +152,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if(criteria == CritResult.Success)
             {
-                CheckResults.Instance.CreateDiffResult("Chain", Severity.Passed, "Chain", "Chains are all proper");
+                ctx.Results.CreateDiffResult("Chain", Severity.Passed, "Chain", "Chains are all proper");
             }
 
             return criteria;

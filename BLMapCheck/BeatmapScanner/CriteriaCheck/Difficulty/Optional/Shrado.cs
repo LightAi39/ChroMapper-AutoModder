@@ -7,29 +7,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty.Optional
 {
     internal class Shrado
     {
-        public static void Check()
+        public static void Check(CheckContext ctx)
         {
-            var red = NotesData.Where(n => n.Note.Color == 0 && (n.Head || !n.Pattern)).ToList();
-            var blue = NotesData.Where(n => n.Note.Color == 1 && (n.Head || !n.Pattern)).ToList();
+            var red = ctx.NotesData.Where(n => n.Note.Color == 0 && (n.Head || !n.Pattern)).ToList();
+            var blue = ctx.NotesData.Where(n => n.Note.Color == 1 && (n.Head || !n.Pattern)).ToList();
 
             for (int i = 0; i < red.Count - 1; i++)
             {
-                if (red[i + 1].Note.Beats - red[i].Note.Beats <= Configs.Config.Instance.ShradoMaxBeat)
+                if (red[i + 1].Note.Beats - red[i].Note.Beats <= ctx.Config.ShradoMaxBeat)
                 {
                     if (DetectShrado(red[i].Note, red[i + 1].Note))
                     {
-                        CheckResults.Instance.CreateDiffResult("Shrado Angle", Severity.Data, "Shrado", "Shrado Angle", new(), new() { red[i + 1].Note });
+                        ctx.Results.CreateDiffResult("Shrado Angle", Severity.Data, "Shrado", "Shrado Angle", new(), new() { red[i + 1].Note });
                     }
                 }
             }
 
             for (int i = 0; i < blue.Count - 1; i++)
             {
-                if (blue[i + 1].Note.Beats - blue[i].Note.Beats <= Configs.Config.Instance.ShradoMaxBeat)
+                if (blue[i + 1].Note.Beats - blue[i].Note.Beats <= ctx.Config.ShradoMaxBeat)
                 {
                     if (DetectShrado(blue[i].Note, blue[i + 1].Note))
                     {
-                        CheckResults.Instance.CreateDiffResult("Shrado Angle", Severity.Data, "Shrado", "Shrado Angle", new(), new() { blue[i + 1].Note });
+                        ctx.Results.CreateDiffResult("Shrado Angle", Severity.Data, "Shrado", "Shrado Angle", new(), new() { blue[i + 1].Note });
                     }
                 }
             }

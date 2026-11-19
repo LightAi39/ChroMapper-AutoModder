@@ -26,6 +26,8 @@ namespace ChroMapper_LightModding
 
         static public string fileVersion = "0.1.2";
         static public int configVersion = 1;
+        // Settings used by the BLMapCheck auto-checks, edited through the settings menu
+        static public Config checkerConfig = new();
 
         private BeatSaberSongContainer _beatSaberSongContainer = null!;
         private NoteGridContainer _noteGridContainer = null!;
@@ -101,6 +103,9 @@ namespace ChroMapper_LightModding
         [Init]
         private void Init()
         {
+            Console.SetOut(new UnityConsoleWriter());
+            OnnxRuntimeLoader.Load();
+
             exporter = new();
             fileHelper = new(this);
             autocheckHelper = new(this, fileHelper);
@@ -642,18 +647,18 @@ namespace ChroMapper_LightModding
             var path = AppDomain.CurrentDomain.BaseDirectory + "/Plugins/AutoModderConf.json";
             if (File.Exists(path) && !overwrite)
             {
-                Config.Instance = JsonConvert.DeserializeObject<Config>(File.ReadAllText(@path));
-                if (Config.Instance.Version != configVersion) // New version, overwrite default value
+                checkerConfig = JsonConvert.DeserializeObject<Config>(File.ReadAllText(@path)) ?? new();
+                if (checkerConfig.Version != configVersion) // New version, overwrite default value
                 {
-                    Config.Instance.Reset();
+                    checkerConfig = new();
                 }
-                Config.Instance.Version = configVersion;
-                File.WriteAllText(@path, JsonConvert.SerializeObject(Config.Instance, Formatting.Indented));
+                checkerConfig.Version = configVersion;
+                File.WriteAllText(@path, JsonConvert.SerializeObject(checkerConfig, Formatting.Indented));
             }
             else
             {
-                Config.Instance.Version = configVersion;
-                File.WriteAllText(@path, JsonConvert.SerializeObject(Config.Instance, Formatting.Indented));
+                checkerConfig.Version = configVersion;
+                File.WriteAllText(@path, JsonConvert.SerializeObject(checkerConfig, Formatting.Indented));
             }
         }
 

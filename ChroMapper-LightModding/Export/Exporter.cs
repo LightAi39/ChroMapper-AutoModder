@@ -13,6 +13,11 @@ namespace ChroMapper_LightModding.Export
 
             text += $"## {review.SongName} {review.SubName} by {review.SongAuthor} - {review.ReviewType}\n \n";
 
+            if (!string.IsNullOrEmpty(review.DetectedTempo))
+            {
+                text += $"**Detected tempo:** {review.DetectedTempo}\n \n";
+            }
+
             text += $"**Song Info Comments:**\n\n";
 
             foreach (var comment in review.Comments)

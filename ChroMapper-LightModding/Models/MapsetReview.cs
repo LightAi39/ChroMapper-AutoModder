@@ -30,6 +30,9 @@ namespace ChroMapper_LightModding.Models
 
         public InfoCrit Criteria { get; set; } = new InfoCrit();
 
+        // Song BPM and offset detected by the last song info auto check, only shown in Export Full
+        public string DetectedTempo { get; set; }
+
         public List<DifficultyReview> DifficultyReviews { get; set; }
 
         public List<Comment> Comments { get; set; } = new List<Comment>();

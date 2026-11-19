@@ -154,7 +154,7 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
             return speed;
         }
 
-        public static int[] NoteDirectionAngle = { 90, 270, 180, 0, 115, 45, 225, 335, 0 };
+        public static readonly int[] NoteDirectionAngle = { 90, 270, 180, 0, 135, 45, 225, 315, 0 };
 
         public static bool IsIntersect(Note currNote, Note compareTo, double[,] angleDistances, int index, double a1 = -1, double a2 = -1)
         {
@@ -236,30 +236,30 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
 
     internal static class SwingType
     {
-        public static List<int> Up = new() { 0, 4, 5 };
-        public static List<int> Down = new() { 1, 6, 7 };
-        public static List<int> Left = new() { 2, 4, 6 };
-        public static List<int> Right = new() { 3, 5, 7 };
-        public static List<int> Up_Left = new() { 0, 2, 4 };
-        public static List<int> Up_Right = new() { 0, 3, 5 };
-        public static List<int> Down_Left = new() { 1, 2, 6 };
-        public static List<int> Down_Right = new() { 1, 3, 7 };
-        public static List<int> Vertical = new() { 0, 1, 4, 5, 6, 7 };
-        public static List<int> Horizontal = new() { 2, 3, 4, 5, 6, 7 };
-        public static List<int> Diagonal = new() { 4, 5, 6, 7 };
+        public static readonly List<int> Up = new() { 0, 4, 5 };
+        public static readonly List<int> Down = new() { 1, 6, 7 };
+        public static readonly List<int> Left = new() { 2, 4, 6 };
+        public static readonly List<int> Right = new() { 3, 5, 7 };
+        public static readonly List<int> Up_Left = new() { 0, 2, 4 };
+        public static readonly List<int> Up_Right = new() { 0, 3, 5 };
+        public static readonly List<int> Down_Left = new() { 1, 2, 6 };
+        public static readonly List<int> Down_Right = new() { 1, 3, 7 };
+        public static readonly List<int> Vertical = new() { 0, 1, 4, 5, 6, 7 };
+        public static readonly List<int> Horizontal = new() { 2, 3, 4, 5, 6, 7 };
+        public static readonly List<int> Diagonal = new() { 4, 5, 6, 7 };
     }
 
     internal static class NoteDirectionSpace
     {
-        public static int[] UP = { 0, 1 };
-        public static int[] DOWN = { 0, -1 };
-        public static int[] LEFT = { -1, 0 };
-        public static int[] RIGHT =  { 1, 0 };
-        public static int[] UP_LEFT =  { -1, 1};
-        public static int[] UP_RIGHT =  { 1, 1 };
-        public static int[] DOWN_LEFT = { -1, -1 };
-        public static int[] DOWN_RIGHT =  { 1, - 1 };
-        public static int[] ANY = { 0, 0 };
+        public static readonly int[] UP = { 0, 1 };
+        public static readonly int[] DOWN = { 0, -1 };
+        public static readonly int[] LEFT = { -1, 0 };
+        public static readonly int[] RIGHT =  { 1, 0 };
+        public static readonly int[] UP_LEFT =  { -1, 1};
+        public static readonly int[] UP_RIGHT =  { 1, 1 };
+        public static readonly int[] DOWN_LEFT = { -1, -1 };
+        public static readonly int[] DOWN_RIGHT =  { 1, - 1 };
+        public static readonly int[] ANY = { 0, 0 };
 
         public static int[] Get(int cutDir)
         {
@@ -280,15 +280,15 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
 
     internal static class Reverse
     {
-        public static int UP = 1;
-        public static int DOWN = 0;
-        public static int LEFT = 3;
-        public static int RIGHT = 2;
-        public static int UP_LEFT = 7;
-        public static int UP_RIGHT = 6;
-        public static int DOWN_LEFT = 5;
-        public static int DOWN_RIGHT = 4;
-        public static int ANY = 0;
+        public const int UP = 1;
+        public const int DOWN = 0;
+        public const int LEFT = 3;
+        public const int RIGHT = 2;
+        public const int UP_LEFT = 7;
+        public const int UP_RIGHT = 6;
+        public const int DOWN_LEFT = 5;
+        public const int DOWN_RIGHT = 4;
+        public const int ANY = 0;
 
         public static int Get(int cutDir)
         {

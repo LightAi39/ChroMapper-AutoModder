@@ -88,15 +88,15 @@ namespace BLMapCheck.BeatmapScanner.MapCheck
 
     internal static class NoteDirection
     {
-        public static int UP { get; set; } = 0;
-        public static int DOWN { get; set; } = 1;
-        public static int LEFT { get; set; } = 2;
-        public static int RIGHT { get; set; } = 3;
-        public static int UP_LEFT { get; set; } = 4;
-        public static int UP_RIGHT { get; set; } = 5;
-        public static int DOWN_LEFT { get; set; } = 6;
-        public static int DOWN_RIGHT { get; set; } = 7;
-        public static int ANY { get; set; } = 8;
+        public static int UP { get; } = 0;
+        public static int DOWN { get; } = 1;
+        public static int LEFT { get; } = 2;
+        public static int RIGHT { get; } = 3;
+        public static int UP_LEFT { get; } = 4;
+        public static int UP_RIGHT { get; } = 5;
+        public static int DOWN_LEFT { get; } = 6;
+        public static int DOWN_RIGHT { get; } = 7;
+        public static int ANY { get; } = 8;
 
         public static (int x, int y) Move(Note note, int amount = 1)
         {
