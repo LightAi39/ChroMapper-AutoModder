@@ -228,7 +228,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // the swing path of one hand cannot overlap the bad cut hitbox of the other hand's notes by more than 20%.
         // The swing path is every path the saber can take through the good cut hitboxes of the swing: between two points of the swing,
         // the area between the face it leaves the first good cut box by and the face it enters the next one by. That's the pre-swing of
-        // the next point, the other hand's notes block it whatever their timing. After the last point is the post-swing, which isn't checked.
+        // the next point: the other hand's notes block it unless they were already hit when the saber passes them, later notes always count.
+        // After the last point is the post-swing, which isn't checked.
         // Returns true if an issue was found
         private static bool CheckMultiNoteSwingPath(CheckContext ctx, List<Note> notes, List<SwingInfo> swings, List<Chain> chains)
         {
@@ -259,11 +260,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     var travel = (X: b.X - a.X, Y: b.Y - a.Y);
                     var corridor = ConvexHull(Face(Box(a, PointAngle(ordered[i - 1]), GoodAlong, GoodAcross), a, travel)
                         .Concat(Face(Box(b, PointAngle(ordered[i]), GoodAlong, GoodAcross), b, (-travel.X, -travel.Y))).ToList());
+                    double ta = Seconds(ordered[i - 1].Beats), tb = Seconds(ordered[i].Beats), length = travel.X * travel.X + travel.Y * travel.Y;
                     foreach (var other in others)
                     {
-                        var bad = Box(ToMeters(other.x, other.y), BoxAngle(other), BadHalf, BadHalf);
+                        var center = ToMeters(other.x, other.y);
+                        var bad = Box(center, BoxAngle(other), BadHalf, BadHalf);
                         var overlap = Area(Clip(bad, corridor)) / (4 * BadHalf * BadHalf);
                         if (overlap <= worst.Overlap) continue;
+                        // Already hit when the saber passes it
+                        var s = Math.Max(0, Math.Min(1, ((center.X - a.X) * travel.X + (center.Y - a.Y) * travel.Y) / length));
+                        if (Seconds(other.Beats) < ta + s * (tb - ta) - 0.0001) continue;
                         worst = (overlap, other);
                     }
                 }

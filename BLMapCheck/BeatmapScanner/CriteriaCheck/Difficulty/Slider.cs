@@ -212,6 +212,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             return (Math.Abs(worst.Deviation), bothSides, worst.Object);
         }
 
+        // Whether the Analyzer grouped notes too far apart to be a slider into one swing
+        internal static bool HasSeparateSwings(List<Note> swingNotes) => SplitSliders(swingNotes).Count() > 1;
+
         // Notes further apart than the slowest allowed slider precision ((spacing + 1) * 1/16 beat) are separate swings for the swing path,
         // the Analyzer sometimes groups them
         private static IEnumerable<List<Note>> SplitSliders(List<Note> swingNotes)
