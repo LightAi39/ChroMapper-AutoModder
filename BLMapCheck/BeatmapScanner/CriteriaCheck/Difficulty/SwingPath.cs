@@ -1,5 +1,6 @@
 ﻿using beatleader_parser.Timescale;
 using BLMapCheck.BeatmapScanner.MapCheck;
+using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Grid;
@@ -18,82 +19,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         private static readonly double[,] angle2 = { { 45, 1 }, { 15, 1.5 } };
 
         // Check if a note block the swing path of another note of a different color
-        public static CritResult Check(CheckContext ctx, List<BeatmapGridObject> beatmapGridObjects, List<Note> notes)
+        public static CritResult Check(CheckContext ctx, List<BeatmapGridObject> beatmapGridObjects, List<Note> notes, List<Chain> chains, List<SwingInfo> swings)
         {
             CritResult criteria = CritResult.Success;
             Timescale timescale = ctx.Timescale;
 
             if (beatmapGridObjects.Any())
             {
-                // No dot support for now
-                if (ctx.Config.DisplayBadcut)
-                {
-                    // Find the double and group them together
-                    var doubleNotes = notes.Where(n => n.Color == 0 || n.Color == 1).GroupBy(n => n.Beats)
-                        .Where(g => g.Any(n => n.Color == 0) && g.Any(n => n.Color == 1))
-                        .Select(g => g.ToList()).ToList();
-
-                    foreach (var group in doubleNotes)
-                    {
-                        for (int i = 0; i < group.Count; i++)
-                        {
-                            var note = group[i];
-                            for (int j = 0; j < group.Count; j++)
-                            {
-                                if (i == j) continue;
-                                var note2 = group[j];
-                                if (note.Beats != note2.Beats) break; // Not a double anymore
-                                if (note.Color == note2.Color) continue; // Same color
-                                // Fetch previous note, simulate swing
-                                var previous = notes.Where(c => c.Beats < note2.Beats && c.Color == note2.Color).LastOrDefault();
-                                if (previous != null)
-                                {
-                                    // This is calculating the angle between the previous note + extra swing and the next note
-                                    if (note2.CutDirection != 8 && previous.CutDirection != 8)
-                                    {
-                                        var angleOfAttack = DirectionToDegree[note2.CutDirection];
-                                        var prevDirection = ReverseCutDirection(DirectionToDegree[previous.CutDirection]);
-                                        var di = Math.Abs(prevDirection - angleOfAttack);
-                                        di = Math.Min(di, 360 - di) / 4;
-                                        if (angleOfAttack < prevDirection)
-                                        {
-                                            if (prevDirection - angleOfAttack < 180)
-                                            {
-                                                angleOfAttack += di;
-                                            }
-                                            else
-                                            {
-                                                angleOfAttack -= di;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (angleOfAttack - prevDirection < 180)
-                                            {
-                                                angleOfAttack -= di;
-                                            }
-                                            else
-                                            {
-                                                angleOfAttack += di;
-                                            }
-                                        }
-                                        // Simulate the position of the line based on the new angle found
-                                        var simulatedLineOfAttack = SimSwingPos(note2.x, note2.y, ReverseCutDirection(angleOfAttack), 2);
-                                        // Check if the other note is close to the line
-                                        var InPath = NearestPointOnFiniteLine(new(note2.x, note2.y), new((float)simulatedLineOfAttack.x, (float)simulatedLineOfAttack.y), new(note.x, note.y));
-                                        if (InPath)
-                                        {
-                                            var obj = beatmapGridObjects.Where(c => c.Beats == note.Beats && note.x == c.x && note.y == c.y).FirstOrDefault();
-
-                                            ctx.Results.CreateDiffResult("Swing Path", Severity.Data, "Swing", "Possible swing path issue", new(), new() { obj });
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
                 // List to store found notes that are possible swing path issue
                 List<Note> found = new();
                 var lastTime = 0d;
@@ -200,6 +132,31 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     ctx.Results.CreateDiffResult("Swing Path", Severity.Error, "Swing", "Swing path issue", new(), new() { item });
                     criteria = CritResult.Fail;
+                }
+
+                // The pre-swing of a note may not be blocked by a note, chain head or link of the opposite color.
+                // The pre-swing is the cell behind the note, only objects at about the same time block it
+                var swingDirection = SwingInfo.DirectionByNote(swings);
+                // Only the notes starting a swing have a pre-swing, the others are reached from the previous note of the swing
+                var swingStarts = new HashSet<Note>(swings.SelectMany(s => s.Notes.Where(n => n.Beats - s.Notes[0].Beats < 0.001)));
+                var links = chains.SelectMany(c => FusedObject.GetLinks(c).Select(l => (Chain: c, l.X, l.Y, l.Beats))).ToList();
+                foreach (var note in notes)
+                {
+                    if ((note.Color != 0 && note.Color != 1) || found.Contains(note) || !swingStarts.Contains(note)) continue;
+                    var degree = CutDegree(note, swingDirection);
+                    if (degree == null) continue;
+                    var (dx, dy) = GridStep(degree.Value);
+                    var path = new HashSet<(int, int)> { (note.x - dx, note.y - dy) };
+                    var window = ctx.SecondsToBeats(0.01, note.Beats);
+
+                    BeatmapGridObject blocker = InRange(notes, note.Beats - window, note.Beats + window)
+                        .FirstOrDefault(n => n.Color == 1 - note.Color && path.Contains((n.x, n.y)));
+                    blocker ??= links.FirstOrDefault(l => l.Chain.Color == 1 - note.Color && Math.Abs(l.Beats - note.Beats) <= window && path.Contains((l.X, l.Y))).Chain;
+                    if (blocker != null)
+                    {
+                        ctx.Results.CreateDiffResult("Swing Path", Severity.Error, "Swing", "The pre-swing of a note may not be blocked by a note or chain of the opposite color", new(), new() { note, blocker });
+                        criteria = CritResult.Fail;
+                    }
                 }
             }
 

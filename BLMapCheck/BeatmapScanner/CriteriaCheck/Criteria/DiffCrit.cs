@@ -14,7 +14,6 @@ namespace BLMapCheck.BeatmapScanner.Data.Criteria
         public CritResult Parity { get; set; } = CritResult.Fail;
         public CritResult Chain { get; set; } = CritResult.Fail;
         public CritResult FusedObject { get; set; } = CritResult.Fail;
-        public CritResult Loloppe { get; set; } = CritResult.Fail;
         public CritResult HandClap { get; set; } = CritResult.Fail;
         public CritResult SwingPath { get; set; } = CritResult.Fail;
         public CritResult Hitbox { get; set; } = CritResult.Fail;

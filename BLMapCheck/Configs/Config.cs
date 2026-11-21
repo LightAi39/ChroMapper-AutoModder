@@ -14,6 +14,7 @@
         public double LightBombReactionTime { get; set; } = 0.25;
         public double LightBombMinimumBrightness { get; set; } = 0.5;
         public double LightBombOffGrace { get; set; } = 0.25;
+        public double BombSwingPathBeats { get; set; } = 0.125;
         public double MinimumWallDuration { get; set; } = 0.0138;
         public double ShortWallTrailDuration { get; set; } = 0.25;
         public double ShortWallAnyTrailDuration { get; set; } = 0.1;
@@ -32,7 +33,6 @@
         public double VBMinimum { get; set; } = 0.025;
         public bool UseMapRT { get; set; } = false;
         public double ParityWarningAngle { get; set; } = 180;
-        public bool DisplayBadcut { get; set; } = false;
         public bool HighlightOffbeat { get; set; } = false;
         public bool HighlightInline { get; set; } = false;
         public double InlineBeatPrecision { get; set; } = 3;

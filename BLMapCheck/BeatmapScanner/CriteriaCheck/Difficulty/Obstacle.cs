@@ -11,6 +11,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Obstacle
     {
+        // Seconds between walls under which the player has no time to stand up, a crouch wall then forces a crouch
+        private const double ForcedCrouchGap = 0.05;
+
         // Calculate dodge wall per seconds, objects hidden behind walls, walls that force players outside of boundary, walls that are too short in middle lane and negative walls.
         public static CritResult Check(CheckContext ctx, List<Note> notes, List<Wall> walls, List<Bomb> bombs, List<Chain> chains)
         {
@@ -212,12 +215,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
 
             // Walls may not give the player less than 250ms (235ms in exceptional cases) to avoid their boundaries,
-            // from the end of a dodge wall to the start of the next dodge wall on the other side
+            // from the end of a dodge wall to the start of the next dodge wall on the other side.
+            // A crouch wall starting before the previous walls end, or within 50ms of it, forces the player to crouch instead of moving to a side
             double[] sideEnd = { double.MinValue, double.MinValue };
+            double previousEnd = double.MinValue;
             foreach (var w in walls)
             {
+                bool forcedCrouch = IsCrouch(w) && ctx.Timescale.BPM.ToRealTime(w.Beats) - previousEnd <= ForcedCrouchGap;
+                previousEnd = System.Math.Max(previousEnd, ctx.Timescale.BPM.ToRealTime(w.Beats + w.DurationInBeats));
                 int side = DodgeSide(w);
-                if (side < 0) continue;
+                if (side < 0 || forcedCrouch) continue;
                 var start = ctx.Timescale.BPM.ToRealTime(w.Beats);
                 var gap = start - sideEnd[1 - side];
                 if (gap >= 0 && gap < ctx.Config.WallMinimumAvoidTime)
@@ -317,22 +324,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         private static bool IsStandalone(Dictionary<Note, NoteData> data, Note note)
         {
             return !data.TryGetValue(note, out var d) || d.Head || !d.Pattern;
-        }
-
-        // Objects of a list sorted by beat with from <= beat <= to
-        private static IEnumerable<T> InRange<T>(List<T> objects, double from, double to) where T : BeatmapGridObject
-        {
-            int lo = 0, hi = objects.Count;
-            while (lo < hi)
-            {
-                int mid = (lo + hi) / 2;
-                if (objects[mid].Beats < from) lo = mid + 1;
-                else hi = mid;
-            }
-            for (int i = lo; i < objects.Count && objects[i].Beats <= to; i++)
-            {
-                yield return objects[i];
-            }
         }
     }
 }

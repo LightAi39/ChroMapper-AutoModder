@@ -822,65 +822,52 @@ namespace ChroMapper_LightModding.UI
             }, 50, 20, 10);
 
             posY = startPosY - 26 * 2;
-            name = "Loloppe";
-            UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
-            CreateCriteriaStatusElement(criteria.Loloppe, name, new Vector2(-90 + offsetX, posY));
-            UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
-            {
-                criteria.Loloppe = IncrementSeverity(criteria.Loloppe);
-                posY = startPosY - 26 * 2;
-                offsetX = 110;
-                name = "Loloppe";
-                CreateCriteriaStatusElement(criteria.Loloppe, name, new Vector2(-90 + offsetX, posY));
-            }, 50, 20, 10);
-
-            posY = startPosY - 26 * 3;
             name = "Hand Clap";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.HandClap, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
             {
                 criteria.HandClap = IncrementSeverity(criteria.HandClap);
-                posY = startPosY - 26 * 3;
+                posY = startPosY - 26 * 2;
                 offsetX = 110;
                 name = "Hand Clap";
                 CreateCriteriaStatusElement(criteria.HandClap, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
-            posY = startPosY - 26 * 4;
+            posY = startPosY - 26 * 3;
             name = "Swing Path Issue";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.SwingPath, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
             {
                 criteria.SwingPath = IncrementSeverity(criteria.SwingPath);
-                posY = startPosY - 26 * 4;
+                posY = startPosY - 26 * 3;
                 offsetX = 110;
                 name = "Swing Path Issue";
                 CreateCriteriaStatusElement(criteria.SwingPath, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
-            posY = startPosY - 26 * 5;
+            posY = startPosY - 26 * 4;
             name = "Hitbox Issues";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.Hitbox, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
             {
                 criteria.Hitbox = IncrementSeverity(criteria.Hitbox);
-                posY = startPosY - 26 * 5;
+                posY = startPosY - 26 * 4;
                 offsetX = 110;
                 name = "Hitbox Issues";
                 CreateCriteriaStatusElement(criteria.Hitbox, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
-            posY = startPosY - 26 * 6;
+            posY = startPosY - 26 * 5;
             name = "Requirements";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.Requirement, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
             {
                 criteria.Requirement = IncrementSeverity(criteria.Requirement);
-                posY = startPosY - 26 * 6;
+                posY = startPosY - 26 * 5;
                 offsetX = 110;
                 name = "Requirements";
                 CreateCriteriaStatusElement(criteria.Requirement, name, new Vector2(-90 + offsetX, posY));
@@ -941,7 +928,7 @@ namespace ChroMapper_LightModding.UI
             }, 50, 20, 10);
 
             posY = startPosY - 26 * 4;
-            name = "Difficulty Name";
+            name = "Obscene Content";
             UIHelper.AddLabel(_criteriaMenu.transform, $"Crit_{name}", name, new Vector2(-142 + offsetX, posY), new Vector2(106, 24), TextAlignmentOptions.Left);
             CreateCriteriaStatusElement(criteria.DifficultyName, name, new Vector2(-90 + offsetX, posY));
             UIHelper.AddButton(_criteriaMenu.transform, $"Crit_{name}_change", "Change Status", new Vector2(-50 + offsetX, posY), () =>
@@ -949,7 +936,7 @@ namespace ChroMapper_LightModding.UI
                 criteria.DifficultyName = IncrementSeverity(criteria.DifficultyName);
                 posY = startPosY - 26 * 4;
                 offsetX = 300;
-                name = "Difficulty Name";
+                name = "Obscene Content";
                 CreateCriteriaStatusElement(criteria.DifficultyName, name, new Vector2(-90 + offsetX, posY));
             }, 50, 20, 10);
 
@@ -1161,11 +1148,6 @@ namespace ChroMapper_LightModding.UI
             #region Options
             var options = AddPage("Options", "Options", -104);
             float startPosX = -220, startPosY = -35;
-            UIHelper.AddCheckbox(options.transform, "DisplayBadcut", "Display Badcut", new Vector2(startPosX, startPosY), Plugin.checkerConfig.DisplayBadcut, (check) =>
-            {
-                Plugin.checkerConfig.DisplayBadcut = check;
-            });
-            startPosY -= 26;
             UIHelper.AddCheckbox(options.transform, "HighlightOffbeat", "Display Offbeat", new Vector2(startPosX, startPosY), Plugin.checkerConfig.HighlightOffbeat, (check) =>
             {
                 Plugin.checkerConfig.HighlightOffbeat = check;
@@ -1323,6 +1305,8 @@ namespace ChroMapper_LightModding.UI
             AddValue(walls, "LightBombMinimumBrightness", "Bomb Min Brightness", startPosX, startPosY, Plugin.checkerConfig.LightBombMinimumBrightness, v => Plugin.checkerConfig.LightBombMinimumBrightness = v);
             startPosY -= 26;
             AddValue(walls, "LightBombOffGrace", "Light Off Grace", startPosX, startPosY, Plugin.checkerConfig.LightBombOffGrace, v => Plugin.checkerConfig.LightBombOffGrace = v);
+            startPosY -= 26;
+            AddValue(walls, "BombSwingPathBeats", "Bomb Swing Path", startPosX, startPosY, Plugin.checkerConfig.BombSwingPathBeats, v => Plugin.checkerConfig.BombSwingPathBeats = v);
 
             startPosX = 0;
             startPosY = -30;

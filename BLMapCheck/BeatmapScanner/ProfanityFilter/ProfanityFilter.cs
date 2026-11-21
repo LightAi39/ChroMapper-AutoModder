@@ -280,7 +280,8 @@ namespace ProfanityFilter
                 return found;
             }
 
-            Regex regex = new Regex(string.Format(@"(?:{0})", string.Join("|", potentialProfanities).Replace("$", "\\$"), RegexOptions.IgnoreCase));
+            // Whole words only (the list has "tart", "pee", "gai"...), and the list is plain text: "shi+" and "a$$" aren't patterns
+            Regex regex = new Regex(string.Format(@"(?<![\p{{L}}\p{{N}}])(?:{0})(?![\p{{L}}\p{{N}}])", string.Join("|", potentialProfanities.Select(Regex.Escape))), RegexOptions.IgnoreCase);
 
             foreach (Match profanity in regex.Matches(term))
             {

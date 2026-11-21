@@ -167,7 +167,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         }
 
         // Links are snapped to the closest grid cell
-        private static List<(int X, int Y, float Beats)> GetLinks(Chain chain)
+        internal static List<(int X, int Y, float Beats)> GetLinks(Chain chain)
         {
             var positions = FindChainLinksPosition(chain);
             var links = new List<(int X, int Y, float Beats)>();

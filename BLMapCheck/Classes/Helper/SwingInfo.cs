@@ -77,6 +77,23 @@ namespace BLMapCheck.Classes.Helper
             return swings.OrderBy(s => s.StartSeconds).ThenBy(s => s.RightHand).ToList();
         }
 
+        // Direction of the dots that are part of a slider (notes at most 1/8 beat apart), from its first note to its last in
+        // placement order. Single dots can be cut from any angle, and dots further apart are separate swings, so those are left out.
+        public static Dictionary<Note, double> DirectionByNote(List<SwingInfo> swings)
+        {
+            var directions = new Dictionary<Note, double>();
+            foreach (var swing in swings.Where(s => s.IsMultiNote))
+            {
+                if (swing.Notes.Zip(swing.Notes.Skip(1), (a, b) => b.Beats - a.Beats).Any(gap => gap > 0.126)) continue;
+                var first = swing.Notes[0];
+                var last = swing.Notes[swing.Notes.Count - 1];
+                if (last.Beats - first.Beats < 0.001 || (first.x == last.x && first.y == last.y)) continue;
+                var direction = Helper.Mod(Math.Atan2(last.y - first.y, last.x - first.x) * 180 / Math.PI, 360);
+                foreach (var note in swing.Notes) directions[note] = direction;
+            }
+            return directions;
+        }
+
         // Direction is in degrees (90 = up, 0 = right). Neutral is down for forehand and up for backhand.
         // Positive values turn the wrist outward, mirrored for the left hand.
         private static double Rotation(double direction, bool rightHand, bool forehand)

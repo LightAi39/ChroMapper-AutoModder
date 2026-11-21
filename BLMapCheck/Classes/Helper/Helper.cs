@@ -14,6 +14,47 @@ namespace BLMapCheck.Classes.Helper
     {
         public static readonly double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315 };
 
+        // Cut direction of a note in degrees, dots use the direction of their slider. Null if unknown
+        public static double? CutDegree(Note note, Dictionary<Note, double> swingDirection)
+        {
+            if (note.CutDirection >= 0 && note.CutDirection < DirectionToDegree.Length) return DirectionToDegree[note.CutDirection];
+            return swingDirection.TryGetValue(note, out var degree) ? degree : null;
+        }
+
+        // Direction in degrees (0 = right, 90 = up) snapped to one of the 8 grid directions
+        public static (int X, int Y) GridStep(double degree)
+        {
+            var radian = Math.Round(Mod(degree, 360) / 45) * 45 * Math.PI / 180;
+            return ((int)Math.Round(Math.Cos(radian)), (int)Math.Round(Math.Sin(radian)));
+        }
+
+        // Grid cells from the one after (x, y) up to the edge of the 4x3 grid, (dx, dy) can't be (0, 0)
+        public static HashSet<(int, int)> CellsToEdge(int x, int y, int dx, int dy)
+        {
+            var path = new HashSet<(int, int)>();
+            for (x += dx, y += dy; x >= 0 && x <= 3 && y >= 0 && y <= 2; x += dx, y += dy)
+            {
+                path.Add((x, y));
+            }
+            return path;
+        }
+
+        // Objects of a list sorted by beat with from <= beat <= to
+        public static IEnumerable<T> InRange<T>(List<T> objects, double from, double to) where T : BeatmapObject
+        {
+            int lo = 0, hi = objects.Count;
+            while (lo < hi)
+            {
+                int mid = (lo + hi) / 2;
+                if (objects[mid].Beats < from) lo = mid + 1;
+                else hi = mid;
+            }
+            for (int i = lo; i < objects.Count && objects[i].Beats <= to; i++)
+            {
+                yield return objects[i];
+            }
+        }
+
         // Characters that can't be typed on the in-game keyboard, so the field can't be searched for
         public static List<char> UnsearchableCharacters(string text)
         {
