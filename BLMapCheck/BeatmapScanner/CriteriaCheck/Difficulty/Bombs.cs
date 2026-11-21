@@ -17,11 +17,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Bombs placed at the same beat within this many beats are a single layer
         private const float SameBeat = 0.01f;
 
-        // Periods in seconds where at least one light is bright enough, merged and sorted
-        private static List<(double Start, double End)> GetLitTimes(CheckContext ctx, List<Light> events)
+        // Periods in seconds where at least one light is bright enough, from basic and V3 light events, merged and sorted
+        private static List<(double Start, double End)> GetLitTimes(CheckContext ctx, List<Light> events, List<Lightcoloreventboxgroup> v3events)
         {
             double minimum = ctx.Config.LightBombMinimumBrightness;
-            var periods = new List<(double Start, double End)>();
+            var periods = GetV3LitTimes(ctx, v3events);
             foreach (var group in events.Where(e => Lights.LightTypes.Contains(e.Type)).GroupBy(e => e.Type))
             {
                 var lights = group.OrderBy(e => e.Seconds).ToList();
@@ -63,22 +63,89 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             return merged;
         }
 
+        // V3 light groups: each index filter of a group is followed on its own, a filter covering the whole group applies to all its lights.
+        // The brightest light counts: the brightness distribution adds to it, a strobe counts at its brightest. Lights switch one after
+        // the other over the beat distribution, so the last one turns off that much later. Transitions are linear, easings are ignored
+        private static List<(double Start, double End)> GetV3LitTimes(CheckContext ctx, List<Lightcoloreventboxgroup> v3events)
+        {
+            double minimum = ctx.Config.LightBombMinimumBrightness;
+            var periods = new List<(double Start, double End)>();
+            double Seconds(float beats) => ctx.Timescale.BPM.ToRealTime(beats);
+
+            foreach (var group in v3events.GroupBy(g => g.Group))
+            {
+                // Events of each filter, the whole group ones are added to every filter. On the same beat, the box placed last wins
+                var timelines = new Dictionary<(int, int, int, int, int, int, int, float, int), List<(float Beats, float Brightness, int Transition, float Spread, int Order)>>();
+                var whole = new List<(float Beats, float Brightness, int Transition, float Spread, int Order)>();
+                var order = 0;
+                foreach (var boxGroup in group.OrderBy(g => g.Beats))
+                {
+                    foreach (var box in boxGroup.EventBoxGroup ?? new())
+                    {
+                        if (box.e == null) continue;
+                        var f = box.Filter;
+                        var key = f == null ? default : (f.f, f.p, f.t, f.r, f.c, f.n, f.s, f.l, f.d);
+                        var boxOrder = order++;
+                        var events = box.e.OrderBy(e => e.b).Select((e, index) =>
+                        {
+                            var brightness = e.s + (box.b == 1 || index > 0 ? Math.Max(0, box.r) : 0);
+                            if (e.f > 0) brightness = Math.Max(brightness, e.sb);
+                            return (boxGroup.Beats + e.b, brightness, e.i, box.w, boxOrder);
+                        });
+                        // Whole group: a single division, or every light from the first one (a step of 0 is a single light), without a limit
+                        if (f == null || (((f.f == 1 && f.p <= 1) || (f.f == 2 && f.p == 0 && f.t == 1)) && (f.l <= 0 || f.l >= 1))) whole.AddRange(events);
+                        else
+                        {
+                            if (!timelines.TryGetValue(key, out var list)) timelines[key] = list = new();
+                            list.AddRange(events);
+                        }
+                    }
+                }
+
+                foreach (var timeline in timelines.Values.Select(t => t.Concat(whole)).Append(whole))
+                {
+                    double? from = null;
+                    (float Beats, float Brightness) previous = (0, 0);
+                    foreach (var ev in timeline.OrderBy(e => e.Beats).ThenBy(e => e.Order))
+                    {
+                        if (ev.Transition == 2) continue; // Extend keeps the previous state
+                        double start = Seconds(previous.Beats), end = Seconds(ev.Beats);
+                        if (ev.Transition == 1 && previous.Brightness != ev.Brightness)
+                        {
+                            // Bright enough on the part of the transition above the minimum
+                            var crossing = start + (end - start) * (minimum - previous.Brightness) / (ev.Brightness - previous.Brightness);
+                            if (previous.Brightness >= minimum && ev.Brightness < minimum)
+                            {
+                                periods.Add((from ?? start, crossing + Seconds(ev.Beats + ev.Spread) - end + ctx.Config.LightBombOffGrace));
+                                from = null;
+                            }
+                            else if (previous.Brightness < minimum && ev.Brightness >= minimum) from = crossing;
+                        }
+                        else if (previous.Brightness >= minimum && ev.Brightness < minimum)
+                        {
+                            // Switched off: the last light follows after the distribution, strobes count as lit
+                            periods.Add((from ?? start, Seconds(ev.Beats + ev.Spread) + ctx.Config.LightBombOffGrace));
+                            from = null;
+                        }
+                        else if (previous.Brightness < minimum && ev.Brightness >= minimum) from = end;
+                        previous = (ev.Beats, ev.Brightness);
+                    }
+                    if (from != null) periods.Add((from.Value, double.MaxValue));
+                }
+            }
+
+            return periods;
+        }
+
         public static CritResult Check(CheckContext ctx, List<Bomb> bombs, List<Note> notes, List<Chain> chains, List<SwingInfo> swings, List<Light> events, List<Lightcoloreventboxgroup> v3events)
         {
             CritResult criteria = CritResult.Success;
 
             // Bombs must be sufficiently lit during their presence
-            // If V3 lights exist, bomb won't be checked
-            if (bombs.Count > 0 && v3events.Any())
-            {
-                ctx.Results.CreateDiffResult("Bomb Lit", Severity.Inconclusive, "Bomb", "V3 Lights detected. Bombs visibility won't be checked",
-                    new() { new("BombLit", "Inconclusive") });
-                criteria = CritResult.Warning;
-            }
-            else if (bombs.Count > 0)
+            if (bombs.Count > 0)
             {
                 // A light of at least 50 brightness must be active from 250ms before a bomb until it has passed
-                var litTimes = GetLitTimes(ctx, events);
+                var litTimes = GetLitTimes(ctx, events, v3events);
                 int index = 0;
                 foreach (var bomb in bombs.OrderBy(b => b.Seconds))
                 {

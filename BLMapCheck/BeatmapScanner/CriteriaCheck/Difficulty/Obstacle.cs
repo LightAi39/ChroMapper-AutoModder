@@ -203,10 +203,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                             dodge++;
                         }
                     }
+                    // Dodge walls that force the player to move their head more than 2 times per second require justification.
                     // The hard limit comes from the minimum time to avoid walls below
-                    if (dodge >= ctx.Config.SubjectiveDodgeWallPerSecond)
+                    if (dodge > ctx.Config.SubjectiveDodgeWallPerSecond)
                     {
-                        ctx.Results.CreateDiffResult("Wall Dodge", Severity.Warning, "Wall", "Dodge walls that force the players head to move more than " + (System.Math.Ceiling(ctx.Config.SubjectiveDodgeWallPerSecond) - 1).ToString() + " times per second need justification",
+                        ctx.Results.CreateDiffResult("Wall Dodge", Severity.Warning, "Wall", "Dodge walls that force the players head to move more than " + ctx.Config.SubjectiveDodgeWallPerSecond.ToString() + " times per second need justification",
                             new() { new("CurrentDodgeAmount", dodge.ToString()), new("ReccomendedDodgeAmount", ctx.Config.SubjectiveDodgeWallPerSecond.ToString()) }, new() { w });
                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                         issue = true;

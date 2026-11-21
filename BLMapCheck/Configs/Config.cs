@@ -19,7 +19,7 @@
         public double ShortWallTrailDuration { get; set; } = 0.25;
         public double ShortWallAnyTrailDuration { get; set; } = 0.1;
         public double CrouchWallVisionBlockBeats { get; set; } = 0.5;
-        public double SubjectiveDodgeWallPerSecond { get; set; } = 2.5;
+        public double SubjectiveDodgeWallPerSecond { get; set; } = 2;
         public double WallMinimumAvoidTime { get; set; } = 0.25;
         public double WallExceptionalAvoidTime { get; set; } = 0.235;
         public double VNJSHittableRange { get; set; } = 1.5;

@@ -41,7 +41,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (difference >= ctx.Config.ParityWarningAngle)
                     {
                         ctx.Results.CreateDiffResult("Parity Warning", Severity.Warning, "Parity", "Parity degree difference",
-                            new() { new("WarningType", difference + " degree difference") }, new(hand[i].Notes));
+                            new() { new("WarningType", Math.Round(difference, 2) + " degree difference") }, new(hand[i].Notes));
                         if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                     }
                     else if (Math.Abs(hand[i].StartRotation) > 135 || Math.Abs(hand[i].EndRotation) > 135)
