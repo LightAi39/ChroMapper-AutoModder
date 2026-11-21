@@ -157,7 +157,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Chain = Chains.Check(Context, chains, notes, diff.Arcs, bombs),
                 Bomb = Bombs.Check(Context, bombs, notes, chains, swings, diff.Lights, diff.lightColorEventBoxGroups),
                 Parity = Parity.Check(Context, swings, diff.Arcs),
-                VisionBlock = VisionBlock.Check(Context, allNoteObjects, chains, BeatmapScannerData.PassRating, BeatmapScannerData.TechRating, difficultyBeatmap._noteJumpStartBeatOffset),
+                VisionBlock = VisionBlock.Check(Context, allNoteObjects, chains, swings, BeatmapScannerData.PassRating, BeatmapScannerData.TechRating, difficultyBeatmap._noteJumpStartBeatOffset),
                 ProlongedSwing = ProlongedSwing.Check(Context, notes, chains),
                 SwingPath = SwingPath.Check(Context, allNoteObjects, notes, chains, swings),
                 Hitbox = Hitbox.Check(Context, notes, difficultyBeatmap._noteJumpMovementSpeed, swings, chains),

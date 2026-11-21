@@ -1,5 +1,6 @@
 ﻿using BLMapCheck.BeatmapScanner.MapCheck;
 using BLMapCheck.Classes.ChroMapper;
+using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
 using BLMapCheck.Classes.Unity;
 using Parser.Map.Difficulty.V3.Base;
@@ -29,7 +30,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class VisionBlock
     {
         // Detect notes and bombs VB based on BeatLeader current criteria
-        public static CritResult Check(CheckContext ctx, List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, double pass, double tech, float noteJumpStartBeatOffset)
+        public static CritResult Check(CheckContext ctx, List<BeatmapGridObject> beatmapGridObject, List<Chain> chains, List<SwingInfo> swings, double pass, double tech, float noteJumpStartBeatOffset)
         {
             CritResult criteria = CritResult.Success;
 
@@ -80,6 +81,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 beatmapGridObjects = beatmapGridObjects.OrderBy(x => x.Beats).ToList();
 
                 // Notes
+                var hidden = new List<(Note Note, float Gap, float MinTime)>();
                 List<BeatmapGridObject> lastMidL = new();
                 List<BeatmapGridObject> lastMidR = new();
 
@@ -117,14 +119,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 }
                                 else if (note.x < 2) // Possible VB
                                 {
-                                    if (note is Note)
-                                    {
-                                        ctx.Results.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
-                                                new("currentReactionTime", Math.Round(ctx.BeatsToSeconds(note.Beats - lastMidL.First().Beats, note.Beats) * 1000, 0).ToString()),
-                                                new("targetReactionTime", Math.Round(ctx.BeatsToSeconds(MinTimeWarning, note.Beats) * 1000, 0).ToString()),
-                                            }, new() { note });
-                                        if (CritResult.Warning > criteria) criteria = CritResult.Warning;
-                                    }
+                                    if (note is Note n) hidden.Add((n, note.Beats - lastMidL.First().Beats, MinTimeWarning));
                                 }
                             }
                         }
@@ -145,14 +140,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 }
                                 else if (note.x > 1) // Possible VB
                                 {
-                                    if (note is Note)
-                                    {
-                                        ctx.Results.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
-                                                new("currentReactionTime", Math.Round(ctx.BeatsToSeconds(note.Beats - lastMidR.First().Beats, note.Beats) * 1000, 0).ToString()),
-                                                new("targetReactionTime", Math.Round(ctx.BeatsToSeconds(MinTimeWarning, note.Beats) * 1000, 0).ToString()),
-                                            }, new() { note });
-                                        if (CritResult.Warning > criteria) criteria = CritResult.Warning;
-                                    }
+                                    if (note is Note n && !hidden.Any(h => h.Note == n)) hidden.Add((n, note.Beats - lastMidR.First().Beats, MinTimeWarning));
                                 }
                             }
                         }
@@ -167,6 +155,23 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     {
                         lastMidR.Add(note);
                     }
+                }
+
+                // A note of a multi-note swing is visible enough if the head of the swing can be seen
+                var heads = new Dictionary<Note, Note>();
+                foreach (var swingNotes in Slider.MultiNoteSwings(swings))
+                {
+                    foreach (var note in swingNotes) heads.TryAdd(note, swingNotes[0]);
+                }
+                var hiddenNotes = new HashSet<Note>(hidden.Select(h => h.Note));
+                foreach (var (note, gap, minTime) in hidden)
+                {
+                    if (heads.TryGetValue(note, out var head) && head != note && !hiddenNotes.Contains(head)) continue;
+                    ctx.Results.CreateDiffResult("Vision Block", Severity.Warning, "Vision", "Notes must be placed with enough time to react", new() {
+                            new("currentReactionTime", Math.Round(ctx.BeatsToSeconds(gap, note.Beats) * 1000, 0).ToString()),
+                            new("targetReactionTime", Math.Round(ctx.BeatsToSeconds(minTime, note.Beats) * 1000, 0).ToString()),
+                        }, new() { note });
+                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
                 }
 
                 // Bombs

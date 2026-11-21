@@ -172,7 +172,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // and the links of the chains they lead into (chain heads and links follow the same rules)
         internal static IEnumerable<(List<Note> Notes, List<PathPoint> Points)> SwingPaths(List<SwingInfo> swings, List<Chain> chains)
         {
-            foreach (var notes in swings.Where(s => s.IsMultiNote).SelectMany(s => SplitSliders(s.Notes)).Where(n => n.Count > 1))
+            foreach (var notes in MultiNoteSwings(swings))
             {
                 var points = notes.Select(n => new PathPoint(n.x, n.y, n.Beats, n,
                     n.CutDirection >= 0 && n.CutDirection < DirectionToDegree.Length ? CutAngle(n) : null)).ToList();
@@ -261,6 +261,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             bool bothSides = deviations.Any(d => d.Deviation > Straight) && deviations.Any(d => d.Deviation < -Straight);
             return (Math.Abs(worst.Deviation), bothSides, worst.Object);
         }
+
+        // Notes of each multi-note swing in the order they are cut, split where the Analyzer grouped notes too far apart to be a slider
+        internal static IEnumerable<List<Note>> MultiNoteSwings(List<SwingInfo> swings) =>
+            swings.Where(s => s.IsMultiNote).SelectMany(s => SplitSliders(s.Notes)).Where(n => n.Count > 1);
 
         // Whether the Analyzer grouped notes too far apart to be a slider into one swing
         internal static bool HasSeparateSwings(List<Note> swingNotes) => SplitSliders(swingNotes).Count() > 1;
