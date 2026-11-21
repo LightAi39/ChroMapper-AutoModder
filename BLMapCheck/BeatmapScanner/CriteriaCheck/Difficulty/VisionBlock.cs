@@ -176,6 +176,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 Note left = null;
                 Note right = null;
                 var noteIndex = 0;
+                // Every bomb, with the gap to what hides it if it is vision blocked, and whether it forces a movement
+                var bombs = new List<(BeatmapGridObject Bomb, float? HiddenGap, float MinTime, bool ForcesMovement)>();
                 for (var i = 0; i < beatmapGridObjects.Count; i++)
                 {
                     var bomb = beatmapGridObjects[i];
@@ -204,7 +206,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         lastMidL.RemoveAll(l => bomb.Beats - l.Beats > MinTimeBomb);
                         lastMidR.RemoveAll(l => bomb.Beats - l.Beats > MinTimeBomb);
 
-                        var flagged = false;
+                        float? hiddenGap = null;
                         if (lastMidL.Count > 0)
                         {
                             var gap = bomb.Beats - lastMidL.First().Beats;
@@ -218,15 +220,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 {
                                     // Also fine
                                 }
-                                else if (bomb.x < 2 && (IsInSwingPath(bomb, left) || IsInSwingPath(bomb, right))) // Possible VB
+                                else if (bomb.x < 2) // Possible VB
                                 {
-                                    ReportBomb(ctx, bomb, gap, MinTimeBomb);
-                                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
-                                    flagged = true;
+                                    hiddenGap = gap;
                                 }
                             }
                         }
-                        if (lastMidR.Count > 0 && !flagged)
+                        if (lastMidR.Count > 0 && hiddenGap == null)
                         {
                             var gap = bomb.Beats - lastMidR.First().Beats;
                             if (IsTooClose(ctx, gap, MinTimeBomb, bomb.Beats)) // Closer than 0.20
@@ -239,13 +239,14 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 {
                                     // Also fine
                                 }
-                                else if (bomb.x > 1 && (IsInSwingPath(bomb, left) || IsInSwingPath(bomb, right))) // Possible VB
+                                else if (bomb.x > 1) // Possible VB
                                 {
-                                    ReportBomb(ctx, bomb, gap, MinTimeBomb);
-                                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
+                                    hiddenGap = gap;
                                 }
                             }
                         }
+                        // Bombs that don't force the player to move their sabers or body are exempt
+                        bombs.Add((bomb, hiddenGap, MinTimeBomb, hiddenGap != null && (IsInSwingPath(bomb, left) || IsInSwingPath(bomb, right))));
                     }
 
                     // Store new VB bomb
@@ -258,6 +259,16 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         lastMidR.Add(bomb);
                     }
                 }
+
+                // Bombs part of a cluster partially visible with enough context to tell it's a bomb cluster are exempt
+                var visibleInCluster = BombClusters(ctx, bombs.Select(b => b.Bomb).ToList(), bombs.Select(b => b.HiddenGap == null).ToList());
+                for (int i = 0; i < bombs.Count; i++)
+                {
+                    var (bomb, hiddenGap, minTime, forcesMovement) = bombs[i];
+                    if (hiddenGap == null || !forcesMovement || visibleInCluster[i] >= VisibleClusterContext) continue;
+                    ReportBomb(ctx, bomb, hiddenGap.Value, minTime);
+                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
+                }
             }
 
             if (criteria == CritResult.Success)
@@ -266,6 +277,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             }
 
             return criteria;
+        }
+
+        // Visible bombs needed in a cluster to tell it's a bomb cluster
+        private const int VisibleClusterContext = 2;
+        // Bombs of a cluster touch each other: in adjacent cells, at most this many seconds apart
+        private const double ClusterSeconds = 0.1;
+
+        // Number of visible bombs in the cluster of each bomb
+        private static int[] BombClusters(CheckContext ctx, List<BeatmapGridObject> bombs, List<bool> visible)
+        {
+            var parent = Enumerable.Range(0, bombs.Count).ToArray();
+            int Find(int i) => parent[i] == i ? i : parent[i] = Find(parent[i]);
+            var seconds = bombs.Select(b => ctx.Timescale.BPM.ToRealTime(b.Beats)).ToList();
+            for (int i = 0; i < bombs.Count; i++)
+            {
+                for (int j = i + 1; j < bombs.Count && seconds[j] - seconds[i] <= ClusterSeconds + 0.0001; j++)
+                {
+                    if (Math.Abs(bombs[i].x - bombs[j].x) <= 1 && Math.Abs(bombs[i].y - bombs[j].y) <= 1) parent[Find(i)] = Find(j);
+                }
+            }
+            var counts = new Dictionary<int, int>();
+            for (int i = 0; i < bombs.Count; i++) if (visible[i]) counts[Find(i)] = counts.TryGetValue(Find(i), out var c) ? c + 1 : 1;
+            return Enumerable.Range(0, bombs.Count).Select(i => counts.TryGetValue(Find(i), out var c) ? c : 0).ToArray();
         }
 
         // Check if the bomb is around where the previous swing of that hand ends
