@@ -72,8 +72,25 @@ namespace BLMapCheck.Classes.Helper
             return result;
         }
 
+        // The last file read on this thread, the BPM detection and the audio quality measures both read the song
+        [ThreadStatic] private static (string Path, DateTime Modified, float[] Samples, int Samplerate) lastRead;
+
         // Mono samples, the average of all channels
-        private static bool ReadSamples(string path, out float[] samples, out int samplerate)
+        internal static bool ReadSamples(string path, out float[] samples, out int samplerate)
+        {
+            var modified = File.GetLastWriteTimeUtc(path);
+            if (lastRead.Path == path && lastRead.Modified == modified)
+            {
+                samples = lastRead.Samples;
+                samplerate = lastRead.Samplerate;
+                return true;
+            }
+            if (!Decode(path, out samples, out samplerate)) return false;
+            lastRead = (path, modified, samples, samplerate);
+            return true;
+        }
+
+        private static bool Decode(string path, out float[] samples, out int samplerate)
         {
             samples = null;
             samplerate = 0;
@@ -270,7 +287,7 @@ namespace BLMapCheck.Classes.Helper
         }
 
         // In-place radix-2 FFT, the length must be a power of 2
-        private static void Fft(double[] re, double[] im)
+        internal static void Fft(double[] re, double[] im)
         {
             int n = re.Length;
             for (int i = 1, j = 0; i < n; i++)

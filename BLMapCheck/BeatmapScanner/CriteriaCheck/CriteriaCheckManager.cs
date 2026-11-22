@@ -72,7 +72,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 DifficultyOrdering = DiffOrdering.Check(Context, Map.Difficulties),
                 DifficultySimilarity = DiffSimilarity.Check(Context, Map.Difficulties),
                 Preview = SongPreview.Check(Context, Map.Info._previewStartTime, Map.Info._previewDuration),
-                InfoValues = InfoValues.Check(Context, Map.Info),
+                // Info.dat values include the audio file: its format, and its quality
+                InfoValues = (InfoCrit.CritResult)Math.Max((int)InfoValues.Check(Context, Map.Info), (int)SongAudio.Check(Context, Map.Info._songFilename)),
                 CoverImage = CoverImage.Check(Context, Map.Info._coverImageFilename)
             };
 
