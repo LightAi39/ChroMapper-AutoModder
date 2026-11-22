@@ -37,12 +37,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             else
             {
                 // Calculate the average amount of light per beat
-                var lights = events.Where(e => LightTypes.Contains(e.Type)).ToList();
-                var average = lights.Count() / end;
-                if (v3events.Count > 0)
-                {
-                    average = v3events.Count() / end;
-                }
+                // Basic light events, plus every color event of every box of the V3 light groups
+                var lights = events.Count(e => LightTypes.Contains(e.Type));
+                var v3lights = v3events.Sum(g => (g.EventBoxGroup ?? new()).Sum(b => b.e?.Count ?? 0));
+                var average = (lights + v3lights) / end;
                 if (average < ctx.Config.AverageLightPerBeat)
                 {
                     ctx.Results.CreateDiffResult("Average Light", Severity.Error, "Light", "The map must have sufficient lighting throughout", 

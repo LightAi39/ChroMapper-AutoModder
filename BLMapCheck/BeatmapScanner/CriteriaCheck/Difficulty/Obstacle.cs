@@ -15,7 +15,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         private const double ForcedCrouchGap = 0.05;
 
         // Calculate dodge wall per seconds, objects hidden behind walls, walls that force players outside of boundary, walls that are too short in middle lane and negative walls.
-        public static CritResult Check(CheckContext ctx, List<Note> notes, List<Wall> walls, List<Bomb> bombs, List<Chain> chains)
+        public static CritResult Check(CheckContext ctx, List<Note> notes, List<Wall> walls, List<Bomb> bombs, List<Chain> chains, string mapVersion)
         {
             CritResult criteria = CritResult.Success;
 
@@ -47,6 +47,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     (side == 0 ? o.x < w.x : o.x > w.x + w.Width - 1) && // Beyond the wall, away from the player
                     !(o.y == 0 && w.y == 0 && w.Height == 1) && ((o.y >= w.y - 1 && o.y < w.y + w.Height) || (o.y >= 0 && w.y == 0 && w.Height > 1)) &&
                     (o is not Note n || IsStandalone(data, n)))); // Notes of a pattern are only checked through their head
+            }
+
+            // Bombs that start unobscured by a wall and can reasonably be expected to continue are exempted: a hidden bomb continuing
+            // a line of bombs in the same cell, each at most 1 beat apart, that started with a visible bomb
+            foreach (var cell in bombs.GroupBy(b => (b.x, b.y)))
+            {
+                var visibleLine = false;
+                Bomb last = null;
+                foreach (var b in cell.OrderBy(b => b.Beats))
+                {
+                    if (last == null || b.Beats - last.Beats > 1) visibleLine = false;
+                    if (!hidden.Contains(b)) visibleLine = true;
+                    else if (visibleLine) hidden.Remove(b);
+                    last = b;
+                }
             }
 
             foreach (var o in hidden.OrderBy(o => o.Beats))
@@ -122,7 +137,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     criteria = CritResult.Fail;
                 }
 
-                // y 3 and 4 are only valid in the standard lanes from map format 4.1.0, the parser doesn't keep the format version
+                // y 3 and 4 are only valid in the standard lanes from map format 4.1.0
                 if ((w.y == 3 || w.y == 4) && w.x + w.Width > 0 && w.x < 4)
                 {
                     highWalls.Add(w);
@@ -131,9 +146,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 previous = w;
             }
 
-            if (highWalls.Count > 0)
+            // Valid in 4.1.0 and above, but they disable score submission below game version 1.41.1. Older formats may only use 0, 1 and 2
+            var supported = System.Version.TryParse(mapVersion, out var version) ? version >= new System.Version(4, 1) : (bool?)null;
+            if (highWalls.Count > 0 && supported == false)
             {
-                ctx.Results.CreateDiffResult("Wall Height", Severity.Warning, "Wall", "Walls with a y value of 3 or 4 require map format 4.1.0 or above, and disable score submission below game version 1.41.1",
+                ctx.Results.CreateDiffResult("Wall Height", Severity.Error, "Wall", "Walls with a y value of 3 or 4 require map format 4.1.0 or above",
+                    new() { new("MapVersion", mapVersion) }, new(highWalls));
+                criteria = CritResult.Fail;
+            }
+            else if (highWalls.Count > 0)
+            {
+                ctx.Results.CreateDiffResult("Wall Height", Severity.Warning, "Wall", "Walls with a y value of 3 or 4 disable score submission below game version 1.41.1" + (supported == null ? ", and require map format 4.1.0 or above" : ""),
                     new(), new(highWalls));
                 if (CritResult.Warning > criteria) criteria = CritResult.Warning;
             }

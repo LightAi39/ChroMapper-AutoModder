@@ -145,7 +145,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 // Song Boundary
                 HotStart = HotStart.Check(Context, allNoteObjects, walls),
                 ColdEnd = ColdEnd.Check(Context, allNoteObjects, chains, walls, (float)Map.SongLength),
-                Outside = Outside.Check(Context, (float)Map.SongLength, notes, chains, diff.Arcs, bombs, walls),
+                Outside = Outside.Check(Context, (float)Map.SongLength, notes, chains, diff.Arcs, bombs, walls, diff),
                 MinSongDuration = SongDuration.Check(Context, notes, chains),
                 // Difficulty Label
                 DifficultyLabelSize = DifficultyLabelSize.Check(Context, difficultyBeatmap._customData?._difficultyLabel, diffCount),
@@ -153,7 +153,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Slider = Slider.Check(Context, swings, chains),
                 // Object
                 FusedObject = FusedObject.Check(Context, notes, bombs, walls, chains),
-                Wall = Obstacle.Check(Context, notes, walls, bombs, chains),
+                Wall = Obstacle.Check(Context, notes, walls, bombs, chains, diff.SourceVersion),
                 Chain = Chains.Check(Context, chains, notes, diff.Arcs, bombs),
                 Bomb = Bombs.Check(Context, bombs, notes, chains, swings, diff.Lights, diff.lightColorEventBoxGroups),
                 Parity = Parity.Check(Context, swings, diff.Arcs),

@@ -14,9 +14,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 {
     internal static class Bombs
     {
-        // Bombs placed at the same beat within this many beats are a single layer
-        private const float SameBeat = 0.01f;
-
         // Periods in seconds where at least one light is bright enough, from basic and V3 light events, merged and sorted
         private static List<(double Start, double End)> GetLitTimes(CheckContext ctx, List<Light> events, List<Lightcoloreventboxgroup> v3events)
         {
@@ -161,27 +158,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            // Bombs cannot be placed in a way that forces a saber outside the 4x3 grid,
-            // which only happens when bombs fill the whole grid at the same time
+            // Bombs cannot be placed in a way that forces a saber outside the 4x3 grid, which happens when bombs fill the whole grid
+            // at once: bombs closer than 0.5m in depth (time * NJS) are one layer, both sabers can share a free cell
             var sorted = bombs.OrderBy(b => b.Beats).ToList();
-            for (int i = 0; i < sorted.Count;)
+            for (int i = 0; i < sorted.Count; i++)
             {
                 var layer = new List<Bomb>();
-                int j = i;
-                while (j < sorted.Count && sorted[j].Beats - sorted[i].Beats < SameBeat)
-                {
-                    layer.Add(sorted[j]);
-                    j++;
-                }
+                for (int j = i; j < sorted.Count && (sorted[j].Seconds - sorted[i].Seconds) * sorted[i].njs < 0.5; j++) layer.Add(sorted[j]);
 
                 var cells = layer.Where(b => b.x >= 0 && b.x <= 3 && b.y >= 0 && b.y <= 2).Select(b => (b.x, b.y)).Distinct().Count();
                 if (cells == 12)
                 {
                     ctx.Results.CreateDiffResult("Bomb Grid", Severity.Error, "Bomb", "Bombs cannot fill the whole 4x3 grid, it forces a saber outside of the grid", new(), new() { layer[0] });
                     criteria = CritResult.Fail;
+                    // Once per layer
+                    i += layer.Count - 1;
                 }
-
-                i = j;
             }
 
             if (CheckSwingPath(ctx, sorted, notes, chains, swings)) criteria = CritResult.Fail;

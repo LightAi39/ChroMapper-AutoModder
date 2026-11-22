@@ -54,6 +54,29 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             return result.OrderBy(o => o.Beats).ToList();
         }
 
+        // The NJS every SampleStep seconds from the start of the map until after the last NJS event or object, with the NJS event
+        // controlling it (the next event while easing towards it, or the last one)
+        private static List<(float Njs, NjsEvent Event)> NjsCurve(float baseNjs, List<NjsEvent> njsEvents, List<BeatmapGridObject> objects)
+        {
+            var curve = new List<(float Njs, NjsEvent Event)>();
+            if (njsEvents == null || njsEvents.Count == 0)
+            {
+                curve.Add((baseNjs, null));
+                return curve;
+            }
+            var vnjs = new VNJS(baseNjs, njsEvents);
+            var events = njsEvents.OrderBy(e => e.Seconds).ToList();
+            double end = System.Math.Max(events[events.Count - 1].Seconds, objects.Count > 0 ? objects.Max(o => o.Seconds) : 0) + 1;
+            for (double t = 0; t <= end; t += SampleStep)
+            {
+                var next = events.FirstOrDefault(e => e.Seconds > t && e.Easing != -1);
+                var last = events.LastOrDefault(e => e.Seconds <= t);
+                var controlling = next != null && (last == null || events.IndexOf(next) == events.IndexOf(last) + 1) ? next : last;
+                curve.Add((vnjs.NjsAtSeconds((float)t), controlling));
+            }
+            return curve;
+        }
+
         public static CritResult Check(CheckContext ctx, float njs, float noteJumpStartBeatOffset, List<BeatmapGridObject> allObjects, List<NjsEvent> njsEvents)
         {
             CritResult criteria = CritResult.Success;
@@ -75,34 +98,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 criteria = CritResult.Fail;
             }
 
-            // NJS must not reach below 1 at any point in the map
-            List<BeatmapObject> objects = new();
-            foreach (var obj in allObjects)
+            // NJS must not reach below 1 at any point in the map, values below 4 NJS may require justification.
+            // The NJS curve is sampled over the whole map, not only where objects are
+            var curve = NjsCurve(njs, njsEvents, allObjects);
+            foreach (var (limit, severity, message) in new[] {
+                (1.0, Severity.Error, "NJS must not reach below 1 at any point in the map"),
+                (4.0, Severity.Warning, "Values below 4 NJS may require justification") })
             {
-                if (obj.njs < 1)
-                {
-                    objects.Add(obj);
-                }
-            }
-            if (objects.Count > 0)
-            {
-                ctx.Results.CreateDiffResult("Note Jump Speed", Severity.Error, "NoteJumpSpeed", "NJS must not reach below 1 at any point in the map", new(), objects);
-                criteria = CritResult.Fail;
-            }
-
-            // Values below 4 NJS may require justification
-            objects = new();
-            foreach (var obj in allObjects)
-            {
-                if (obj.njs < 4)
-                {
-                    objects.Add(obj);
-                }
-            }
-            if (objects.Count > 0)
-            {
-                ctx.Results.CreateDiffResult("Note Jump Speed", Severity.Warning, "NoteJumpSpeed", "Values below 4 NJS may require justification", new(), objects);
-                if (CritResult.Warning > criteria) criteria = CritResult.Warning;
+                var below = curve.Where(c => c.Njs < limit).ToList();
+                if (below.Count == 0) continue;
+                // The objects below the limit, and the NJS events making it go below
+                List<BeatmapObject> objects = allObjects.Where(o => o.njs < limit).Cast<BeatmapObject>()
+                    .Concat(below.Where(c => c.Event != null).Select(c => (BeatmapObject)c.Event)).Distinct().OrderBy(o => o.Beats).ToList();
+                ctx.Results.CreateDiffResult("Note Jump Speed", severity, "NoteJumpSpeed", message,
+                    new() { new("MinimumNJS", System.Math.Round(below.Min(c => c.Njs), 2).ToString()) }, objects);
+                if (severity == Severity.Error) criteria = CritResult.Fail;
+                else if (CritResult.Warning > criteria) criteria = CritResult.Warning;
             }
 
             // The base NJS value must be between the minimum and maximum NJS used in interactable portions of the map

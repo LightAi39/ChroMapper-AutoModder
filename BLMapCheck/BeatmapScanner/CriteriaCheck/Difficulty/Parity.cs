@@ -153,7 +153,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         // Resets (bomb resets aren't) with the previous swing of the hand. A reset next to notes the Analyzer grouped into one swing while
         // they are too far apart to be a slider is left out: they are separate swings, and the parity around them can't be trusted
-        private static IEnumerable<(SwingInfo Swing, SwingInfo Previous)> Resets(List<SwingInfo> swings)
+        internal static IEnumerable<(SwingInfo Swing, SwingInfo Previous)> Resets(List<SwingInfo> swings)
         {
             foreach (var hand in new[] { swings.Where(x => x.RightHand).ToList(), swings.Where(x => !x.RightHand).ToList() })
             {

@@ -82,6 +82,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
                 // Notes
                 var hidden = new List<(Note Note, float Gap, float MinTime)>();
+                // Notes of a reset don't follow parity, a bomb reset does
+                var resetNotes = new HashSet<Note>(Parity.Resets(swings).SelectMany(r => r.Swing.Notes));
                 List<BeatmapGridObject> lastMidL = new();
                 List<BeatmapGridObject> lastMidR = new();
 
@@ -113,7 +115,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 {
                                     // Fine
                                 }
-                                else if (note.x == 1 && note.y == 0 && note.Beats - lastMidL.First().Beats <= MaxBottomNoteTime) // Closer than 0.075 at bottom layer
+                                else if (note.x == 1 && note.y == 0 && note.Beats - lastMidL.First().Beats <= MaxBottomNoteTime && !(note is Note bottomL && resetNotes.Contains(bottomL))) // Closer than 0.075 at bottom layer and follows parity
                                 {
                                     // Also fine
                                 }
@@ -134,7 +136,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                                 {
                                     // Fine
                                 }
-                                else if (note.x == 2 && note.y == 0 && note.Beats - lastMidR.First().Beats <= MaxBottomNoteTime)
+                                else if (note.x == 2 && note.y == 0 && note.Beats - lastMidR.First().Beats <= MaxBottomNoteTime && !(note is Note bottomR && resetNotes.Contains(bottomR)))
                                 {
                                     // Also fine
                                 }
