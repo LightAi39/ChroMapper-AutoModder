@@ -19,8 +19,10 @@ namespace ChroMapper_LightModding.Helpers
         private int difficultyRank;
         private string difficulty;
         private string lastLoaded = "";
-        // Best song BPM found by the last song info auto check, shown in the info menu. Null if not detected.
-        public string DetectedBpm { get; private set; }
+        // Best song BPM found by the last song info auto check, shown in the info menu. Null if not detected for the song currently open.
+        public string DetectedBpm => detectedBpmFolder == plugin.currentlyLoadedFolderPath ? detectedBpm : null;
+        private string detectedBpm;
+        private string detectedBpmFolder;
         // Last bomb comment of each check in the current run, close bombs of the same check are merged into it
         private readonly Dictionary<string, (Comment Comment, float LastBeat)> lastBombComments = new();
         // Bombs closer than this (in beats) to the previous bomb of the same check share a comment
@@ -46,7 +48,7 @@ namespace ChroMapper_LightModding.Helpers
             {
                 lastLoaded = plugin.currentlyLoadedFolderPath;
                 criteriaCheck.LoadMap(plugin.currentlyLoadedFolderPath);
-                DetectedBpm = null;
+                detectedBpm = null;
             }
             CheckResults results; //= criteriaCheck.CheckAllCriteria();
 
@@ -73,7 +75,8 @@ namespace ChroMapper_LightModding.Helpers
                 results = criteriaCheck.CheckSongInfo();
                 // The candidates are listed best first
                 var detectedData = results.Results.FirstOrDefault(x => x.Name == "Detected BPM")?.ResultData;
-                DetectedBpm = detectedData?.FirstOrDefault(x => x.Key == "DetectedBPM")?.Value.Split(',')[0].Trim();
+                detectedBpm = detectedData?.FirstOrDefault(x => x.Key == "DetectedBPM")?.Value.Split(',')[0].Trim();
+                detectedBpmFolder = plugin.currentlyLoadedFolderPath;
                 plugin.currentMapsetReview.DetectedTempo = detectedData?.FirstOrDefault(x => x.Key == "DetectedTempo")?.Value;
                 RemovePastAutoCheckCommentsSongInfo();
                 plugin.currentMapsetReview.Criteria = results.InfoCriteriaResult;

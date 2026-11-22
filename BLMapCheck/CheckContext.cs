@@ -1,12 +1,14 @@
-using beatleader_analyzer;
+﻿using beatleader_analyzer;
 using Analyzer.BeatmapScanner.Data;
 using beatleader_analyzer.BeatmapScanner.Data;
 using beatleader_parser.Timescale;
+using BLMapCheck.Classes.AccAi;
 using BLMapCheck.Classes.Results;
 using BLMapCheck.Configs;
 using Parser.Map;
 using Parser.Map.Difficulty.V3.Base;
 using Parser.Map.Difficulty.V3.Event;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static BLMapCheck.Classes.Helper.Helper;
@@ -34,6 +36,13 @@ namespace BLMapCheck
 
         // The analyzer is the most expensive step, cache its result so each difficulty is only rated once per run
         private readonly Dictionary<DifficultyV3, Ratings> ratingCache = new();
+        private readonly Dictionary<DifficultyV3, double?> starCache = new();
+        // The acc AI, shared, it loads the ONNX model once. Null if ONNX Runtime can't load
+        private static readonly Lazy<Full> accAi = new(() =>
+        {
+            try { return new Full(); }
+            catch (Exception) { return null; }
+        });
 
         public CheckContext(BeatmapV3 map, Config config, Analyze analyzer)
         {
@@ -81,6 +90,24 @@ namespace BLMapCheck
                 ratingCache[diffSet.Data] = rating;
             }
             return rating;
+        }
+
+        // BeatLeader star rating of a difficulty, as RatingAPI computes it with the acc AI. Null if it can't be rated
+        public double? GetStars(DifficultySet diffSet)
+        {
+            if (!starCache.TryGetValue(diffSet.Data, out var stars))
+            {
+                var rating = GetRating(diffSet);
+                var ai = accAi.Value;
+                stars = null;
+                if (rating != null && ai != null)
+                {
+                    try { stars = RatingsController.GetBLRatings(rating, ai, diffSet.Data, Map.Info._beatsPerMinute, 1).Stars; }
+                    catch (Exception) { }
+                }
+                starCache[diffSet.Data] = stars;
+            }
+            return stars;
         }
     }
 }

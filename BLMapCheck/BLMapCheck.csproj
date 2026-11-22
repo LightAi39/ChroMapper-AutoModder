@@ -27,6 +27,9 @@
 		<WarningLevel>4</WarningLevel>
 	</PropertyGroup>
 	<ItemGroup>
+		<EmbeddedResource Include="Classes\AccAi\onnx\model_sleep_bl.onnx" LogicalName="BLMapCheck.AccAi.model_sleep_bl.onnx" />
+	</ItemGroup>
+	<ItemGroup>
 	  <Compile Remove="beatleader-analyzer\**" />
 	  <Compile Remove="beatleader-parser\**" />
 	  <EmbeddedResource Remove="beatleader-analyzer\**" />
