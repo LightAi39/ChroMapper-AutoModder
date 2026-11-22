@@ -27,6 +27,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         public static CritResult Check(CheckContext ctx, List<Note> notes, float baseNjs, List<SwingInfo> swings, List<Chain> chains)
         {
             CritResult criteria = CritResult.Success;
+            var turned = WindowSnap(notes);
 
             var sorted = notes.Where(n => n.Color == 0 || n.Color == 1).OrderBy(n => n.Seconds).ToList();
             for (int i = 0; i < sorted.Count; i++)
@@ -35,7 +36,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     Note a = sorted[i], b = sorted[j];
                     if (a.Color == b.Color || a.CutDirection == 8 || b.CutDirection == 8) continue;
-                    var overlap = Math.Max(Crossing(a, b), Crossing(b, a));
+                    var overlap = Math.Max(Crossing(a, b, turned), Crossing(b, a, turned));
                     if (overlap <= MaxBadOverlap + 0.0001) continue;
 
                     ctx.Results.CreateDiffResult("Hitbox", Severity.Error, "Hitbox", "The good cut hitbox of a note cannot overlap the bad cut hitbox of an opposite colored note by more than 20%",
@@ -44,7 +45,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 }
             }
 
-            if (CheckMultiNoteSwingPath(ctx, notes, swings, chains)) criteria = CritResult.Fail;
+            if (CheckMultiNoteSwingPath(ctx, notes, swings, chains, turned)) criteria = CritResult.Fail;
 
             if (criteria == CritResult.Success)
             {
@@ -56,16 +57,18 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         // The follow-through of the first note's swing over the second note's bad cut box, and the approach of the second note's swing
         // over the first note's bad cut box
-        private static double Crossing(Note first, Note second) => Math.Min(SwingOverBad(first, second, Reach), SwingOverBad(second, first, -Reach));
+        private static double Crossing(Note first, Note second, Dictionary<Note, double> turned) =>
+            Math.Min(SwingOverBad(first, second, Reach, turned), SwingOverBad(second, first, -Reach, turned));
 
         // Share of the bad cut box of a note crossed by the good cut box of another carried on in the cut direction (or back when negative)
-        private static double SwingOverBad(Note good, Note bad, double reach)
+        private static double SwingOverBad(Note good, Note bad, double reach, Dictionary<Note, double> turned)
         {
             var center = ToMeters(good.x, good.y);
-            var radians = ConvertDegreesToRadians(BoxAngle(good));
+            var angle = BoxAngle(good, turned);
+            var radians = ConvertDegreesToRadians(angle);
             var shift = reach / 2;
-            var swing = Box((center.X + shift * Math.Cos(radians), center.Y + shift * Math.Sin(radians)), BoxAngle(good), GoodAlong + Math.Abs(shift), GoodAcross);
-            var badBox = Box(ToMeters(bad.x, bad.y), BoxAngle(bad), BadHalf, BadHalf);
+            var swing = Box((center.X + shift * Math.Cos(radians), center.Y + shift * Math.Sin(radians)), angle, GoodAlong + Math.Abs(shift), GoodAcross);
+            var badBox = Box(ToMeters(bad.x, bad.y), BoxAngle(bad, turned), BadHalf, BadHalf);
             return Area(Clip(badBox, swing)) / (4 * BadHalf * BadHalf);
         }
 
@@ -76,7 +79,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // the next point: the other hand's notes block it unless they were already hit when the saber passes them, later notes always count.
         // After the last point is the post-swing, which isn't checked.
         // Returns true if an issue was found
-        private static bool CheckMultiNoteSwingPath(CheckContext ctx, List<Note> notes, List<SwingInfo> swings, List<Chain> chains)
+        private static bool CheckMultiNoteSwingPath(CheckContext ctx, List<Note> notes, List<SwingInfo> swings, List<Chain> chains, Dictionary<Note, double> turned)
         {
             var issue = false;
             double Seconds(float beats) => ctx.Timescale.BPM.ToRealTime(beats);
@@ -103,13 +106,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     if (a == b) continue;
                     // The saber leaves a good cut box and enters the next one by their faces turned the most towards each other
                     var travel = (X: b.X - a.X, Y: b.Y - a.Y);
-                    var corridor = ConvexHull(Face(Box(a, PointAngle(ordered[i - 1]), GoodAlong, GoodAcross), a, travel)
-                        .Concat(Face(Box(b, PointAngle(ordered[i]), GoodAlong, GoodAcross), b, (-travel.X, -travel.Y))).ToList());
+                    var corridor = ConvexHull(Face(Box(a, PointAngle(ordered[i - 1], turned), GoodAlong, GoodAcross), a, travel)
+                        .Concat(Face(Box(b, PointAngle(ordered[i], turned), GoodAlong, GoodAcross), b, (-travel.X, -travel.Y))).ToList());
                     double ta = Seconds(ordered[i - 1].Beats), tb = Seconds(ordered[i].Beats), length = travel.X * travel.X + travel.Y * travel.Y;
                     foreach (var other in others)
                     {
                         var center = ToMeters(other.x, other.y);
-                        var bad = Box(center, BoxAngle(other), BadHalf, BadHalf);
+                        var bad = Box(center, BoxAngle(other, turned), BadHalf, BadHalf);
                         var overlap = Area(Clip(bad, corridor)) / (4 * BadHalf * BadHalf);
                         if (overlap <= worst.Overlap) continue;
                         // Already hit when the saber passes it
@@ -132,13 +135,44 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         private static (double X, double Y) ToMeters(double x, double y) => (x * GridSize, y * GridSize);
 
-        // Rotation of a note's hitboxes, dots like a down note
-        private static double BoxAngle(Note note) =>
-            note.CutDirection >= 0 && note.CutDirection < DirectionToDegree.Length ? Slider.CutAngle(note) : 270;
+        // Rotation of a note's hitboxes, dots like a down note, unless the game turned the note to line up with the other note of a window
+        private static double BoxAngle(Note note, Dictionary<Note, double> turned) =>
+            turned.TryGetValue(note, out var angle) ? angle
+            : note.CutDirection >= 0 && note.CutDirection < DirectionToDegree.Length ? Slider.CutAngle(note) : 270;
+
+        // Window snapping, as the game does it (ObjectsInTimeRowProcessor): when a color has exactly two notes on the same beat, with the
+        // same direction or a dot, both turn to the line between them, unless that's more than 40 degrees from the arrow. Two dots always
+        // turn, a dot with a diagonal arrow turns 45 degrees further. The turn replaces the map's angle offset. Returns the turned angles
+        private static Dictionary<Note, double> WindowSnap(List<Note> notes)
+        {
+            const double MaxTurn = 40;
+            var turned = new Dictionary<Note, double>();
+            foreach (var pair in notes.Where(n => n.Color == 0 || n.Color == 1).GroupBy(n => (n.Color, Math.Round(n.Seconds * 1000))))
+            {
+                if (pair.Count() != 2) continue;
+                Note first = pair.First(), second = pair.Last();
+                bool dot1 = first.CutDirection == 8, dot2 = second.CutDirection == 8;
+                if (first.CutDirection != second.CutDirection && !dot1 && !dot2) continue;
+                // The arrow, if any, decides
+                Note arrow = dot1 ? second : first, other = dot1 ? first : second;
+                var bothDots = dot1 && dot2;
+                var baseAngle = bothDots ? 90 : DirectionToDegree[arrow.CutDirection];
+                var line = ConvertRadiansToDegrees(Math.Atan2(other.y - arrow.y, other.x - arrow.x));
+                // Turn to the closest end of the line
+                var turn = Mod(line - baseAngle + 180, 360) - 180;
+                if (Math.Abs(turn) > 90) turn = Mod(turn + 360, 360) - 180;
+                if (!bothDots && Math.Abs(turn) > MaxTurn) continue;
+                // Dots turn from the down note rotation
+                turned[arrow] = Mod((bothDots ? 270 : baseAngle) + turn, 360);
+                var diagonal = !bothDots && arrow.CutDirection >= 4 && arrow.CutDirection <= 7;
+                turned[other] = Mod((other.CutDirection == 8 ? 270 : baseAngle) + turn + (other.CutDirection == 8 && diagonal ? 45 : 0), 360);
+            }
+            return turned;
+        }
 
         // Rotation of the hitboxes of a point of a multi-note swing, chain links turn like their head
-        private static double PointAngle(Slider.PathPoint point) =>
-            point.Cut ?? (point.Object is Note note ? BoxAngle(note)
+        private static double PointAngle(Slider.PathPoint point, Dictionary<Note, double> turned) =>
+            point.Cut ?? (point.Object is Note note ? BoxAngle(note, turned)
                 : point.Object is Chain chain && chain.CutDirection >= 0 && chain.CutDirection < DirectionToDegree.Length ? DirectionToDegree[chain.CutDirection] : 270);
 
         // Corners, counterclockwise, of a box turned by angle with the given half sizes along and across that direction
