@@ -11,6 +11,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
     {
         // Relative difference allowed between the map BPM and a multiple of a detected BPM
         private const double Tolerance = 0.005;
+        // A detected BPM that is a whole number is precise (the detector only rounds within 0.05 BPM when the song fits it as well). A map
+        // BPM close to it but not equal moves the grid away from the song over time, more than this over the mapped part is a warning
+        private const double MaxDrift = 0.012;
 
         // The map's BPM must be set to one of the song's BPM or a multiple of it
         public static CritResult Check(CheckContext ctx, float bpm, string songFilename)
@@ -41,6 +44,21 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
                 new() { new("DetectedBPM", values), new("DetectedTempo", tempo), new("MapBPM", bpm.ToString()) });
 
             var match = detected.FirstOrDefault(d => IsMultiple(bpm, d.Bpm));
+            // With BPM events, the grid isn't the map BPM alone
+            var bpmEvents = ctx.Map.Difficulties.Any(d => d.Data.bpmEvents.Any(e => Math.Abs(e.Bpm - bpm) > 0.001));
+            if (match != null && match.Bpm == Math.Round(match.Bpm) && !bpmEvents)
+            {
+                var exact = Exact(bpm, match.Bpm);
+                var duration = ctx.Map.Difficulties.SelectMany(d => d.Data.Notes).Select(n => (double)n.Seconds).DefaultIfEmpty(0).Max();
+                var drift = Math.Abs(bpm - exact) / bpm * duration;
+                if (drift > MaxDrift)
+                {
+                    ctx.Results.CreateInfoResult("BPM", Severity.Warning, "SongInfo",
+                        $"The map BPM {bpm} is close to the detected song BPM {Math.Round(match.Bpm, 2)} but not equal, the grid drifts about {Math.Round(drift * 1000)}ms from the song by the last note. Use {Math.Round(exact, 3)} BPM if the song is at {Math.Round(match.Bpm, 2)}",
+                        new() { new("BPM", bpm.ToString()), new("DetectedBPM", values), new("DriftMs", Math.Round(drift * 1000).ToString()) });
+                    return CritResult.Warning;
+                }
+            }
             if (match != null)
             {
                 ctx.Results.CreateInfoResult("BPM", Severity.Passed, "SongInfo", $"The map BPM {bpm} matches the detected song BPM {Math.Round(match.Bpm, 2)}",
@@ -66,6 +84,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
             if (ms > 0) return $"add {ms}ms at the start";
             if (ms < 0) return $"remove {-ms}ms at the start";
             return "already lined up";
+        }
+
+        // The multiple (or fraction) of the detected BPM closest to the map BPM
+        private static double Exact(double mapBpm, double detectedBpm)
+        {
+            var candidates = Enumerable.Range(1, 4).SelectMany(n => new[] { detectedBpm * n, detectedBpm / n });
+            return candidates.OrderBy(c => Math.Abs(c - mapBpm)).First();
         }
 
         // The map BPM is a multiple of the detected BPM. Fractions are accepted too, the detection only looks

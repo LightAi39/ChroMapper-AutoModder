@@ -32,16 +32,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
             foreach (var diff in difficulties.Where(d => (d.Characteristic == "Standard" || d.Characteristic == "OneSaber") && d.Data.Notes.Count >= 20))
             {
                 var times = diff.Data.Notes.Select(n => Math.Round(n.Seconds, 3)).Distinct().OrderBy(t => t).ToList();
-                var deviations = new List<double>();
-                foreach (var t in times)
-                {
-                    var i = onsets.BinarySearch(t);
-                    if (i < 0) i = ~i;
-                    var best = double.MaxValue;
-                    if (i < onsets.Count) best = onsets[i] - t;
-                    if (i > 0 && Math.Abs(onsets[i - 1] - t) < Math.Abs(best)) best = onsets[i - 1] - t;
-                    if (Math.Abs(best) <= MatchWindow) deviations.Add(best);
-                }
+                var deviations = Deviations(onsets, times).Select(d => d.Deviation).ToList();
                 if (deviations.Count < MinMatched) continue;
                 deviations.Sort();
                 var median = deviations[deviations.Count / 2];
@@ -60,6 +51,23 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
                 criteria = CritResult.Warning;
             }
             return criteria;
+        }
+
+        // Time from each note to the nearest sound, positive when the sound comes after the note. Notes with no sound within MatchWindow
+        // are left out
+        internal static List<(double Time, double Deviation)> Deviations(List<double> onsets, List<double> times)
+        {
+            var deviations = new List<(double, double)>();
+            foreach (var t in times)
+            {
+                var i = onsets.BinarySearch(t);
+                if (i < 0) i = ~i;
+                var best = double.MaxValue;
+                if (i < onsets.Count) best = onsets[i] - t;
+                if (i > 0 && Math.Abs(onsets[i - 1] - t) < Math.Abs(best)) best = onsets[i - 1] - t;
+                if (Math.Abs(best) <= MatchWindow) deviations.Add((t, best));
+            }
+            return deviations;
         }
     }
 }
