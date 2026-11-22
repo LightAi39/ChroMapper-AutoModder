@@ -1,5 +1,6 @@
 ﻿using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Base;
+using Parser.Map.Difficulty.V3.Event;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
@@ -13,21 +14,28 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     // Optional: objects that use Mapping Extensions or Noodle Extensions, no mod can be required to play a map
     internal static class ModdedObjects
     {
-        // Object custom data used by Noodle Extensions (v2 and v3 names). Chroma keys like color are allowed.
+        // Object custom data used by Noodle Extensions (v2 and v3 names). Chroma keys like color are allowed. Tracks are shared with Chroma
+        // (color animations), an object's track is only Noodle when a custom event animates it with NoodleTrackProperties
         private static readonly HashSet<string> NoodleKeys = new()
         {
             "_position", "_rotation", "_localRotation", "_scale", "_noteJumpMovementSpeed", "_noteJumpStartBeatOffset", "_fake", "_interactable",
-            "_cutDirection", "_flip", "_disableNoteGravity", "_disableNoteLook", "_track", "_animation",
+            "_cutDirection", "_flip", "_disableNoteGravity", "_disableNoteLook", "_animation",
             "coordinates", "tailCoordinates", "worldRotation", "localRotation", "size", "noteJumpMovementSpeed", "noteJumpStartBeatOffset",
-            "uninteractable", "disableNoteGravity", "disableNoteLook", "track", "animation", "link", "flip",
+            "uninteractable", "disableNoteGravity", "disableNoteLook", "animation", "link", "flip",
             "disableBadCutDirection", "disableBadCutSpeed", "disableBadCutSaberType"
         };
-
-        // Difficulty custom data used by Noodle Extensions (custom events, fake objects, point definitions)
-        private static readonly HashSet<string> NoodleDifficultyKeys = new()
+        private static readonly HashSet<string> NoodleTrackProperties = new()
         {
-            "_customEvents", "_pointDefinitions", "customEvents", "pointDefinitions", "fakeColorNotes", "fakeBombNotes", "fakeObstacles", "fakeBurstSliders"
+            "_position", "_localPosition", "_definitePosition", "_rotation", "_localRotation", "_scale", "_dissolve", "_dissolveArrow", "_time", "_interactable",
+            "position", "localPosition", "offsetPosition", "definitePosition", "offsetWorldRotation", "rotation", "localRotation", "scale", "dissolve",
+            "dissolveArrow", "time", "interactable", "uninteractable"
         };
+
+        // Difficulty custom data used only by Noodle Extensions: fake objects. Custom events and point definitions are shared with Chroma
+        // (AnimateTrack on environment tracks), only the event types below are Noodle's. Objects moved by AnimateTrack have a track,
+        // which is flagged on the object
+        private static readonly HashSet<string> NoodleDifficultyKeys = new() { "fakeColorNotes", "fakeBombNotes", "fakeObstacles", "fakeBurstSliders" };
+        private static readonly HashSet<string> NoodleEventTypes = new() { "AssignPathAnimation", "AssignTrackParent", "AssignPlayerToTrack" };
 
         // Object arrays of the v2 and v3 difficulty formats
         private static readonly string[] ObjectArrays = { "_notes", "_obstacles", "_sliders", "colorNotes", "bombNotes", "obstacles", "sliders", "burstSliders" };
@@ -35,7 +43,12 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Above this many flagged objects, a single summary is reported instead of one result per object
         private const int MaxObjectResults = 20;
 
+        // Rotation event angles of the v2 format without Mapping Extensions
+        private static readonly HashSet<float> VanillaRotations = new() { -60, -45, -30, -15, 15, 30, 45, 60 };
+
         private static bool InGrid(int x, int y) => x >= 0 && x <= 3 && y >= 0 && y <= 2;
+        // Chain links may extend one lane outside the grid (R6C), and ranked arcs do too, but not above or below it
+        private static bool InWideGrid(int x, int y) => x >= -1 && x <= 4 && y >= 0 && y <= 2;
 
         // Difficulties that require Noodle or Mapping Extensions, or place many notes with them
         public static bool IsModdedDifficulty(List<string> requirements, List<Note> notes)
@@ -51,7 +64,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         // Mapping Extensions precision values are offset by 1000
         private static bool IsPrecision(int value) => Math.Abs(value) >= 1000;
 
-        public static CritResult Check(CheckContext ctx, string filename, List<Note> notes, List<Bomb> bombs, List<Chain> chains, List<Arc> arcs, List<Wall> walls)
+        public static CritResult Check(CheckContext ctx, string filename, List<Note> notes, List<Bomb> bombs, List<Chain> chains, List<Arc> arcs, List<Wall> walls,
+            List<RotationEvent> rotations, string sourceVersion)
         {
             CritResult criteria = CritResult.Success;
             if (!ctx.Config.DetectModdedObjects) return criteria;
@@ -60,8 +74,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             var mapping = new List<BeatmapGridObject>();
             mapping.AddRange(notes.Where(n => !InGrid(n.x, n.y) || !IsDirection(n.CutDirection)));
             mapping.AddRange(bombs.Where(b => !InGrid(b.x, b.y)));
-            mapping.AddRange(chains.Where(c => !InGrid(c.x, c.y) || !InGrid(c.tx, c.ty) || !IsDirection(c.CutDirection)));
-            mapping.AddRange(arcs.Where(a => !InGrid(a.x, a.y) || !InGrid(a.tx, a.ty) || !IsDirection(a.CutDirection) || !IsDirection(a.TailCutDirection)));
+            mapping.AddRange(chains.Where(c => !InGrid(c.x, c.y) || !InWideGrid(c.tx, c.ty) || !IsDirection(c.CutDirection)));
+            mapping.AddRange(arcs.Where(a => !InWideGrid(a.x, a.y) || !InWideGrid(a.tx, a.ty) || !IsDirection(a.CutDirection) || !IsDirection(a.TailCutDirection)));
             mapping.AddRange(walls.Where(w => IsPrecision(w.x) || IsPrecision(w.y) || IsPrecision(w.Width) || IsPrecision(w.Height)));
             var mappingResults = new List<(BeatmapObject Object, List<Classes.Results.KeyValuePair> Data)>();
             foreach (var obj in mapping.OrderBy(o => o.Beats))
@@ -71,6 +85,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 mappingResults.Add((Anchor(obj), data));
             }
             if (Report(ctx, "Mapping Extensions", "Objects cannot use Mapping Extensions (position, angle or size outside of the vanilla values)", mappingResults)) criteria = CritResult.Fail;
+
+            // Mapping Extensions rotations: in v2, rotation values 1000 to 1720 are exact angles (the parser converts them to degrees), only
+            // the vanilla angles exist without it. V3 rotation events take any angle
+            if (sourceVersion != null && sourceVersion.StartsWith("2") && rotations != null)
+            {
+                var rotationResults = rotations.Where(r => !VanillaRotations.Contains(r.Rotation)).OrderBy(r => r.Beats)
+                    .Select(r => ((BeatmapObject)new Note { Beats = r.Beats, x = 1, y = 0 }, new List<Classes.Results.KeyValuePair>() { new("Rotation", r.Rotation.ToString()) })).ToList();
+                if (Report(ctx, "Mapping Extensions", "Rotation events cannot use Mapping Extensions (an exact angle instead of 15, 30, 45 or 60 degrees)", rotationResults)) criteria = CritResult.Fail;
+            }
 
             // Noodle Extensions: the parser only keeps positions, the raw difficulty file has everything else
             var path = ctx.FolderPath != null && !string.IsNullOrEmpty(filename) ? Path.Combine(ctx.FolderPath, filename) : null;
@@ -85,6 +108,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 objects.AddRange(bombs);
                 objects.AddRange(chains);
                 objects.AddRange(arcs);
+                objects.AddRange(walls);
                 var noodleResults = objects.Where(o => o.customData?.coordinates != null || o.customData?.tailCoordinates != null).OrderBy(o => o.Beats)
                     .Select(o => (Anchor(o), new List<Classes.Results.KeyValuePair>() { new("Keys", "coordinates") })).ToList();
                 if (Report(ctx, "Noodle Extensions", "Objects cannot use Noodle Extensions", noodleResults)) criteria = CritResult.Fail;
@@ -112,12 +136,28 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 if (root.ValueKind != JsonValueKind.Object) return false;
 
                 // Difficulty wide features
-                var difficultyKeys = Keys(CustomData(root)).Where(NoodleDifficultyKeys.Contains).ToList();
+                var difficultyData = CustomData(root);
+                var difficultyKeys = Keys(difficultyData).Where(NoodleDifficultyKeys.Contains).ToList();
+                difficultyKeys.AddRange(EventTypes(difficultyData).Where(NoodleEventTypes.Contains).Distinct());
                 if (difficultyKeys.Count > 0)
                 {
                     ctx.Results.CreateDiffResult("Noodle Extensions", Severity.Error, "Requirements", "The difficulty cannot use Noodle Extensions",
                         new() { new("Keys", string.Join(", ", difficultyKeys)) });
                     found = true;
+                }
+
+                // Tracks of the objects animated with Noodle properties
+                var noodleTracks = new HashSet<string>();
+                foreach (var name in new[] { "customEvents", "_customEvents" })
+                {
+                    if (difficultyData == null || !difficultyData.Value.TryGetProperty(name, out var events) || events.ValueKind != JsonValueKind.Array) continue;
+                    foreach (var e in events.EnumerateArray())
+                    {
+                        if (e.ValueKind != JsonValueKind.Object) continue;
+                        if ((!e.TryGetProperty("d", out var data) && !e.TryGetProperty("_data", out data)) || data.ValueKind != JsonValueKind.Object) continue;
+                        if (!data.EnumerateObject().Any(p => NoodleTrackProperties.Contains(p.Name))) continue;
+                        foreach (var track in Tracks(data)) noodleTracks.Add(track);
+                    }
                 }
 
                 // Objects
@@ -128,7 +168,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     foreach (var element in array.EnumerateArray())
                     {
                         if (element.ValueKind != JsonValueKind.Object) continue;
-                        var keys = Keys(CustomData(element)).Where(NoodleKeys.Contains).ToList();
+                        var custom = CustomData(element);
+                        var keys = Keys(custom).Where(NoodleKeys.Contains).ToList();
+                        if (custom != null && Tracks(custom.Value).Any(noodleTracks.Contains)) keys.Add("track");
                         if (keys.Count == 0) continue;
 
                         float beat = Number(element, "b", "_time");
@@ -189,6 +231,32 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             if (element.TryGetProperty("customData", out var data) && data.ValueKind == JsonValueKind.Object) return data;
             if (element.TryGetProperty("_customData", out data) && data.ValueKind == JsonValueKind.Object) return data;
             return null;
+        }
+
+        // Track names of an object or event (track or _track, a name or a list of names)
+        private static IEnumerable<string> Tracks(JsonElement data)
+        {
+            if (!data.TryGetProperty("track", out var track) && !data.TryGetProperty("_track", out track)) return Enumerable.Empty<string>();
+            if (track.ValueKind == JsonValueKind.String) return new[] { track.GetString() };
+            if (track.ValueKind == JsonValueKind.Array) return track.EnumerateArray().Where(t => t.ValueKind == JsonValueKind.String).Select(t => t.GetString()).ToList();
+            return Enumerable.Empty<string>();
+        }
+
+        // Types of the custom events (v2 _customEvents with _type, v3 customEvents with t)
+        private static IEnumerable<string> EventTypes(JsonElement? data)
+        {
+            if (data == null) return Enumerable.Empty<string>();
+            var types = new List<string>();
+            foreach (var name in new[] { "customEvents", "_customEvents" })
+            {
+                if (!data.Value.TryGetProperty(name, out var events) || events.ValueKind != JsonValueKind.Array) continue;
+                foreach (var e in events.EnumerateArray())
+                {
+                    if (e.ValueKind != JsonValueKind.Object) continue;
+                    if ((e.TryGetProperty("t", out var type) || e.TryGetProperty("_type", out type)) && type.ValueKind == JsonValueKind.String) types.Add(type.GetString());
+                }
+            }
+            return types;
         }
 
         private static IEnumerable<string> Keys(JsonElement? data)

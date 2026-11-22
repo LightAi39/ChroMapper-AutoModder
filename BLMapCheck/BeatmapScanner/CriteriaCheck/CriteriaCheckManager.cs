@@ -106,7 +106,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             var walls = diff.Walls.OrderBy(x => x.Beats).ToList();
 
             InfoCrit.CritResult CheckRequirements() => (InfoCrit.CritResult)Math.Max((int)Requirements.Check(Context, difficultyBeatmap._customData?._requirements),
-                (int)ModdedObjects.Check(Context, difficultyBeatmap._beatmapFilename, notes, bombs, chains, diff.Arcs, walls));
+                (int)ModdedObjects.Check(Context, difficultyBeatmap._beatmapFilename, notes, bombs, chains, diff.Arcs, walls, diff.Rotations, diff.SourceVersion));
 
             // Noodle Extensions and Mapping Extensions place notes freely, the grid based checks would flag almost every note
             if (ModdedObjects.IsModdedDifficulty(difficultyBeatmap._customData?._requirements, notes))
