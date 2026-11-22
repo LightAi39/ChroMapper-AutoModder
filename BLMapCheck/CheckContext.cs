@@ -36,7 +36,7 @@ namespace BLMapCheck
 
         // The analyzer is the most expensive step, cache its result so each difficulty is only rated once per run
         private readonly Dictionary<DifficultyV3, Ratings> ratingCache = new();
-        private readonly Dictionary<DifficultyV3, double?> starCache = new();
+        private readonly Dictionary<DifficultyV3, RatingResult> accCache = new();
         // The acc AI, shared, it loads the ONNX model once. Null if ONNX Runtime can't load
         private static readonly Lazy<Full> accAi = new(() =>
         {
@@ -92,22 +92,23 @@ namespace BLMapCheck
             return rating;
         }
 
-        // BeatLeader star rating of a difficulty, as RatingAPI computes it with the acc AI. Null if it can't be rated
-        public double? GetStars(DifficultySet diffSet)
+        // BeatLeader star and acc rating of a difficulty, as RatingAPI computes them with the acc AI. Null if it can't be rated
+        public RatingResult GetAccRating(DifficultySet diffSet)
         {
-            if (!starCache.TryGetValue(diffSet.Data, out var stars))
+            if (!accCache.TryGetValue(diffSet.Data, out var result))
             {
                 var rating = GetRating(diffSet);
                 var ai = accAi.Value;
-                stars = null;
                 if (rating != null && ai != null)
                 {
-                    try { stars = RatingsController.GetBLRatings(rating, ai, diffSet.Data, Map.Info._beatsPerMinute, 1).Stars; }
+                    try { result = RatingsController.GetBLRatings(rating, ai, diffSet.Data, Map.Info._beatsPerMinute, 1); }
                     catch (Exception) { }
                 }
-                starCache[diffSet.Data] = stars;
+                accCache[diffSet.Data] = result;
             }
-            return stars;
+            return result;
         }
+
+        public double? GetStars(DifficultySet diffSet) => GetAccRating(diffSet)?.Stars;
     }
 }

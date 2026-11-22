@@ -363,7 +363,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             yield return current;
         }
 
-        internal static double CutAngle(Note note) => Mod(DirectionToDegree[note.CutDirection] + note.AngleOffset, 360);
+        // Turned like the game does for windows (WindowSnap)
+        internal static double CutAngle(Note note) => WindowSnap.Angle(note) ?? Mod(DirectionToDegree[note.CutDirection] + note.AngleOffset, 360);
 
         // Signed difference from a to b in degrees, from -180 to 180
         private static double AngleDifference(double a, double b) => Mod(b - a + 180, 360) - 180;

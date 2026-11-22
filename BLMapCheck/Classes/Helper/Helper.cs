@@ -14,10 +14,11 @@ namespace BLMapCheck.Classes.Helper
     {
         public static readonly double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315 };
 
-        // Cut direction of a note in degrees, dots use the direction of their slider. Null if unknown
+        // Cut direction of a note in degrees, turned like the game does for windows (WindowSnap), dots use the direction of their slider.
+        // Null if unknown
         public static double? CutDegree(Note note, Dictionary<Note, double> swingDirection)
         {
-            if (note.CutDirection >= 0 && note.CutDirection < DirectionToDegree.Length) return DirectionToDegree[note.CutDirection];
+            if (note.CutDirection >= 0 && note.CutDirection < DirectionToDegree.Length) return WindowSnap.Angle(note) ?? DirectionToDegree[note.CutDirection];
             return swingDirection.TryGetValue(note, out var degree) ? degree : null;
         }
 

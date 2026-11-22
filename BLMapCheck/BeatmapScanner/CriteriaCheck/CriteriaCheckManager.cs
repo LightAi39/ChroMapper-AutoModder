@@ -178,7 +178,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             if (Context.Config.DisplayShrado) Shrado.Check(Context);
             if (Context.Config.ChainConsistency) ChainConsistency.Check(Context, chains);
 
-            Context.Results.AddResult(WriteDifficultyStatistics(BeatmapScannerData, swings));
+            Context.Results.AddResult(WriteDifficultyStatistics(diffSet, BeatmapScannerData, swings));
 
             return diffCrit;
         }
@@ -195,7 +195,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             Ratings BeatmapScannerData = Context.GetRating(diffSet);
             if (BeatmapScannerData == null) return null;
 
-            return WriteDifficultyStatistics(BeatmapScannerData, SwingInfo.FromRatings(BeatmapScannerData, diff.Bombs));
+            return WriteDifficultyStatistics(diffSet, BeatmapScannerData, SwingInfo.FromRatings(BeatmapScannerData, diff.Bombs));
         }
 
         // Set the difficulty as the current one in the context, and return it
@@ -208,12 +208,15 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
 
             Context.SetBpmEvents(diffSet.Data.bpmEvents);
             Context.NotesData = new();
+            WindowSnap.Apply(diffSet.Data.Notes);
 
             return diffSet;
         }
 
-        private CheckResult WriteDifficultyStatistics(Ratings beatmapScannerData, List<SwingInfo> swings)
+        private CheckResult WriteDifficultyStatistics(DifficultySet diffSet, Ratings beatmapScannerData, List<SwingInfo> swings)
         {
+            // Without the acc AI, there's no star or acc rating (0)
+            var acc = Context.GetAccRating(diffSet);
             var left = swings.Where(x => !x.RightHand).ToList();
             var right = swings.Where(x => x.RightHand).ToList();
             // Swings per second of each hand, over the time that hand is used
@@ -230,8 +233,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Description = "Statistical data of the difficulty",
                 ResultData = new()
                 {
+                    new("Stars", Math.Round(acc?.Stars ?? 0, 2).ToString()),
                     new("Pass", Math.Round(beatmapScannerData.PassRating, 2).ToString()),
                     new("Tech", Math.Round(beatmapScannerData.TechRating, 2).ToString()),
+                    new("Acc", Math.Round(acc?.AccRating ?? 0, 2).ToString()),
                     new("EBPM", Math.Round(swings.Count == 0 ? 0 : swings.Average(x => x.EBPM), 2).ToString()),
                     new("PEBPM", Math.Round(swings.Count == 0 ? 0 : swings.Max(x => x.EBPM), 2).ToString()),
                     new("SPS", Math.Round(SPS(left) + SPS(right), 2).ToString()),
