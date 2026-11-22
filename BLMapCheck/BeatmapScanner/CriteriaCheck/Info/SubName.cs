@@ -35,6 +35,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
                 }
             }
 
+            if (CheckOrder(ctx, subName, ref criteria) && criteria == CritResult.Success) criteria = CritResult.Warning;
+
             if (criteria == CritResult.Success)
             {
                 ctx.Results.CreateInfoResult("Song SubName", Severity.Passed, "SongInfo", "Tags were not found in the Song Name or Song Author field",
@@ -44,7 +46,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
             return criteria;
         }
 
-        private static readonly List<(string Name, Regex Pattern)> Tags = new[] { "remix", "ver.", "feat.", "ft.", "featuring", "cover" }
+        private static readonly List<(string Name, Regex Pattern)> Tags = new[] { "remix", "ver.", "feat.", "ft.", "featuring", "cover", "covered by", "edit", "nightcore", "sped up" }
             .Select(tag => (tag, new Regex(@"\b" + Regex.Escape(tag) + (char.IsLetter(tag.Last()) ? @"\b" : ""), RegexOptions.IgnoreCase)))
             .ToList();
 
@@ -56,6 +58,43 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
 
             return containedSubstrings;
         }
+
+        // Tags should follow a logical order: all tags without parentheses come before those with, and remixes and covers come before
+        // speed or duration modifications, like "feat. Nanahira (Camellia Remix) (Short Edit)". Returns true for a warning only
+        private static bool CheckOrder(CheckContext ctx, string subName, ref CritResult criteria)
+        {
+            if (string.IsNullOrWhiteSpace(subName)) return false;
+
+            // Parenthesized groups, and the text between them
+            var parts = Regex.Split(subName, @"(\([^()]*\)|\[[^\[\]]*\])").Where(p => p.Trim() != "").ToList();
+            var bracketed = parts.Select(p => p.StartsWith("(") || p.StartsWith("[")).ToList();
+
+            var firstGroup = bracketed.IndexOf(true);
+            if (firstGroup >= 0)
+            {
+                var late = parts.Skip(firstGroup).Where((p, i) => !bracketed[firstGroup + i] && CheckForSubstrings(p).Any()).ToList();
+                if (late.Any())
+                {
+                    ctx.Results.CreateInfoResult("Song SubName", Severity.Error, "SongInfo", "All tags without parentheses should come before those with",
+                        new() { new("SubName", subName), new("Tags", string.Join(", ", late.Select(p => p.Trim()))) });
+                    criteria = CritResult.Fail;
+                }
+            }
+
+            var groups = parts.Where((p, i) => bracketed[i]).ToList();
+            var remix = groups.FindLastIndex(g => Fundamental.IsMatch(g));
+            var modification = groups.FindIndex(g => Modification.IsMatch(g) && !Fundamental.IsMatch(g));
+            if (modification >= 0 && modification < remix)
+            {
+                ctx.Results.CreateInfoResult("Song SubName", Severity.Warning, "SongInfo", "Tags should follow a logical order, remixes and covers before speed or duration modifications",
+                    new() { new("SubName", subName) });
+                return true;
+            }
+            return false;
+        }
+
+        private static readonly Regex Fundamental = new(@"\b(remix|mix|bootleg|cover|covered by)\b", RegexOptions.IgnoreCase);
+        private static readonly Regex Modification = new(@"\b(edit|short|long|extended|sped up|nightcore|ver\.|version)", RegexOptions.IgnoreCase);
     }
 
     
