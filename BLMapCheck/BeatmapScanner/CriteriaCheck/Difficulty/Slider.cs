@@ -63,14 +63,13 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
         // A section of the map starts at a significant BPM change or after a break. Its mapping precision is the most common time
         // between swings of both hands, the minimum effective slider precision is a quarter of it (1/16 at 1/4, 1/32 at 1/8), never
-        // above 1/16. Its slider precision is the most common one of its sliders, and its average slider length is the average time
-        // from the first to the last note of its sliders, or the expected slider precision without sliders
+        // above 1/16. Its slider precision is the most common effective precision of its sliders (the time between two notes, the left
+        // out notes of a window count), or the expected slider precision without sliders
         private class Section
         {
             public float Start;
             public double Minimum = 0.0625;
             public double SliderPrecision;
-            public double AverageSliderLength;
         }
 
         private const float SectionBreakBeats = 4;
@@ -90,8 +89,6 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 else current.Add(beat);
             }
 
-            var sliders = MultiNoteSwings(swings).Select(n => (Start: n.Min(x => x.Beats), Length: n.Max(x => x.Beats) - n.Min(x => x.Beats)))
-                .Where(x => x.Length > SameTime).ToList();
             var steps = SliderSteps(swings).ToList();
             var sections = new List<Section>();
             for (int i = 0; i < groups.Count; i++)
@@ -105,20 +102,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 var sectionSteps = steps.Where(x => x.Note.Beats >= group[0] && x.Note.Beats < end)
                     .Select(x => new NoteData(x.Note) { Pattern = true, Precision = x.Effective * (x.Spacing + 1), Spacing = x.Spacing }).ToList();
                 section.SliderPrecision = DetectSliderPrecision(sectionSteps) ?? ctx.SliderPrecision;
-                // Without sliders, the expected length: a slider of two notes at the expected slider precision
-                var lengths = sliders.Where(x => x.Start >= group[0] && x.Start < end).Select(x => (double)x.Length).ToList();
-                section.AverageSliderLength = lengths.Count > 0 ? lengths.Average() : section.SliderPrecision;
                 sections.Add(section);
             }
-            if (sections.Count == 0) sections.Add(new Section { Start = float.MinValue, SliderPrecision = ctx.SliderPrecision, AverageSliderLength = ctx.SliderPrecision });
+            if (sections.Count == 0) sections.Add(new Section { Start = float.MinValue, SliderPrecision = ctx.SliderPrecision });
             return sections;
         }
 
-        // Chain duration cannot exceed 400% of the average effective slider duration of its section
+        // Chain duration cannot exceed 400% of the effective slider precision of its section (the time between two notes of a slider)
         internal static Func<float, double> MaxChainDuration(CheckContext ctx, List<SwingInfo> swings)
         {
             var sections = Sections(ctx, swings);
-            return beat => SectionAt(sections, beat).AverageSliderLength * 4;
+            return beat => SectionAt(sections, beat).SliderPrecision * 4;
         }
 
         private static Section SectionAt(List<Section> sections, float beat) => sections.LastOrDefault(s => s.Start <= beat) ?? sections[0];

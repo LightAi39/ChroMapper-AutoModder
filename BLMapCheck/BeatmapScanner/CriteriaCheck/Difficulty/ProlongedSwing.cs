@@ -21,11 +21,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             foreach (var ch in chains)
             {
-                // Chain duration cannot exceed 400% of the average effective slider duration (first to last note) of its section
+                // Chain duration cannot exceed 400% of the effective slider precision of its section (the time between two notes of a slider)
                 var max = maxDuration(ch.Beats);
                 if (ch.TailInBeats - ch.Beats > max + 0.01)
                 {
-                    ctx.Results.CreateDiffResult("Chain Duration", Severity.Error, "Chain", "Chain duration cannot exceed 400% of the average effective slider duration",
+                    ctx.Results.CreateDiffResult("Chain Duration", Severity.Error, "Chain", "Chain duration cannot exceed 400% of the effective slider precision",
                         new() { new("CurrentDuration", System.Math.Round(ch.TailInBeats - ch.Beats, 3).ToString()), new("MaximumDuration", System.Math.Round(max, 3).ToString()) }, new() { ch });
                     criteria = CritResult.Fail;
 
@@ -36,7 +36,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (!duration)
             {
-                ctx.Results.CreateDiffResult("Chain Duration", Severity.Passed, "Chain", "Chains duration are under 400% the average effective slider duration");
+                ctx.Results.CreateDiffResult("Chain Duration", Severity.Passed, "Chain", "Chains duration are under 400% of the effective slider precision");
             }
 
             // Possible dots spam and pauls
