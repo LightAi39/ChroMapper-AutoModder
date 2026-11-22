@@ -49,9 +49,9 @@ namespace BLMapCheck.Classes.Helper
             if (Cache.TryGetValue(audioPath, out var cached) && cached.Modified == modified) return cached.Result;
 
             var result = new List<TempoResult>();
-            if (ReadSamples(audioPath, out var samples, out int samplerate))
+            if (ReadOnsets(audioPath, out var samples, out int samplerate, out var found))
             {
-                var onsets = FindOnsets(samples, samplerate);
+                var onsets = found.ToList();
                 // ArrowVortex only weights the first 100 onsets by their loudness, the others keep a strength of 1
                 for (int i = 0; i < Math.Min(onsets.Count, 100); i++)
                 {
@@ -70,6 +70,30 @@ namespace BLMapCheck.Classes.Helper
 
             Cache[audioPath] = (modified, result);
             return result;
+        }
+
+        private static readonly ConcurrentDictionary<string, (DateTime Modified, List<Onset> Onsets)> OnsetCache = new();
+
+        // Onsets of the song, found once for the BPM detection and the note timing. Don't modify the list
+        private static bool ReadOnsets(string audioPath, out float[] samples, out int samplerate, out List<Onset> onsets)
+        {
+            onsets = null;
+            if (!ReadSamples(audioPath, out samples, out samplerate)) return false;
+            var modified = File.GetLastWriteTimeUtc(audioPath);
+            if (OnsetCache.TryGetValue(audioPath, out var cached) && cached.Modified == modified) onsets = cached.Onsets;
+            else
+            {
+                onsets = FindOnsets(samples, samplerate);
+                OnsetCache[audioPath] = (modified, onsets);
+            }
+            return true;
+        }
+
+        // Times of the onsets of the song in seconds, sorted. Empty if the file can't be read
+        public static List<double> OnsetTimes(string audioPath)
+        {
+            if (!ReadOnsets(audioPath, out _, out int samplerate, out var onsets)) return new List<double>();
+            return onsets.Select(o => o.Pos / (double)samplerate).OrderBy(t => t).ToList();
         }
 
         // The last file read on this thread, the BPM detection and the audio quality measures both read the song

@@ -68,7 +68,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 SongAuthor = SongAuthor.Check(Context, Map.Info._songAuthorName),
                 Creator = Creator.Check(Context, Map.Info._levelAuthorName),
                 Offset = Offset.Check(Context, Map.Info._songTimeOffset),
-                BPM = BPM.Check(Context, Map.Info._beatsPerMinute, Map.Info._songFilename),
+                // The BPM and the notes must line up with the song
+                BPM = (InfoCrit.CritResult)Math.Max((int)BPM.Check(Context, Map.Info._beatsPerMinute, Map.Info._songFilename), (int)NoteTiming.Check(Context, Map.Info._songFilename, Map.Difficulties)),
                 DifficultyOrdering = DiffOrdering.Check(Context, Map.Difficulties),
                 DifficultySimilarity = DiffSimilarity.Check(Context, Map.Difficulties),
                 Preview = SongPreview.Check(Context, Map.Info._previewStartTime, Map.Info._previewDuration),
