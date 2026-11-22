@@ -144,8 +144,8 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
             {
                 // Song Boundary
                 HotStart = HotStart.Check(Context, allNoteObjects, walls),
-                ColdEnd = ColdEnd.Check(Context, allNoteObjects, walls, (float)Map.SongLength),
-                Outside = Outside.Check(Context, (float)Map.SongLength, notes, chains, bombs, walls),
+                ColdEnd = ColdEnd.Check(Context, allNoteObjects, chains, walls, (float)Map.SongLength),
+                Outside = Outside.Check(Context, (float)Map.SongLength, notes, chains, diff.Arcs, bombs, walls),
                 MinSongDuration = SongDuration.Check(Context, notes, chains),
                 // Difficulty Label
                 DifficultyLabelSize = DifficultyLabelSize.Check(Context, difficultyBeatmap._customData?._difficultyLabel, diffCount),

@@ -110,9 +110,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         }
                     }
 
+                    // The head's cut direction must lead into its chain links, a dot head is considered down.
                     // Chains cannot change in direction by more than 45 degrees from the starting position and angle of the head note
-                    // TODO: Need a new algo, this is horrible
-                    if (chain.CutDirection >= DirectionToDegree.Length)
+                    if (chain.CutDirection < 0 || chain.CutDirection > 8)
                     {
                         ctx.Results.CreateDiffResult("Chain Rotation", Severity.Error, "Chain", "Chains must have a proper cut direction",
                             new List<Classes.Results.KeyValuePair>() { new("ChainDirection", "Error") }, new() { chain });
@@ -121,7 +121,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                     }
                     var temp = new NoteData()
                     {
-                        Direction = Mod(DirectionToDegree[chain.CutDirection], 360),
+                        Direction = chain.CutDirection == 8 ? 270 : Mod(DirectionToDegree[chain.CutDirection], 360),
                         Line = chain.x,
                         Layer = chain.y
                     };
@@ -135,7 +135,9 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                         temp,
                         temp2
                     };
-                    if (!IsSameDirection(ReverseCutDirection(FindAngleViaPosition(temp3, 0, 1)), temp.Direction, ctx.Config.MaxChainRotation) && !IsSameDirection(FindAngleViaPosition(temp3, 0, 1), temp.Direction, ctx.Config.MaxChainRotation))
+                    // From the head to the tail, links behind the head's cut direction don't follow it
+                    var turn = Math.Abs(Mod(FindAngleViaPosition(temp3, 0, 1) - temp.Direction + 180, 360) - 180);
+                    if (turn > ctx.Config.MaxChainRotation + 0.01)
                     {
                         ctx.Results.CreateDiffResult("Chain Rotation", Severity.Error, "Chain", "Chains cannot change in direction by more than 45 degrees from the starting position and angle of the head note",
                             new List<Classes.Results.KeyValuePair>() { new("ChainExceedsRotation", "True") }, new() { chain });

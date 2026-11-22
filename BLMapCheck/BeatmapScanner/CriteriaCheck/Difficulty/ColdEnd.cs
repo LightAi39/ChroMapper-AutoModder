@@ -10,7 +10,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class ColdEnd
     {
         // Check for object near or after the end of the audio duration
-        public static CritResult Check(CheckContext ctx, List<BeatmapGridObject> objects, List<Wall> walls, float songLength)
+        public static CritResult Check(CheckContext ctx, List<BeatmapGridObject> objects, List<Chain> chains, List<Wall> walls, float songLength)
         {
             CritResult criteria = CritResult.Success;
             Timescale timescale = ctx.Timescale;
@@ -30,6 +30,17 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
                 {
                     ctx.Results.CreateDiffResult("Cold End", Severity.Error, "Duration", "There must be at least " + ctx.Config.ColdEndDuration.ToString() + " seconds of time after the last interactable object",
                         new() { new("CurrentBeat", obj.Beats.ToString()), new("MaximumBeat", limit.ToString()) }, new() { obj });
+                    criteria = CritResult.Fail;
+                }
+            }
+
+            // Chain links are interactable too, the last one is at the tail
+            foreach (var chain in chains)
+            {
+                if (chain.TailInBeats > limit)
+                {
+                    ctx.Results.CreateDiffResult("Cold End", Severity.Error, "Duration", "There must be at least " + ctx.Config.ColdEndDuration.ToString() + " seconds of time after the last interactable object",
+                        new() { new("CurrentBeat", chain.TailInBeats.ToString()), new("MaximumBeat", limit.ToString()) }, new() { chain });
                     criteria = CritResult.Fail;
                 }
             }
