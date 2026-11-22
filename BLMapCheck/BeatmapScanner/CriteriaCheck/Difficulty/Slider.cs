@@ -19,53 +19,39 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         private const double MaxDeviation = 45;
         private const double Straight = 1;
 
-        // Get the average sliders precision and warn if it's not applied to all sliders in the map.
-        // Multi-note swings must be hittable with a smooth swing path.
+        // Slider precision rules, per section of the map. Multi-note swings must be hittable with a smooth swing path.
         public static CritResult Check(CheckContext ctx, List<SwingInfo> swings, List<Chain> chains)
         {
             CritResult criteria = CheckSwingPath(ctx, swings, chains);
+            var sections = Sections(ctx, swings);
 
-            // Fetch non-head slider notes from preprocessed data
-            var sliders = ctx.NotesData.Where(c => c.Pattern && !c.Head && c.Precision != 0).ToList();
-
-            for (int i = 0; i < sliders.Count(); i++)
+            // Every step of the sliders, notes the Analyzer grouped while they're too far apart to be a slider are separate swings
+            foreach (var step in SliderSteps(swings))
             {
-                NoteData note = sliders[i];
+                var section = SectionAt(sections, step.Note.Beats);
+                var gap = step.Effective * (step.Spacing + 1);
 
                 // The minimum effective slider precision is 1/16th (or 1/8th for a 2-note window,
                 // as the missing note should be counted for effective precision.) relative to the mapping precision in that section.
-                if (note.Precision - 0.01 > (note.Spacing + 1) * 0.0625)
+                if (gap - 0.01 > (step.Spacing + 1) * section.Minimum)
                 {
-                    ctx.Results.CreateDiffResult("Slider Precision", Severity.Error, "Slider", "Slider cannot be slower than 1/16", new(), new() { note.Note });
+                    ctx.Results.CreateDiffResult("Slider Precision", Severity.Error, "Slider", "Slider cannot be slower than " + Fraction(section.Minimum) + " in this section",
+                        new() { new("MinimumSliderPrecision", Fraction(section.Minimum)) }, new() { step.Note });
                     criteria = CritResult.Fail;
                 }
 
                 // Slider Swing speed must be consistent per section of the map. This may be overruled with sufficient justification.
-                if (note.Precision - 0.01 > (note.Spacing + 1) * ctx.SliderPrecision)
+                var expected = (step.Spacing + 1) * section.SliderPrecision;
+                if (gap > expected + 0.01 || gap < expected - 0.01)
                 {
-                    var expected = DoubleToFraction((note.Spacing + 1) * ctx.SliderPrecision);
-
-                    ctx.Results.CreateDiffResult("Slider Precision", Severity.Warning, "Slider", "Slider Swing speed must be consistent per section of the map", 
-                        new() { new("ExpectedSliderPrecision", expected.num.ToString() + "/" + expected.den.ToString()) }, new() { note.Note });
-                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
-
-                    continue;
-                }
-
-                // Slider Swing speed must be consistent per section of the map. This may be overruled with sufficient justification.
-                if (!(note.Precision <= ((note.Spacing + 1) * ctx.SliderPrecision) + 0.01 && note.Precision >= ((note.Spacing + 1) * ctx.SliderPrecision) - 0.01))
-                {
-                    var expected = DoubleToFraction((note.Spacing + 1) * ctx.SliderPrecision);
-
                     ctx.Results.CreateDiffResult("Slider Precision", Severity.Warning, "Slider", "Slider Swing speed must be consistent per section of the map",
-                        new() { new("ExpectedSliderPrecision", expected.num.ToString() + "/" + expected.den.ToString()) }, new() { note.Note });
+                        new() { new("ExpectedSliderPrecision", Fraction(expected)) }, new() { step.Note });
                     if (CritResult.Warning > criteria) criteria = CritResult.Warning;
-
-                    continue;
                 }
             }
 
-            if (CheckWindowSliders(ctx, swings)) criteria = CritResult.Fail;
+            if (CheckSingleSpeed(ctx, swings)) criteria = CritResult.Fail;
+            if (CheckWindowSliders(ctx, swings, sections)) criteria = CritResult.Fail;
 
             if (criteria == CritResult.Success)
             {
@@ -75,22 +61,107 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
             return criteria;
         }
 
-        // Sliders and window sliders must have the same effective precision within a section: the time between two notes divided by
-        // the cells travelled, the left out notes of a window count. Sections aren't known, so a window slider must match the nearest
-        // slider before or after it, within SectionBeats. Returns true if an issue was found
-        private static bool CheckWindowSliders(CheckContext ctx, List<SwingInfo> swings)
+        // A section of the map starts at a significant BPM change or after a break. Its mapping precision is the most common time
+        // between swings of both hands, the minimum effective slider precision is a quarter of it (1/16 at 1/4, 1/32 at 1/8), never
+        // above 1/16. Its slider precision is the most common one of its sliders, and its average slider length is the average time
+        // from the first to the last note of its sliders, or the expected slider precision without sliders
+        private class Section
         {
-            const double SectionBeats = 32;
+            public float Start;
+            public double Minimum = 0.0625;
+            public double SliderPrecision;
+            public double AverageSliderLength;
+        }
+
+        private const float SectionBreakBeats = 4;
+        private const double SectionBpmChange = 0.05;
+
+        private static List<Section> Sections(CheckContext ctx, List<SwingInfo> swings)
+        {
+            var groups = new List<List<float>>();
+            foreach (var beat in swings.Select(s => s.Notes[0].Beats).OrderBy(b => b))
+            {
+                var current = groups.Count > 0 ? groups[groups.Count - 1] : null;
+                if (current == null || beat - current[current.Count - 1] >= SectionBreakBeats
+                    || Math.Abs(ctx.BpmAt(beat) / ctx.BpmAt(current[0]) - 1) > SectionBpmChange)
+                {
+                    groups.Add(new() { beat });
+                }
+                else current.Add(beat);
+            }
+
+            var sliders = MultiNoteSwings(swings).Select(n => (Start: n.Min(x => x.Beats), Length: n.Max(x => x.Beats) - n.Min(x => x.Beats)))
+                .Where(x => x.Length > SameTime).ToList();
+            var steps = SliderSteps(swings).ToList();
+            var sections = new List<Section>();
+            for (int i = 0; i < groups.Count; i++)
+            {
+                var group = groups[i];
+                var section = new Section { Start = group[0] };
+                var gap = group.Zip(group.Skip(1), (a, b) => b - a).Where(g => g > SameTime)
+                    .GroupBy(g => Math.Round(g, 3)).OrderByDescending(g => g.Count()).FirstOrDefault()?.Key;
+                if (gap != null) section.Minimum = Math.Min(0.0625, gap.Value / 4);
+                var end = i + 1 < groups.Count ? groups[i + 1][0] : float.MaxValue;
+                var sectionSteps = steps.Where(x => x.Note.Beats >= group[0] && x.Note.Beats < end)
+                    .Select(x => new NoteData(x.Note) { Pattern = true, Precision = x.Effective * (x.Spacing + 1), Spacing = x.Spacing }).ToList();
+                section.SliderPrecision = DetectSliderPrecision(sectionSteps) ?? ctx.SliderPrecision;
+                // Without sliders, the expected length: a slider of two notes at the expected slider precision
+                var lengths = sliders.Where(x => x.Start >= group[0] && x.Start < end).Select(x => (double)x.Length).ToList();
+                section.AverageSliderLength = lengths.Count > 0 ? lengths.Average() : section.SliderPrecision;
+                sections.Add(section);
+            }
+            if (sections.Count == 0) sections.Add(new Section { Start = float.MinValue, SliderPrecision = ctx.SliderPrecision, AverageSliderLength = ctx.SliderPrecision });
+            return sections;
+        }
+
+        // Chain duration cannot exceed 400% of the average effective slider duration of its section
+        internal static Func<float, double> MaxChainDuration(CheckContext ctx, List<SwingInfo> swings)
+        {
+            var sections = Sections(ctx, swings);
+            return beat => SectionAt(sections, beat).AverageSliderLength * 4;
+        }
+
+        private static Section SectionAt(List<Section> sections, float beat) => sections.LastOrDefault(s => s.Start <= beat) ?? sections[0];
+
+        private static string Fraction(double value)
+        {
+            var (num, den) = DoubleToFraction(value, 256);
+            return num + "/" + den;
+        }
+
+        // Multi-note patterns must have a single swing speed throughout: every step of a slider has the same effective precision.
+        // Returns true if an issue was found
+        private static bool CheckSingleSpeed(CheckContext ctx, List<SwingInfo> swings)
+        {
+            var issue = false;
+            foreach (var notes in MultiNoteSwings(swings))
+            {
+                var steps = SliderSteps(notes).ToList();
+                if (steps.Count < 2 || steps.All(s => SamePrecision(s.Effective, steps[0].Effective))) continue;
+                var odd = steps.First(s => !SamePrecision(s.Effective, steps[0].Effective));
+                ctx.Results.CreateDiffResult("Slider Speed", Severity.Error, "Slider", "Multi-note patterns must have a single swing speed throughout",
+                    new() { new("EffectivePrecision", "1/" + Math.Round(1 / steps[0].Effective)), new("OtherPrecision", "1/" + Math.Round(1 / odd.Effective)) }, new() { notes[0], odd.Note });
+                issue = true;
+            }
+            return issue;
+        }
+
+        // Sliders and window sliders must have the same effective precision within a section: the time between two notes divided by
+        // the cells travelled, the left out notes of a window count. A window slider must match the nearest slider of its section
+        // before or after it. Returns true if an issue was found
+        private static bool CheckWindowSliders(CheckContext ctx, List<SwingInfo> swings, List<Section> sections)
+        {
             var steps = SliderSteps(swings).ToList();
             var regular = steps.Where(s => s.Spacing == 0).OrderBy(s => s.Note.Beats).ToList();
             var issue = false;
 
             foreach (var window in steps.Where(s => s.Spacing > 0))
             {
+                var section = SectionAt(sections, window.Note.Beats);
                 var nearest = new[]
                 {
-                    regular.LastOrDefault(s => s.Note.Beats <= window.Note.Beats && window.Note.Beats - s.Note.Beats <= SectionBeats),
-                    regular.FirstOrDefault(s => s.Note.Beats >= window.Note.Beats && s.Note.Beats - window.Note.Beats <= SectionBeats)
+                    regular.LastOrDefault(s => s.Note.Beats <= window.Note.Beats && SectionAt(sections, s.Note.Beats) == section),
+                    regular.FirstOrDefault(s => s.Note.Beats >= window.Note.Beats && SectionAt(sections, s.Note.Beats) == section)
                 }.Where(s => s.Note != null).ToList();
                 if (nearest.Count == 0 || nearest.Any(s => SamePrecision(s.Effective, window.Effective))) continue;
 
@@ -103,25 +174,26 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         }
 
         // Every step between two notes of a slider at different times, with the cells skipped and the effective precision
-        private static IEnumerable<(Note Note, int Spacing, double Effective)> SliderSteps(List<SwingInfo> swings)
+        private static IEnumerable<(Note Note, int Spacing, double Effective)> SliderSteps(List<SwingInfo> swings) =>
+            swings.Where(s => s.IsMultiNote).SelectMany(s => SplitSliders(s.Notes)).SelectMany(SliderSteps);
+
+        private static IEnumerable<(Note Note, int Spacing, double Effective)> SliderSteps(List<Note> notes)
         {
-            foreach (var notes in swings.Where(s => s.IsMultiNote).SelectMany(s => SplitSliders(s.Notes)))
+            var beats = notes.GroupBy(n => Math.Round(n.Beats / SameTime)).OrderBy(g => g.Key).ToList();
+            for (int i = 1; i < beats.Count; i++)
             {
-                var beats = notes.GroupBy(n => Math.Round(n.Beats / SameTime)).OrderBy(g => g.Key).ToList();
-                for (int i = 1; i < beats.Count; i++)
+                foreach (var note in beats[i])
                 {
-                    foreach (var note in beats[i])
-                    {
-                        // From the closest note of the previous beat
-                        var spacing = beats[i - 1].Min(p => Math.Max(Math.Max(Math.Abs(note.x - p.x), Math.Abs(note.y - p.y)) - 1, 0));
-                        var gap = note.Beats - beats[i - 1].First().Beats;
-                        yield return (note, spacing, gap / (spacing + 1));
-                    }
+                    // From the closest note of the previous beat
+                    var spacing = beats[i - 1].Min(p => Math.Max(Math.Max(Math.Abs(note.x - p.x), Math.Abs(note.y - p.y)) - 1, 0));
+                    var gap = note.Beats - beats[i - 1].First().Beats;
+                    yield return (note, spacing, gap / (spacing + 1));
                 }
             }
         }
 
-        private static bool SamePrecision(double a, double b) => Math.Abs(a - b) <= 0.05 * Math.Max(a, b);
+        // Within 5%, or 0.002 beats for beats saved with 3 decimals
+        private static bool SamePrecision(double a, double b) => Math.Abs(a - b) <= Math.Max(0.05 * Math.Max(a, b), 0.002);
 
         // Swings must be able to hit all notes of the multi-note swing at their cut angle in the center of the note without deviating
         // more than 45 degrees from the starting angle, and may only deviate in one direction along the entire swing path.

@@ -1,5 +1,4 @@
-﻿using BLMapCheck.BeatmapScanner.MapCheck;
-using BLMapCheck.Classes.Helper;
+﻿using BLMapCheck.Classes.Helper;
 using BLMapCheck.Classes.Results;
 using Parser.Map.Difficulty.V3.Grid;
 using System;
@@ -17,211 +16,57 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
         private const double GridSize = 0.6, GoodAlong = 0.25, GoodAcross = 0.4, BadHalf = 0.175;
         private const double MaxBadOverlap = 0.2;
 
-        // Implementation of Kival Evan hitboxInline.ts, hitboxStair.ts and hitboxReverseStaircase.ts
-        // TODO: Either new algo or comment and optimize this code
+        // The top of a note's good hitbox cannot overlap the top of an opposite colored note's bad hitbox by more than 20%, for notes on
+        // the same beat or extremely close in time (SameTimeSeconds).
+        // The sabers must go through each other's notes: the follow-through of one swing, its good cut box carried on one cell in the cut
+        // direction, crosses the bad cut box of the other note, and the approach of the other swing, its good cut box carried back one
+        // cell, crosses the bad cut box of the first note. The overlap is the smaller of the two shares of bad cut box crossed, face-on.
+        // Dots can be hit from any side, they're skipped.
+        private const double SameTimeSeconds = 0.01, Reach = GridSize;
+
         public static CritResult Check(CheckContext ctx, List<Note> notes, float baseNjs, List<SwingInfo> swings, List<Chain> chains)
         {
-            // NJS of the note arriving after the other one, it sets the distance between them (VNJS)
-            float NjsOf(Note note) => note.njs > 0 ? note.njs : baseNjs;
-
             CritResult criteria = CritResult.Success;
 
-            if (notes.Any())
+            var sorted = notes.Where(n => n.Color == 0 || n.Color == 1).OrderBy(n => n.Seconds).ToList();
+            for (int i = 0; i < sorted.Count; i++)
             {
-                // Store last left and right note
-                Note[] lastNote = { null, null };
-                List<List<Note>> swingNoteArray = new()
+                for (int j = i + 1; j < sorted.Count && sorted[j].Seconds - sorted[i].Seconds <= SameTimeSeconds; j++)
                 {
-                    new(),
-                    new()
-                };
+                    Note a = sorted[i], b = sorted[j];
+                    if (a.Color == b.Color || a.CutDirection == 8 || b.CutDirection == 8) continue;
+                    var overlap = Math.Max(Crossing(a, b), Crossing(b, a));
+                    if (overlap <= MaxBadOverlap + 0.0001) continue;
 
-                // Store potential hitbox issue
-                var hitbox = new List<Note>();
-
-                for (int i = 0; i < notes.Count; i++)
-                {
-                    var note = notes[i];
-                    if (lastNote[note.Color] != null)
-                    {
-                        if (Swing.Next(note, lastNote[note.Color], ctx.BpmAt(note.Beats), swingNoteArray[note.Color]))
-                        {
-                            swingNoteArray[note.Color].Clear();
-                        }
-                    }
-                    foreach (var other in swingNoteArray[(note.Color + 1) % 2])
-                    {
-                        var isInline = false;
-                        var distance = Math.Sqrt(Math.Pow(note.x - other.x, 2) + Math.Pow(note.y - other.y, 2));
-                        if (distance <= 0.5)
-                        {
-                            isInline = true;
-                        }
-                        if (NjsOf(note) < 1.425 / ctx.BeatsToSeconds(note.Beats - other.Beats, note.Beats) && isInline)
-                        {
-                            hitbox.Add(note);
-                            break;
-                        }
-                    }
-                    lastNote[note.Color] = note;
-                    swingNoteArray[note.Color].Add(note);
-                }
-
-                foreach (var item in hitbox)
-                {
-                    ctx.Results.CreateDiffResult("Inline", Severity.Warning, "Hitbox", "Low NJS Inline", new(), new() { item });
-                    criteria = CritResult.Warning;
-                }
-
-                int[] lastNoteDirection = { -1, -1 };
-                double[] lastSpeed = { -1, -1 };
-                lastNote[0] = null;
-                lastNote[1] = null;
-                swingNoteArray = new()
-                {
-                    new(),
-                    new()
-                };
-                NoteData[] noteOccupy = { new(), new() };
-                hitbox.Clear();
-
-                for (int i = 0; i < notes.Count; i++)
-                {
-                    var note = notes[i];
-                    if (lastNote[note.Color] != null)
-                    {
-                        if (Swing.Next(note, lastNote[note.Color], ctx.BpmAt(note.Beats), swingNoteArray[note.Color]))
-                        {
-                            lastSpeed[note.Color] = note.Beats - lastNote[note.Color].Beats;
-                            if (note.CutDirection != NoteDirection.ANY)
-                            {
-                                noteOccupy[note.Color].Line = note.x + NoteDirectionSpace.Get(note.CutDirection)[0];
-                                noteOccupy[note.Color].Layer = note.y + NoteDirectionSpace.Get(note.CutDirection)[1];
-                            }
-                            else
-                            {
-                                noteOccupy[note.Color].Line = -1;
-                                noteOccupy[note.Color].Layer = -1;
-                            }
-                            swingNoteArray[note.Color].Clear();
-                            lastNoteDirection[note.Color] = note.CutDirection;
-                        }
-                        else if (MapCheck.Parity.IsEnd(note, lastNote[note.Color], lastNoteDirection[note.Color]))
-                        {
-                            if (note.CutDirection != NoteDirection.ANY)
-                            {
-                                noteOccupy[note.Color].Line = note.x + NoteDirectionSpace.Get(note.CutDirection)[0];
-                                noteOccupy[note.Color].Layer = note.y + NoteDirectionSpace.Get(note.CutDirection)[1];
-                                lastNoteDirection[note.Color] = note.CutDirection;
-                            }
-                            else
-                            {
-                                noteOccupy[note.Color].Line = note.x + NoteDirectionSpace.Get(lastNoteDirection[note.Color])[0];
-                                noteOccupy[note.Color].Layer = note.y + NoteDirectionSpace.Get(lastNoteDirection[note.Color])[1];
-                            }
-                        }
-                        if (lastNote[(note.Color + 1) % 2] != null)
-                        {
-                            if (note.Beats - lastNote[(note.Color + 1) % 2].Beats != 0 &&
-                                note.Beats - lastNote[(note.Color + 1) % 2].Beats < Math.Min(ctx.SecondsToBeats(0.15, note.Beats), lastSpeed[(note.Color + 1) % 2]))
-                            {
-                                if (note.x == noteOccupy[(note.Color + 1) % 2].Line && note.y == noteOccupy[(note.Color + 1) % 2].Layer && !Swing.IsDouble(note, notes, i))
-                                {
-                                    hitbox.Add(note);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (note.CutDirection != NoteDirection.ANY)
-                        {
-                            noteOccupy[note.Color].Line = note.x + NoteDirectionSpace.Get(note.CutDirection)[0];
-                            noteOccupy[note.Color].Layer = note.y + NoteDirectionSpace.Get(note.CutDirection)[1];
-                        }
-                        else
-                        {
-                            noteOccupy[note.Color].Line = -1;
-                            noteOccupy[note.Color].Layer = -1;
-                        }
-                        lastNoteDirection[note.Color] = note.CutDirection;
-                    }
-                    lastNote[note.Color] = note;
-                    swingNoteArray[note.Color].Add(note);
-                }
-
-                foreach (var item in hitbox)
-                {
-                    ctx.Results.CreateDiffResult("Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue",
-                        new List<Classes.Results.KeyValuePair>() { new("Type", "Staircase") }, new() { item });
-                    criteria = CritResult.Warning;
-                }
-
-                var constant = 0.03414823529;
-                var constantDiagonal = 0.03414823529;
-                lastNote[0] = null;
-                lastNote[1] = null;
-                swingNoteArray = new()
-                {
-                    new(),
-                    new()
-                };
-                hitbox.Clear();
-
-                for (int i = 0; i < notes.Count; i++)
-                {
-                    var note = notes[i];
-                    if (lastNote[note.Color] != null)
-                    {
-                        if (Swing.Next(note, lastNote[note.Color], ctx.BpmAt(note.Beats), swingNoteArray[note.Color]))
-                        {
-                            swingNoteArray[note.Color].Clear();
-                        }
-                    }
-                    foreach (var other in swingNoteArray[(note.Color + 1) % 2])
-                    {
-                        if (other.Color != 0 && other.Color != 1)
-                        {
-                            continue;
-                        }
-                        if (other.CutDirection != NoteDirection.ANY)
-                        {
-                            if (ctx.BeatsToSeconds(note.Beats - other.Beats, note.Beats) <= 0.01)
-                            {
-                                continue;
-                            }
-                            var isDiagonal = Swing.NoteDirectionAngle[other.CutDirection] % 90 > 15 && Swing.NoteDirectionAngle[other.CutDirection] % 90 < 75;
-                            double[,] value = { { 15, 1.5 } };
-                            if (NjsOf(note) < 1.425 / (ctx.BeatsToSeconds(note.Beats - other.Beats, note.Beats) + (isDiagonal ? constantDiagonal : constant)) &&
-                                Swing.IsIntersect(note, other, value, 1))
-                            {
-                                hitbox.Add(other);
-                                break;
-                            }
-                        }
-
-                    }
-
-                    lastNote[note.Color] = note;
-                    swingNoteArray[note.Color].Add(note);
-                }
-
-                foreach (var item in hitbox)
-                {
-                    ctx.Results.CreateDiffResult("Reverse Staircase", Severity.Warning, "Staircase", "Potential Hitbox issue", 
-                        new List<Classes.Results.KeyValuePair>() { new("Type", "Reverse Staircase") }, new() { item });
-                    criteria = CritResult.Warning;
+                    ctx.Results.CreateDiffResult("Hitbox", Severity.Error, "Hitbox", "The good cut hitbox of a note cannot overlap the bad cut hitbox of an opposite colored note by more than 20%",
+                        new() { new("Overlap", Math.Round(overlap * 100) + "%") }, new() { a, b });
+                    criteria = CritResult.Fail;
                 }
             }
 
             if (CheckMultiNoteSwingPath(ctx, notes, swings, chains)) criteria = CritResult.Fail;
 
-            if(criteria == CritResult.Success)
+            if (criteria == CritResult.Success)
             {
-                ctx.Results.CreateDiffResult("Staircase", Severity.Passed, "Staircase", "No hitbox issue detected");
+                ctx.Results.CreateDiffResult("Hitbox", Severity.Passed, "Hitbox", "No hitbox issue detected");
             }
 
             return criteria;
+        }
+
+        // The follow-through of the first note's swing over the second note's bad cut box, and the approach of the second note's swing
+        // over the first note's bad cut box
+        private static double Crossing(Note first, Note second) => Math.Min(SwingOverBad(first, second, Reach), SwingOverBad(second, first, -Reach));
+
+        // Share of the bad cut box of a note crossed by the good cut box of another carried on in the cut direction (or back when negative)
+        private static double SwingOverBad(Note good, Note bad, double reach)
+        {
+            var center = ToMeters(good.x, good.y);
+            var radians = ConvertDegreesToRadians(BoxAngle(good));
+            var shift = reach / 2;
+            var swing = Box((center.X + shift * Math.Cos(radians), center.Y + shift * Math.Sin(radians)), BoxAngle(good), GoodAlong + Math.Abs(shift), GoodAcross);
+            var badBox = Box(ToMeters(bad.x, bad.y), BoxAngle(bad), BadHalf, BadHalf);
+            return Area(Clip(badBox, swing)) / (4 * BadHalf * BadHalf);
         }
 
         // In a multi-note swing (a slider, notes swung in the same movement on different beats, or a multi-note hit, on the same beat),

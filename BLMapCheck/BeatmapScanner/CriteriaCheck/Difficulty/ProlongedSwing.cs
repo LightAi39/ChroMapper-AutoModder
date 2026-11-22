@@ -1,4 +1,5 @@
-﻿using BLMapCheck.Classes.Results;
+﻿using BLMapCheck.Classes.Helper;
+using BLMapCheck.Classes.Results;
 using BLMapCheck.Configs;
 using Parser.Map.Difficulty.V3.Grid;
 using System.Collections.Generic;
@@ -11,20 +12,22 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
     internal static class ProlongedSwing
     {
         // Very basic check for stuff like Pauls, Dotspam, long chain duration, etc.
-        public static CritResult Check(CheckContext ctx, List<Note> notes, List<Chain> chains)
+        public static CritResult Check(CheckContext ctx, List<Note> notes, List<Chain> chains, List<SwingInfo> swings)
         {
             CritResult criteria = CritResult.Success;
 
             var duration = false;
+            var maxDuration = Slider.MaxChainDuration(ctx, swings);
 
             foreach (var ch in chains)
             {
-                // Chain duration cannot exceed 200% of the average effective slider duration
-                if (ch.TailInBeats - ch.Beats >= ctx.SliderPrecision * 2.1)
+                // Chain duration cannot exceed 400% of the average effective slider duration (first to last note) of its section
+                var max = maxDuration(ch.Beats);
+                if (ch.TailInBeats - ch.Beats > max + 0.01)
                 {
-                    ctx.Results.CreateDiffResult("Chain Duration", Severity.Warning, "Chain", "Chain duration cannot exceed 200% of the average effective slider duration", 
-                        new() { new("CurrentDuration", (ch.TailInBeats - ch.Beats).ToString()), new("MaximumDuration", (ctx.SliderPrecision * 2.1).ToString()) }, new() { ch });
-                    if (CritResult.Warning > criteria) criteria = CritResult.Warning;
+                    ctx.Results.CreateDiffResult("Chain Duration", Severity.Error, "Chain", "Chain duration cannot exceed 400% of the average effective slider duration",
+                        new() { new("CurrentDuration", System.Math.Round(ch.TailInBeats - ch.Beats, 3).ToString()), new("MaximumDuration", System.Math.Round(max, 3).ToString()) }, new() { ch });
+                    criteria = CritResult.Fail;
 
                     duration = true;
                 }
@@ -33,7 +36,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Difficulty
 
             if (!duration)
             {
-                ctx.Results.CreateDiffResult("Chain Duration", Severity.Passed, "Chain", "Chains duration are under 200% the average effective slider duration");
+                ctx.Results.CreateDiffResult("Chain Duration", Severity.Passed, "Chain", "Chains duration are under 400% the average effective slider duration");
             }
 
             // Possible dots spam and pauls
