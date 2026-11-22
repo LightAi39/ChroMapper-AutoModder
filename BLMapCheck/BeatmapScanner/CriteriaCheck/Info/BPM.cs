@@ -36,10 +36,11 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
             }
 
             var values = string.Join(", ", detected.Select(d => Math.Round(d.Bpm, 2)));
-            // The offsets are only in the data, the comment only shows the BPM
-            // The first sound explains why silence may need to be added even when the beat is already lined up (hot start)
-            var tempo = string.Join("; ", detected.Select(d => $"{Math.Round(d.Bpm, 2)} BPM, first beat at {d.Offset:0.000}s, {Alignment(d, ctx.Config.HotStartDuration)}"))
-                + $" (first sound at {detected[0].FirstSound:0.000}s, keeping {ctx.Config.HotStartDuration}s before it)";
+            // The offsets are only in the data, the comment only shows the BPM. One line per detected BPM, then the first sound, which
+            // explains why silence may need to be added even when the beat is already lined up (hot start)
+            var tempo = string.Join("\n", detected.Select(d => $"- {Math.Round(d.Bpm, 2)} BPM{(IsMultiple(bpm, d.Bpm) ? " (matches the map)" : "")}: "
+                    + $"first beat at {d.Offset:0.000}s, {Alignment(d, ctx.Config.HotStartDuration)}"))
+                + $"\nThe first sound is at {detected[0].FirstSound:0.000}s, the changes keep at least {ctx.Config.HotStartDuration}s of silence before it";
             ctx.Results.CreateInfoResult("Detected BPM", Severity.Info, "SongInfo", $"Detected song BPM: {values}",
                 new() { new("DetectedBPM", values), new("DetectedTempo", tempo), new("MapBPM", bpm.ToString()) });
 
@@ -81,9 +82,10 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck.Info
             double Shift(double k) => -tempo.Offset + k * beat;
             double k = Math.Max(Math.Ceiling((minimum + tempo.Offset) / beat), Math.Round(tempo.Offset / beat));
             int ms = (int)Math.Round(Shift(k) * 1000);
-            if (ms > 0) return $"add {ms}ms at the start";
-            if (ms < 0) return $"remove {-ms}ms at the start";
-            return "already lined up";
+            // A few ms is within the detection's precision
+            if (Math.Abs(ms) <= 2) return "the audio is already lined up with the grid";
+            if (ms > 0) return $"add {ms}ms of silence at the start of the audio to line it up with the grid";
+            return $"remove {-ms}ms from the start of the audio to line it up with the grid";
         }
 
         // The multiple (or fraction) of the detected BPM closest to the map BPM

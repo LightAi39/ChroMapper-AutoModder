@@ -15,7 +15,7 @@ namespace ChroMapper_LightModding.Export
 
             if (!string.IsNullOrEmpty(review.DetectedTempo))
             {
-                text += $"**Detected tempo:** {review.DetectedTempo}\n \n";
+                text += $"**Detected tempo:**\n{review.DetectedTempo}\n \n";
             }
 
             text += $"**Song Info Comments:**\n\n";
