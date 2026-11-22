@@ -15,6 +15,7 @@ namespace BLMapCheck.BeatmapScanner.Data.Criteria
         public CritResult Offset { get; set; } = CritResult.Fail;
         public CritResult BPM { get; set; } = CritResult.Fail;
         public CritResult DifficultyOrdering { get; set; } = CritResult.Fail;
+        public CritResult DifficultySimilarity { get; set; } = CritResult.Fail;
         public CritResult Preview { get; set; } = CritResult.Fail;
         public CritResult InfoValues { get; set; } = CritResult.Fail;
         public CritResult CoverImage { get; set; } = CritResult.Fail;

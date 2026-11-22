@@ -70,6 +70,7 @@ namespace BLMapCheck.BeatmapScanner.CriteriaCheck
                 Offset = Offset.Check(Context, Map.Info._songTimeOffset),
                 BPM = BPM.Check(Context, Map.Info._beatsPerMinute, Map.Info._songFilename),
                 DifficultyOrdering = DiffOrdering.Check(Context, Map.Difficulties),
+                DifficultySimilarity = DiffSimilarity.Check(Context, Map.Difficulties),
                 Preview = SongPreview.Check(Context, Map.Info._previewStartTime, Map.Info._previewDuration),
                 InfoValues = InfoValues.Check(Context, Map.Info),
                 CoverImage = CoverImage.Check(Context, Map.Info._coverImageFilename)
