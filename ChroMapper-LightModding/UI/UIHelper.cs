@@ -53,7 +53,7 @@ namespace ChroMapper_LightModding.UI
             button.Image.transform.rotation = Quaternion.identity;
         }
 
-        public static void AddLabel(Transform parent, string title, string text, Vector2 pos, Vector2? size = null, TextAlignmentOptions? alignment = null, Color? color = null, float fontSize = 14)
+        public static TextMeshProUGUI AddLabel(Transform parent, string title, string text, Vector2 pos, Vector2? size = null, TextAlignmentOptions? alignment = null, Color? color = null, float fontSize = 14)
         {
             var entryLabel = new GameObject(title + " Label", typeof(TextMeshProUGUI));
             var rectTransform = ((RectTransform)entryLabel.transform);
@@ -73,6 +73,7 @@ namespace ChroMapper_LightModding.UI
             {
                 textComponent.color = (Color)color;
             }
+            return textComponent;
         }
 
         public static void AddErrorLabel(Transform parent, string title, string text, Vector2 pos)

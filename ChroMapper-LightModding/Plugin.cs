@@ -63,6 +63,7 @@ namespace ChroMapper_LightModding
         private FileHelper fileHelper;
         private Exporter exporter;
         private AutocheckHelper autocheckHelper;
+        private SnapshotHelper snapshotHelper;
         public GridMarkerHelper gridMarkerHelper;
 
         InputAction addCommentAction;
@@ -110,7 +111,8 @@ namespace ChroMapper_LightModding
             fileHelper = new(this);
             autocheckHelper = new(this, fileHelper);
             outlineHelper = new(this);
-            editorUI = new(this, outlineHelper, fileHelper, exporter, autocheckHelper);
+            snapshotHelper = new(this);
+            editorUI = new(this, outlineHelper, fileHelper, exporter, autocheckHelper, snapshotHelper);
             songInfoUI = new(this, fileHelper, exporter, autocheckHelper);
 
             SceneManager.sceneLoaded += SceneLoaded;

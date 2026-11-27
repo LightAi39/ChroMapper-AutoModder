@@ -24,10 +24,12 @@ namespace ChroMapper_LightModding.UI
         private OutlineHelper outlineHelper;
         private FileHelper fileHelper;
         private AutocheckHelper autocheckHelper;
+        private SnapshotHelper snapshotHelper;
 
         private GameObject _timelineMarkers;
         private GameObject _criteriaMenu;
         private GameObject _timingComparesMenu;
+        private GameObject _snapshotMenu;
         private GameObject _settingMenu;
         // Vertical offset of the menus shown in the pause menu (criteria, settings, mod, timing), the ratings follow the criteria menu
         private const float PauseMenuOffsetY = 20;
@@ -53,13 +55,14 @@ namespace ChroMapper_LightModding.UI
 
         private (double stars, double pass, double tech, double acc, double ebpm, double pebpm, double sps, string handness, double duration) stats;
 
-        public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter, AutocheckHelper autocheckHelper)
+        public EditorUI(Plugin plugin, OutlineHelper outlineHelper, FileHelper fileHelper, Exporter exporter, AutocheckHelper autocheckHelper, SnapshotHelper snapshotHelper)
         {
             this.plugin = plugin;
             this.outlineHelper = outlineHelper;
             this.fileHelper = fileHelper;
             this.exporter = exporter;
             this.autocheckHelper = autocheckHelper;
+            this.snapshotHelper = snapshotHelper;
         }
 
         #region CMUI
@@ -601,6 +604,7 @@ namespace ChroMapper_LightModding.UI
         {
             Object.Destroy(_criteriaMenu);
             Object.Destroy(_ratingsMenu);
+            Object.Destroy(_snapshotMenu);
         }
 
         private void CreateCriteriaMenu()
@@ -609,6 +613,7 @@ namespace ChroMapper_LightModding.UI
             AddCriteriaMenu(_pauseMenu);
             _criteriaMenu.SetActive(true);
             AddTimingComparesMenu(_pauseMenu);
+            AddSnapshotMenu(_pauseMenu);
             AddSettingMenu(_pauseMenu);
             AddModMenu(_pauseMenu);
             AddRatingsMenu(_criteriaMenu.transform);
@@ -640,14 +645,24 @@ namespace ChroMapper_LightModding.UI
                 RefreshCriteriaMenu();
                 outlineHelper.RefreshOutlines();
                 RefreshTimelineMarkers();
-            });
+            }, 60, 25, 12, "Save the map first! This reads the saved file.");
 
             UIHelper.AddButton(_criteriaMenu.transform, "RunBeatmapScanner", "Refresh Map Analytics", new Vector2(-126, -18), () =>
             {
                 RunBeatmapScannerOnThisDiff();
                 RefreshCriteriaMenu();
+            }, 60, 25, 12, "Save the map first! This reads the saved file.");
+            #endregion
+
+            #region Snapshot button
+            UIHelper.AddButton(_criteriaMenu.transform, "TakeSnapshot", "Timing snapshot", new Vector2(2, -18), () =>
+            {
+                if (_snapshotMenu != null)
+                {
+                    _snapshotMenu.SetActive(true);
+                    _criteriaMenu.SetActive(false);
+                }
             });
-            UIHelper.AddLabel(_criteriaMenu.transform, "FileSaveWarning", "Save the map before using these buttons!", new Vector2(-30, -18), new Vector2(100, 24), TextAlignmentOptions.Left);
             #endregion
 
             #region Clear comments button
@@ -1076,6 +1091,91 @@ namespace ChroMapper_LightModding.UI
             #endregion
         }
 
+        public void AddSnapshotMenu(Transform parent)
+        {
+            _snapshotMenu = new GameObject("Automodder Snapshot Menu");
+            _snapshotMenu.transform.parent = parent;
+            _snapshotMenu.SetActive(false);
+
+            UIHelper.AttachTransform(_snapshotMenu, 300, 140, 0.05f, 1.20f, 0, PauseMenuOffsetY, 0, 1);
+
+            Image image = _snapshotMenu.AddComponent<Image>();
+            image.sprite = PersistentUI.Instance.Sprites.Background;
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.35f, 0.35f, 0.35f);
+
+            // The snapshot is kept by the helper, the labels show its state when the menu is recreated
+            string snapshotText = "No snapshot";
+            if (snapshotHelper.Snapshot != null)
+            {
+                snapshotText = $"{snapshotHelper.Snapshot.Count} objects saved";
+                if (!snapshotHelper.IsSnapshotOfCurrentDifficulty()) snapshotText += $" ({snapshotHelper.SnapshotDifficulty} {snapshotHelper.SnapshotCharacteristic})";
+            }
+            string compareText = snapshotHelper.Changes != null ? CompareSummary(snapshotHelper.Changes) : "";
+            string checkText = snapshotHelper.OtherDifficultyChecks != null ? CheckSummary(snapshotHelper.OtherDifficultyChecks) : "";
+
+            var snapshotLabel = UIHelper.AddLabel(_snapshotMenu.transform, "SnapshotStatus", snapshotText, new Vector2(64, -18), new Vector2(160, 24), TextAlignmentOptions.Left, null, 12);
+            var compareLabel = UIHelper.AddLabel(_snapshotMenu.transform, "CompareStatus", compareText, new Vector2(64, -44), new Vector2(160, 24), TextAlignmentOptions.Left, null, 12);
+            var checkLabel = UIHelper.AddLabel(_snapshotMenu.transform, "CheckStatus", checkText, new Vector2(64, -70), new Vector2(160, 24), TextAlignmentOptions.Left, null, 12);
+            var exportLabel = UIHelper.AddLabel(_snapshotMenu.transform, "ExportStatus", "", new Vector2(64, -96), new Vector2(160, 24), TextAlignmentOptions.Left, null, 12);
+
+            UIHelper.AddButton(_snapshotMenu.transform, "TakeSnapshot", "Take snapshot", new Vector2(-80, -18), () =>
+            {
+                int count = snapshotHelper.TakeSnapshot();
+                snapshotLabel.text = $"{count} objects saved";
+                compareLabel.text = checkLabel.text = exportLabel.text = "";
+            }, 120);
+
+            UIHelper.AddButton(_snapshotMenu.transform, "CompareSnapshot", "Compare current to snapshot", new Vector2(-80, -44), () =>
+            {
+                if (snapshotHelper.Snapshot == null) compareLabel.text = "Take a snapshot first";
+                else if (!snapshotHelper.IsSnapshotOfCurrentDifficulty()) compareLabel.text = "Snapshot is of another difficulty";
+                else compareLabel.text = CompareSummary(snapshotHelper.CompareToSnapshot());
+                exportLabel.text = "";
+            }, 120);
+
+            UIHelper.AddButton(_snapshotMenu.transform, "CheckOtherDifficulties", "Check other difficulties", new Vector2(-80, -70), () =>
+            {
+                checkLabel.text = CheckSummary(snapshotHelper.CheckOtherDifficulties());
+                exportLabel.text = "";
+            }, 120, 25, 12, "Use this difficulty as the timing reference for the other difficulties. Swings, bombs, walls, arcs and chains within 1/4 beat of one in this difficulty are fixed, then their wall end or arc and chain tail is matched to it. Nothing is added or removed.");
+
+            UIHelper.AddButton(_snapshotMenu.transform, "ExportSnapshot", "Export to clipboard", new Vector2(-80, -96), () =>
+            {
+                string text = snapshotHelper.ExportText();
+                if (text.Length == 0)
+                {
+                    exportLabel.text = "Nothing to export";
+                    return;
+                }
+                Exporter.CopyToClipboard(text);
+                exportLabel.text = "Copied to clipboard";
+            }, 120);
+
+            UIHelper.AddButton(_snapshotMenu.transform, "CloseSnapshotMenu", "Close Menu", new Vector2(-80, -122), () =>
+            {
+                _criteriaMenu.SetActive(true);
+                _snapshotMenu.SetActive(false);
+            }, 120);
+        }
+
+        private static string CompareSummary(List<SnapshotHelper.TimingChange> changes)
+        {
+            int moved = changes.Count(c => c.OriginalBeat != null && c.NewBeat != null);
+            int removed = changes.Count(c => c.NewBeat == null);
+            int added = changes.Count(c => c.OriginalBeat == null);
+            return $"{moved} moved, {removed} removed, {added} added";
+        }
+
+        private static string CheckSummary(List<SnapshotHelper.DifficultyTimingCheck> checks)
+        {
+            if (checks.Count == 0) return "No other difficulty";
+            string text = $"{checks.Count} difficulties, {checks.Sum(c => c.Changes.Count)} objects to fix";
+            int failed = checks.Count(c => c.Error != null);
+            if (failed > 0) text += $", {failed} failed";
+            return text;
+        }
+
         public void OnTimingCharacteristicChanged(int index)
         {
             string characteristic = timingCharDropdown.Dropdown.options[index].text;
@@ -1329,7 +1429,7 @@ namespace ChroMapper_LightModding.UI
             image.type = Image.Type.Sliced;
             image.color = new Color(0.35f, 0.35f, 0.35f);
 
-            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues", $"Stars: {stats.stars}☆ | Pass: {stats.pass}☆ | Tech: {stats.tech}☆ | Acc: {stats.acc}☆ | eBPM: {stats.ebpm} | Peak eBPM: {stats.pebpm}", new Vector2(0, -12), new Vector2(392, 24), TextAlignmentOptions.Left);
+            UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues", $"{stats.stars}☆ | Pass: {stats.pass}☆ | Tech: {stats.tech}☆ | Acc: {stats.acc}☆ | eBPM: {stats.ebpm} | Peak: {stats.pebpm}", new Vector2(0, -12), new Vector2(392, 24), TextAlignmentOptions.Left);
             UIHelper.AddLabel(_ratingsMenu.transform, "BeatmapScannerValues2", $"Swings Per Second: {stats.sps} | Left/Right Handness: {stats.handness}% | 1/16: {stats.duration}ms", new Vector2(0, -36), new Vector2(392, 24), TextAlignmentOptions.Left);
         }
 
